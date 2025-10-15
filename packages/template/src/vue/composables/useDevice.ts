@@ -2,8 +2,8 @@
  * 设备检测 Composable
  */
 
-import { ref, readonly, onMounted, onUnmounted } from 'vue'
 import type { DeviceType } from '../../types'
+import { onMounted, onUnmounted, readonly, ref } from 'vue'
 import { getDeviceDetector } from '../../core'
 
 export function useDevice() {

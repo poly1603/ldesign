@@ -67,8 +67,8 @@ export abstract class BaseStore<
   /** 初始状态 */
   private _initialState?: TState
 
-  /** 缓存的装饰器元数据 */
-  private _cachedMetadata?: DecoratorMetadata[]
+  /** 静态元数据缓存（类级别共享，减少内存占用） */
+  private static _metadataCache = new WeakMap<Function, DecoratorMetadata[]>()
 
   /** 缓存的 actions 对象 */
   private _cachedActions?: TActions
@@ -339,8 +339,7 @@ export abstract class BaseStore<
     // 清理性能优化器
     this._optimizer.dispose()
 
-    // 清理缓存
-    this._cachedMetadata = undefined
+    // 清理实例级缓存（元数据缓存是类级别的，不需要清理）
     this._cachedActions = undefined
     this._cachedGetters = undefined
     this._initialState = undefined
@@ -513,13 +512,18 @@ export abstract class BaseStore<
   }
 
   /**
-   * 获取装饰器元数据（带缓存）
+   * 获取装饰器元数据（类级别缓存）
+   * 使用 WeakMap 在所有实例间共享元数据，减少内存占用
    */
   private _getDecoratorMetadata(): DecoratorMetadata[] {
-    if (!this._cachedMetadata) {
-      this._cachedMetadata
-        = Reflect.getMetadata(DECORATOR_METADATA_KEY, this.constructor) || []
+    const ctor = this.constructor
+
+    // 检查类级别缓存
+    if (!BaseStore._metadataCache.has(ctor)) {
+      const metadata = Reflect.getMetadata(DECORATOR_METADATA_KEY, ctor) || []
+      BaseStore._metadataCache.set(ctor, metadata)
     }
-    return this._cachedMetadata!
+
+    return BaseStore._metadataCache.get(ctor)!
   }
 }

@@ -1,18 +1,18 @@
 import * as XLSX from 'xlsx';
+import Spreadsheet from 'x-data-spreadsheet';
+import 'x-data-spreadsheet/dist/xspreadsheet.css';
 import type { IDocumentRenderer, DocumentMetadata, ViewerOptions } from '../types';
 
 /**
  * Excel Document Renderer
- * Uses SheetJS (xlsx) to render Excel files
+ * Uses x-data-spreadsheet for high-fidelity rendering with styles and interactivity
  */
 export class ExcelRenderer implements IDocumentRenderer {
  private container: HTMLElement | null = null;
  private workbook: XLSX.WorkBook | null = null;
- private currentSheet: number = 0;
+ private spreadsheet: any = null;
  private currentData: ArrayBuffer | null = null;
  private options: ViewerOptions | null = null;
- private sheetTabsContainer: HTMLElement | null = null;
- private contentElement: HTMLElement | null = null;
 
  /**
   * Render Excel document
@@ -25,16 +25,10 @@ export class ExcelRenderer implements IDocumentRenderer {
   try {
    // Parse Excel file
    const uint8Array = new Uint8Array(data);
-   this.workbook = XLSX.read(uint8Array, { type: 'array' });
+   this.workbook = XLSX.read(uint8Array, { type: 'array', cellStyles: true });
 
    if (!this.workbook || !this.workbook.SheetNames || this.workbook.SheetNames.length === 0) {
     throw new Error('No sheets found in Excel file');
-   }
-
-   // Set default sheet
-   this.currentSheet = options.excel?.defaultSheet ?? 0;
-   if (this.currentSheet >= this.workbook.SheetNames.length) {
-    this.currentSheet = 0;
    }
 
    // Clear container
@@ -43,28 +37,38 @@ export class ExcelRenderer implements IDocumentRenderer {
    // Create wrapper
    const wrapper = document.createElement('div');
    wrapper.className = 'excel-viewer-wrapper';
+   wrapper.style.width = '100%';
+   wrapper.style.height = '100%';
 
-   // Create formula bar if enabled
-   if (options.excel?.showFormulaBar) {
-    const formulaBar = this.createFormulaBar();
-    wrapper.appendChild(formulaBar);
-   }
-
-   // Create sheet tabs if enabled
-   if (options.excel?.showSheetTabs !== false) {
-    this.sheetTabsContainer = this.createSheetTabs();
-    wrapper.appendChild(this.sheetTabsContainer);
-   }
-
-   // Create content area
-   this.contentElement = document.createElement('div');
-   this.contentElement.className = 'excel-viewer-content';
-
-   // Render current sheet
-   this.renderSheet(this.currentSheet);
-
-   wrapper.appendChild(this.contentElement);
    container.appendChild(wrapper);
+
+   // Convert workbook to x-data-spreadsheet format
+   const xsData = this.convertWorkbookToXS(this.workbook);
+
+   // Initialize x-data-spreadsheet
+   this.spreadsheet = new Spreadsheet(wrapper, {
+    mode: options.excel?.enableEditing ? 'edit' : 'read',
+    showToolbar: options.excel?.showFormulaBar || false,
+    showGrid: options.excel?.showGridLines !== false,
+    showContextmenu: options.excel?.enableEditing || false,
+    view: {
+     height: () => wrapper.clientHeight,
+     width: () => wrapper.clientWidth
+    },
+    row: {
+     len: 100,
+     height: 25
+    },
+    col: {
+     len: 26,
+     width: 100,
+     indexWidth: 60,
+     minWidth: 60
+    }
+   });
+
+   // Load data
+   this.spreadsheet.loadData(xsData);
 
    // Call onLoad callback
    options.onLoad?.();
@@ -76,131 +80,118 @@ export class ExcelRenderer implements IDocumentRenderer {
  }
 
  /**
-  * Create formula bar
+  * Convert SheetJS workbook to x-data-spreadsheet format
   */
- private createFormulaBar(): HTMLElement {
-  const formulaBar = document.createElement('div');
-  formulaBar.className = 'excel-formula-bar';
-  formulaBar.innerHTML = `
-   <span class="formula-label">fx</span>
-   <input type="text" class="formula-input" readonly placeholder="Select a cell to view its content" />
-  `;
-  return formulaBar;
+ private convertWorkbookToXS(workbook: XLSX.WorkBook): any {
+  return workbook.SheetNames.map((sheetName, sheetIndex) => {
+   const worksheet = workbook.Sheets[sheetName];
+   const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+   
+   const rows: any = {};
+   const cols: any = {};
+
+   // Convert cells
+   for (let R = range.s.r; R <= range.e.r; ++R) {
+    const rowData: any = { cells: {} };
+    
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+     const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+     const cell = worksheet[cellAddress];
+     
+     if (cell) {
+      const cellData: any = {};
+      
+      // Set text/value
+      if (cell.v !== undefined) {
+       cellData.text = String(cell.v);
+      }
+      
+      // Set number format
+      if (cell.t === 'n') {
+       cellData.type = 'number';
+      }
+      
+      // Add cell style if available
+      if (cell.s) {
+       const style: any = {};
+       
+       // Font
+       if (cell.s.font) {
+        if (cell.s.font.bold) style.bold = true;
+        if (cell.s.font.italic) style.italic = true;
+        if (cell.s.font.name) style.font = cell.s.font.name;
+        if (cell.s.font.sz) style.fontSize = cell.s.font.sz;
+        if (cell.s.font.color) style.color = this.rgbToHex(cell.s.font.color);
+       }
+       
+       // Fill
+       if (cell.s.fill && cell.s.fill.fgColor) {
+        style.bgcolor = this.rgbToHex(cell.s.fill.fgColor);
+       }
+       
+       // Alignment
+       if (cell.s.alignment) {
+        if (cell.s.alignment.horizontal) {
+         style.align = cell.s.alignment.horizontal;
+        }
+        if (cell.s.alignment.vertical) {
+         style.valign = cell.s.alignment.vertical;
+        }
+       }
+       
+       if (Object.keys(style).length > 0) {
+        cellData.style = style;
+       }
+      }
+      
+      rowData.cells[C] = cellData;
+     }
+    }
+    
+    if (Object.keys(rowData.cells).length > 0) {
+     rows[R] = rowData;
+    }
+   }
+
+   // Set column widths
+   if (worksheet['!cols']) {
+    worksheet['!cols'].forEach((col: any, index: number) => {
+     if (col.wpx) {
+      cols[index] = { width: col.wpx };
+     }
+    });
+   }
+
+   return {
+    name: sheetName,
+    rows,
+    cols,
+    merges: worksheet['!merges'] || [],
+    freeze: 'A1'
+   };
+  });
  }
 
  /**
-  * Create sheet tabs
+  * Convert RGB color to hex
   */
- private createSheetTabs(): HTMLElement {
-  const tabsContainer = document.createElement('div');
-  tabsContainer.className = 'excel-sheet-tabs';
-
-  if (!this.workbook) return tabsContainer;
-
-  this.workbook.SheetNames.forEach((sheetName, index) => {
-   const tab = document.createElement('button');
-   tab.className = 'sheet-tab';
-   tab.textContent = sheetName;
-   tab.dataset.index = String(index);
-
-   if (index === this.currentSheet) {
-    tab.classList.add('active');
-   }
-
-   tab.addEventListener('click', () => this.switchSheet(index));
-   tabsContainer.appendChild(tab);
-  });
-
-  return tabsContainer;
+ private rgbToHex(color: any): string {
+  if (!color) return '#000000';
+  if (color.rgb) {
+   return '#' + color.rgb.substring(2);
+  }
+  return '#000000';
  }
 
  /**
   * Switch to a different sheet
   */
  switchSheet(sheetIndex: number): void {
-  if (!this.workbook || sheetIndex < 0 || sheetIndex >= this.workbook.SheetNames.length) {
-   return;
-  }
-
-  this.currentSheet = sheetIndex;
-  this.renderSheet(sheetIndex);
-
-  // Update active tab
-  if (this.sheetTabsContainer) {
-   const tabs = this.sheetTabsContainer.querySelectorAll('.sheet-tab');
-   tabs.forEach((tab, index) => {
-    if (index === sheetIndex) {
-     tab.classList.add('active');
-    } else {
-     tab.classList.remove('active');
-    }
-   });
-  }
- }
-
- /**
-  * Render a specific sheet
-  */
- private renderSheet(sheetIndex: number): void {
-  if (!this.workbook || !this.contentElement) return;
-
-  const sheetName = this.workbook.SheetNames[sheetIndex];
-  const worksheet = this.workbook.Sheets[sheetName];
-
-  // Convert sheet to HTML table
-  const htmlTable = XLSX.utils.sheet_to_html(worksheet, {
-   id: 'excel-table',
-   editable: this.options?.excel?.enableEditing ?? false
-  });
-
-  // Clear and set content
-  this.contentElement.innerHTML = htmlTable;
-
-  // Add grid lines class if enabled
-  const table = this.contentElement.querySelector('table');
-  if (table) {
-   table.className = 'excel-table';
-   if (this.options?.excel?.showGridLines !== false) {
-    table.classList.add('show-grid-lines');
-   }
-
-   // Add cell click handlers for formula bar
-   if (this.options?.excel?.showFormulaBar) {
-    this.attachCellHandlers(table, worksheet);
+  if (this.spreadsheet && this.workbook) {
+   if (sheetIndex >= 0 && sheetIndex < this.workbook.SheetNames.length) {
+    this.spreadsheet.changeSheet(sheetIndex);
    }
   }
- }
-
- /**
-  * Attach click handlers to cells
-  */
- private attachCellHandlers(table: HTMLTableElement, worksheet: XLSX.WorkSheet): void {
-  const cells = table.querySelectorAll('td');
-  const formulaInput = this.container?.querySelector('.formula-input') as HTMLInputElement;
-
-  if (!formulaInput) return;
-
-  cells.forEach((cell, index) => {
-   cell.addEventListener('click', () => {
-    // Calculate cell address (e.g., A1, B2)
-    const row = Math.floor(index / (cells.length / table.rows.length));
-    const col = index % (table.rows[0]?.cells.length || 1);
-    const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-
-    // Get cell value
-    const cellData = worksheet[cellAddress];
-    if (cellData) {
-     formulaInput.value = cellData.f || cellData.v || '';
-    } else {
-     formulaInput.value = '';
-    }
-
-    // Highlight selected cell
-    cells.forEach(c => c.classList.remove('selected'));
-    cell.classList.add('selected');
-   });
-  });
- }
 
  /**
   * Get document metadata
@@ -240,11 +231,12 @@ export class ExcelRenderer implements IDocumentRenderer {
   * Export document to different formats
   */
  async export(format: 'pdf' | 'html' | 'text'): Promise<Blob> {
-  if (!this.workbook) {
+  if (!this.workbook || !this.spreadsheet) {
    throw new Error('No document loaded');
   }
 
-  const sheetName = this.workbook.SheetNames[this.currentSheet];
+  const currentSheetIndex = this.spreadsheet.sheetIndex || 0;
+  const sheetName = this.workbook.SheetNames[currentSheetIndex];
   const worksheet = this.workbook.Sheets[sheetName];
 
   switch (format) {
@@ -268,12 +260,16 @@ export class ExcelRenderer implements IDocumentRenderer {
   * Destroy renderer and clean up
   */
  destroy(): void {
+  if (this.spreadsheet) {
+   // x-data-spreadsheet doesn't have a destroy method, so we just clear the container
+   this.spreadsheet = null;
+  }
+  
   if (this.container) {
    this.container.innerHTML = '';
   }
+  
   this.container = null;
-  this.contentElement = null;
-  this.sheetTabsContainer = null;
   this.workbook = null;
   this.currentData = null;
   this.options = null;

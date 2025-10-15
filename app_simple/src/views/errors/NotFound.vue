@@ -38,15 +38,15 @@ const goBack = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--ld-color-primary-400, #667eea) 0%, var(--ld-color-primary-600, #764ba2) 100%);
 }
 
 .error-content {
   text-align: center;
   padding: 40px;
-  background: white;
+  background: var(--ld-color-gray-50, white);
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 60px var(--ld-color-gray-300, rgba(0, 0, 0, 0.1));
   max-width: 500px;
   width: 90%;
 }
@@ -55,7 +55,7 @@ const goBack = () => {
   font-size: 120px;
   font-weight: bold;
   margin: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--ld-color-primary-500) 0%, var(--ld-color-primary-700) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   line-height: 1;
@@ -63,13 +63,13 @@ const goBack = () => {
 
 .error-title {
   font-size: 28px;
-  color: #333;
+  color: var(--ld-color-gray-800);
   margin: 20px 0;
 }
 
 .error-message {
   font-size: 16px;
-  color: #666;
+  color: var(--ld-color-gray-600, #666);
   margin: 20px 0 30px;
 }
 
@@ -90,21 +90,21 @@ const goBack = () => {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--ld-color-primary-500) 0%, var(--ld-color-primary-700) 100%);
+  color: var(--ld-color-gray-50, white);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 20px var(--ld-color-primary-300, rgba(102, 126, 234, 0.3));
 }
 
 .btn-secondary {
-  background: #f0f0f0;
-  color: #333;
+  background: var(--ld-color-gray-100);
+  color: var(--ld-color-gray-800);
 }
 
 .btn-secondary:hover {
-  background: #e0e0e0;
+  background: var(--ld-color-gray-200);
 }
 </style>

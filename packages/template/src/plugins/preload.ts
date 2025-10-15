@@ -2,8 +2,8 @@
  * 预加载插件
  */
 
-import type { Plugin, PreloadPluginConfig } from '../types'
 import type { TemplateManager } from '../runtime/manager'
+import type { Plugin, PreloadPluginConfig } from '../types'
 import { PLUGIN_VERSION } from '../utils/constants'
 
 export function createPreloadPlugin(config: PreloadPluginConfig = {}): Plugin {
@@ -17,7 +17,7 @@ export function createPreloadPlugin(config: PreloadPluginConfig = {}): Plugin {
       // 延迟预加载
       setTimeout(async () => {
         // 获取需要预加载的模板
-        const templates = priority.map(p => {
+        const templates = priority.map((p) => {
           const [category, device, name] = p.split(':')
           return `${category}:${device}:${name}`
         })
@@ -27,7 +27,8 @@ export function createPreloadPlugin(config: PreloadPluginConfig = {}): Plugin {
           try {
             await manager.preload(templates)
             console.log(`[PreloadPlugin] Preloaded ${templates.length} templates`)
-          } catch (error) {
+          }
+ catch (error) {
             console.error('[PreloadPlugin] Preload failed:', error)
           }
         }

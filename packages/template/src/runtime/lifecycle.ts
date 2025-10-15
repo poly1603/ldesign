@@ -1,11 +1,11 @@
 /**
  * 生命周期管理器
- * 
+ *
  * 管理模板系统的生命周期钩子
  */
 
-import type { LifecycleHooks, TemplateId } from '../types'
 import type { Component } from 'vue'
+import type { LifecycleHooks, TemplateId } from '../types'
 
 /**
  * 生命周期管理器类
@@ -28,7 +28,7 @@ export class LifecycleManager {
    */
   registerHook<K extends keyof LifecycleHooks>(
     name: K,
-    hook: LifecycleHooks[K]
+    hook: LifecycleHooks[K],
   ): void {
     this.hooks[name] = hook
   }
@@ -109,7 +109,8 @@ export class LifecycleManager {
     if (hook) {
       try {
         await (hook as any)(...args)
-      } catch (error) {
+      }
+ catch (error) {
         console.error(`[Lifecycle] Error in hook "${hookName}":`, error)
       }
     }

@@ -1,30 +1,30 @@
 /**
  * 模板管理器
- * 
+ *
  * 整合核心层功能，提供统一的模板管理接口，支持插件系统
  */
 
-import type {
-  SystemConfig,
-  DeviceType,
-  TemplateId,
-  TemplateMetadata,
-  TemplateLoadResult,
-  TemplateQueryOptions,
-  TemplateSwitchOptions,
-  Plugin,
-} from '../types'
 import type { Component } from 'vue'
 import type { LoadOptions } from '../core/loader'
-import { TemplateRegistry } from '../core/registry'
+import type {
+  DeviceType,
+  Plugin,
+  SystemConfig,
+  TemplateId,
+  TemplateLoadResult,
+  TemplateMetadata,
+  TemplateQueryOptions,
+  TemplateSwitchOptions,
+} from '../types'
 import { CacheManager } from '../core/cache'
-import { TemplateLoader } from '../core/loader'
 import { DeviceDetector } from '../core/device'
 import { getGlobalEmitter } from '../core/events'
+import { TemplateLoader } from '../core/loader'
+import { TemplateRegistry } from '../core/registry'
+import { deepMerge } from '../utils'
+import { DEFAULT_BREAKPOINTS, DEFAULT_CACHE_CONFIG, DEFAULT_LOGGER_CONFIG } from '../utils/constants'
 import { LifecycleManager } from './lifecycle'
 import { PerformanceMonitor } from './monitor'
-import { deepMerge } from '../utils'
-import { DEFAULT_CACHE_CONFIG, DEFAULT_BREAKPOINTS, DEFAULT_LOGGER_CONFIG } from '../utils/constants'
 
 /**
  * 模板管理器类
@@ -48,7 +48,7 @@ export class TemplateManager {
       cache: deepMerge({ ...DEFAULT_CACHE_CONFIG }, config.cache || {}),
       device: deepMerge(
         { breakpoints: { ...DEFAULT_BREAKPOINTS }, defaultDevice: 'desktop', enableResponsive: true },
-        config.device || {}
+        config.device || {},
       ),
       logger: deepMerge({ ...DEFAULT_LOGGER_CONFIG }, config.logger || {}),
       hooks: config.hooks || {},
@@ -89,7 +89,7 @@ export class TemplateManager {
     device: DeviceType,
     name: string,
     metadata: Omit<TemplateMetadata, 'category' | 'device' | 'name'>,
-    component: Component | (() => Promise<{ default: Component }>)
+    component: Component | (() => Promise<{ default: Component }>),
   ): TemplateId {
     const id = this.registry.register(category, device, name, metadata, component)
     this.log(`Template registered: ${id}`)
@@ -106,7 +106,7 @@ export class TemplateManager {
       name: string
       metadata: Omit<TemplateMetadata, 'category' | 'device' | 'name'>
       component: Component | (() => Promise<{ default: Component }>)
-    }>
+    }>,
   ): TemplateId[] {
     const ids = this.registry.registerBatch(registrations)
     this.log(`Batch registered ${ids.length} templates`)
@@ -131,9 +131,12 @@ export class TemplateManager {
     category: string,
     device?: DeviceType,
     name?: string,
-    options?: LoadOptions
+    options?: LoadOptions,
   ): Promise<TemplateLoadResult> {
     const targetDevice = device || this.device.getDevice()
+
+    this.log(`Loading template: category=${category}, device=${targetDevice}, name=${name || 'default'}`)
+
     const id = name ? `${category}:${targetDevice}:${name}` : ''
 
     // 如果没有指定name，获取默认模板
@@ -141,8 +144,38 @@ export class TemplateManager {
       ? this.registry.get(id)
       : this.registry.getDefault(category, targetDevice)
 
+    this.log(`Found registration: ${registration ? registration.id : 'none'}`)
+
     if (!registration) {
-      throw new Error(`No template found for category: ${category}, device: ${targetDevice}`)
+      // 查看该类别和设备下有哪些可用模板
+      const available = this.registry.query({ category, device: targetDevice })
+      const availableNames = available.map(r => r.metadata.name).join(', ')
+
+      if (available.length === 0) {
+        // 查看该类别下所有设备的模板
+        const allInCategory = this.registry.query({ category })
+        const devices = [...new Set(allInCategory.map(r => r.metadata.device))]
+
+        throw new Error(
+          `No template found for category: ${category}, device: ${targetDevice}. `
+          + `Available devices for this category: ${devices.join(', ')}`,
+        )
+      }
+      else if (name) {
+        // 如果指定了名称但找不到
+        throw new Error(
+          `Template '${name}' not found for category: ${category}, device: ${targetDevice}. `
+          + `Available templates: ${availableNames}`,
+        )
+      }
+      else {
+        // 如果没有指定名称且没有默认模板
+        throw new Error(
+          `No default template found for category: ${category}, device: ${targetDevice}. `
+          + `Available templates: ${availableNames}. `
+          + `Please mark one template with isDefault: true or specify a template name.`,
+        )
+      }
     }
 
     // 触发beforeLoad钩子
@@ -158,11 +191,12 @@ export class TemplateManager {
       this.monitor.recordLoad(registration.id, result.loadTime, result.cached)
 
       this.log(
-        `Loaded template: ${registration.id} (cached: ${result.cached}, time: ${result.loadTime}ms)`
+        `Loaded template: ${registration.id} (cached: ${result.cached}, time: ${result.loadTime}ms)`,
       )
 
       return result
-    } catch (error) {
+    }
+ catch (error) {
       // 触发error钩子
       await this.lifecycle.onError(registration.id, error as Error)
       throw error
@@ -176,7 +210,7 @@ export class TemplateManager {
     category: string,
     device?: DeviceType,
     name?: string,
-    options: TemplateSwitchOptions = {}
+    options: TemplateSwitchOptions = {},
   ): Promise<TemplateLoadResult> {
     const targetDevice = device || this.device.getDevice()
     const registration = name
@@ -228,10 +262,10 @@ export class TemplateManager {
   getMetadata(
     categoryOrId: string,
     device?: DeviceType,
-    name?: string
+    name?: string,
   ): TemplateMetadata | null {
-    const registration =
-      device && name
+    const registration
+      = device && name
         ? this.registry.get(categoryOrId, device, name)
         : this.registry.get(categoryOrId as TemplateId)
 
@@ -329,7 +363,8 @@ export class TemplateManager {
    */
   unuse(pluginName: string): boolean {
     const plugin = this.plugins.get(pluginName)
-    if (!plugin) return false
+    if (!plugin)
+return false
 
     if (plugin.uninstall) {
       plugin.uninstall()

@@ -1,10 +1,10 @@
 /**
  * 性能监控器
- * 
+ *
  * 监控和统计模板加载性能
  */
 
-import type { TemplateId, PerformanceMetrics } from '../types'
+import type { PerformanceMetrics, TemplateId } from '../types'
 import { PERFORMANCE_THRESHOLDS } from '../utils/constants'
 
 /**
@@ -25,7 +25,7 @@ export class PerformanceMonitor {
   private maxRecords: number
   private enabled: boolean
 
-  constructor(options: { maxRecords?: number; enabled?: boolean } = {}) {
+  constructor(options: { maxRecords?: number, enabled?: boolean } = {}) {
     this.maxRecords = options.maxRecords || 100
     this.enabled = options.enabled ?? true
   }
@@ -34,7 +34,8 @@ export class PerformanceMonitor {
    * 记录加载时间
    */
   recordLoad(id: TemplateId, loadTime: number, cached: boolean): void {
-    if (!this.enabled) return
+    if (!this.enabled)
+return
 
     const record: PerformanceRecord = {
       id,
@@ -54,7 +55,7 @@ export class PerformanceMonitor {
     if (loadTime > PERFORMANCE_THRESHOLDS.SLOW_LOAD) {
       const level = loadTime > PERFORMANCE_THRESHOLDS.VERY_SLOW_LOAD ? 'error' : 'warn'
       console[level](
-        `[Monitor] Slow template load detected: ${id} (${loadTime}ms)`
+        `[Monitor] Slow template load detected: ${id} (${loadTime}ms)`,
       )
     }
   }
@@ -142,7 +143,7 @@ export class PerformanceMonitor {
   generateReport(): string {
     const metrics = this.getMetrics()
     const slowLoads = this.records.filter(
-      r => r.loadTime > PERFORMANCE_THRESHOLDS.SLOW_LOAD
+      r => r.loadTime > PERFORMANCE_THRESHOLDS.SLOW_LOAD,
     )
 
     return `

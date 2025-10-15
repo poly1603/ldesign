@@ -2,7 +2,7 @@
  * 核心工具函数
  */
 
-import type { TemplateId, DeviceType } from '../types'
+import type { DeviceType, TemplateId } from '../types'
 
 /**
  * 构建模板ID
@@ -10,7 +10,7 @@ import type { TemplateId, DeviceType } from '../types'
 export function buildTemplateId(
   category: string,
   device: DeviceType,
-  name: string
+  name: string,
 ): TemplateId {
   return `${category}:${device}:${name}`
 }
@@ -24,10 +24,12 @@ export function parseTemplateId(id: TemplateId): {
   name: string
 } | null {
   const parts = id.split(':')
-  if (parts.length !== 3) return null
+  if (parts.length !== 3)
+return null
 
   const [category, device, name] = parts
-  if (!['mobile', 'tablet', 'desktop'].includes(device)) return null
+  if (!['mobile', 'tablet', 'desktop'].includes(device))
+return null
 
   return { category, device: device as DeviceType, name }
 }
@@ -44,12 +46,13 @@ export function delay(ms: number): Promise<void> {
  */
 export function debounce<T extends (...args: any[]) => any>(
   fn: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null
 
   return function (...args: Parameters<T>) {
-    if (timeoutId) clearTimeout(timeoutId)
+    if (timeoutId)
+clearTimeout(timeoutId)
     timeoutId = setTimeout(() => fn(...args), wait)
   }
 }
@@ -59,7 +62,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   fn: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let lastTime = 0
 
@@ -76,10 +79,13 @@ export function throttle<T extends (...args: any[]) => any>(
  * 深拷贝
  */
 export function deepClone<T>(obj: T): T {
-  if (obj === null || typeof obj !== 'object') return obj
-  if (obj instanceof Date) return new Date(obj) as T
-  if (obj instanceof Array) return obj.map(item => deepClone(item)) as T
-  
+  if (obj === null || typeof obj !== 'object')
+return obj
+  if (obj instanceof Date)
+return new Date(obj) as T
+  if (Array.isArray(obj))
+return obj.map(item => deepClone(item)) as T
+
   const cloned = {} as T
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
@@ -115,12 +121,13 @@ export function isPromise<T = any>(val: any): val is Promise<T> {
  */
 export async function safeExecute<T>(
   fn: () => T | Promise<T>,
-  fallback?: T
+  fallback?: T,
 ): Promise<T | undefined> {
   try {
     const result = fn()
     return isPromise(result) ? await result : result
-  } catch (error) {
+  }
+ catch (error) {
     console.error('[SafeExecute] Error:', error)
     return fallback
   }
@@ -130,7 +137,8 @@ export async function safeExecute<T>(
  * 格式化文件大小
  */
 export function formatBytes(bytes: number, decimals = 2): string {
-  if (bytes === 0) return '0 Bytes'
+  if (bytes === 0)
+return '0 Bytes'
 
   const k = 1024
   const dm = decimals < 0 ? 0 : decimals
@@ -155,10 +163,12 @@ export function deepMerge<T extends Record<string, any>>(
   target: T,
   ...sources: Partial<T>[]
 ): T {
-  if (!sources.length) return target
+  if (!sources.length)
+return target
 
   const source = sources.shift()
-  if (!source) return target
+  if (!source)
+return target
 
   for (const key in source) {
     if (Object.prototype.hasOwnProperty.call(source, key)) {
@@ -167,7 +177,8 @@ export function deepMerge<T extends Record<string, any>>(
 
       if (isObject(sourceValue) && isObject(targetValue)) {
         target[key] = deepMerge(targetValue, sourceValue)
-      } else {
+      }
+ else {
         target[key] = sourceValue as T[Extract<keyof T, string>]
       }
     }
@@ -189,16 +200,18 @@ function isObject(val: any): val is Record<string, any> {
 export function compareVersion(v1: string, v2: string): -1 | 0 | 1 {
   const parts1 = v1.split('.').map(Number)
   const parts2 = v2.split('.').map(Number)
-  
+
   const len = Math.max(parts1.length, parts2.length)
-  
+
   for (let i = 0; i < len; i++) {
     const num1 = parts1[i] || 0
     const num2 = parts2[i] || 0
-    
-    if (num1 < num2) return -1
-    if (num1 > num2) return 1
+
+    if (num1 < num2)
+return -1
+    if (num1 > num2)
+return 1
   }
-  
+
   return 0
 }

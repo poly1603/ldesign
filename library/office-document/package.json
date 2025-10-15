@@ -1,6 +1,6 @@
 {
  "name": "@ldesign/office-viewer",
- "version": "1.0.0",
+ "version": "2.0.0",
  "description": "A powerful and framework-agnostic Office document viewer for Word, Excel, and PowerPoint files in the browser",
  "main": "dist/index.js",
  "module": "dist/index.esm.js",
@@ -33,8 +33,7 @@
  "dependencies": {
   "docx-preview": "^0.3.7",
   "jszip": "^3.10.1",
-  "pptxgenjs": "^3.12.0",
-  "pptxjs": "^0.0.0",
+  "pptxjs": "^1.9.0",
   "x-data-spreadsheet": "^1.1.9",
   "xlsx": "^0.18.5"
  },

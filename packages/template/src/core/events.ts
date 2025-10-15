@@ -1,10 +1,10 @@
 /**
  * 事件系统
- * 
+ *
  * 统一的事件发布订阅系统，用于核心层与其他层之间的通信
  */
 
-import type { EventType, EventListener, UnsubscribeFn } from '../types'
+import type { EventListener, EventType, UnsubscribeFn } from '../types'
 
 /**
  * 事件发射器类
@@ -56,7 +56,8 @@ export class EventEmitter {
    */
   async emit<T = any>(event: EventType, data?: T): Promise<void> {
     const listeners = this.listeners.get(event)
-    if (!listeners || listeners.size === 0) return
+    if (!listeners || listeners.size === 0)
+return
 
     const promises: Promise<void>[] = []
 
@@ -66,7 +67,8 @@ export class EventEmitter {
         if (result instanceof Promise) {
           promises.push(result)
         }
-      } catch (error) {
+      }
+ catch (error) {
         console.error(`[EventEmitter] Error in listener for "${event}":`, error)
       }
     }
@@ -82,7 +84,8 @@ export class EventEmitter {
   clear(event?: EventType): void {
     if (event) {
       this.listeners.delete(event)
-    } else {
+    }
+ else {
       this.listeners.clear()
     }
   }

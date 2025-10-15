@@ -4,6 +4,8 @@
  */
 
 import type { DeviceType, TemplateMetadata } from '../../types'
+import { computed, onMounted, ref, type Ref, unref, watch } from 'vue'
+
 import { useTemplateManager } from './useTemplateManager'
 
 export interface UseTemplateListOptions {
@@ -17,12 +19,10 @@ export interface UseTemplateListOptions {
   enableCache?: boolean
 }
 
-import { ref, computed, onMounted, watch, unref, type Ref } from 'vue'
-
 export function useTemplateList(
   category: string | Ref<string>,
   device: DeviceType | Ref<DeviceType>,
-  options: Partial<Omit<UseTemplateListOptions, 'category' | 'device'>> = {}
+  options: Partial<Omit<UseTemplateListOptions, 'category' | 'device'>> = {},
 ) {
   const { autoLoad = true, enableCache = true } = options
 
@@ -46,7 +46,7 @@ export function useTemplateList(
     try {
       const currentCategory = unref(category)
       const currentDevice = unref(device)
-      
+
       // 检查缓存
       const cacheKey = `templates:${currentCategory}:${currentDevice}`
       if (enableCache && cache) {
@@ -64,10 +64,12 @@ export function useTemplateList(
       if (enableCache) {
         cache = metadataList
       }
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err as Error
       console.error('[useTemplateList] Failed to load templates:', err)
-    } finally {
+    }
+ finally {
       loading.value = false
     }
   }
@@ -85,8 +87,8 @@ export function useTemplateList(
 
   // 按标签过滤
   const filterByTags = (...tags: string[]): TemplateMetadata[] => {
-    return templates.value.filter(t => 
-      t.tags && tags.some(tag => t.tags!.includes(tag))
+    return templates.value.filter(t =>
+      t.tags && tags.some(tag => t.tags!.includes(tag)),
     )
   }
 
@@ -103,7 +105,7 @@ export function useTemplateList(
       if (autoLoad) {
         load()
       }
-    }
+    },
   )
 
   // 自动加载

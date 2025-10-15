@@ -1,785 +1,623 @@
 # 部署指南
 
-本指南介绍如何在不同环境中部署使用 @ldesign/crypto 的应用程序。
+本指南介绍如何在生产环境中部署使用 @ldesign/crypto 的应用。
 
-## 生产环境准备
+## 环境配置
 
-### 环境变量配置
+### 环境变量
 
 ```bash
 # .env.production
-NODE_ENV=production
+# 加密密钥（从安全渠道注入）
+VITE_ENCRYPTION_KEY=
+VITE_MAC_KEY=
 
-# 加密相关配置
-ENCRYPTION_KEY=your-production-encryption-key
-MASTER_KEY=your-master-key-for-key-derivation
-API_SECRET_KEY=your-api-secret-key
-
-# 数据库加密密钥
-DB_ENCRYPTION_KEY=your-database-encryption-key
-
-# JWT 签名密钥
-JWT_SECRET=your-jwt-secret-key
+# 性能配置
+VITE_ENABLE_CACHE=true
+VITE_MAX_CACHE_SIZE=1000
+VITE_CACHE_TTL=300000
 
 # 安全配置
-CRYPTO_STRICT_MODE=true
-CRYPTO_KEY_ROTATION_INTERVAL=86400000  # 24小时
-CRYPTO_MAX_KEY_AGE=2592000000          # 30天
+VITE_ENABLE_DEBUG=false
+VITE_LOG_LEVEL=error
+
+# 密钥轮换
+VITE_KEY_ROTATION_INTERVAL=2592000000 # 30天
 ```
 
-### 安全配置检查清单
+### 配置文件
 
 ```typescript
-// config/security-checklist.ts
-export const securityChecklist = {
-  // ✅ 必须配置的安全项
-  required: ['ENCRYPTION_KEY', 'MASTER_KEY', 'API_SECRET_KEY', 'JWT_SECRET'],
+// config/production.config.ts
+export const productionConfig = {
+ crypto: {
+  defaultAlgorithm: 'AES',
+  enableCache: process.env.VITE_ENABLE_CACHE === 'true',
+  maxCacheSize: parseInt(process.env.VITE_MAX_CACHE_SIZE || '1000'),
+  enableParallel: true,
+  autoGenerateIV: true,
+  keyDerivation: true,
+  debug: false,
+  logLevel: 'error'
+ },
+ security: {
+  encryptionKey: process.env.VITE_ENCRYPTION_KEY,
+  macKey: process.env.VITE_MAC_KEY,
+  keyRotationInterval: parseInt(process.env.VITE_KEY_ROTATION_INTERVAL || '2592000000')
+ }
+}
+```
 
-  // ⚠️ 推荐配置的安全项
-  recommended: ['CRYPTO_STRICT_MODE', 'CRYPTO_KEY_ROTATION_INTERVAL', 'CRYPTO_MAX_KEY_AGE'],
+## 构建优化
 
-  // 🔍 安全验证函数
-  validate(): { valid: boolean, issues: string[] } {
-    const issues: string[] = []
+### Vite 配置
 
-    // 检查必需的环境变量
-    for (const key of this.required) {
-      if (!process.env[key]) {
-        issues.push(`缺少必需的环境变量: ${key}`)
-      }
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+ plugins: [vue()],
+
+ build: {
+  // 代码分割
+  rollupOptions: {
+   output: {
+    manualChunks: {
+     // 将加密库单独打包
+     'crypto': ['@ldesign/crypto']
     }
-
-    // 检查密钥强度
-    const encryptionKey = process.env.ENCRYPTION_KEY
-    if (encryptionKey && encryptionKey.length < 32) {
-      issues.push('ENCRYPTION_KEY 长度不足（建议至少32字符）')
-    }
-
-    // 检查生产环境配置
-    if (process.env.NODE_ENV === 'production') {
-      if (process.env.CRYPTO_STRICT_MODE !== 'true') {
-        issues.push('生产环境应启用严格模式')
-      }
-    }
-
-    return {
-      valid: issues.length === 0,
-      issues,
-    }
+   }
   },
-}
 
-// 启动时验证安全配置
-const validation = securityChecklist.validate()
-if (!validation.valid) {
-  console.error('❌ 安全配置验证失败:')
-  validation.issues.forEach(issue => console.error(`  - ${issue}`))
-  process.exit(1)
+  // 压缩
+  minify: 'terser',
+  terserOptions: {
+   compress: {
+    // 移除 console
+    drop_console: true,
+    drop_debugger: true
+   }
+  },
+
+  // 源码映射（生产环境可选）
+  sourcemap: false
+ },
+
+ // 依赖优化
+ optimizeDeps: {
+  include: ['@ldesign/crypto']
+ }
+})
+```
+
+### Webpack 配置
+
+```javascript
+// webpack.config.js
+module.exports = {
+ mode: 'production',
+
+ optimization: {
+  // 代码分割
+  splitChunks: {
+   cacheGroups: {
+    crypto: {
+     test: /[\\/]node_modules[\\/]@ldesign[\\/]crypto/,
+     name: 'crypto',
+     chunks: 'all'
+    }
+   }
+  },
+
+  // 压缩
+  minimize: true,
+  minimizer: [
+   new TerserPlugin({
+    terserOptions: {
+     compress: {
+      drop_console: true
+     }
+    }
+   })
+  ]
+ }
 }
 ```
 
-## Web 应用部署
+## Docker 部署
 
-### Nginx 配置
-
-```nginx
-# /etc/nginx/sites-available/crypto-app
-server {
-    listen 443 ssl http2;
-    server_name your-domain.com;
-
-    # SSL 配置
-    ssl_certificate /path/to/ssl/cert.pem;
-    ssl_certificate_key /path/to/ssl/private.key;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512;
-    ssl_prefer_server_ciphers off;
-
-    # 安全头
-    add_header Strict-Transport-Security "max-age=63072000" always;
-    add_header X-Frame-Options DENY;
-    add_header X-Content-Type-Options nosniff;
-    add_header X-XSS-Protection "1; mode=block";
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'";
-
-    # 静态资源
-    location /static/ {
-        alias /var/www/crypto-app/static/;
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-
-    # API 代理
-    location /api/ {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-
-    # 主应用
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-
-# HTTP 重定向到 HTTPS
-server {
-    listen 80;
-    server_name your-domain.com;
-    return 301 https://$server_name$request_uri;
-}
-```
-
-### Docker 部署
+### Dockerfile
 
 ```dockerfile
-# Dockerfile
+# 多阶段构建
 FROM node:18-alpine AS builder
 
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
 
+# 复制依赖文件
+COPY package.json pnpm-lock.yaml ./
+
+# 安装依赖
+RUN npm install -g pnpm
+RUN pnpm install --frozen-lockfile
+
+# 复制源码
 COPY . .
-RUN npm run build
 
-FROM node:18-alpine AS runtime
+# 构建
+RUN pnpm build
 
-# 创建非 root 用户
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
-
-WORKDIR /app
+# 生产镜像
+FROM nginx:alpine
 
 # 复制构建产物
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# 设置权限
-USER nextjs
+# 复制 nginx 配置
+COPY nginx.conf /etc/nginx/nginx.conf
 
-EXPOSE 3000
+# 暴露端口
+EXPOSE 80
 
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
-
-CMD ["node", "dist/server.js"]
+CMD ["nginx", "-g", "daemon off;"]
 ```
 
+### docker-compose.yml
+
 ```yaml
-# docker-compose.yml
 version: '3.8'
 
 services:
-  crypto-app:
-    build: .
-    ports:
-      - '3000:3000'
-    environment:
-      - NODE_ENV=production
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
-      - MASTER_KEY=${MASTER_KEY}
-      - API_SECRET_KEY=${API_SECRET_KEY}
-    volumes:
-      - ./logs:/app/logs
-    restart: unless-stopped
-    depends_on:
-      - redis
-      - postgres
+ app:
+  build: .
+  ports:
+   - "80:80"
+  environment:
+   - NODE_ENV=production
+   - VITE_ENCRYPTION_KEY=${ENCRYPTION_KEY}
+   - VITE_MAC_KEY=${MAC_KEY}
+  restart: unless-stopped
+  networks:
+   - app-network
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - '6379:6379'
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_DB=crypto_app
-      - POSTGRES_USER=crypto_user
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-
-volumes:
-  redis_data:
-  postgres_data:
+networks:
+ app-network:
+  driver: bridge
 ```
 
-## 云平台部署
+## 密钥管理
 
-### AWS 部署
+### 使用密钥管理服务
 
-```yaml
-# aws-deploy.yml (GitHub Actions)
-name: Deploy to AWS
+```typescript
+// services/key-management.service.ts
+import { SecretManagerServiceClient } from '@google-cloud/secret-manager'
 
-on:
-  push:
-    branches: [main]
+export class KeyManagementService {
+ private client: SecretManagerServiceClient
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+ constructor() {
+  this.client = new SecretManagerServiceClient()
+ }
 
-    steps:
-      - uses: actions/checkout@v3
+ /**
+  * 从 Google Secret Manager 获取密钥
+  */
+ async getSecret(secretName: string): Promise<string> {
+  const [version] = await this.client.accessSecretVersion({
+   name: `projects/${PROJECT_ID}/secrets/${secretName}/versions/latest`
+  })
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npm test
-
-      - name: Build application
-        run: npm run build
-        env:
-          NODE_ENV: production
-
-      - name: Deploy to Elastic Beanstalk
-        run: |
-          zip -r deploy.zip . -x "*.git*" "node_modules/*" "*.log"
-          aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET }}/deploy.zip
-          aws elasticbeanstalk create-application-version \
-            --application-name crypto-app \
-            --version-label ${{ github.sha }} \
-            --source-bundle S3Bucket=${{ secrets.S3_BUCKET }},S3Key=deploy.zip
-          aws elasticbeanstalk update-environment \
-            --application-name crypto-app \
-            --environment-name crypto-app-prod \
-            --version-label ${{ github.sha }}
-```
-
-### Vercel 部署
-
-```json
-// vercel.json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production",
-    "ENCRYPTION_KEY": "@encryption-key",
-    "MASTER_KEY": "@master-key",
-    "API_SECRET_KEY": "@api-secret-key"
-  },
-  "functions": {
-    "api/**/*.js": {
-      "maxDuration": 30
-    }
+  const payload = version.payload?.data?.toString()
+  if (!payload) {
+   throw new Error(`Secret ${secretName} not found`)
   }
+
+  return payload
+ }
+
+ /**
+  * 初始化加密密钥
+  */
+ async initializeKeys() {
+  const encryptionKey = await this.getSecret('encryption-key')
+  const macKey = await this.getSecret('mac-key')
+
+  return {
+   encryptionKey,
+   macKey
+  }
+ }
 }
 ```
 
-### Netlify 部署
-
-```toml
-# netlify.toml
-[build]
-publish = "dist"
-command = "npm run build"
-
-[build.environment]
-NODE_ENV = "production"
-
-[[redirects]]
-from = "/api/*"
-to = "/.netlify/functions/:splat"
-status = 200
-
-[functions]
-directory = "netlify/functions"
-
-[[headers]]
-for = "/*"
-
-[headers.values]
-Strict-Transport-Security = "max-age=63072000"
-X-Frame-Options = "DENY"
-X-Content-Type-Options = "nosniff"
-X-XSS-Protection = "1; mode=block"
-```
-
-## 数据库加密
-
-### 敏感字段加密
+### AWS Secrets Manager
 
 ```typescript
-// models/User.ts
-import { decrypt, encrypt } from '@ldesign/crypto'
+// services/aws-key-management.service.ts
+import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager'
 
-class User {
-  private static readonly ENCRYPTION_KEY = process.env.DB_ENCRYPTION_KEY!
+export class AWSKeyManagementService {
+ private client: SecretsManagerClient
 
-  // 加密敏感字段
-  static encryptSensitiveData(data: { email: string, phone?: string, ssn?: string }) {
-    return {
-      email: encrypt.aes(data.email, this.ENCRYPTION_KEY).data,
-      phone: data.phone ? encrypt.aes(data.phone, this.ENCRYPTION_KEY).data : null,
-      ssn: data.ssn ? encrypt.aes(data.ssn, this.ENCRYPTION_KEY).data : null,
-    }
-  }
+ constructor() {
+  this.client = new SecretsManagerClient({
+   region: process.env.AWS_REGION
+  })
+ }
 
-  // 解密敏感字段
-  static decryptSensitiveData(encryptedData: { email: string, phone?: string, ssn?: string }) {
-    const result: any = {}
+ async getSecret(secretName: string): Promise<string> {
+  const command = new GetSecretValueCommand({
+   SecretId: secretName
+  })
 
-    if (encryptedData.email) {
-      const decrypted = decrypt.aes(
-        { data: encryptedData.email, algorithm: 'AES-256-CBC' },
-        this.ENCRYPTION_KEY
-      )
-      result.email = decrypted.success ? decrypted.data : null
-    }
-
-    if (encryptedData.phone) {
-      const decrypted = decrypt.aes(
-        { data: encryptedData.phone, algorithm: 'AES-256-CBC' },
-        this.ENCRYPTION_KEY
-      )
-      result.phone = decrypted.success ? decrypted.data : null
-    }
-
-    if (encryptedData.ssn) {
-      const decrypted = decrypt.aes(
-        { data: encryptedData.ssn, algorithm: 'AES-256-CBC' },
-        this.ENCRYPTION_KEY
-      )
-      result.ssn = decrypted.success ? decrypted.data : null
-    }
-
-    return result
-  }
+  const response = await this.client.send(command)
+  return response.SecretString || ''
+ }
 }
 ```
 
-### 数据库迁移脚本
+## HTTPS 配置
 
-```typescript
-import { encrypt } from '@ldesign/crypto'
-// migrations/encrypt-existing-data.ts
-import { User } from '../models/User'
+### Nginx SSL
 
-export async function encryptExistingUserData() {
-  const BATCH_SIZE = 1000
-  const ENCRYPTION_KEY = process.env.DB_ENCRYPTION_KEY!
+```nginx
+# nginx.conf
+server {
+  listen 80;
+  server_name example.com;
 
-  let offset = 0
-  let hasMore = true
+  # 重定向到 HTTPS
+  return 301 https://$server_name$request_uri;
+}
 
-  while (hasMore) {
-    // 批量获取用户数据
-    const users = await User.findMany({
-      skip: offset,
-      take: BATCH_SIZE,
-      where: {
-        emailEncrypted: null, // 未加密的数据
-      },
-    })
+server {
+  listen 443 ssl http2;
+  server_name example.com;
 
-    if (users.length === 0) {
-      hasMore = false
-      break
-    }
+  # SSL 证书
+  ssl_certificate /etc/nginx/ssl/cert.pem;
+  ssl_certificate_key /etc/nginx/ssl/key.pem;
 
-    // 批量加密
-    const updates = users.map((user) => {
-      const encryptedEmail = encrypt.aes(user.email, ENCRYPTION_KEY)
+  # SSL 配置
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_ciphers HIGH:!aNULL:!MD5;
+  ssl_prefer_server_ciphers on;
 
-      return {
-        id: user.id,
-        emailEncrypted: encryptedEmail.data,
-        emailIv: encryptedEmail.iv,
-      }
-    })
+  # HSTS
+  add_header Strict-Transport-Security "max-age=31536000" always;
 
-    // 批量更新
-    await User.updateMany(updates)
+  # 安全头
+  add_header X-Frame-Options "SAMEORIGIN" always;
+  add_header X-Content-Type-Options "nosniff" always;
+  add_header X-XSS-Protection "1; mode=block" always;
 
-    offset += BATCH_SIZE
-    console.log(`已处理 ${offset} 个用户`)
+  location / {
+    root /usr/share/nginx/html;
+    index index.html;
+    try_files $uri $uri/ /index.html;
   }
-
-  console.log('数据加密迁移完成')
 }
 ```
 
 ## 监控和日志
 
-### 安全事件监控
-
-```typescript
-// monitoring/security-monitor.ts
-import { EventEmitter } from 'node:events'
-
-class SecurityMonitor extends EventEmitter {
-  private static instance: SecurityMonitor
-  private events: Array<{
-    type: string
-    timestamp: number
-    details: any
-  }> = []
-
-  static getInstance(): SecurityMonitor {
-    if (!this.instance) {
-      this.instance = new SecurityMonitor()
-    }
-    return this.instance
-  }
-
-  logSecurityEvent(type: string, details: any) {
-    const event = {
-      type,
-      timestamp: Date.now(),
-      details,
-    }
-
-    this.events.push(event)
-    this.emit('securityEvent', event)
-
-    // 检测异常模式
-    this.detectAnomalies(type)
-
-    // 清理旧事件
-    this.cleanupOldEvents()
-  }
-
-  private detectAnomalies(eventType: string) {
-    const recentEvents = this.events
-      .filter(e => Date.now() - e.timestamp < 60000) // 最近1分钟
-      .filter(e => e.type === eventType)
-
-    // 检测频繁失败
-    if (eventType.includes('failed') && recentEvents.length > 10) {
-      this.emit('anomaly', {
-        type: 'frequent_failures',
-        eventType,
-        count: recentEvents.length,
-      })
-    }
-
-    // 检测异常高频操作
-    if (recentEvents.length > 100) {
-      this.emit('anomaly', {
-        type: 'high_frequency',
-        eventType,
-        count: recentEvents.length,
-      })
-    }
-  }
-
-  private cleanupOldEvents() {
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000 // 24小时前
-    this.events = this.events.filter(e => e.timestamp > cutoff)
-  }
-
-  getSecurityStats() {
-    const now = Date.now()
-    const last24h = this.events.filter(e => now - e.timestamp < 24 * 60 * 60 * 1000)
-
-    const stats = {}
-    for (const event of last24h) {
-      stats[event.type] = (stats[event.type] || 0) + 1
-    }
-
-    return {
-      totalEvents: last24h.length,
-      eventTypes: stats,
-      timeRange: '24h',
-    }
-  }
-}
-
-// 使用监控器
-const monitor = SecurityMonitor.getInstance()
-
-monitor.on('securityEvent', (event) => {
-  console.log(`安全事件: ${event.type}`, event.details)
-})
-
-monitor.on('anomaly', (anomaly) => {
-  console.warn(`检测到异常: ${anomaly.type}`, anomaly)
-  // 发送告警通知
-})
-
-// 在加密操作中使用
-export function monitoredEncrypt(data: string, key: string) {
-  try {
-    const result = encrypt.aes(data, key)
-    monitor.logSecurityEvent('encryption_success', {
-      algorithm: 'AES-256',
-      dataLength: data.length,
-    })
-    return result
-  }
-  catch (error) {
-    monitor.logSecurityEvent('encryption_failed', {
-      algorithm: 'AES-256',
-      error: error.message,
-    })
-    throw error
-  }
-}
-```
-
 ### 性能监控
 
 ```typescript
-// monitoring/performance-monitor.ts
-class PerformanceMonitor {
-  private metrics: Map<string, number[]> = new Map()
+// 监控加密操作性能
+import { cryptoManager } from '@ldesign/crypto'
 
-  startTiming(operation: string): () => void {
-    const startTime = performance.now()
+// 定期收集指标
+setInterval(() => {
+ const metrics = cryptoManager.getPerformanceMetrics()
 
-    return () => {
-      const duration = performance.now() - startTime
-      this.recordMetric(operation, duration)
-    }
+ // 发送到监控系统（如 Prometheus）
+ sendMetrics({
+  'crypto.operations_per_second': metrics.operationsPerSecond,
+  'crypto.average_latency': metrics.averageLatency,
+  'crypto.memory_usage': metrics.memoryUsage,
+  'crypto.cache_hit_rate': metrics.cacheHitRate,
+  'crypto.cache_size': metrics.cacheSize
+ })
+}, 60000) // 每分钟
+```
+
+### 错误追踪
+
+```typescript
+// 集成 Sentry
+import * as Sentry from '@sentry/vue'
+
+Sentry.init({
+ dsn: process.env.VITE_SENTRY_DSN,
+ environment: process.env.NODE_ENV,
+
+ beforeSend(event, hint) {
+  // 过滤敏感信息
+  if (event.message?.includes('encryption')) {
+   // 不发送包含密钥的错误
+   return null
   }
+  return event
+ }
+})
 
-  recordMetric(operation: string, duration: number) {
-    if (!this.metrics.has(operation)) {
-      this.metrics.set(operation, [])
-    }
-
-    const durations = this.metrics.get(operation)!
-    durations.push(duration)
-
-    // 保留最近1000个记录
-    if (durations.length > 1000) {
-      durations.shift()
-    }
+// 捕获加密错误
+try {
+ const result = aes.encrypt('data', 'key')
+} catch (error) {
+ Sentry.captureException(error, {
+  tags: {
+   operation: 'encryption',
+   algorithm: 'AES'
   }
+ })
+}
+```
 
-  getStats(operation: string) {
-    const durations = this.metrics.get(operation) || []
-    if (durations.length === 0)
-      return null
+### 日志记录
 
-    const sorted = [...durations].sort((a, b) => a - b)
+```typescript
+// 使用 Winston 记录日志
+import winston from 'winston'
 
-    return {
-      count: durations.length,
-      min: Math.min(...durations),
-      max: Math.max(...durations),
-      avg: durations.reduce((a, b) => a + b, 0) / durations.length,
-      median: sorted[Math.floor(sorted.length / 2)],
-      p95: sorted[Math.floor(sorted.length * 0.95)],
-      p99: sorted[Math.floor(sorted.length * 0.99)],
-    }
+const logger = winston.createLogger({
+ level: process.env.LOG_LEVEL || 'info',
+ format: winston.format.json(),
+ transports: [
+  new winston.transports.File({ filename: 'error.log', level: 'error' }),
+  new winston.transports.File({ filename: 'combined.log' })
+ ]
+})
+
+// 记录加密操作
+logger.info('Encryption operation', {
+ operation: 'encrypt',
+ algorithm: 'AES',
+ timestamp: Date.now()
+})
+```
+
+## CDN 配置
+
+### 静态资源 CDN
+
+```typescript
+// vite.config.ts
+export default defineConfig({
+ base: 'https://cdn.example.com/',
+
+ build: {
+  // 资源处理
+  assetsDir: 'assets',
+  assetsInlineLimit: 4096,
+
+  rollupOptions: {
+   output: {
+    // 文件名带哈希
+    entryFileNames: 'js/[name]-[hash].js',
+    chunkFileNames: 'js/[name]-[hash].js',
+    assetFileNames: 'assets/[name]-[hash][extname]'
+   }
   }
+ }
+})
+```
+
+## 缓存策略
+
+### HTTP 缓存头
+
+```nginx
+# nginx 缓存配置
+location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+  expires 1y;
+  add_header Cache-Control "public, immutable";
 }
 
-const perfMonitor = new PerformanceMonitor()
-
-// 监控加密性能
-export function monitoredEncryptPerf(data: string, key: string) {
-  const endTiming = perfMonitor.startTiming('aes_encryption')
-  try {
-    const result = encrypt.aes(data, key)
-    return result
-  }
-  finally {
-    endTiming()
-  }
+location /index.html {
+  add_header Cache-Control "no-cache, must-revalidate";
 }
+```
+
+### Service Worker 缓存
+
+```typescript
+// service-worker.ts
+self.addEventListener('install', (event) => {
+ event.waitUntil(
+  caches.open('crypto-v1').then((cache) => {
+   return cache.addAll([
+    '/',
+    '/js/crypto.js',
+    // 缓存加密库
+   ])
+  })
+ )
+})
+
+self.addEventListener('fetch', (event) => {
+ event.respondWith(
+  caches.match(event.request).then((response) => {
+   return response || fetch(event.request)
+  })
+ )
+})
+```
+
+## 负载均衡
+
+### 多实例部署
+
+```yaml
+# kubernetes deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: crypto-app
+spec:
+ replicas: 3
+ selector:
+  matchLabels:
+   app: crypto-app
+ template:
+  metadata:
+   labels:
+    app: crypto-app
+  spec:
+   containers:
+   - name: crypto-app
+    image: crypto-app:latest
+    ports:
+    - containerPort: 80
+    env:
+    - name: ENCRYPTION_KEY
+     valueFrom:
+      secretKeyRef:
+       name: crypto-secrets
+       key: encryption-key
+    resources:
+     limits:
+      memory: "512Mi"
+      cpu: "500m"
+     requests:
+      memory: "256Mi"
+      cpu: "250m"
+```
+
+## 健康检查
+
+### 健康端点
+
+```typescript
+// health.ts
+import { cryptoManager } from '@ldesign/crypto'
+
+export async function healthCheck() {
+ try {
+  // 测试加密功能
+  const result = cryptoManager.encrypt('test', 'test', 'AES')
+
+  // 检查缓存状态
+  const stats = cryptoManager.getCacheStats()
+
+  return {
+   status: 'healthy',
+   crypto: result.success ? 'ok' : 'error',
+   cache: {
+    size: stats.size,
+    hitRate: stats.hitRate
+   },
+   timestamp: Date.now()
+  }
+ } catch (error) {
+  return {
+   status: 'unhealthy',
+   error: error.message,
+   timestamp: Date.now()
+  }
+ }
+}
+```
+
+## 回滚策略
+
+### 蓝绿部署
+
+```bash
+# 部署新版本到绿环境
+docker-compose -f docker-compose.green.yml up -d
+
+# 健康检查
+curl https://green.example.com/health
+
+# 切换流量
+# 更新负载均衡器配置
+
+# 如果有问题，快速回滚
+docker-compose -f docker-compose.blue.yml up -d
+```
+
+## 安全加固
+
+### 容器安全
+
+```dockerfile
+# 使用非 root 用户
+FROM node:18-alpine
+
+# 创建应用用户
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
+
+# 切换用户
+USER nodejs
+
+# 只读文件系统
+# 在运行时使用 --read-only 标志
+```
+
+### 网络安全
+
+```yaml
+# docker-compose 网络隔离
+version: '3.8'
+
+services:
+ app:
+  networks:
+   - frontend
+
+ database:
+  networks:
+   - backend
+
+networks:
+ frontend:
+  driver: bridge
+ backend:
+  driver: bridge
+  internal: true
 ```
 
 ## 备份和恢复
 
-### 密钥备份策略
+### 密钥备份
 
-```typescript
-// backup/key-backup.ts
-import { decrypt, encrypt } from '@ldesign/crypto'
+```bash
+# 备份密钥（加密存储）
+#!/bin/bash
 
-class KeyBackupManager {
-  private static readonly BACKUP_ENCRYPTION_KEY = process.env.BACKUP_MASTER_KEY!
+# 导出密钥
+kubectl get secret crypto-secrets -o yaml > secrets-backup.yaml
 
-  // 创建密钥备份
-  static createKeyBackup(keys: Record<string, string>): string {
-    const backup = {
-      keys,
-      timestamp: Date.now(),
-      version: '1.0',
-    }
+# 加密备份
+gpg -c secrets-backup.yaml
 
-    const backupJson = JSON.stringify(backup)
-    const encrypted = encrypt.aes(backupJson, this.BACKUP_ENCRYPTION_KEY)
-
-    return JSON.stringify(encrypted)
-  }
-
-  // 恢复密钥备份
-  static restoreKeyBackup(encryptedBackup: string): Record<string, string> {
-    try {
-      const encrypted = JSON.parse(encryptedBackup)
-      const decrypted = decrypt.aes(encrypted, this.BACKUP_ENCRYPTION_KEY)
-
-      if (!decrypted.success) {
-        throw new Error('备份解密失败')
-      }
-
-      const backup = JSON.parse(decrypted.data)
-      return backup.keys
-    }
-    catch (error) {
-      throw new Error(`密钥备份恢复失败: ${error.message}`)
-    }
-  }
-
-  // 验证备份完整性
-  static verifyBackup(encryptedBackup: string): boolean {
-    try {
-      this.restoreKeyBackup(encryptedBackup)
-      return true
-    }
-    catch {
-      return false
-    }
-  }
-}
+# 安全存储
+aws s3 cp secrets-backup.yaml.gpg s3://backup-bucket/
 ```
 
-## 安全审计
+## 部署检查清单
 
-### 定期安全检查
+部署前检查：
 
-```typescript
-// audit/security-audit.ts
-class SecurityAudit {
-  static async performAudit(): Promise<{
-    passed: boolean
-    issues: string[]
-    recommendations: string[]
-  }> {
-    const issues: string[] = []
-    const recommendations: string[] = []
+- [ ] 环境变量正确配置
+- [ ] 密钥安全存储
+- [ ] HTTPS 已启用
+- [ ] 构建优化已应用
+- [ ] 日志和监控已配置
+- [ ] 健康检查已实现
+- [ ] 缓存策略已配置
+- [ ] 错误追踪已启用
+- [ ] 备份策略已制定
+- [ ] 回滚计划已准备
 
-    // 检查环境变量
-    await this.auditEnvironmentVariables(issues, recommendations)
+## 下一步
 
-    // 检查密钥强度
-    await this.auditKeyStrength(issues, recommendations)
-
-    // 检查加密配置
-    await this.auditCryptoConfig(issues, recommendations)
-
-    // 检查依赖安全性
-    await this.auditDependencies(issues, recommendations)
-
-    return {
-      passed: issues.length === 0,
-      issues,
-      recommendations,
-    }
-  }
-
-  private static async auditEnvironmentVariables(issues: string[], recommendations: string[]) {
-    const requiredVars = ['ENCRYPTION_KEY', 'MASTER_KEY', 'API_SECRET_KEY']
-
-    for (const varName of requiredVars) {
-      if (!process.env[varName]) {
-        issues.push(`缺少环境变量: ${varName}`)
-      }
-      else if (process.env[varName]!.length < 32) {
-        issues.push(`环境变量 ${varName} 长度不足`)
-      }
-    }
-  }
-
-  private static async auditKeyStrength(issues: string[], recommendations: string[]) {
-    // 检查密钥轮换
-    const lastRotation = process.env.LAST_KEY_ROTATION
-    if (lastRotation) {
-      const rotationAge = Date.now() - Number.parseInt(lastRotation)
-      const maxAge = 30 * 24 * 60 * 60 * 1000 // 30天
-
-      if (rotationAge > maxAge) {
-        recommendations.push('建议轮换加密密钥')
-      }
-    }
-  }
-
-  private static async auditCryptoConfig(issues: string[], recommendations: string[]) {
-    // 检查是否使用了不安全的算法
-    const config = getCurrentCryptoConfig()
-
-    if (config.hash?.algorithm === 'MD5' || config.hash?.algorithm === 'SHA1') {
-      issues.push('使用了不安全的哈希算法')
-    }
-
-    if (config.aes?.keySize < 256) {
-      recommendations.push('建议使用 AES-256 加密')
-    }
-  }
-
-  private static async auditDependencies(issues: string[], recommendations: string[]) {
-    // 这里可以集成 npm audit 或其他安全扫描工具
-    // 检查依赖包的安全漏洞
-  }
-}
-
-// 定期执行安全审计
-setInterval(async () => {
-  const audit = await SecurityAudit.performAudit()
-
-  if (!audit.passed) {
-    console.error('❌ 安全审计失败:')
-    audit.issues.forEach(issue => console.error(`  - ${issue}`))
-  }
-
-  if (audit.recommendations.length > 0) {
-    console.warn('⚠️ 安全建议:')
-    audit.recommendations.forEach(rec => console.warn(`  - ${rec}`))
-  }
-}, 24 * 60 * 60 * 1000) // 每24小时执行一次
-```
-
-通过遵循这些部署指南，您可以确保 @ldesign/crypto 在生产环境中安全、稳定地运行。
+- [安全性](/guide/security) - 安全最佳实践
+- [性能优化](/guide/performance) - 性能调优
+- [故障排查](/guide/troubleshooting) - 问题排查

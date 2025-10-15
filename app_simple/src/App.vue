@@ -6,31 +6,27 @@
         <span class="logo">🚀</span>
         <span class="brand-text">{{ t('app.name') }}</span>
       </div>
-      
+
       <div class="nav-links">
-      <RouterLink to="/" class="nav-link" :class="{ active: $route.path === '/' }">
+        <RouterLink to="/" class="nav-link" :class="{ active: $route.path === '/' }">
           {{ t('nav.home') }}
         </RouterLink>
         <RouterLink to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
           {{ t('nav.about') }}
         </RouterLink>
-        <RouterLink
-          v-if="isLoggedIn" 
-          to="/dashboard" 
-          class="nav-link" 
-          :class="{ active: $route.path === '/dashboard' }"
-        >
+        <RouterLink v-if="isLoggedIn" to="/dashboard" class="nav-link"
+          :class="{ active: $route.path === '/dashboard' }">
           {{ t('nav.dashboard') }}
         </RouterLink>
-        
+
         <div class="nav-spacer"></div>
-        
+
         <!-- 语言切换器 -->
         <LanguageSwitcher class="nav-locale" />
-        
+
         <!-- 主题切换器 -->
         <VueThemePicker class="nav-theme" />
-        
+
         <button v-if="!isLoggedIn" @click="goToLogin" class="nav-button login">
           {{ t('nav.login') }}
         </button>
@@ -42,12 +38,12 @@
         </div>
       </div>
     </nav>
-    
+
     <!-- 路由视图 -->
     <main class="main-content">
       <RouterView transition="fade" />
     </main>
-    
+
     <!-- 页脚 -->
     <footer class="footer">
       <p>{{ t('app.copyright') }}</p>
@@ -79,7 +75,7 @@ const goToLogin = () => {
 // 退出登录
 const logout = async () => {
   const result = await auth.logout()
-  
+
   if (result.success) {
     // 如果在需要认证的页面，跳转到首页
     if (route.meta?.requiresAuth) {
@@ -100,14 +96,14 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-background);
 }
 
 /* 导航栏样式 */
 .navbar {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--ld-color-gray-50, rgba(255, 255, 255, 0.95));
   backdrop-filter: blur(10px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--ld-color-gray-200, rgba(0, 0, 0, 0.1));
   padding: 0 20px;
   display: flex;
   align-items: center;
@@ -122,7 +118,7 @@ onMounted(() => {
   align-items: center;
   font-size: 20px;
   font-weight: bold;
-  color: #2c3e50;
+  color: var(--ld-color-gray-900, #2c3e50);
   margin-right: 40px;
 }
 
@@ -132,9 +128,7 @@ onMounted(() => {
 }
 
 .brand-text {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--color-text-primary);
 }
 
 .nav-links {
@@ -144,7 +138,7 @@ onMounted(() => {
 }
 
 .nav-link {
-  color: #2c3e50;
+  color: var(--ld-color-gray-900, #2c3e50);
   text-decoration: none;
   padding: 8px 16px;
   margin: 0 5px;
@@ -154,13 +148,13 @@ onMounted(() => {
 }
 
 .nav-link:hover {
-  background: rgba(102, 126, 234, 0.1);
-  color: #667eea;
+  background: var(--ld-color-primary-100, rgba(102, 126, 234, 0.1));
+  color: var(--ld-color-primary, #667eea);
 }
 
 .nav-link.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--ld-color-primary-500) 0%, var(--ld-color-primary-700) 100%);
+  color: var(--ld-color-gray-50, white);
 }
 
 .nav-spacer {
@@ -178,23 +172,23 @@ onMounted(() => {
 }
 
 .nav-button.login {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--ld-color-primary-500) 0%, var(--ld-color-primary-700) 100%);
+  color: var(--ld-color-gray-50, white);
 }
 
 .nav-button.login:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 5px 15px var(--ld-color-primary-300, rgba(102, 126, 234, 0.3));
 }
 
 .nav-button.logout {
-  background: #e74c3c;
+  background: var(--ld-color-danger-500, #e74c3c);
   color: white;
   margin-left: 10px;
 }
 
 .nav-button.logout:hover {
-  background: #c0392b;
+  background: var(--ld-color-danger-600, #c0392b);
 }
 
 .user-menu {
@@ -203,11 +197,11 @@ onMounted(() => {
 }
 
 .username {
-  color: #2c3e50;
+  color: var(--ld-color-gray-800, #2c3e50);
   font-weight: 600;
   margin-right: 10px;
   padding: 8px 12px;
-  background: rgba(102, 126, 234, 0.1);
+  background: var(--ld-color-primary-100, rgba(102, 126, 234, 0.1));
   border-radius: 6px;
 }
 
@@ -227,8 +221,8 @@ onMounted(() => {
 
 /* 页脚 */
 .footer {
-  background: rgba(0, 0, 0, 0.1);
-  color: white;
+  background: var(--ld-color-gray-800, rgba(0, 0, 0, 0.1));
+  color: var(--ld-color-gray-50, white);
   text-align: center;
   padding: 20px;
   font-size: 14px;

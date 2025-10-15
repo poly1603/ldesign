@@ -1,380 +1,276 @@
-# 安全考虑
+# 安全性指南
 
-本指南提供了使用 @ldesign/crypto 时的安全最佳实践和注意事项。
+本指南介绍使用 @ldesign/crypto 时的安全最佳实践。
 
-## 密钥管理安全
+## 核心安全原则
 
-### 密钥生成
+### 永远不要硬编码密钥
 
 ```typescript
-import { keyGenerator } from '@ldesign/crypto'
+// 错误示例 - 硬编码密钥
+const SECRET_KEY = 'my-secret-key' // 危险！
+const encrypted = aes.encrypt('data', SECRET_KEY)
 
-// ✅ 正确：基于密码生成强密钥
-import { hash } from '@ldesign/crypto'
-
-// ✅ 正确：使用强随机密钥
-const strongKey = keyGenerator.generateKey(32) // 256位密钥
-
-// ✅ 正确：使用足够长度的密钥
-const aes256Key = keyGenerator.generateKey(32) // AES-256
-const aes192Key = keyGenerator.generateKey(24) // AES-192
-const aes128Key = keyGenerator.generateKey(16) // AES-128
-
-// ❌ 错误：使用弱密钥
-const weakKey = '123456'
-const predictableKey = 'password'
-
-function deriveKeyFromPassword(password: string, salt: string): string {
-  // 使用 PBKDF2 派生密钥
-  return hash.pbkdf2(password, salt, {
-    iterations: 100000, // 足够的迭代次数
-    keyLength: 32, // 256位密钥
-    hashAlgorithm: 'SHA256',
-  })
-}
-
-const userPassword = 'user-password'
-const salt = keyGenerator.generateSalt(16)
-const derivedKey = deriveKeyFromPassword(userPassword, salt)
+// 正确示例 - 从环境变量读取
+const key = import.meta.env.VITE_ENCRYPTION_KEY
+// 或从安全存储读取
+const key = await getKeyFromSecureStorage()
 ```
 
-### 密钥存储
+### 使用强密钥
 
 ```typescript
-// ✅ 正确：安全的密钥存储
-class SecureKeyStorage {
-  private static readonly STORAGE_KEY = 'encrypted_keys'
+import { RandomUtils } from '@ldesign/crypto'
 
-  // 使用主密钥加密存储其他密钥
-  static storeKey(keyId: string, key: string, masterKey: string): void {
-    const keys = this.getAllKeys(masterKey)
-    keys[keyId] = key
+// 生成强随机密钥
+const strongKey = RandomUtils.generateKey(32) // 256位
 
-    const encrypted = encrypt.aes(JSON.stringify(keys), masterKey)
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(encrypted))
-  }
-
-  static retrieveKey(keyId: string, masterKey: string): string | null {
-    const keys = this.getAllKeys(masterKey)
-    return keys[keyId] || null
-  }
-
-  private static getAllKeys(masterKey: string): Record<string, string> {
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEY)
-      if (!stored)
-        return {}
-
-      const encrypted = JSON.parse(stored)
-      const decrypted = decrypt.aes(encrypted, masterKey)
-
-      if (!decrypted.success)
-        return {}
-
-      return JSON.parse(decrypted.data)
-    }
-    catch {
-      return {}
-    }
-  }
-
-  static clearKeys(): void {
-    localStorage.removeItem(this.STORAGE_KEY)
-  }
-}
-
-// ❌ 错误：明文存储密钥
-localStorage.setItem('apiKey', 'secret-key')
-
-// ✅ 正确：加密存储密钥
-const masterKey = keyGenerator.generateKey(32)
-SecureKeyStorage.storeKey('apiKey', 'secret-key', masterKey)
+// 避免弱密钥
+// const weakKey = '12345' // 不安全！
+// const weakKey = 'password' // 不安全！
 ```
 
 ### 密钥轮换
 
 ```typescript
-// 密钥轮换策略
-class KeyRotationManager {
-  private currentKeyId: string = '1'
-  private keys: Map<string, string> = new Map()
-  private rotationInterval: number
+import { KeyRotationManager } from '@ldesign/crypto'
 
-  constructor(rotationInterval = 24 * 60 * 60 * 1000) {
-    // 24小时
-    this.rotationInterval = rotationInterval
-    this.scheduleRotation()
-  }
-
-  // 生成新密钥
-  generateNewKey(): string {
-    const newKeyId = (Number.parseInt(this.currentKeyId) + 1).toString()
-    const newKey = keyGenerator.generateKey(32)
-
-    this.keys.set(newKeyId, newKey)
-    this.currentKeyId = newKeyId
-
-    console.log(`密钥已轮换到版本 ${newKeyId}`)
-    return newKey
-  }
-
-  // 获取当前密钥
-  getCurrentKey(): string {
-    return this.keys.get(this.currentKeyId) || this.generateNewKey()
-  }
-
-  // 获取指定版本的密钥（用于解密旧数据）
-  getKey(keyId: string): string | undefined {
-    return this.keys.get(keyId)
-  }
-
-  // 加密时使用当前密钥
-  encrypt(data: string): any {
-    const currentKey = this.getCurrentKey()
-    const encrypted = encrypt.aes(data, currentKey)
-
-    // 在加密结果中包含密钥版本
-    return {
-      ...encrypted,
-      keyVersion: this.currentKeyId,
-    }
-  }
-
-  // 解密时使用对应版本的密钥
-  decrypt(encryptedData: any): any {
-    const keyVersion = encryptedData.keyVersion || '1'
-    const key = this.getKey(keyVersion)
-
-    if (!key) {
-      throw new Error(`密钥版本 ${keyVersion} 不存在`)
-    }
-
-    return decrypt.aes(encryptedData, key)
-  }
-
-  private scheduleRotation(): void {
-    setInterval(() => {
-      this.generateNewKey()
-    }, this.rotationInterval)
-  }
-
-  // 清理旧密钥（保留最近几个版本）
-  cleanupOldKeys(keepVersions = 3): void {
-    const currentVersion = Number.parseInt(this.currentKeyId)
-    const keysToDelete = []
-
-    for (const [keyId] of this.keys) {
-      const version = Number.parseInt(keyId)
-      if (currentVersion - version > keepVersions) {
-        keysToDelete.push(keyId)
-      }
-    }
-
-    keysToDelete.forEach((keyId) => {
-      this.keys.delete(keyId)
-      console.log(`已清理密钥版本 ${keyId}`)
-    })
-  }
-}
-```
-
-## 算法安全性
-
-### 算法选择建议
-
-```typescript
-// ✅ 推荐的安全算法配置
-const secureConfig = {
-  // AES 配置
-  aes: {
-    keySize: 256, // 使用 AES-256
-    mode: 'GCM', // 使用认证加密模式
-    tagLength: 128, // 128位认证标签
-  },
-
-  // RSA 配置
-  rsa: {
-    keySize: 4096, // 使用 4096位密钥
-    padding: 'OAEP', // 使用 OAEP 填充
-    hashAlgorithm: 'SHA256',
-  },
-
-  // 哈希配置
-  hash: {
-    algorithm: 'SHA256', // 避免使用 MD5 和 SHA1
-    iterations: 100000, // PBKDF2 使用足够的迭代次数
-  },
-}
-
-// ❌ 不安全的配置
-const insecureConfig = {
-  aes: {
-    keySize: 128, // 密钥长度不足
-    mode: 'ECB', // 不安全的加密模式
-  },
-  rsa: {
-    keySize: 1024, // 密钥长度不足
-    padding: 'PKCS1', // 较弱的填充方式
-  },
-  hash: {
-    algorithm: 'MD5', // 已被破解的算法
-    iterations: 1000, // 迭代次数不足
-  },
-}
-```
-
-### 安全的随机数生成
-
-```typescript
-// ✅ 正确：使用密码学安全的随机数
-const secureRandom = keyGenerator.generateRandomBytes(32)
-const secureIV = keyGenerator.generateIV(16)
-const secureSalt = keyGenerator.generateSalt(16)
-
-// ❌ 错误：使用不安全的随机数
-const insecureRandom = Math.random().toString()
-const predictableIV = '1234567890abcdef'
-
-// 自定义安全随机数生成器
-class SecureRandom {
-  static generateBytes(length: number): Uint8Array {
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-      // 浏览器环境
-      const array = new Uint8Array(length)
-      crypto.getRandomValues(array)
-      return array
-    }
-    else if (typeof require !== 'undefined') {
-      // Node.js 环境
-      const crypto = require('node:crypto')
-      return new Uint8Array(crypto.randomBytes(length))
-    }
-    else {
-      throw new TypeError('无法获取安全随机数生成器')
-    }
-  }
-
-  static generateString(length: number, charset?: string): string {
-    const defaultCharset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    const chars = charset || defaultCharset
-    const bytes = this.generateBytes(length)
-
-    let result = ''
-    for (let i = 0; i < length; i++) {
-      result += chars[bytes[i] % chars.length]
-    }
-
-    return result
-  }
-}
-```
-
-## 数据保护
-
-### 敏感数据处理
-
-```typescript
-// 敏感数据包装器
-class SensitiveData {
-  private data: string
-  private isCleared: boolean = false
-
-  constructor(data: string) {
-    this.data = data
-  }
-
-  // 获取数据（仅一次）
-  consume(): string {
-    if (this.isCleared) {
-      throw new Error('敏感数据已被清除')
-    }
-
-    const result = this.data
-    this.clear()
-    return result
-  }
-
-  // 安全地清除数据
-  clear(): void {
-    if (!this.isCleared) {
-      // 用随机数据覆盖原始数据
-      this.data = SecureRandom.generateString(this.data.length)
-      this.data = ''
-      this.isCleared = true
-    }
-  }
-
-  // 检查是否已清除
-  isDestroyed(): boolean {
-    return this.isCleared
-  }
-
-  // 析构函数
-  destroy(): void {
-    this.clear()
-  }
-}
-
-// 使用示例
-const sensitivePassword = new SensitiveData('user-password')
-const password = sensitivePassword.consume() // 只能调用一次
-// sensitivePassword.consume() // 会抛出错误
-
-// 自动清理
-setTimeout(() => {
-  sensitivePassword.destroy()
-}, 5000) // 5秒后自动清理
-```
-
-### 内存安全
-
-```typescript
-// 安全的内存管理
-class SecureMemoryManager {
-  private allocatedBuffers: Set<ArrayBuffer> = new Set()
-
-  allocate(size: number): ArrayBuffer {
-    const buffer = new ArrayBuffer(size)
-    this.allocatedBuffers.add(buffer)
-    return buffer
-  }
-
-  // 安全清除缓冲区
-  secureWipe(buffer: ArrayBuffer): void {
-    const view = new Uint8Array(buffer)
-
-    // 多次覆盖以确保数据无法恢复
-    for (let pass = 0; pass < 3; pass++) {
-      for (let i = 0; i < view.length; i++) {
-        view[i] = Math.floor(Math.random() * 256)
-      }
-    }
-
-    // 最后用零填充
-    view.fill(0)
-
-    this.allocatedBuffers.delete(buffer)
-  }
-
-  // 清除所有分配的缓冲区
-  clearAll(): void {
-    for (const buffer of this.allocatedBuffers) {
-      this.secureWipe(buffer)
-    }
-  }
-
-  // 获取分配的缓冲区数量
-  getAllocatedCount(): number {
-    return this.allocatedBuffers.size
-  }
-}
-
-const memoryManager = new SecureMemoryManager()
-
-// 在应用退出时清理内存
-window.addEventListener('beforeunload', () => {
-  memoryManager.clearAll()
+// 定期轮换密钥
+const rotationManager = new KeyRotationManager({
+ rotationInterval: 30 * 24 * 60 * 60 * 1000 // 30天
 })
+
+// 轮换密钥
+const newKey = await rotationManager.rotateKey('old-key')
+```
+
+## 算法选择
+
+### 推荐的算法
+
+```typescript
+// 对称加密：AES-256
+const encrypted = aes.encrypt('data', 'key', {
+ keySize: 256,  // 推荐
+ mode: 'CBC'     // 或 CTR、GCM
+})
+
+// 非对称加密：RSA-2048+
+const keyPair = rsa.generateKeyPair(2048) // 最小2048位
+
+// 哈希：SHA-256+
+const hash = hash.sha256('data') // 或 SHA-512
+
+// 数字签名：RSA-SHA256
+const signature = digitalSignature.sign('data', privateKey, 'SHA256')
+```
+
+### 避免的算法
+
+```typescript
+// 不推荐用于生产环境
+
+// DES（已不安全）
+// const encrypted = des.encrypt('data', 'key') // 避免
+
+// MD5（已不安全）
+// const hash = hash.md5('data') // 避免
+
+// SHA1（已不安全）
+// const hash = hash.sha1('data') // 避免
+
+// ECB模式（不安全）
+// const encrypted = aes.encrypt('data', 'key', { mode: 'ECB' }) // 避免
+```
+
+## IV 和 盐值管理
+
+### IV（初始化向量）
+
+```typescript
+import { aes, RandomUtils } from '@ldesign/crypto'
+
+// 每次加密使用新的随机IV
+const iv = RandomUtils.generateIV(16)
+
+const encrypted = aes.encrypt('data', 'key', {
+ keySize: 256,
+ mode: 'CBC',
+ iv // 使用随机IV
+})
+
+// 错误：重复使用相同的IV
+// const FIXED_IV = 'fixed-iv-12345' // 危险！
+// const encrypted = aes.encrypt('data', 'key', { iv: FIXED_IV })
+```
+
+### 盐值（Salt）
+
+```typescript
+import { generateSalt, deriveKey } from '@ldesign/crypto'
+
+// 为每个用户生成唯一盐值
+const salt = generateSalt(16)
+
+// 使用盐值派生密钥
+const derivedKey = deriveKey('user-password', salt, {
+ iterations: 100000,
+ keyLength: 32,
+ digest: 'SHA256'
+})
+
+// 存储盐值（盐值可以公开）
+localStorage.setItem('salt', salt)
+```
+
+## 密钥管理
+
+### 安全存储密钥
+
+```typescript
+import { SecureStorage } from '@ldesign/crypto'
+
+// 使用加密存储
+const storage = new SecureStorage({
+ key: 'master-key', // 主密钥（从安全渠道获取）
+ prefix: 'secure_'
+})
+
+// 存储敏感密钥
+storage.set('encryption-key', encryptionKey, 24 * 60 * 60 * 1000) // 24小时
+
+// 读取密钥
+const key = storage.get('encryption-key')
+```
+
+### 密钥派生
+
+```typescript
+import { deriveKey } from '@ldesign/crypto'
+
+// 从用户密码派生加密密钥
+function deriveUserKey(password: string, salt: string): string {
+ return deriveKey(password, salt, {
+  iterations: 100000, // 足够多的迭代次数
+  keyLength: 32,      // 256位密钥
+  digest: 'SHA256'     // 使用SHA256
+ }).key
+}
+
+// 使用派生密钥
+const userKey = deriveUserKey('user-password', userSalt)
+const encrypted = aes.encrypt('sensitive-data', userKey)
+```
+
+### 密钥分离
+
+```typescript
+// 分离加密密钥和MAC密钥
+const encryptionKey = RandomUtils.generateKey(32)
+const macKey = RandomUtils.generateKey(32)
+
+// 使用认证加密
+import { encryptWithAuth } from '@ldesign/crypto'
+
+const encrypted = encryptWithAuth('data', encryptionKey, macKey)
+```
+
+## 数据完整性
+
+### 使用 HMAC
+
+```typescript
+import { hmac } from '@ldesign/crypto'
+
+// 生成数据的HMAC
+const data = 'important data'
+const mac = hmac.sha256(data, 'secret-key')
+
+// 传输数据和MAC
+const package = {
+ data,
+ mac
+}
+
+// 验证数据完整性
+const isValid = hmac.verify(
+ package.data,
+ 'secret-key',
+ package.mac,
+ 'SHA256'
+)
+
+if (!isValid) {
+ throw new Error('Data has been tampered with')
+}
+```
+
+### 认证加密（AEAD）
+
+```typescript
+import { encryptWithAuth, decryptWithAuth } from '@ldesign/crypto'
+
+// 加密并生成认证标签
+const encrypted = encryptWithAuth(
+ 'sensitive data',
+ 'encryption-key',
+ 'mac-key'
+)
+
+// 解密并验证
+const decrypted = decryptWithAuth(
+ encrypted,
+ 'encryption-key',
+ 'mac-key'
+)
+
+if (!decrypted.verified) {
+ throw new Error('Authentication failed')
+}
+```
+
+## 密码安全
+
+### 密码哈希
+
+```typescript
+import { hash } from '@ldesign/crypto'
+
+// 存储密码时使用盐值
+function hashPassword(password: string, salt: string): string {
+ // 组合密码和盐值
+ const combined = password + salt
+
+ // 多次哈希增强安全性
+ return hash.sha256(hash.sha256(combined))
+}
+
+// 验证密码
+function verifyPassword(
+ password: string,
+ salt: string,
+ storedHash: string
+): boolean {
+ const hash = hashPassword(password, salt)
+ return hash === storedHash
+}
+```
+
+### 密码强度验证
+
+```typescript
+import { PasswordStrength } from '@ldesign/crypto'
+
+function validatePassword(password: string): boolean {
+ const strength = PasswordStrength.analyze(password)
+
+ if (strength.score < 3) {
+  console.error('密码强度不足:', strength.feedback)
+  return false
+ }
+
+ return true
+}
 ```
 
 ## 时间攻击防护
@@ -382,305 +278,284 @@ window.addEventListener('beforeunload', () => {
 ### 常数时间比较
 
 ```typescript
-// 防止时间攻击的安全比较
-class SecureComparison {
-  // 常数时间字符串比较
-  static constantTimeEquals(a: string, b: string): boolean {
-    if (a.length !== b.length) {
-      return false
-    }
+import { hash } from '@ldesign/crypto'
 
-    let result = 0
-    for (let i = 0; i < a.length; i++) {
-      result |= a.charCodeAt(i) ^ b.charCodeAt(i)
-    }
+// 验证哈希时使用常数时间比较
+const isValid = hash.verify(
+ data,
+ expectedHash,
+ 'SHA256'
+)
 
-    return result === 0
-  }
-
-  // 常数时间字节数组比较
-  static constantTimeEqualsBytes(a: Uint8Array, b: Uint8Array): boolean {
-    if (a.length !== b.length) {
-      return false
-    }
-
-    let result = 0
-    for (let i = 0; i < a.length; i++) {
-      result |= a[i] ^ b[i]
-    }
-
-    return result === 0
-  }
-
-  // 安全的哈希验证
-  static verifyHash(data: string, expectedHash: string, algorithm = 'SHA256'): boolean {
-    const computedHash = hash[algorithm.toLowerCase()](data)
-    return this.constantTimeEquals(computedHash, expectedHash)
-  }
-
-  // 安全的 HMAC 验证
-  static verifyHMAC(
-    data: string,
-    key: string,
-    expectedHmac: string,
-    algorithm = 'SHA256'
-  ): boolean {
-    const computedHmac = hmac[algorithm.toLowerCase()](data, key)
-    return this.constantTimeEquals(computedHmac, expectedHmac)
-  }
-}
-
-// 使用示例
-const isValid = SecureComparison.verifyHash('data', 'expected-hash')
+// 避免：使用 === 比较（易受时间攻击）
+// const isValid = (hash.sha256(data) === expectedHash) // 不安全
 ```
 
-## 侧信道攻击防护
+## 防护措施
 
-### 缓存时间攻击防护
+### 防止重放攻击
 
 ```typescript
-// 防护缓存时间攻击
-class CacheTimingProtection {
-  private static readonly DUMMY_OPERATIONS = 1000
+// 使用时间戳和nonce
+interface SecureMessage {
+ data: string
+ timestamp: number
+ nonce: string
+ signature: string
+}
 
-  // 添加随机延迟
-  static async addRandomDelay(minMs = 10, maxMs = 50): Promise<void> {
-    const delay = Math.random() * (maxMs - minMs) + minMs
-    await new Promise(resolve => setTimeout(resolve, delay))
-  }
+function createSecureMessage(
+ data: string,
+ privateKey: string
+): SecureMessage {
+ const timestamp = Date.now()
+ const nonce = RandomUtils.generateKey(16)
 
-  // 执行虚假操作以混淆时间
-  static performDummyOperations(): void {
-    let dummy = 0
-    for (let i = 0; i < this.DUMMY_OPERATIONS; i++) {
-      dummy += Math.random()
-    }
-    // 确保操作不被优化掉
-    if (dummy < 0)
-      console.log(dummy)
-  }
+ const payload = `${data}|${timestamp}|${nonce}`
+ const signature = digitalSignature.sign(payload, privateKey, 'SHA256')
 
-  // 安全的密钥验证
-  static async secureKeyVerification(inputKey: string, correctKey: string): Promise<boolean> {
-    const startTime = performance.now()
+ return { data, timestamp, nonce, signature }
+}
 
-    // 始终执行完整的比较操作
-    const isValid = SecureComparison.constantTimeEquals(inputKey, correctKey)
+function verifySecureMessage(
+ message: SecureMessage,
+ publicKey: string,
+ maxAge: number = 300000 // 5分钟
+): boolean {
+ // 检查时间戳
+ if (Date.now() - message.timestamp > maxAge) {
+  return false
+ }
 
-    // 执行虚假操作
-    this.performDummyOperations()
-
-    // 添加随机延迟
-    await this.addRandomDelay()
-
-    const endTime = performance.now()
-    const duration = endTime - startTime
-
-    // 记录时间（用于监控异常）
-    if (duration > 100) {
-      console.warn('密钥验证时间异常:', duration)
-    }
-
-    return isValid
-  }
+ // 验证签名
+ const payload = `${message.data}|${message.timestamp}|${message.nonce}`
+ return digitalSignature.verify(
+  payload,
+  message.signature,
+  publicKey,
+  'SHA256'
+ )
 }
 ```
 
-## 错误处理安全
-
-### 安全的错误信息
+### 防止侧信道攻击
 
 ```typescript
-// 安全的错误处理
-class SecureErrorHandler {
-  private static readonly GENERIC_ERROR = '操作失败，请重试'
+// 使用固定时间操作
+function secureCompare(a: string, b: string): boolean {
+ if (a.length !== b.length) {
+  return false
+ }
 
-  // 过滤敏感信息的错误处理
-  static handleCryptoError(error: Error, context: string): Error {
-    // 记录详细错误（仅在开发环境）
-    if (process.env.NODE_ENV === 'development') {
-      console.error(`[${context}] 详细错误:`, error)
-    }
+ let result = 0
+ for (let i = 0; i < a.length; i++) {
+  result |= a.charCodeAt(i) ^ b.charCodeAt(i)
+ }
 
-    // 生产环境返回通用错误信息
-    if (process.env.NODE_ENV === 'production') {
-      return new Error(this.GENERIC_ERROR)
-    }
-
-    // 过滤可能包含敏感信息的错误消息
-    const sensitivePatterns = [/key/i, /password/i, /secret/i, /token/i, /credential/i]
-
-    const message = error.message
-    for (const pattern of sensitivePatterns) {
-      if (pattern.test(message)) {
-        return new Error(this.GENERIC_ERROR)
-      }
-    }
-
-    return error
-  }
-
-  // 安全的加密操作包装
-  static async secureOperation<T>(
-    operation: () => Promise<T>,
-    context: string
-  ): Promise<{ success: boolean, data?: T, error?: string }> {
-    try {
-      const data = await operation()
-      return { success: true, data }
-    }
-    catch (error) {
-      const safeError = this.handleCryptoError(error as Error, context)
-      return { success: false, error: safeError.message }
-    }
-  }
-}
-
-// 使用示例
-const result = await SecureErrorHandler.secureOperation(() => encrypt.aes('data', 'key'), 'AES加密')
-
-if (!result.success) {
-  console.error('加密失败:', result.error)
+ return result === 0
 }
 ```
 
-## 审计和监控
+## 错误处理
 
-### 安全事件记录
+### 不泄露敏感信息
 
 ```typescript
-// 安全审计日志
-class SecurityAuditLogger {
-  private logs: any[] = []
-  private maxLogs: number
-
-  constructor(maxLogs = 10000) {
-    this.maxLogs = maxLogs
-  }
-
-  // 记录安全事件
-  logSecurityEvent(event: {
-    type: 'encryption' | 'decryption' | 'key_generation' | 'authentication'
-    success: boolean
-    algorithm?: string
-    keySize?: number
-    timestamp?: number
-    userId?: string
-    ipAddress?: string
-    userAgent?: string
-  }): void {
-    const logEntry = {
-      ...event,
-      timestamp: event.timestamp || Date.now(),
-      id: this.generateLogId(),
-    }
-
-    this.logs.push(logEntry)
-
-    // 限制日志数量
-    if (this.logs.length > this.maxLogs) {
-      this.logs.shift()
-    }
-
-    // 检测异常模式
-    this.detectAnomalies(logEntry)
-  }
-
-  private generateLogId(): string {
-    return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  }
-
-  // 检测异常模式
-  private detectAnomalies(newEvent: any): void {
-    const recentEvents = this.logs.slice(-100) // 最近100个事件
-
-    // 检测频繁失败
-    const recentFailures = recentEvents.filter(e => !e.success).length
-    if (recentFailures > 10) {
-      console.warn('检测到频繁的加密操作失败')
-    }
-
-    // 检测异常时间模式
-    const now = Date.now()
-    const recentInMinute = recentEvents.filter(e => now - e.timestamp < 60000).length
-    if (recentInMinute > 100) {
-      console.warn('检测到异常高频的加密操作')
-    }
-  }
-
-  // 获取安全统计
-  getSecurityStats(timeRange = 24 * 60 * 60 * 1000): any {
-    const cutoff = Date.now() - timeRange
-    const recentLogs = this.logs.filter(log => log.timestamp > cutoff)
-
-    return {
-      totalOperations: recentLogs.length,
-      successfulOperations: recentLogs.filter(log => log.success).length,
-      failedOperations: recentLogs.filter(log => !log.success).length,
-      algorithmUsage: this.getAlgorithmStats(recentLogs),
-      timeRange,
-    }
-  }
-
-  private getAlgorithmStats(logs: any[]): Record<string, number> {
-    const stats: Record<string, number> = {}
-
-    for (const log of logs) {
-      if (log.algorithm) {
-        stats[log.algorithm] = (stats[log.algorithm] || 0) + 1
-      }
-    }
-
-    return stats
-  }
-
-  // 导出日志（用于外部分析）
-  exportLogs(format: 'json' | 'csv' = 'json'): string {
-    if (format === 'json') {
-      return JSON.stringify(this.logs, null, 2)
-    }
-    else {
-      // CSV 格式
-      const headers = ['id', 'type', 'success', 'algorithm', 'timestamp']
-      const csvLines = [headers.join(',')]
-
-      for (const log of this.logs) {
-        const values = headers.map(header => log[header] || '')
-        csvLines.push(values.join(','))
-      }
-
-      return csvLines.join('\n')
-    }
-  }
+// 错误示例：泄露详细错误
+try {
+ const decrypted = aes.decrypt(encrypted, 'wrong-key')
+} catch (error) {
+ // 不要直接显示给用户
+ alert(error.message) // 可能泄露信息
 }
 
-// 全局审计实例
-const securityAudit = new SecurityAuditLogger()
+// 正确示例：通用错误消息
+try {
+ const decrypted = aes.decrypt(encrypted, userKey)
 
-// 在加密操作中使用
-function auditedEncrypt(data: string, key: string) {
-  try {
-    const result = encrypt.aes(data, key)
+ if (!decrypted.success) {
+  // 给用户显示通用消息
+  showError('操作失败，请重试')
 
-    securityAudit.logSecurityEvent({
-      type: 'encryption',
-      success: true,
-      algorithm: 'AES-256',
-      keySize: 256,
-    })
-
-    return result
-  }
-  catch (error) {
-    securityAudit.logSecurityEvent({
-      type: 'encryption',
-      success: false,
-      algorithm: 'AES-256',
-    })
-
-    throw error
-  }
+  // 详细错误记录到日志
+  logger.error('Decryption failed', {
+   error: decrypted.error,
+   timestamp: Date.now()
+  })
+ }
+} catch (error) {
+ showError('系统错误')
+ logger.error('Unexpected error', error)
 }
 ```
 
-遵循这些安全最佳实践，可以确保您的应用程序在使用 @ldesign/crypto 时保持高度的安全性。
+## 安全传输
+
+### 端到端加密
+
+```typescript
+// 发送方
+import { aes, rsa, RandomUtils } from '@ldesign/crypto'
+
+// 1. 生成会话密钥
+const sessionKey = RandomUtils.generateKey(32)
+
+// 2. 使用会话密钥加密数据
+const encryptedData = aes.encrypt(data, sessionKey)
+
+// 3. 使用接收方公钥加密会话密钥
+const encryptedKey = rsa.encrypt(sessionKey, receiverPublicKey)
+
+// 4. 发送
+send({
+ encryptedData,
+ encryptedKey
+})
+
+// 接收方
+// 1. 使用私钥解密会话密钥
+const decryptedKeyResult = rsa.decrypt(encryptedKey, receiverPrivateKey)
+const sessionKey = decryptedKeyResult.data
+
+// 2. 使用会话密钥解密数据
+const decryptedData = aes.decrypt(encryptedData, sessionKey)
+```
+
+### TLS/HTTPS
+
+```typescript
+// 确保使用HTTPS传输
+const API_URL = 'https://api.example.com' // 使用HTTPS
+
+// 验证证书
+fetch(API_URL, {
+ // 不要禁用证书验证
+ // rejectUnauthorized: false // 危险！
+})
+```
+
+## 审计和日志
+
+### 安全日志
+
+```typescript
+interface SecurityLog {
+ timestamp: number
+ operation: string
+ userId?: string
+ success: boolean
+ details?: any
+}
+
+class SecurityLogger {
+ private logs: SecurityLog[] = []
+
+ log(operation: string, success: boolean, details?: any) {
+  this.logs.push({
+   timestamp: Date.now(),
+   operation,
+   success,
+   details
+  })
+
+  // 异常操作告警
+  if (!success) {
+   this.alert(operation, details)
+  }
+ }
+
+ private alert(operation: string, details: any) {
+  console.warn(`Security Alert: ${operation} failed`, details)
+  // 发送告警到监控系统
+ }
+}
+
+// 使用
+const logger = new SecurityLogger()
+
+try {
+ const result = aes.encrypt('data', 'key')
+ logger.log('encrypt', result.success)
+} catch (error) {
+ logger.log('encrypt', false, { error: error.message })
+}
+```
+
+## 合规性
+
+### GDPR 合规
+
+```typescript
+// 用户数据加密
+import { aes } from '@ldesign/crypto'
+
+class GDPRCompliantStorage {
+ private storage: SecureStorage
+
+ constructor(userConsent: boolean) {
+  if (!userConsent) {
+   throw new Error('User consent required')
+  }
+
+  this.storage = new SecureStorage({
+   key: 'gdpr-key',
+   ttl: 30 * 24 * 60 * 60 * 1000 // 30天后自动删除
+  })
+ }
+
+ // 存储个人数据
+ storePersonalData(userId: string, data: any) {
+  const encrypted = this.storage.set(`user_${userId}`, data)
+  this.logDataProcessing(userId, 'store')
+  return encrypted
+ }
+
+ // 删除用户数据（被遗忘权）
+ deleteUserData(userId: string) {
+  this.storage.remove(`user_${userId}`)
+  this.logDataProcessing(userId, 'delete')
+ }
+
+ private logDataProcessing(userId: string, action: string) {
+  // 记录数据处理活动
+  console.log(`GDPR Log: ${action} data for user ${userId}`)
+ }
+}
+```
+
+## 安全检查清单
+
+在生产环境部署前，检查以下事项：
+
+- [ ] 密钥存储在安全位置（环境变量/密钥管理服务）
+- [ ] 使用推荐的算法和密钥长度
+- [ ] 每次加密使用新的随机 IV
+- [ ] 实施密钥轮换策略
+- [ ] 使用 HMAC 或 AEAD 保证数据完整性
+- [ ] 密码使用盐值哈希
+- [ ] 错误处理不泄露敏感信息
+- [ ] 实施防重放攻击机制
+- [ ] 启用安全日志和审计
+- [ ] 定期安全审计和渗透测试
+- [ ] 遵守相关合规要求
+
+## 安全资源
+
+### 推荐阅读
+
+- OWASP Cryptographic Storage Cheat Sheet
+- NIST Cryptographic Standards
+- RFC 8439 (ChaCha20-Poly1305)
+- RFC 5869 (HKDF)
+
+### 工具
+
+- 在线密钥生成器（仅用于测试）
+- 密码强度检查器
+- 证书验证工具
+
+## 下一步
+
+- [配置指南](/guide/configuration) - 安全配置
+- [部署指南](/guide/deployment) - 生产环境安全
+- [故障排查](/guide/troubleshooting) - 安全问题排查

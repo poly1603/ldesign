@@ -53,7 +53,7 @@ describe('Type Guards', () => {
       expect(isNumber(-123)).toBe(true)
       expect(isNumber(3.14)).toBe(true)
       expect(isNumber(Infinity)).toBe(true)
-      expect(isNumber(NaN)).toBe(true)
+      expect(isNumber(Number.NaN)).toBe(true)
     })
 
     it('应该拒绝非数字', () => {
@@ -101,8 +101,8 @@ describe('Type Guards', () => {
     it('应该识别数组', () => {
       expect(isArray([])).toBe(true)
       expect(isArray([1, 2, 3])).toBe(true)
-      expect(isArray(Array(5))).toBe(true)
-      expect(isArray(new Array())).toBe(true)
+      expect(isArray(Array.from({ length: 5 }))).toBe(true)
+      expect(isArray([])).toBe(true)
     })
 
     it('应该拒绝非数组', () => {
@@ -126,7 +126,7 @@ describe('Type Guards', () => {
   describe('isFunction', () => {
     it('应该识别函数', () => {
       expect(isFunction(() => {})).toBe(true)
-      expect(isFunction(function() {})).toBe(true)
+      expect(isFunction(() => {})).toBe(true)
       expect(isFunction(async () => {})).toBe(true)
       expect(isFunction(function*() {})).toBe(true)
       expect(isFunction(Date)).toBe(true)
@@ -259,11 +259,11 @@ describe('Type Guards', () => {
     it('应该处理 Map 和 Set', () => {
       expect(isEmpty(new Map())).toBe(true)
       expect(isEmpty(new Set())).toBe(true)
-      
+
       const map = new Map()
       map.set('key', 'value')
       expect(isEmpty(map)).toBe(false)
-      
+
       const set = new Set()
       set.add(1)
       expect(isEmpty(set)).toBe(false)
@@ -284,7 +284,7 @@ describe('Type Guards', () => {
       expect(isPlainObject(/regex/)).toBe(false)
       expect(isPlainObject(null)).toBe(false)
       expect(isPlainObject(undefined)).toBe(false)
-      
+
       class MyClass {}
       expect(isPlainObject(new MyClass())).toBe(false)
     })
@@ -398,7 +398,8 @@ describe('Type Guards', () => {
       if (!isNil(value)) {
         // TypeScript 知道 value 不是 null/undefined
         const upper = value.toUpperCase()
-      } else {
+      }
+ else {
         // TypeScript 知道 value 是 null 或 undefined
         expect(isNil(value)).toBe(true)
       }
@@ -409,9 +410,11 @@ describe('Type Guards', () => {
 
       if (isString(value)) {
         expect(value.length).toBeGreaterThan(0)
-      } else if (isNumber(value)) {
+      }
+ else if (isNumber(value)) {
         expect(value).toBeGreaterThan(0)
-      } else if (isBoolean(value)) {
+      }
+ else if (isBoolean(value)) {
         expect(value).toBe(true)
       }
     })
@@ -442,7 +445,7 @@ describe('Type Guards', () => {
     it('应该处理 Proxy', () => {
       const target = { key: 'value' }
       const proxy = new Proxy(target, {})
-      
+
       expect(isObject(proxy)).toBe(true)
       expect(isPlainObject(proxy)).toBe(true)
     })
@@ -466,7 +469,7 @@ describe('Type Guards', () => {
   describe('性能', () => {
     it('类型守卫应该快速执行', () => {
       const iterations = 100000
-      
+
       const start = performance.now()
       for (let i = 0; i < iterations; i++) {
         isString('test')
@@ -477,7 +480,7 @@ describe('Type Guards', () => {
         isFunction(() => {})
       }
       const end = performance.now()
-      
+
       const duration = end - start
       expect(duration).toBeLessThan(100) // 应该很快
     })
@@ -489,13 +492,16 @@ describe('Type Guards', () => {
         if (isString(value)) {
           // value 类型应该是 string
           return value.toUpperCase()
-        } else if (isNumber(value)) {
+        }
+ else if (isNumber(value)) {
           // value 类型应该是 number
           return value.toFixed(2)
-        } else if (isArray(value)) {
+        }
+ else if (isArray(value)) {
           // value 类型应该是 unknown[]
           return value.length
-        } else if (isPlainObject(value)) {
+        }
+ else if (isPlainObject(value)) {
           // value 类型应该是 object
           return Object.keys(value).length
         }

@@ -1,757 +1,753 @@
-# Vue 3 最佳实践
+# Vue 最佳实践
 
-本指南提供了在 Vue 3 项目中使用 @ldesign/crypto 的最佳实践和建议。
+本指南介绍在 Vue 3 项目中使用 @ldesign/crypto 的最佳实践。
 
-## 项目结构建议
+## 项目结构
 
 ### 推荐的目录结构
 
 ```
 src/
 ├── composables/
-│   ├── useCrypto.js          # 自定义加密 composable
-│   └── useSecureStorage.js   # 安全存储 composable
-├── utils/
-│   ├── crypto.js             # 加密工具函数
-│   └── security.js           # 安全相关工具
+│   ├── useSecurity.ts     # 安全相关组合式函数
+│   └── useEncryptedStorage.ts # 加密存储
 ├── services/
-│   ├── authService.js        # 认证服务
-│   └── apiService.js         # API 服务
-└── stores/
-    └── authStore.js          # 认证状态管理
+│   ├── crypto.service.ts    # 加密服务封装
+│   └── auth.service.ts     # 认证服务
+├── utils/
+│   ├── crypto.helpers.ts    # 加密工具函数
+│   └── validators.ts      # 验证工具
+├── config/
+│   └── crypto.config.ts    # 加密配置
+└── main.ts
 ```
 
-## 插件配置最佳实践
+## 插件配置
 
-### 环境特定配置
+### 集中式配置
 
 ```typescript
-import { CryptoPlugin } from '@ldesign/crypto/vue'
-// config/crypto.ts
+// config/crypto.config.ts
+import type { CryptoPluginOptions } from '@ldesign/crypto/vue'
+
+export const cryptoConfig: CryptoPluginOptions = {
+ globalPropertyName: '$crypto',
+ registerComposables: true,
+ config: {
+  defaultAESKeySize: 256,
+  defaultRSAKeySize: 2048,
+  defaultHashAlgorithm: 'SHA256',
+  defaultEncoding: 'base64'
+ }
+}
+```
+
+```typescript
 // main.ts
 import { createApp } from 'vue'
-import { cryptoConfig } from './config/crypto'
-
-export const cryptoConfig = {
-  development: {
-    defaultAESKeySize: 128, // 开发环境使用较小密钥提高性能
-    defaultRSAKeySize: 1024,
-    enableDebugLogs: true,
-    strictValidation: false,
-  },
-
-  production: {
-    defaultAESKeySize: 256, // 生产环境使用更强加密
-    defaultRSAKeySize: 4096,
-    enableDebugLogs: false,
-    strictValidation: true,
-  },
-
-  test: {
-    defaultAESKeySize: 128, // 测试环境优化性能
-    defaultRSAKeySize: 1024,
-    enableDebugLogs: false,
-    strictValidation: true,
-  },
-}
+import { CryptoPlugin } from '@ldesign/crypto/vue'
+import { cryptoConfig } from './config/crypto.config'
+import App from './App.vue'
 
 const app = createApp(App)
-
-const env = process.env.NODE_ENV || 'development'
-app.use(CryptoPlugin, {
-  config: cryptoConfig[env],
-})
+app.use(CryptoPlugin, cryptoConfig)
+app.mount('#app')
 ```
 
-### 条件加载
+## 服务层封装
+
+### 加密服务
 
 ```typescript
-// 仅在需要时加载加密功能
-async function loadCryptoPlugin() {
-  if (process.env.NODE_ENV === 'production') {
-    const { CryptoPlugin } = await import('@ldesign/crypto/vue')
-    app.use(CryptoPlugin, productionConfig)
+// services/crypto.service.ts
+import { aes, rsa, hash, encoding } from '@ldesign/crypto'
+import type { EncryptResult, DecryptResult } from '@ldesign/crypto'
+
+export class CryptoService {
+ /**
+  * 加密敏感数据
+  */
+ static encryptSensitiveData(data: string, key: string): string | null {
+  try {
+   const result = aes.encrypt(data, key, { keySize: 256 })
+
+   if (result.success && result.data) {
+    return encoding.base64.encode(JSON.stringify(result))
+   }
+
+   return null
+  } catch (error) {
+   console.error('Encryption failed:', error)
+   return null
   }
+ }
+
+ /**
+  * 解密敏感数据
+  */
+ static decryptSensitiveData(encryptedData: string, key: string): string | null {
+  try {
+   const result = JSON.parse(encoding.base64.decode(encryptedData))
+   const decrypted = aes.decrypt(result, key)
+
+   return decrypted.success ? decrypted.data : null
+  } catch (error) {
+   console.error('Decryption failed:', error)
+   return null
+  }
+ }
+
+ /**
+  * 生成数据指纹
+  */
+ static generateFingerprint(data: string): string {
+  return hash.sha256(data)
+ }
+
+ /**
+  * 验证数据完整性
+  */
+ static verifyIntegrity(data: string, fingerprint: string): boolean {
+  return hash.sha256(data) === fingerprint
+ }
 }
 ```
 
-## Composable 最佳实践
-
-### 自定义 Composable 封装
+### 认证服务
 
 ```typescript
-import { useCrypto } from '@ldesign/crypto/vue'
-import { computed, ref } from 'vue'
-// composables/useSecureCrypto.ts
+// services/auth.service.ts
+import { aes, hash } from '@ldesign/crypto'
+import { SecureStorage } from '@ldesign/crypto'
 
-export function useSecureCrypto() {
-  const crypto = useCrypto()
-  const encryptionHistory = ref([])
-  const maxHistorySize = 10
+export class AuthService {
+ private static storage = new SecureStorage({
+  key: 'auth-encryption-key',
+  prefix: 'auth_',
+  ttl: 24 * 60 * 60 * 1000 // 24小时
+ })
 
-  // 安全的加密函数，带历史记录
-  const secureEncrypt = async (data: string, key: string) => {
-    try {
-      const result = await crypto.encryptAES(data, key)
+ /**
+  * 存储认证令牌
+  */
+ static storeToken(token: string): boolean {
+  return this.storage.set('token', token)
+ }
 
-      // 记录加密历史（不包含敏感数据）
-      encryptionHistory.value.unshift({
-        timestamp: Date.now(),
-        algorithm: result.algorithm,
-        dataLength: data.length,
-        success: true,
-      })
+ /**
+  * 获取认证令牌
+  */
+ static getToken(): string | undefined {
+  return this.storage.get('token')
+ }
 
-      // 限制历史记录大小
-      if (encryptionHistory.value.length > maxHistorySize) {
-        encryptionHistory.value = encryptionHistory.value.slice(0, maxHistorySize)
-      }
+ /**
+  * 清除认证信息
+  */
+ static clearAuth(): void {
+  this.storage.clear()
+ }
 
-      return result
-    }
-    catch (error) {
-      encryptionHistory.value.unshift({
-        timestamp: Date.now(),
-        error: error.message,
-        success: false,
-      })
-      throw error
-    }
-  }
-
-  // 清除敏感数据
-  const clearHistory = () => {
-    encryptionHistory.value = []
-  }
-
-  // 统计信息
-  const stats = computed(() => ({
-    totalOperations: encryptionHistory.value.length,
-    successRate:
-      encryptionHistory.value.filter(h => h.success).length / encryptionHistory.value.length,
-    lastOperation: encryptionHistory.value[0],
-  }))
-
-  return {
-    ...crypto,
-    secureEncrypt,
-    encryptionHistory: readonly(encryptionHistory),
-    stats,
-    clearHistory,
-  }
+ /**
+  * 加密密码
+  */
+ static hashPassword(password: string): string {
+  // 使用盐值增强安全性
+  const salt = 'your-app-salt'
+  return hash.sha256(password + salt)
+ }
 }
 ```
 
-### 响应式状态管理
+## 自定义组合式函数
+
+### 安全存储 Hook
 
 ```typescript
-import { useCrypto } from '@ldesign/crypto/vue'
-import { reactive, ref, watch } from 'vue'
-// composables/useCryptoState.ts
-
-export function useCryptoState() {
-  const crypto = useCrypto()
-
-  // 响应式状态
-  const state = reactive({
-    currentKey: '',
-    encryptedData: null,
-    decryptedData: '',
-    isProcessing: false,
-    lastOperation: null,
-    operationCount: 0,
-  })
-
-  // 监听加密状态变化
-  watch([crypto.isEncrypting, crypto.isDecrypting], ([encrypting, decrypting]) => {
-    state.isProcessing = encrypting || decrypting
-  })
-
-  // 监听操作结果
-  watch(crypto.lastResult, (result) => {
-    if (result) {
-      state.lastOperation = {
-        type: result.algorithm ? 'encrypt' : 'decrypt',
-        timestamp: Date.now(),
-        success: true,
-      }
-      state.operationCount++
-    }
-  })
-
-  // 监听错误
-  watch(crypto.lastError, (error) => {
-    if (error) {
-      state.lastOperation = {
-        type: 'error',
-        timestamp: Date.now(),
-        success: false,
-        error,
-      }
-    }
-  })
-
-  return {
-    ...crypto,
-    state: readonly(state),
-  }
-}
-```
-
-## 安全存储实践
-
-### 安全的本地存储
-
-```typescript
-import { useCrypto } from '@ldesign/crypto/vue'
+// composables/useEncryptedStorage.ts
 import { ref, watch } from 'vue'
-// composables/useSecureStorage.ts
+import { SecureStorage } from '@ldesign/crypto'
 
-export function useSecureStorage(storageKey: string, userKey: string) {
-  const { encryptAES, decryptAES } = useCrypto()
-  const data = ref(null)
-  const isLoading = ref(false)
-  const error = ref(null)
+export function useEncryptedStorage(key: string, encryptionKey: string) {
+ const storage = new SecureStorage({
+  key: encryptionKey,
+  prefix: 'app_'
+ })
 
-  // 加密存储
-  const save = async (value: any) => {
-    try {
-      isLoading.value = true
-      error.value = null
+ const data = ref(storage.get(key))
 
-      const serialized = JSON.stringify(value)
-      const encrypted = await encryptAES(serialized, userKey)
-
-      localStorage.setItem(storageKey, JSON.stringify(encrypted))
-      data.value = value
-    }
-    catch (err) {
-      error.value = err.message
-      throw err
-    }
-    finally {
-      isLoading.value = false
-    }
+ // 自动保存
+ watch(data, (newValue) => {
+  if (newValue !== undefined) {
+   storage.set(key, newValue)
   }
+ }, { deep: true })
 
-  // 解密读取
-  const load = async () => {
-    try {
-      isLoading.value = true
-      error.value = null
+ const remove = () => {
+  storage.remove(key)
+  data.value = undefined
+ }
 
-      const stored = localStorage.getItem(storageKey)
-      if (!stored) {
-        data.value = null
-        return null
-      }
-
-      const encrypted = JSON.parse(stored)
-      const decrypted = await decryptAES(encrypted, userKey)
-
-      if (!decrypted.success) {
-        throw new Error('解密失败')
-      }
-
-      const value = JSON.parse(decrypted.data)
-      data.value = value
-      return value
-    }
-    catch (err) {
-      error.value = err.message
-      data.value = null
-      return null
-    }
-    finally {
-      isLoading.value = false
-    }
-  }
-
-  // 删除
-  const remove = () => {
-    localStorage.removeItem(storageKey)
-    data.value = null
-  }
-
-  // 自动保存
-  const enableAutoSave = () => {
-    watch(
-      data,
-      (newValue) => {
-        if (newValue !== null) {
-          save(newValue)
-        }
-      },
-      { deep: true }
-    )
-  }
-
-  return {
-    data: readonly(data),
-    isLoading: readonly(isLoading),
-    error: readonly(error),
-    save,
-    load,
-    remove,
-    enableAutoSave,
-  }
+ return {
+  data,
+  remove
+ }
 }
 ```
 
-## 组件设计模式
+### 安全通信 Hook
 
-### 加密表单组件
+```typescript
+// composables/useSecurity.ts
+import { ref } from 'vue'
+import { aes, hash, hmac } from '@ldesign/crypto'
+
+export function useSecurity() {
+ const isProcessing = ref(false)
+
+ /**
+  * 安全发送数据
+  */
+ const secureSend = async (data: any, key: string) => {
+  isProcessing.value = true
+
+  try {
+   // 序列化数据
+   const jsonData = JSON.stringify(data)
+
+   // 加密数据
+   const encrypted = aes.encrypt(jsonData, key)
+
+   // 生成 HMAC
+   const mac = hmac.sha256(encrypted.data, key)
+
+   // 返回安全包
+   return {
+    data: encrypted.data,
+    iv: encrypted.iv,
+    mac
+   }
+  } finally {
+   isProcessing.value = false
+  }
+ }
+
+ /**
+  * 安全接收数据
+  */
+ const secureReceive = async (
+  encryptedData: string,
+  iv: string,
+  mac: string,
+  key: string
+ ) => {
+  isProcessing.value = true
+
+  try {
+   // 验证 HMAC
+   const isValid = hmac.verify(encryptedData, key, mac, 'SHA256')
+
+   if (!isValid) {
+    throw new Error('Data integrity check failed')
+   }
+
+   // 解密数据
+   const decrypted = aes.decrypt(
+    { data: encryptedData, iv },
+    key
+   )
+
+   if (!decrypted.success) {
+    throw new Error('Decryption failed')
+   }
+
+   // 解析数据
+   return JSON.parse(decrypted.data)
+  } finally {
+   isProcessing.value = false
+  }
+ }
+
+ return {
+  isProcessing,
+  secureSend,
+  secureReceive
+ }
+}
+```
+
+## 工具函数
+
+### 加密工具
+
+```typescript
+// utils/crypto.helpers.ts
+import { aes, base64, hash } from '@ldesign/crypto'
+
+/**
+ * 快速加密文本
+ */
+export function quickEncrypt(text: string, password: string): string {
+ const result = aes.encrypt(text, password, { keySize: 256 })
+ return base64.encode(JSON.stringify(result))
+}
+
+/**
+ * 快速解密文本
+ */
+export function quickDecrypt(encrypted: string, password: string): string {
+ const data = JSON.parse(base64.decode(encrypted))
+ const result = aes.decrypt(data, password)
+ return result.data || ''
+}
+
+/**
+ * 生成安全随机字符串
+ */
+export function generateSecureId(length: number = 32): string {
+ const timestamp = Date.now().toString()
+ const random = Math.random().toString(36).substring(2)
+ const combined = timestamp + random
+ return hash.sha256(combined).substring(0, length)
+}
+
+/**
+ * 验证密码强度
+ */
+export function validatePasswordStrength(password: string): {
+ isStrong: boolean
+ score: number
+ feedback: string[]
+} {
+ const feedback: string[] = []
+ let score = 0
+
+ if (password.length >= 8) score++
+ else feedback.push('密码至少需要8个字符')
+
+ if (/[a-z]/.test(password)) score++
+ else feedback.push('需要小写字母')
+
+ if (/[A-Z]/.test(password)) score++
+ else feedback.push('需要大写字母')
+
+ if (/[0-9]/.test(password)) score++
+ else feedback.push('需要数字')
+
+ if (/[^a-zA-Z0-9]/.test(password)) score++
+ else feedback.push('需要特殊字符')
+
+ return {
+  isStrong: score >= 4,
+  score,
+  feedback
+ }
+}
+```
+
+## 组件最佳实践
+
+### 加密表单
 
 ```vue
-<!-- components/SecureForm.vue -->
-<script setup>
-import { computed, ref } from 'vue'
-import { useSecureCrypto } from '@/composables/useSecureCrypto'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useEncryption } from '@ldesign/crypto/vue'
+import { validatePasswordStrength } from '@/utils/crypto.helpers'
 
-const emit = defineEmits(['encrypted', 'error'])
+const encryption = useEncryption()
 
-const { secureEncrypt, isEncrypting, lastError, clearError } = useSecureCrypto()
-
-const formData = ref({
-  sensitiveData: '',
-  encryptionKey: '',
+const form = ref({
+ username: '',
+ password: '',
+ sensitiveData: ''
 })
 
-const result = ref(null)
-const error = computed(() => lastError.value)
-const isProcessing = computed(() => isEncrypting.value)
+const encryptedData = ref('')
 
-const canSubmit = computed(
-  () =>
-    formData.value.sensitiveData.trim()
-    && formData.value.encryptionKey.trim()
-    && !isProcessing.value
-)
+// 密码强度
+const passwordStrength = computed(() => {
+ return validatePasswordStrength(form.value.password)
+})
 
-async function handleSubmit() {
-  try {
-    clearError()
-    result.value = null
+// 提交表单
+const handleSubmit = async () => {
+ // 验证密码强度
+ if (!passwordStrength.value.isStrong) {
+  alert('密码强度不足')
+  return
+ }
 
-    const encrypted = await secureEncrypt(
-      formData.value.sensitiveData,
-      formData.value.encryptionKey
-    )
+ // 加密敏感数据
+ encryptedData.value = await encryption.encryptText(
+  form.value.sensitiveData,
+  form.value.password
+ )
 
-    result.value = encrypted
-    emit('encrypted', encrypted)
-
-    // 清除敏感数据
-    formData.value.sensitiveData = ''
-    formData.value.encryptionKey = ''
-  }
-  catch (err) {
-    emit('error', err)
-  }
-}
-
-function clearForm() {
-  formData.value.sensitiveData = ''
-  formData.value.encryptionKey = ''
-  result.value = null
-  clearError()
+ if (encryptedData.value) {
+  // 发送到服务器
+  console.log('Encrypted data ready to send')
+ }
 }
 </script>
 
 <template>
-  <form class="secure-form" @submit.prevent="handleSubmit">
-    <div class="form-group">
-      <label>敏感数据:</label>
-      <textarea
-        v-model="formData.sensitiveData"
-        :disabled="isProcessing"
-        placeholder="输入敏感数据"
-      />
-    </div>
+ <form @submit.prevent="handleSubmit">
+  <div>
+   <label>用户名:</label>
+   <input v-model="form.username" required />
+  </div>
 
-    <div class="form-group">
-      <label>加密密钥:</label>
-      <input
-        v-model="formData.encryptionKey"
-        type="password"
-        :disabled="isProcessing"
-        placeholder="输入加密密钥"
-      >
-    </div>
+  <div>
+   <label>密码:</label>
+   <input v-model="form.password" type="password" required />
 
-    <div class="form-actions">
-      <button type="submit" :disabled="!canSubmit" :class="{ loading: isProcessing }">
-        {{ isProcessing ? '处理中...' : '加密提交' }}
-      </button>
+   <div v-if="form.password" class="password-strength">
+    <div :class="['strength-bar', `strength-${passwordStrength.score}`]"></div>
+    <ul>
+     <li v-for="(item, index) in passwordStrength.feedback" :key="index">
+      {{ item }}
+     </li>
+    </ul>
+   </div>
+  </div>
 
-      <button type="button" :disabled="isProcessing" @click="clearForm">
-        清除
-      </button>
-    </div>
+  <div>
+   <label>敏感数据:</label>
+   <textarea v-model="form.sensitiveData" required></textarea>
+  </div>
 
-    <div v-if="result" class="result">
-      <h3>加密结果</h3>
-      <pre>{{ result }}</pre>
-    </div>
-
-    <div v-if="error" class="error">
-      错误: {{ error }}
-    </div>
-  </form>
+  <button type="submit" :disabled="!passwordStrength.isStrong">
+   提交
+  </button>
+ </form>
 </template>
 
 <style scoped>
-.secure-form {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
+.password-strength {
+ margin-top: 5px;
 }
 
-.form-group {
-  margin-bottom: 20px;
+.strength-bar {
+ height: 4px;
+ background: #ddd;
+ border-radius: 2px;
+ transition: all 0.3s;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 600;
+.strength-1 {
+ width: 20%;
+ background: #ff4444;
 }
 
-.form-group input,
-.form-group textarea {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+.strength-2 {
+ width: 40%;
+ background: #ff8844;
 }
 
-.form-actions {
-  margin: 20px 0;
+.strength-3 {
+ width: 60%;
+ background: #ffaa44;
 }
 
-.form-actions button {
-  margin-right: 10px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+.strength-4 {
+ width: 80%;
+ background: #88cc44;
 }
 
-.form-actions button[type='submit'] {
-  background-color: #007bff;
-  color: white;
+.strength-5 {
+ width: 100%;
+ background: #44cc44;
+}
+</style>
+```
+
+### 安全文件上传
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useEncryption } from '@ldesign/crypto/vue'
+import { CryptoService } from '@/services/crypto.service'
+
+const encryption = useEncryption()
+
+const file = ref<File | null>(null)
+const password = ref('')
+const uploadProgress = ref(0)
+const fileFingerprint = ref('')
+
+// 处理文件选择
+const handleFileSelect = (event: Event) => {
+ const target = event.target as HTMLInputElement
+ file.value = target.files?.[0] || null
 }
 
-.form-actions button[type='button'] {
-  background-color: #6c757d;
-  color: white;
-}
+// 上传加密文件
+const handleUpload = async () => {
+ if (!file.value || !password.value) return
 
-.form-actions button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+ uploadProgress.value = 0
 
-.form-actions button.loading {
-  position: relative;
-}
+ // 读取文件
+ const reader = new FileReader()
 
-.form-actions button.loading::after {
-  content: '';
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  margin: auto;
-  border: 2px solid transparent;
-  border-top-color: #ffffff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
+ reader.onload = async (e) => {
+  const content = e.target?.result as string
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
+  // 生成文件指纹
+  fileFingerprint.value = CryptoService.generateFingerprint(content)
+
+  // 加密文件
+  uploadProgress.value = 50
+  const encrypted = await encryption.encryptFile(content, password.value)
+
+  if (encrypted) {
+   uploadProgress.value = 75
+
+   // 上传到服务器
+   await uploadToServer({
+    filename: file.value.name,
+    data: encrypted,
+    fingerprint: fileFingerprint.value
+   })
+
+   uploadProgress.value = 100
+   console.log('File uploaded successfully')
   }
-  100% {
-    transform: rotate(360deg);
-  }
+ }
+
+ reader.readAsText(file.value)
 }
 
-.result {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #d4edda;
-  border-left: 4px solid #28a745;
-  border-radius: 4px;
+// 模拟上传
+const uploadToServer = async (data: any) => {
+ // 实际实现中应该调用 API
+ return new Promise((resolve) => setTimeout(resolve, 1000))
+}
+</script>
+
+<template>
+ <div class="file-upload">
+  <input type="file" @change="handleFileSelect" />
+  <input v-model="password" type="password" placeholder="加密密码" />
+
+  <button @click="handleUpload" :disabled="!file || !password">
+   上传加密文件
+  </button>
+
+  <div v-if="uploadProgress > 0" class="progress">
+   <div class="progress-bar" :style="{ width: `${uploadProgress}%` }"></div>
+   <span>{{ uploadProgress }}%</span>
+  </div>
+
+  <div v-if="fileFingerprint">
+   <p>文件指纹:</p>
+   <code>{{ fileFingerprint }}</code>
+  </div>
+ </div>
+</template>
+
+<style scoped>
+.file-upload {
+ padding: 20px;
 }
 
-.result pre {
-  background-color: #f8f9fa;
-  padding: 10px;
-  border-radius: 4px;
-  overflow-x: auto;
+.progress {
+ margin-top: 10px;
+ position: relative;
+ height: 30px;
+ background: #f0f0f0;
+ border-radius: 4px;
 }
 
-.error {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #f8d7da;
-  border-left: 4px solid #dc3545;
-  border-radius: 4px;
-  color: #721c24;
+.progress-bar {
+ height: 100%;
+ background: #42b883;
+ border-radius: 4px;
+ transition: width 0.3s;
+}
+
+.progress span {
+ position: absolute;
+ top: 50%;
+ left: 50%;
+ transform: translate(-50%, -50%);
+ font-weight: bold;
 }
 </style>
 ```
 
 ## 性能优化
 
-### 懒加载加密功能
+### 密钥缓存
 
 ```typescript
-// composables/useLazyCrypto.ts
-import { ref, shallowRef } from 'vue'
+// composables/useKeyCache.ts
+import { ref } from 'vue'
 
-export function useLazyCrypto() {
-  const cryptoModule = shallowRef(null)
-  const isLoading = ref(false)
-  const error = ref(null)
+const keyCache = new Map<string, { key: string, timestamp: number }>()
 
-  const loadCrypto = async () => {
-    if (cryptoModule.value)
-      return cryptoModule.value
+export function useKeyCache(ttl: number = 300000) { // 5分钟
+ const getKey = (id: string): string | null => {
+  const cached = keyCache.get(id)
 
-    try {
-      isLoading.value = true
-      error.value = null
+  if (!cached) return null
 
-      const module = await import('@ldesign/crypto/vue')
-      cryptoModule.value = module.useCrypto()
-
-      return cryptoModule.value
-    }
-    catch (err) {
-      error.value = err.message
-      throw err
-    }
-    finally {
-      isLoading.value = false
-    }
+  // 检查是否过期
+  if (Date.now() - cached.timestamp > ttl) {
+   keyCache.delete(id)
+   return null
   }
 
-  return {
-    cryptoModule: readonly(cryptoModule),
-    isLoading: readonly(isLoading),
-    error: readonly(error),
-    loadCrypto,
-  }
+  return cached.key
+ }
+
+ const setKey = (id: string, key: string): void => {
+  keyCache.set(id, {
+   key,
+   timestamp: Date.now()
+  })
+ }
+
+ const clearCache = (): void => {
+  keyCache.clear()
+ }
+
+ return {
+  getKey,
+  setKey,
+  clearCache
+ }
 }
 ```
 
-### 缓存优化
+### 批量加密
 
-```typescript
-import { useCrypto } from '@ldesign/crypto/vue'
-import { computed, ref } from 'vue'
-// composables/useCryptoCache.ts
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { cryptoManager } from '@ldesign/crypto'
 
-export function useCryptoCache(maxCacheSize = 100) {
-  const crypto = useCrypto()
-  const cache = ref(new Map())
+const items = ref([
+ { id: '1', data: 'data1' },
+ { id: '2', data: 'data2' },
+ { id: '3', data: 'data3' }
+])
 
-  const generateCacheKey = (data: string, key: string, operation: string) => {
-    return `${operation}:${btoa(data)}:${btoa(key)}`
-  }
+const encryptedItems = ref([])
 
-  const cachedEncrypt = async (data: string, key: string) => {
-    const cacheKey = generateCacheKey(data, key, 'encrypt')
+// 批量加密
+const handleBatchEncrypt = async () => {
+ const operations = items.value.map(item => ({
+  id: item.id,
+  data: item.data,
+  key: 'encryption-key',
+  algorithm: 'AES' as const
+ }))
 
-    if (cache.value.has(cacheKey)) {
-      return cache.value.get(cacheKey)
-    }
+ const results = await cryptoManager.batchEncrypt(operations)
 
-    const result = await crypto.encryptAES(data, key)
-
-    // 管理缓存大小
-    if (cache.value.size >= maxCacheSize) {
-      const firstKey = cache.value.keys().next().value
-      cache.value.delete(firstKey)
-    }
-
-    cache.value.set(cacheKey, result)
-    return result
-  }
-
-  const clearCache = () => {
-    cache.value.clear()
-  }
-
-  const cacheStats = computed(() => ({
-    size: cache.value.size,
-    maxSize: maxCacheSize,
-    usage: (cache.value.size / maxCacheSize) * 100,
-  }))
-
-  return {
-    ...crypto,
-    cachedEncrypt,
-    clearCache,
-    cacheStats,
-  }
+ encryptedItems.value = results.map(r => ({
+  id: r.id,
+  encrypted: r.result.data
+ }))
 }
+</script>
 ```
 
-## 错误处理策略
+## 安全最佳实践
+
+### 密钥管理
+
+```typescript
+// 不要硬编码密钥
+// 错误示例
+const BAD_KEY = 'hardcoded-key' // 危险！
+
+// 正确示例
+const key = import.meta.env.VITE_ENCRYPTION_KEY
+// 或从安全存储读取
+const key = await getKeyFromSecureStorage()
+```
+
+### 敏感数据处理
+
+```typescript
+// 清理内存中的敏感数据
+function clearSensitiveData(data: any) {
+ if (typeof data === 'object') {
+  for (const key in data) {
+   data[key] = null
+  }
+ }
+}
+
+// 使用后立即清理
+const password = 'user-password'
+// 使用密码...
+clearSensitiveData({ password })
+```
+
+## 错误处理
 
 ### 全局错误处理
 
 ```typescript
-// plugins/cryptoErrorHandler.ts
-import { App } from 'vue'
+// composables/useErrorHandler.ts
+import { ref } from 'vue'
 
-export default {
-  install(app: App) {
-    app.config.errorHandler = (error, instance, info) => {
-      if (error.name === 'CryptoError') {
-        // 处理加密相关错误
-        console.error('加密错误:', error.message)
+export function useErrorHandler() {
+ const errors = ref<string[]>([])
 
-        // 发送错误报告
-        if (process.env.NODE_ENV === 'production') {
-          // sendErrorReport(error, info)
-        }
+ const handleError = (error: unknown, context: string) => {
+  const message = error instanceof Error
+   ? error.message
+   : String(error)
 
-        // 显示用户友好的错误消息
-        // showNotification('加密操作失败，请重试')
-      }
-    }
-  },
+  console.error(`[${context}]`, message)
+  errors.value.push(`${context}: ${message}`)
+ }
+
+ const clearErrors = () => {
+  errors.value = []
+ }
+
+ return {
+  errors,
+  handleError,
+  clearErrors
+ }
 }
 ```
 
-### 组件级错误边界
+## 测试
 
-```vue
-<!-- components/CryptoErrorBoundary.vue -->
-<script setup>
-import { onErrorCaptured, ref } from 'vue'
-
-const hasError = ref(false)
-const errorMessage = ref('')
-
-onErrorCaptured((error) => {
-  if (error.name === 'CryptoError' || error.message.includes('crypto')) {
-    hasError.value = true
-    errorMessage.value = error.message
-    return false // 阻止错误继续传播
-  }
-})
-
-function retry() {
-  hasError.value = false
-  errorMessage.value = ''
-}
-
-function reset() {
-  hasError.value = false
-  errorMessage.value = ''
-  // 重置相关状态
-}
-</script>
-
-<template>
-  <div>
-    <slot v-if="!hasError" />
-    <div v-else class="error-boundary">
-      <h3>🔒 加密功能暂时不可用</h3>
-      <p>{{ errorMessage }}</p>
-      <button @click="retry">
-        重试
-      </button>
-      <button @click="reset">
-        重置
-      </button>
-    </div>
-  </div>
-</template>
-```
-
-## 测试最佳实践
-
-### 单元测试
+### 组合式函数测试
 
 ```typescript
-import { useCrypto } from '@ldesign/crypto/vue'
-import { describe, expect, it, vi } from 'vitest'
-// tests/composables/useCrypto.test.ts
+// tests/composables/useEncryption.test.ts
+import { describe, it, expect } from 'vitest'
+import { useEncryption } from '@/composables/useEncryption'
 
-describe('useCrypto', () => {
-  it('should encrypt and decrypt data correctly', async () => {
-    const { encryptAES, decryptAES } = useCrypto()
+describe('useEncryption', () => {
+ it('should encrypt and decrypt text', async () => {
+  const { encryptText, decryptText } = useEncryption()
 
-    const testData = 'Hello, World!'
-    const testKey = 'test-key'
+  const original = 'Hello World'
+  const password = 'test-password'
 
-    const encrypted = await encryptAES(testData, testKey)
-    expect(encrypted.data).toBeTruthy()
-    expect(encrypted.algorithm).toContain('AES')
+  const encrypted = await encryptText(original, password)
+  expect(encrypted).not.toBeNull()
 
-    const decrypted = await decryptAES(encrypted, testKey)
-    expect(decrypted.success).toBe(true)
-    expect(decrypted.data).toBe(testData)
-  })
-
-  it('should handle encryption errors gracefully', async () => {
-    const { encryptAES, lastError } = useCrypto()
-
-    try {
-      await encryptAES('', '') // 无效输入
-    }
-    catch (error) {
-      expect(lastError.value).toBeTruthy()
-    }
-  })
+  const decrypted = await decryptText(encrypted!, password)
+  expect(decrypted).toBe(original)
+ })
 })
 ```
 
-## 部署注意事项
+## 下一步
 
-### 环境变量管理
-
-```typescript
-// config/env.ts
-export const cryptoEnv = {
-  // 从环境变量读取配置
-  defaultKeySize: Number.parseInt(process.env.VITE_CRYPTO_KEY_SIZE || '256'),
-  enableDebugLogs: process.env.VITE_CRYPTO_DEBUG === 'true',
-  apiEndpoint: process.env.VITE_CRYPTO_API_ENDPOINT,
-
-  // 验证必需的环境变量
-  validate() {
-    const required = ['VITE_CRYPTO_API_ENDPOINT']
-    const missing = required.filter(key => !process.env[key])
-
-    if (missing.length > 0) {
-      throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
-    }
-  },
-}
-```
-
-### 生产环境优化
-
-```typescript
-// 生产环境配置
-if (process.env.NODE_ENV === 'production') {
-  // 禁用调试日志
-  console.log = () => {}
-  console.debug = () => {}
-
-  // 启用性能监控
-  // enablePerformanceMonitoring()
-
-  // 启用错误报告
-  // enableErrorReporting()
-}
-```
-
-这些最佳实践将帮助您在 Vue 3 项目中安全、高效地使用 @ldesign/crypto。
+- [安全性指南](/guide/security) - 深入了解安全性
+- [性能优化](/guide/performance) - 优化性能
+- [部署指南](/guide/deployment) - 生产环境部署

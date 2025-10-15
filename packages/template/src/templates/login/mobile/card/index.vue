@@ -1,19 +1,72 @@
+<script setup lang="ts">
+import type { LoginMobileCardProps } from '../../types'
+import { reactive, ref } from 'vue'
+
+const props = withDefaults(defineProps<LoginMobileCardProps>(), {
+  title: '欢迎登录',
+  subtitle: '',
+  logo: '',
+  showRemember: true,
+  showRegister: true,
+  showForgotPassword: true,
+  borderRadius: 'medium',
+  showTopBackground: true,
+  compact: false,
+})
+
+const formData = reactive({
+  username: '',
+  password: '',
+  remember: false,
+})
+
+const loading = ref(false)
+
+async function handleSubmit() {
+  if (!props.onLogin)
+return
+
+  loading.value = true
+  try {
+    await props.onLogin(formData)
+  }
+ catch (error) {
+    console.error('Login failed:', error)
+  }
+ finally {
+    loading.value = false
+  }
+}
+
+function handleRegister() {
+  props.onRegister?.()
+}
+
+function handleForgotPassword() {
+  props.onForgotPassword?.()
+}
+</script>
+
 <template>
-  <div class="login-mobile-container" :class="{ 'compact': compact }">
+  <div class="login-mobile-container" :class="{ compact }">
     <!-- 模板切换器插槽 -->
     <div v-if="$slots.switcher" class="template-switcher-container">
-      <slot name="switcher"></slot>
+      <slot name="switcher" />
     </div>
-    
+
     <!-- 顶部装饰背景 -->
-    <div v-if="showTopBackground" class="top-background"></div>
+    <div v-if="showTopBackground" class="top-background" />
 
     <!-- 登录卡片 -->
     <div class="login-card" :class="`radius-${borderRadius}`">
       <div class="login-header">
         <img v-if="logo" :src="logo" alt="Logo" class="login-logo">
-        <h1 class="login-title">{{ title }}</h1>
-        <p v-if="subtitle" class="login-subtitle">{{ subtitle }}</p>
+        <h1 class="login-title">
+          {{ title }}
+        </h1>
+        <p v-if="subtitle" class="login-subtitle">
+          {{ subtitle }}
+        </p>
       </div>
 
       <form class="login-form" @submit.prevent="handleSubmit">
@@ -61,52 +114,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { reactive, ref } from 'vue'
-import type { LoginMobileCardProps } from '../../types'
-
-const props = withDefaults(defineProps<LoginMobileCardProps>(), {
-  title: '欢迎登录',
-  subtitle: '',
-  logo: '',
-  showRemember: true,
-  showRegister: true,
-  showForgotPassword: true,
-  borderRadius: 'medium',
-  showTopBackground: true,
-  compact: false,
-})
-
-const formData = reactive({
-  username: '',
-  password: '',
-  remember: false,
-})
-
-const loading = ref(false)
-
-const handleSubmit = async () => {
-  if (!props.onLogin) return
-
-  loading.value = true
-  try {
-    await props.onLogin(formData)
-  } catch (error) {
-    console.error('Login failed:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleRegister = () => {
-  props.onRegister?.()
-}
-
-const handleForgotPassword = () => {
-  props.onForgotPassword?.()
-}
-</script>
 
 <style scoped>
 .template-switcher-container {

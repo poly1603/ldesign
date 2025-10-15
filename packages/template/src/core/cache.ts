@@ -1,11 +1,11 @@
 /**
  * 缓存管理器
- * 
+ *
  * 基于LRU/LFU算法的高性能缓存系统
  */
 
-import type { CacheConfig, CacheStrategy, CacheStats } from '../types'
 import type { Component } from 'vue'
+import type { CacheConfig, CacheStats, CacheStrategy } from '../types'
 import { getGlobalEmitter } from './events'
 
 /**
@@ -44,7 +44,8 @@ export class CacheManager<T = Component> {
    * 获取缓存项
    */
   get(key: string): T | null {
-    if (!this.config.enabled) return null
+    if (!this.config.enabled)
+return null
 
     const entry = this.cache.get(key)
     if (!entry) {
@@ -81,7 +82,8 @@ export class CacheManager<T = Component> {
    * 设置缓存项
    */
   set(key: string, value: T): void {
-    if (!this.config.enabled) return
+    if (!this.config.enabled)
+return
 
     // 检查是否需要清理空间
     if (this.cache.size >= this.config.maxSize && !this.cache.has(key)) {
@@ -119,9 +121,11 @@ export class CacheManager<T = Component> {
    * 检查缓存是否存在
    */
   has(key: string): boolean {
-    if (!this.config.enabled) return false
+    if (!this.config.enabled)
+return false
 
-    if (!this.cache.has(key)) return false
+    if (!this.cache.has(key))
+return false
 
     // 检查TTL
     if (this.config.ttl > 0) {
@@ -152,7 +156,7 @@ export class CacheManager<T = Component> {
    */
   private updateAccessOrder(key: string): void {
     const index = this.accessOrder.indexOf(key)
-    
+
     switch (this.config.strategy) {
       case 'lru':
         // LRU: 移到队尾
@@ -182,7 +186,8 @@ export class CacheManager<T = Component> {
    * 淘汰缓存项
    */
   private evict(): void {
-    if (this.cache.size === 0) return
+    if (this.cache.size === 0)
+return
 
     let keyToEvict: string | null = null
 
@@ -218,7 +223,8 @@ export class CacheManager<T = Component> {
    * 查找访问次数最少的key
    */
   private findLeastFrequentlyUsed(): string | null {
-    if (this.cache.size === 0) return null
+    if (this.cache.size === 0)
+return null
 
     let minCount = Infinity
     let leastUsedKey: string | null = null
@@ -242,7 +248,8 @@ export class CacheManager<T = Component> {
         try {
           const value = await loader(key)
           this.set(key, value)
-        } catch (error) {
+        }
+ catch (error) {
           console.error(`[Cache] Warmup failed for key: ${key}`, error)
         }
       }

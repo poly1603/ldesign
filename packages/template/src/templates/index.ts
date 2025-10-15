@@ -23,7 +23,7 @@ export function registerBuiltinTemplates(manager: TemplateManager): void {
       tags: ['login', 'desktop', 'default'],
       isDefault: true,
     },
-    () => import('./login/desktop/default/index.vue')
+    () => import('./login/desktop/default/index.vue'),
   )
 
   manager.register(
@@ -38,7 +38,7 @@ export function registerBuiltinTemplates(manager: TemplateManager): void {
       tags: ['login', 'desktop', 'split', 'modern'],
       isDefault: false,
     },
-    () => import('./login/desktop/split/index.vue')
+    () => import('./login/desktop/split/index.vue'),
   )
 
   // Mobile 登录模板
@@ -54,7 +54,7 @@ export function registerBuiltinTemplates(manager: TemplateManager): void {
       tags: ['login', 'mobile', 'default'],
       isDefault: true,
     },
-    () => import('./login/mobile/default/index.vue')
+    () => import('./login/mobile/default/index.vue'),
   )
 
   manager.register(
@@ -69,7 +69,7 @@ export function registerBuiltinTemplates(manager: TemplateManager): void {
       tags: ['login', 'mobile', 'card', 'modern'],
       isDefault: false,
     },
-    () => import('./login/mobile/card/index.vue')
+    () => import('./login/mobile/card/index.vue'),
   )
 
   // Tablet 登录模板
@@ -85,7 +85,7 @@ export function registerBuiltinTemplates(manager: TemplateManager): void {
       tags: ['login', 'tablet', 'simple'],
       isDefault: true,
     },
-    () => import('./login/tablet/simple/index.vue')
+    () => import('./login/tablet/simple/index.vue'),
   )
 
   manager.register(
@@ -100,7 +100,7 @@ export function registerBuiltinTemplates(manager: TemplateManager): void {
       tags: ['login', 'tablet', 'landscape', 'split'],
       isDefault: false,
     },
-    () => import('./login/tablet/landscape/index.vue')
+    () => import('./login/tablet/landscape/index.vue'),
   )
 
   // ===== 仪表板模板 =====
@@ -118,7 +118,7 @@ export function registerBuiltinTemplates(manager: TemplateManager): void {
       tags: ['dashboard', 'desktop', 'default'],
       isDefault: true,
     },
-    () => import('./dashboard/desktop/default/index.vue')
+    () => import('./dashboard/desktop/default/index.vue'),
   )
 
   manager.register(
@@ -133,7 +133,7 @@ export function registerBuiltinTemplates(manager: TemplateManager): void {
       tags: ['dashboard', 'desktop', 'sidebar', 'modern'],
       isDefault: false,
     },
-    () => import('./dashboard/desktop/sidebar/index.vue')
+    () => import('./dashboard/desktop/sidebar/index.vue'),
   )
 
   // Mobile 仪表板模板
@@ -149,7 +149,7 @@ export function registerBuiltinTemplates(manager: TemplateManager): void {
       tags: ['dashboard', 'mobile', 'simple'],
       isDefault: true,
     },
-    () => import('./dashboard/mobile/simple/index.vue')
+    () => import('./dashboard/mobile/simple/index.vue'),
   )
 
   manager.register(
@@ -164,7 +164,7 @@ export function registerBuiltinTemplates(manager: TemplateManager): void {
       tags: ['dashboard', 'mobile', 'tabs'],
       isDefault: false,
     },
-    () => import('./dashboard/mobile/tabs/index.vue')
+    () => import('./dashboard/mobile/tabs/index.vue'),
   )
 
   // Tablet 仪表板模板
@@ -180,7 +180,7 @@ export function registerBuiltinTemplates(manager: TemplateManager): void {
       tags: ['dashboard', 'tablet', 'simple'],
       isDefault: true,
     },
-    () => import('./dashboard/tablet/simple/index.vue')
+    () => import('./dashboard/tablet/simple/index.vue'),
   )
 
   manager.register(
@@ -195,25 +195,25 @@ export function registerBuiltinTemplates(manager: TemplateManager): void {
       tags: ['dashboard', 'tablet', 'grid'],
       isDefault: false,
     },
-    () => import('./dashboard/tablet/grid/index.vue')
+    () => import('./dashboard/tablet/grid/index.vue'),
   )
 }
 
+export type {
+  DashboardDesktopSidebarProps,
+  DashboardMenuItem,
+  DashboardMobileProps,
+  DashboardMobileTabsProps,
+  DashboardStat,
+  DashboardTabletGridProps,
+  DashboardTabletProps,
+  DashboardTemplateProps,
+} from './dashboard/types'
+
 // 导出模板类型
 export type {
-  LoginTemplateProps,
   LoginDesktopSplitProps,
   LoginMobileCardProps,
   LoginTabletProps,
+  LoginTemplateProps,
 } from './login/types'
-
-export type {
-  DashboardTemplateProps,
-  DashboardStat,
-  DashboardMenuItem,
-  DashboardDesktopSidebarProps,
-  DashboardMobileProps,
-  DashboardMobileTabsProps,
-  DashboardTabletProps,
-  DashboardTabletGridProps,
-} from './dashboard/types'

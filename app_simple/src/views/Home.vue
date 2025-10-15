@@ -8,7 +8,7 @@
       <p class="hero-description">
         {{ t('home.description') }}
       </p>
-      
+
       <div class="hero-actions">
         <RouterLink to="/about" class="btn btn-primary">
           {{ t('home.learnMore') }}
@@ -18,10 +18,10 @@
         </RouterLink>
       </div>
     </div>
-    
+
     <div class="features">
       <h2 class="features-title">{{ t('home.features.title') }}</h2>
-      
+
       <div class="features-grid">
         <div class="feature-card" v-for="feature in features" :key="feature.key">
           <div class="feature-icon">{{ feature.icon }}</div>
@@ -30,7 +30,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="stats">
       <div class="stat-item">
         <div class="stat-value">{{ routeCount }}</div>
@@ -86,12 +86,12 @@ const cacheSize = ref(0)
 onMounted(() => {
   // Get route count
   routeCount.value = router.getRoutes().length
-  
+
   // Get visit count (from localStorage)
   const visits = parseInt(localStorage.getItem('visitCount') || '0') + 1
   localStorage.setItem('visitCount', visits.toString())
   visitCount.value = visits
-  
+
   // Calculate cache size (example)
   const cacheStr = JSON.stringify(localStorage)
   cacheSize.value = Math.round(new Blob([cacheStr]).size / 1024)
@@ -100,7 +100,7 @@ onMounted(() => {
 
 <style scoped>
 .home-container {
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: 20px;
 }
@@ -109,9 +109,9 @@ onMounted(() => {
 .hero {
   text-align: center;
   padding: 60px 20px;
-  background: white;
+  background: var(--ld-color-gray-50, white);
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 30px var(--ld-color-gray-200, rgba(0, 0, 0, 0.05));
   margin-bottom: 40px;
 }
 
@@ -119,20 +119,18 @@ onMounted(() => {
   font-size: 48px;
   font-weight: 800;
   margin: 0 0 20px 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--color-primary-default);
 }
 
 .hero-subtitle {
   font-size: 20px;
-  color: #666;
+  color: var(--ld-color-gray-600, #666);
   margin: 0 0 10px 0;
 }
 
 .hero-description {
   font-size: 16px;
-  color: #888;
+  color: var(--ld-color-gray-500, #888);
   margin: 0 0 40px 0;
 }
 
@@ -154,24 +152,24 @@ onMounted(() => {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--ld-color-primary-500) 0%, var(--ld-color-primary-700) 100%);
+  color: var(--ld-color-gray-50, white);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 30px var(--ld-color-primary-300, rgba(102, 126, 234, 0.3));
 }
 
 .btn-secondary {
-  background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
+  background: var(--ld-color-gray-50, white);
+  color: var(--ld-color-primary-500);
+  border: 2px solid var(--ld-color-primary-500);
 }
 
 .btn-secondary:hover {
-  background: #667eea;
-  color: white;
+  background: var(--ld-color-primary-500);
+  color: var(--ld-color-gray-50, white);
 }
 
 /* Features display */
@@ -182,7 +180,7 @@ onMounted(() => {
 .features-title {
   text-align: center;
   font-size: 36px;
-  color: #2c3e50;
+  color: var(--ld-color-gray-800, #2c3e50);
   margin: 0 0 40px 0;
 }
 
@@ -193,17 +191,17 @@ onMounted(() => {
 }
 
 .feature-card {
-  background: white;
+  background: var(--ld-color-gray-50, white);
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 5px 20px var(--ld-color-gray-200, rgba(0, 0, 0, 0.05));
   text-align: center;
   transition: all 0.3s;
 }
 
 .feature-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px var(--ld-color-gray-300, rgba(0, 0, 0, 0.1));
 }
 
 .feature-icon {
@@ -213,24 +211,24 @@ onMounted(() => {
 
 .feature-card h3 {
   font-size: 20px;
-  color: #2c3e50;
+  color: var(--ld-color-gray-800, #2c3e50);
   margin: 0 0 10px 0;
 }
 
 .feature-card p {
-  color: #666;
+  color: var(--ld-color-gray-600, #666);
   margin: 0;
   line-height: 1.6;
 }
 
 /* 统计数据 */
 .stats {
-  background: white;
+  background: var(--ld-color-gray-50, white);
   border-radius: 12px;
   padding: 40px;
   display: flex;
   justify-content: space-around;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 5px 20px var(--ld-color-gray-200, rgba(0, 0, 0, 0.05));
   flex-wrap: wrap;
   gap: 30px;
 }
@@ -242,13 +240,13 @@ onMounted(() => {
 .stat-value {
   font-size: 36px;
   font-weight: 800;
-  color: #667eea;
+  color: var(--ld-color-primary-500);
   margin-bottom: 10px;
 }
 
 .stat-label {
   font-size: 14px;
-  color: #666;
+  color: var(--ld-color-gray-600, #666);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -257,11 +255,11 @@ onMounted(() => {
   .hero-title {
     font-size: 32px;
   }
-  
+
   .hero-subtitle {
     font-size: 16px;
   }
-  
+
   .features-grid {
     grid-template-columns: 1fr;
   }

@@ -1,9 +1,9 @@
-import mammoth from 'mammoth';
+import { renderAsync } from 'docx-preview';
 import type { IDocumentRenderer, DocumentMetadata, ViewerOptions } from '../types';
 
 /**
  * Word Document Renderer
- * Uses mammoth.js to convert DOCX files to HTML
+ * Uses docx-preview for high-fidelity rendering with styles and formatting
  */
 export class WordRenderer implements IDocumentRenderer {
  private container: HTMLElement | null = null;
@@ -29,45 +29,32 @@ export class WordRenderer implements IDocumentRenderer {
 
    // Create content area
    this.contentElement = document.createElement('div');
-   this.contentElement.className = 'word-viewer-content';
+   this.contentElement.className = 'word-viewer-content docx-preview-container';
 
-   // Convert DOCX to HTML using mammoth
-   const result = await mammoth.convertToHtml(
-    { arrayBuffer: data },
-    {
-     styleMap: [
-      "p[style-name='Heading 1'] => h1:fresh",
-      "p[style-name='Heading 2'] => h2:fresh",
-      "p[style-name='Heading 3'] => h3:fresh",
-      "p[style-name='Heading 4'] => h4:fresh",
-      "p[style-name='Heading 5'] => h5:fresh",
-      "p[style-name='Heading 6'] => h6:fresh",
-      "p[style-name='Code'] => pre:fresh",
-      "p[style-name='Quote'] => blockquote:fresh"
-     ],
-     convertImage: mammoth.images.imgElement((image) => {
-      return image.read('base64').then((imageBuffer) => {
-       return {
-        src: `data:${image.contentType};base64,${imageBuffer}`
-       };
-      });
-     })
-    }
-   );
-
-   // Set HTML content
-   this.contentElement.innerHTML = result.value;
+   // Render DOCX using docx-preview with high-fidelity styling
+   await renderAsync(data, this.contentElement, undefined, {
+    className: 'docx-content',
+    inWrapper: true,
+    ignoreWidth: false,
+    ignoreHeight: false,
+    ignoreFonts: false,
+    breakPages: options.word?.pageView === 'single',
+    ignoreLastRenderedPageBreak: false,
+    experimental: false,
+    trimXmlDeclaration: true,
+    debug: false,
+    renderHeaders: true,
+    renderFooters: true,
+    renderFootnotes: true,
+    renderEndnotes: true,
+    renderComments: false
+   });
 
    // Add page view mode
    if (options.word?.pageView === 'single') {
     this.contentElement.classList.add('page-view-single');
    } else {
     this.contentElement.classList.add('page-view-continuous');
-   }
-
-   // Show warnings if any
-   if (result.messages && result.messages.length > 0) {
-    console.warn('Word rendering warnings:', result.messages);
    }
 
    wrapper.appendChild(this.contentElement);
@@ -87,22 +74,29 @@ export class WordRenderer implements IDocumentRenderer {
   */
  async getMetadata(data: ArrayBuffer): Promise<DocumentMetadata> {
   try {
-   // Extract raw text to count words
-   const result = await mammoth.extractRawText({ arrayBuffer: data });
-   const text = result.value;
+   // Extract text content for word count
+   const JSZip = (await import('jszip')).default;
+   const zip = await JSZip.loadAsync(data);
+   
+   // Try to read document.xml for content
+   const docXml = await zip.file('word/document.xml')?.async('string');
+   
+   if (docXml) {
+    // Simple text extraction from XML
+    const textMatches = docXml.match(/<w:t[^>]*>([^<]*)<\/w:t>/g) || [];
+    const text = textMatches.map(match => match.replace(/<\/?w:t[^>]*>/g, '')).join(' ');
+    const wordCount = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+    const pageCount = Math.ceil(wordCount / 250);
 
-   // Count words (simple word count by splitting on whitespace)
-   const wordCount = text.trim().split(/\s+/).length;
-
-   // Count pages (estimate based on word count, ~250 words per page)
-   const pageCount = Math.ceil(wordCount / 250);
+    return {
+     wordCount,
+     pageCount,
+     title: 'Word Document'
+    };
+   }
 
    return {
-    wordCount,
-    pageCount,
-    title: 'Word Document',
-    // Note: mammoth.js doesn't provide built-in metadata extraction
-    // For more detailed metadata, you would need to parse the DOCX XML directly
+    title: 'Word Document'
    };
   } catch (error) {
    console.error('Failed to extract metadata:', error);
@@ -116,22 +110,20 @@ export class WordRenderer implements IDocumentRenderer {
   * Export document to different formats
   */
  async export(format: 'pdf' | 'html' | 'text'): Promise<Blob> {
-  if (!this.currentData) {
+  if (!this.currentData || !this.contentElement) {
    throw new Error('No document loaded');
   }
 
   switch (format) {
    case 'html':
-    const htmlResult = await mammoth.convertToHtml({ arrayBuffer: this.currentData });
-    return new Blob([htmlResult.value], { type: 'text/html' });
+    const htmlContent = this.contentElement.innerHTML;
+    return new Blob([htmlContent], { type: 'text/html' });
 
    case 'text':
-    const textResult = await mammoth.extractRawText({ arrayBuffer: this.currentData });
-    return new Blob([textResult.value], { type: 'text/plain' });
+    const textContent = this.contentElement.textContent || '';
+    return new Blob([textContent], { type: 'text/plain' });
 
    case 'pdf':
-    // PDF export would require additional libraries like jsPDF
-    // For now, we convert to HTML and let the browser print to PDF
     throw new Error('PDF export not yet implemented. Please use browser print to PDF feature.');
 
    default:

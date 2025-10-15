@@ -1,17 +1,17 @@
 /**
  * 模板注册中心
- * 
+ *
  * 单一数据源，管理所有模板的注册、查询和索引
  */
 
+import type { Component } from 'vue'
 import type {
   DeviceType,
   TemplateId,
   TemplateMetadata,
-  TemplateRegistration,
   TemplateQueryOptions,
+  TemplateRegistration,
 } from '../types'
-import type { Component } from 'vue'
 import { buildTemplateId, parseTemplateId } from '../utils'
 import { getGlobalEmitter } from './events'
 
@@ -42,7 +42,7 @@ export class TemplateRegistry {
     device: DeviceType,
     name: string,
     metadata: Omit<TemplateMetadata, 'category' | 'device' | 'name'>,
-    componentOrLoader: Component | (() => Promise<{ default: Component }>)
+    componentOrLoader: Component | (() => Promise<{ default: Component }>),
   ): TemplateId {
     const id = buildTemplateId(category, device, name)
 
@@ -64,14 +64,26 @@ export class TemplateRegistry {
     }
 
     // 判断是组件还是加载器
-    // 通常情况下，动态导入函数是一个没有参数的函数
-    // Vue 组件可能是对象或函数
-    const isAsyncLoader = typeof componentOrLoader === 'function' && 
-                         componentOrLoader.toString().includes('import(')
-    
-    if (isAsyncLoader) {
-      registration.loader = componentOrLoader as () => Promise<{ default: Component }>
-    } else {
+    // 如果是函数，检查是否是异步加载器
+    if (typeof componentOrLoader === 'function') {
+      // 检查函数签名或内容
+      const funcStr = componentOrLoader.toString()
+      // 如果包含 import 关键字，或者返回 Promise，那么它是一个 loader
+      const isAsyncLoader = funcStr.includes('import(')
+        || funcStr.includes('Promise')
+        || funcStr.includes('async')
+        || componentOrLoader.constructor.name === 'AsyncFunction'
+
+      if (isAsyncLoader) {
+        registration.loader = componentOrLoader as () => Promise<{ default: Component }>
+      }
+ else {
+        // 可能是函数式组件
+        registration.component = componentOrLoader as Component
+      }
+    }
+ else {
+      // 对象或其他类型，直接作为组件
       registration.component = componentOrLoader as Component
     }
 
@@ -118,10 +130,10 @@ export class TemplateRegistry {
       name: string
       metadata: Omit<TemplateMetadata, 'category' | 'device' | 'name'>
       component: Component | (() => Promise<{ default: Component }>)
-    }>
+    }>,
   ): TemplateId[] {
     return registrations.map(r =>
-      this.register(r.category, r.device, r.name, r.metadata, r.component)
+      this.register(r.category, r.device, r.name, r.metadata, r.component),
     )
   }
 
@@ -130,10 +142,12 @@ export class TemplateRegistry {
    */
   unregister(id: TemplateId): boolean {
     const registration = this.templates.get(id)
-    if (!registration) return false
+    if (!registration)
+return false
 
     const parsed = parseTemplateId(id)
-    if (!parsed) return false
+    if (!parsed)
+return false
 
     // 从主索引删除
     this.templates.delete(id)
@@ -194,7 +208,7 @@ export class TemplateRegistry {
   get(
     categoryOrId: string,
     device?: DeviceType,
-    name?: string
+    name?: string,
   ): TemplateRegistration | null {
     if (device && name) {
       const id = buildTemplateId(categoryOrId, device, name)
@@ -260,7 +274,7 @@ export class TemplateRegistry {
     // 按标签过滤
     if (options.tags && options.tags.length > 0) {
       results = results.filter(r =>
-        r.metadata.tags?.some(tag => options.tags!.includes(tag))
+        r.metadata.tags?.some(tag => options.tags!.includes(tag)),
       )
     }
 

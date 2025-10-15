@@ -182,8 +182,8 @@ bootstrap().catch(error => {
       align-items: center;
       min-height: 100vh;
       font-family: system-ui;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      background: linear-gradient(135deg, var(--ld-color-primary-500, #667eea) 0%, var(--ld-color-primary-700, #764ba2) 100%);
+      color: var(--ld-color-gray-50, white);
       text-align: center;
       padding: 20px;
     ">
@@ -195,15 +195,15 @@ bootstrap().catch(error => {
         style="
           padding: 12px 24px;
           font-size: 16px;
-          border: 2px solid white;
+          border: 2px solid var(--ld-color-gray-50, white);
           background: transparent;
-          color: white;
+          color: var(--ld-color-gray-50, white);
           border-radius: 8px;
           cursor: pointer;
           transition: all 0.3s;
         "
-        onmouseover="this.style.background='white'; this.style.color='#667eea';"
-        onmouseout="this.style.background='transparent'; this.style.color='white';"
+        onmouseover="this.style.background='var(--ld-color-gray-50, white)'; this.style.color='var(--ld-color-primary-500, #667eea)';"
+        onmouseout="this.style.background='transparent'; this.style.color='var(--ld-color-gray-50, white)';"
       >
         重新加载
       </button>

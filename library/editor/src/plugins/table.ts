@@ -517,16 +517,22 @@ const insertTable: Command = (state, dispatch) => {
           min-width: 0;
           min-height: 0;
           aspect-ratio: 1;
+          box-sizing: border-box;
         }
         .grid-cell:hover {
           background: #dbeafe;
           border-color: #93c5fd;
-          transform: scale(1.05);
+          box-shadow: 0 0 0 1px #93c5fd inset;
         }
         .grid-cell.selected {
           background: #3b82f6;
           border-color: #2563eb;
-          transform: scale(1);
+          box-shadow: 0 0 0 1px #2563eb inset;
+        }
+        .grid-cell:active {
+          background: #2563eb;
+          border-color: #1e40af;
+          box-shadow: 0 0 0 1px #1e40af inset;
         }
         .grid-info {
           margin-top: 10px;

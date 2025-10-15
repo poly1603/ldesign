@@ -1,532 +1,492 @@
 # 常见问题
 
-本页面收集了使用 @ldesign/crypto 时的常见问题和解答。
+本文档收集了使用 @ldesign/crypto 时的常见问题和解答。
 
 ## 安装和配置
 
-### Q: 如何安装 @ldesign/crypto？
-
-**A:** 使用 npm、yarn 或 pnpm 安装：
+### 如何安装 @ldesign/crypto？
 
 ```bash
-# npm
+# 使用 pnpm
+pnpm add @ldesign/crypto
+
+# 使用 npm
 npm install @ldesign/crypto
 
-# yarn
+# 使用 yarn
 yarn add @ldesign/crypto
-
-# pnpm
-pnpm add @ldesign/crypto
 ```
 
-### Q: 支持哪些环境？
+### 支持哪些 Node.js 版本？
 
-**A:** @ldesign/crypto 支持：
+@ldesign/crypto 需要 Node.js >= 16.0.0。
 
-- **浏览器**: Chrome 37+, Firefox 34+, Safari 7.1+, Edge 12+
-- **Node.js**: 12.0.0+
-- **TypeScript**: 4.0+
-- **模块系统**: ES 模块、CommonJS、UMD
+### 支持哪些浏览器？
 
-### Q: 如何在 TypeScript 项目中使用？
+支持所有支持 ES 模块的现代浏览器：
 
-**A:** 库已包含完整的类型定义，直接导入即可：
+- Chrome >= 90
+- Firefox >= 88
+- Safari >= 14
+- Edge >= 90
+
+### 如何在 TypeScript 项目中使用？
+
+库自带完整的 TypeScript 类型定义，直接导入即可：
 
 ```typescript
-import { decrypt, encrypt, hash } from '@ldesign/crypto'
-
-// TypeScript 会自动提供类型提示和检查
-const encrypted = encrypt.aes('data', 'key')
+import { aes, hash } from '@ldesign/crypto'
+import type { EncryptResult, DecryptResult } from '@ldesign/crypto'
 ```
 
 ## 加密和解密
 
-### Q: AES 加密时应该选择哪种密钥长度？
+### 为什么解密失败？
 
-**A:** 推荐选择：
+常见原因：
 
-- **AES-256** (32 字节密钥): 推荐用于一般用途，安全性高
-- **AES-192** (24 字节密钥): 平衡安全性和性能
-- **AES-128** (16 字节密钥): 性能最好，安全性足够
+1. **密钥错误**：确保使用相同的密钥
+2. **IV 不匹配**：解密时需要使用加密时的 IV
+3. **算法参数不一致**：keySize、mode 等必须相同
+4. **数据损坏**：加密数据被截断或篡改
 
 ```typescript
-// 推荐使用 AES-256
-const encrypted = encrypt.aes256(data, key)
-
-// 或者指定密钥长度
-const encrypted = encrypt.aes(data, key, { keySize: 256 })
+// 正确示例
+const encrypted = aes.encrypt('data', 'key', { keySize: 256, mode: 'CBC' })
+const decrypted = aes.decrypt(encrypted, 'key') // 自动使用相同参数
 ```
 
-### Q: 为什么解密失败了？
+### 如何选择加密算法？
 
-**A:** 解密失败的常见原因：
+- **对称加密**：推荐 AES-256-CBC 或 AES-256-GCM
+- **非对称加密**：推荐 RSA-2048 或 RSA-4096
+- **哈希**：推荐 SHA-256 或 SHA-512
+- **避免**：DES、3DES、MD5、SHA-1（已不安全）
 
-1. **密钥不匹配**：解密密钥必须与加密密钥完全相同
-2. **数据损坏**：加密数据在传输或存储过程中被修改
-3. **算法参数不匹配**：加密和解密使用了不同的参数
+### AES-128、AES-192 和 AES-256 有什么区别？
+
+主要区别是密钥长度和安全性：
+
+- **AES-128**：128位密钥，速度最快，安全性足够
+- **AES-192**：192位密钥，平衡性能和安全
+- **AES-256**：256位密钥，最高安全性（推荐）
 
 ```typescript
-// 正确的做法
-const key = 'my-secret-key'
-const encrypted = encrypt.aes(data, key, { keySize: 256, mode: 'CBC' })
-const decrypted = decrypt.aes(encrypted, key, { keySize: 256, mode: 'CBC' })
-
-// 检查解密结果
-if (!decrypted.success) {
-  console.error('解密失败:', decrypted.error)
-}
+const encrypted128 = aes.encrypt('data', 'key', { keySize: 128 })
+const encrypted256 = aes.encrypt('data', 'key', { keySize: 256 })
 ```
 
-### Q: RSA 加密有数据大小限制吗？
+### 什么是 IV？为什么需要它？
 
-**A:** 是的，RSA 有数据大小限制：
-
-- **RSA-1024**: 最大 117 字节
-- **RSA-2048**: 最大 245 字节
-- **RSA-4096**: 最大 501 字节
-
-对于大数据，推荐使用混合加密：
+IV（初始化向量）是加密时使用的随机值，确保相同的明文在不同加密时产生不同的密文。
 
 ```typescript
-// 混合加密：RSA + AES
-const aesKey = keyGenerator.generateKey(32)
-const encryptedData = encrypt.aes(largeData, aesKey)
-const encryptedKey = encrypt.rsa(aesKey, rsaPublicKey)
+import { RandomUtils } from '@ldesign/crypto'
+
+// 每次加密使用新的 IV
+const iv = RandomUtils.generateIV(16)
+const encrypted = aes.encrypt('data', 'key', { iv })
+```
+
+**重要**：不要重复使用相同的 IV！
+
+### 如何加密大文件？
+
+使用流式加密：
+
+```typescript
+import { encryptFile } from '@ldesign/crypto'
+
+await encryptFile('large-file.txt', 'output.enc', 'key', {
+ algorithm: 'aes',
+ chunkSize: 64 * 1024, // 64KB
+ onProgress: (progress) => console.log(`${progress.percentage}%`)
+})
+```
+
+### RSA 可以加密大数据吗？
+
+不建议。RSA 适合加密小量数据（如密钥）。对于大数据，使用混合加密：
+
+```typescript
+import { aes, rsa, RandomUtils } from '@ldesign/crypto'
+
+// 1. 生成随机 AES 密钥
+const aesKey = RandomUtils.generateKey(32)
+
+// 2. 用 AES 加密数据
+const encryptedData = aes.encrypt(largeData, aesKey)
+
+// 3. 用 RSA 加密 AES 密钥
+const encryptedKey = rsa.encrypt(aesKey, publicKey)
 
 // 传输 encryptedData 和 encryptedKey
 ```
 
-### Q: 如何安全地存储加密密钥？
+## 哈希和签名
 
-**A:** 密钥存储的最佳实践：
+### 哈希和加密有什么区别？
 
-1. **不要硬编码**：不要在源代码中写入密钥
-2. **使用环境变量**：将密钥存储在环境变量中
-3. **密钥管理服务**：使用专业的密钥管理服务
-4. **加密存储**：如果必须本地存储，使用主密钥加密
+- **哈希**：单向函数，不可逆，用于数据指纹
+- **加密**：双向函数，可逆，用于保护数据机密性
 
 ```typescript
-// ❌ 错误：硬编码密钥
-const key = 'hardcoded-secret-key'
+// 哈希（不可逆）
+const hash = hash.sha256('password') // 无法从哈希还原密码
 
-// ✅ 正确：使用环境变量
-const key = process.env.ENCRYPTION_KEY
-
-// ✅ 正确：使用密钥派生
-const masterKey = process.env.MASTER_KEY
-const derivedKey = hash.pbkdf2(masterKey, salt, {
-  iterations: 100000,
-  keyLength: 32,
-})
+// 加密（可逆）
+const encrypted = aes.encrypt('data', 'key')
+const decrypted = aes.decrypt(encrypted, 'key') // 可以还原数据
 ```
 
-## 哈希和验证
+### 如何验证数据完整性？
 
-### Q: 应该使用哪种哈希算法？
-
-**A:** 算法选择建议：
-
-| 用途       | 推荐算法           | 原因                 |
-| ---------- | ------------------ | -------------------- |
-| 密码存储   | SHA-256 + PBKDF2   | 安全性高，抗暴力破解 |
-| 数据完整性 | SHA-256            | 平衡安全性和性能     |
-| 数字签名   | SHA-256 或 SHA-512 | 广泛支持，安全性高   |
-| 快速校验   | SHA-256            | 不推荐 MD5 和 SHA-1  |
+使用 HMAC 或哈希：
 
 ```typescript
-// ❌ 不推荐：MD5 和 SHA-1 已不安全
-const md5Hash = hash.md5(data)
-const sha1Hash = hash.sha1(data)
+import { hmac } from '@ldesign/crypto'
 
-// ✅ 推荐：使用 SHA-256 或更强算法
-const sha256Hash = hash.sha256(data)
-const sha512Hash = hash.sha512(data)
+// 生成 HMAC
+const data = 'important data'
+const mac = hmac.sha256(data, 'secret-key')
+
+// 验证
+const isValid = hmac.verify(data, 'secret-key', mac, 'SHA256')
 ```
 
-### Q: 如何安全地存储用户密码？
+### 数字签名和 HMAC 有什么区别？
 
-**A:** 使用盐值和密钥派生函数：
+- **HMAC**：对称密钥，发送方和接收方共享密钥
+- **数字签名**：非对称密钥，私钥签名、公钥验证
 
 ```typescript
-// 存储密码
-function storePassword(password: string): string {
-  const salt = keyGenerator.generateSalt(16)
-  const hashedPassword = hash.pbkdf2(password, salt, {
-    iterations: 100000, // 足够的迭代次数
-    keyLength: 32,
-    hashAlgorithm: 'SHA256',
-  })
+// HMAC（对称）
+const mac = hmac.sha256('data', 'shared-key')
 
-  return `${salt}:${hashedPassword}`
-}
-
-// 验证密码
-function verifyPassword(password: string, storedHash: string): boolean {
-  const [salt, expectedHash] = storedHash.split(':')
-  const computedHash = hash.pbkdf2(password, salt, {
-    iterations: 100000,
-    keyLength: 32,
-    hashAlgorithm: 'SHA256',
-  })
-
-  return computedHash === expectedHash
-}
-```
-
-### Q: HMAC 和普通哈希有什么区别？
-
-**A:** 主要区别：
-
-- **哈希**: 单向函数，用于数据完整性验证
-- **HMAC**: 带密钥的哈希，用于身份验证和完整性验证
-
-```typescript
-// 普通哈希 - 任何人都可以验证
-const dataHash = hash.sha256(data)
-const isValid = hash.verify(data, dataHash, 'SHA256')
-
-// HMAC - 需要密钥才能验证
-const hmacValue = hmac.sha256(data, secretKey)
-const isValidHmac = hmac.verify(data, secretKey, hmacValue, 'SHA256')
-```
-
-## Vue 3 集成
-
-### Q: 如何在 Vue 3 中使用？
-
-**A:** 有两种方式：
-
-**方式 1：使用 Composition API**
-
-```typescript
-import { useCrypto } from '@ldesign/crypto/vue'
-
-export default {
-  setup() {
-    const { encryptAES, decryptAES, isEncrypting } = useCrypto()
-
-    return {
-      encryptAES,
-      decryptAES,
-      isEncrypting,
-    }
-  },
-}
-```
-
-**方式 2：使用插件**
-
-```typescript
-// main.ts
-import { CryptoPlugin } from '@ldesign/crypto/vue'
-app.use(CryptoPlugin)
-
-// 组件中使用
-export default {
-  methods: {
-    encrypt() {
-      const result = this.$crypto.encrypt.aes(this.data, this.key)
-    },
-  },
-}
-```
-
-### Q: Vue 组件中如何处理加密错误？
-
-**A:** 使用 composable 的错误处理：
-
-```vue
-<script setup>
-import { useCrypto } from '@ldesign/crypto/vue'
-import { ref, watch } from 'vue'
-
-const { encryptAES, lastError, clearError } = useCrypto()
-const errorMessage = ref('')
-
-// 监听错误
-watch(lastError, (error) => {
-  if (error) {
-    errorMessage.value = error
-    // 5秒后自动清除错误
-    setTimeout(() => {
-      clearError()
-      errorMessage.value = ''
-    }, 5000)
-  }
-})
-
-async function handleEncrypt() {
-  try {
-    clearError()
-    const result = await encryptAES(data.value, key.value)
-    // 处理成功结果
-  }
-  catch (error) {
-    // 错误会自动设置到 lastError
-    console.error('加密失败:', error)
-  }
-}
-</script>
-
-<template>
-  <div v-if="errorMessage" class="error">
-    {{ errorMessage }}
-  </div>
-</template>
+// 数字签名（非对称）
+const signature = digitalSignature.sign('data', privateKey, 'SHA256')
+const isValid = digitalSignature.verify('data', signature, publicKey, 'SHA256')
 ```
 
 ## 性能问题
 
-### Q: 加密操作很慢，如何优化？
+### 如何提高加密性能？
 
-**A:** 性能优化建议：
-
-1. **选择合适的算法**：根据需求选择算法
-2. **批量处理**：对多个数据项进行批量操作
-3. **使用 Web Worker**：在后台线程执行加密
-4. **缓存结果**：缓存重复的加密结果
+1. **启用缓存**
 
 ```typescript
-// 批量加密
-function batchEncrypt(dataList: string[], key: string) {
-  return dataList.map(data => encrypt.aes(data, key))
-}
+import { CryptoManager } from '@ldesign/crypto'
 
-// 使用缓存
-const encryptionCache = new Map()
-function cachedEncrypt(data: string, key: string) {
-  const cacheKey = `${data}:${key}`
-  if (encryptionCache.has(cacheKey)) {
-    return encryptionCache.get(cacheKey)
+const manager = new CryptoManager({
+ enableCache: true,
+ maxCacheSize: 1000
+})
+```
+
+2. **批量处理**
+
+```typescript
+const operations = items.map((item, index) => ({
+ id: String(index),
+ data: item,
+ key: 'key',
+ algorithm: 'AES' as const
+}))
+
+const results = await cryptoManager.batchEncrypt(operations)
+```
+
+3. **使用 Worker 线程**
+
+```typescript
+import { getGlobalWorkerPool } from '@ldesign/crypto'
+
+const pool = getGlobalWorkerPool({ maxWorkers: 4 })
+const result = await pool.execute({
+ type: 'encrypt',
+ algorithm: 'aes',
+ data: 'data',
+ key: 'key'
+})
+```
+
+### 缓存如何工作？
+
+库使用 LRU（最近最少使用）缓存机制，自动缓存加密结果：
+
+```typescript
+// 第一次调用（慢）
+const result1 = aes.encrypt('data', 'key')
+
+// 第二次调用相同参数（快，从缓存）
+const result2 = aes.encrypt('data', 'key')
+
+// 查看缓存统计
+const stats = cryptoManager.getCacheStats()
+console.log('缓存命中率:', stats.hitRate)
+```
+
+### 密钥派生很慢怎么办？
+
+密钥派生（PBKDF2）是故意设计得慢，以防止暴力破解。但可以缓存结果：
+
+```typescript
+// 第一次调用慢
+const derived1 = deriveKey('password', 'salt', { iterations: 100000 })
+
+// 第二次相同参数快（从缓存，2.11x 加速）
+const derived2 = deriveKey('password', 'salt', { iterations: 100000 })
+```
+
+## Vue 集成
+
+### 如何在 Vue 3 中使用？
+
+安装插件：
+
+```typescript
+import { createApp } from 'vue'
+import { CryptoPlugin } from '@ldesign/crypto/vue'
+
+const app = createApp(App)
+app.use(CryptoPlugin)
+app.mount('#app')
+```
+
+使用组合式函数：
+
+```vue
+<script setup>
+import { useEncryption } from '@ldesign/crypto/vue'
+
+const { encryptText, decryptText } = useEncryption()
+</script>
+```
+
+### 可以在 Vue 2 中使用吗？
+
+@ldesign/crypto 核心功能支持 Vue 2，但 Vue 插件和组合式函数仅支持 Vue 3。
+
+Vue 2 项目中直接使用核心 API：
+
+```javascript
+import { aes, hash } from '@ldesign/crypto'
+
+export default {
+ methods: {
+  handleEncrypt() {
+   const result = aes.encrypt('data', 'key')
+   console.log(result)
   }
-
-  const result = encrypt.aes(data, key)
-  encryptionCache.set(cacheKey, result)
-  return result
+ }
 }
 ```
 
-### Q: 在浏览器中处理大文件时内存不足怎么办？
+## 错误处理
 
-**A:** 使用分块处理：
+### 为什么会报 "Invalid Base64 format" 错误？
+
+可能原因：
+
+1. 数据不是有效的 Base64 格式
+2. 数据被截断或损坏
+3. 编码类型不匹配
 
 ```typescript
-async function encryptLargeFile(fileContent: string, key: string) {
-  const chunkSize = 64 * 1024 // 64KB 块
-  const chunks = []
+// 验证 Base64 格式
+import { ValidationUtils } from '@ldesign/crypto'
 
-  for (let i = 0; i < fileContent.length; i += chunkSize) {
-    const chunk = fileContent.slice(i, i + chunkSize)
-    const encrypted = encrypt.aes(chunk, key)
-    chunks.push(encrypted)
+if (ValidationUtils.isValidBase64(data)) {
+ const decoded = encoding.base64.decode(data)
+} else {
+ console.error('Invalid Base64 data')
+}
+```
 
-    // 让出控制权，避免阻塞 UI
-    await new Promise(resolve => setTimeout(resolve, 0))
-  }
+### 如何调试加密问题？
 
-  return chunks
+启用调试模式：
+
+```typescript
+import { CryptoManager } from '@ldesign/crypto'
+
+const manager = new CryptoManager({
+ debug: true,
+ logLevel: 'debug'
+})
+```
+
+查看详细错误信息：
+
+```typescript
+const result = aes.encrypt('data', 'key')
+
+if (!result.success) {
+ console.error('Error:', result.error)
+ console.error('Algorithm:', result.algorithm)
 }
 ```
 
 ## 安全问题
 
-### Q: 如何防止时间攻击？
+### 密钥应该存储在哪里？
 
-**A:** 使用常数时间比较：
+**不要**：
+
+- 硬编码在代码中
+- 提交到 Git
+- 存储在前端 localStorage（未加密）
+
+**推荐**：
+
+- 环境变量
+- 密钥管理服务（AWS Secrets Manager、Google Secret Manager）
+- 加密存储
 
 ```typescript
-// 不安全的比较
-const unsafeCompare = (a: string, b: string) => a === b
+// 使用环境变量
+const key = import.meta.env.VITE_ENCRYPTION_KEY
 
-// 安全的常数时间比较
-function safeCompare(a: string, b: string): boolean {
-  if (a.length !== b.length)
-    return false
+// 或使用加密存储
+import { SecureStorage } from '@ldesign/crypto'
+const storage = new SecureStorage({ key: 'master-key' })
+storage.set('encryption-key', key)
+```
 
-  let result = 0
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i)
-  }
+### 前端加密安全吗？
 
-  return result === 0
+前端加密可以保护传输中的数据，但有限制：
+
+- 密钥管理困难
+- 容易被逆向工程
+- 不能完全信任客户端
+
+**最佳实践**：
+
+- 前端加密 + 后端加密（双重保护）
+- 敏感操作在后端执行
+- 使用 HTTPS
+
+### 如何防止密钥泄露？
+
+1. **不要在客户端存储长期密钥**
+2. **使用会话密钥**
+3. **定期轮换密钥**
+4. **监控异常访问**
+
+```typescript
+// 使用临时会话密钥
+const sessionKey = RandomUtils.generateKey(32)
+// 使用完毕后清除
+sessionKey = null
+```
+
+## 兼容性
+
+### 在 Node.js 中使用？
+
+完全支持：
+
+```javascript
+const { aes, hash } = require('@ldesign/crypto')
+
+const encrypted = aes.encrypt('data', 'key')
+```
+
+### 在 React 中使用？
+
+核心功能完全支持：
+
+```jsx
+import { useState } from 'react'
+import { aes } from '@ldesign/crypto'
+
+function CryptoComponent() {
+ const [encrypted, setEncrypted] = useState('')
+
+ const handleEncrypt = () => {
+  const result = aes.encrypt('data', 'key')
+  setEncrypted(result.data)
+ }
+
+ return <button onClick={handleEncrypt}>Encrypt</button>
 }
 ```
 
-### Q: 如何确保随机数的安全性？
+### 支持 SSR（服务端渲染）吗？
 
-**A:** 使用密码学安全的随机数生成器：
+完全支持。库在 Node.js 和浏览器环境都能正常工作。
 
-```typescript
-// ✅ 安全：使用库提供的生成器
-const secureKey = keyGenerator.generateKey(32)
-const secureSalt = keyGenerator.generateSalt(16)
+## 更新和迁移
 
-// ❌ 不安全：使用 Math.random()
-const insecureKey = Math.random().toString()
+### 如何升级到最新版本？
+
+```bash
+# 查看当前版本
+npm list @ldesign/crypto
+
+# 升级到最新版本
+npm update @ldesign/crypto
+
+# 或指定版本
+npm install @ldesign/crypto@latest
 ```
 
-### Q: 什么时候需要使用数字签名？
+### 版本之间兼容吗？
 
-**A:** 数字签名适用于：
+- **主版本**（1.x -> 2.x）：可能有破坏性变更
+- **次版本**（1.0 -> 1.1）：向后兼容，新功能
+- **补丁版本**（1.0.0 -> 1.0.1）：向后兼容，bug 修复
 
-- **身份验证**：确认数据来源
-- **不可否认**：防止发送方否认
-- **完整性保护**：检测数据篡改
-- **法律效力**：电子合同、证书等
+查看 [CHANGELOG.md](../../CHANGELOG.md) 了解详细变更。
 
-```typescript
-// 数字签名示例
-const keyPair = rsa.generateKeyPair(2048)
-const document = 'Important contract content'
+## 其他问题
 
-// 签名
-const signature = digitalSignature.sign(document, keyPair.privateKey)
+### 如何贡献代码？
 
-// 验证
-const isValid = digitalSignature.verify(document, signature, keyPair.publicKey)
-```
+1. Fork 仓库
+2. 创建功能分支
+3. 编写测试
+4. 提交 Pull Request
 
-## 错误处理
+详见 [贡献指南](../../CONTRIBUTING.md)。
 
-### Q: 如何正确处理加密错误？
+### 如何报告 bug？
 
-**A:** 分层错误处理：
+在 [GitHub Issues](https://github.com/ldesign/crypto/issues) 提交，包含：
 
-```typescript
-async function safeEncrypt(data: string, key: string) {
-  try {
-    // 输入验证
-    if (!data || !key) {
-      throw new Error('数据和密钥不能为空')
-    }
+- 问题描述
+- 重现步骤
+- 环境信息（Node.js 版本、浏览器等）
+- 最小可复现示例
 
-    if (key.length < 16) {
-      throw new Error('密钥长度不足')
-    }
+### 有商业支持吗？
 
-    // 执行加密
-    const result = encrypt.aes(data, key)
+目前是开源项目，社区支持。企业级支持请联系维护团队。
 
-    return {
-      success: true,
-      data: result,
-      error: null,
-    }
-  }
-  catch (error) {
-    console.error('加密错误:', error)
+### 性能如何？
 
-    return {
-      success: false,
-      data: null,
-      error: error.message,
-    }
-  }
-}
-```
+- **密钥派生缓存**：2.11x 加速
+- **批量处理**：3-5x 加速
+- **LRU 缓存**：10-100x 加速（命中时）
+- **440+ 测试用例**
+- **80%+ 代码覆盖率**
 
-### Q: 生产环境中如何处理敏感错误信息？
+详见 [性能优化指南](/guide/performance)。
 
-**A:** 过滤敏感信息：
+### 开源许可是什么？
 
-```typescript
-function sanitizeError(error: Error, isProduction: boolean): string {
-  if (!isProduction) {
-    return error.message // 开发环境显示详细错误
-  }
-
-  // 生产环境过滤敏感信息
-  const sensitivePatterns = [/key/i, /password/i, /secret/i, /token/i]
-
-  for (const pattern of sensitivePatterns) {
-    if (pattern.test(error.message)) {
-      return '操作失败，请重试' // 通用错误消息
-    }
-  }
-
-  return error.message
-}
-```
-
-## 兼容性问题
-
-### Q: 在老版本浏览器中无法使用怎么办？
-
-**A:** 检查浏览器支持并提供降级方案：
-
-```typescript
-function checkCryptoSupport(): boolean {
-  return typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function'
-}
-
-if (!checkCryptoSupport()) {
-  console.warn('当前浏览器不支持 Web Crypto API')
-  // 提供降级方案或提示用户升级浏览器
-}
-```
-
-### Q: Node.js 和浏览器环境有什么区别？
-
-**A:** 主要区别：
-
-| 特性       | Node.js            | 浏览器                 |
-| ---------- | ------------------ | ---------------------- |
-| 随机数生成 | crypto.randomBytes | crypto.getRandomValues |
-| 模块导入   | require/import     | import                 |
-| 文件系统   | 支持               | 不支持                 |
-| 性能       | 更好               | 受限                   |
-
-库会自动处理这些差异，无需手动适配。
-
-## 迁移问题
-
-### Q: 如何从其他加密库迁移？
-
-**A:** 迁移步骤：
-
-1. **评估现有加密数据**：确定使用的算法和参数
-2. **逐步替换**：先替换新功能，再迁移旧数据
-3. **保持兼容**：确保能解密旧数据
-4. **测试验证**：充分测试迁移结果
-
-```typescript
-// 迁移示例：从旧库迁移到新库
-function migrateEncryptedData(oldEncryptedData: any, key: string) {
-  try {
-    // 尝试用新库解密
-    const decrypted = decrypt.aes(oldEncryptedData, key)
-    if (decrypted.success) {
-      // 用新库重新加密
-      return encrypt.aes(decrypted.data, key)
-    }
-  }
-  catch {
-    // 如果新库无法解密，使用旧库解密后重新加密
-    const oldDecrypted = oldLibrary.decrypt(oldEncryptedData, key)
-    return encrypt.aes(oldDecrypted, key)
-  }
-}
-```
+MIT License - 可自由用于商业和个人项目。
 
 ## 获取帮助
 
-### Q: 遇到问题如何获取帮助？
+- **文档**：查看完整的 [使用指南](/guide/)
+- **示例**：查看 [examples 目录](../../examples/)
+- **问题**：提交 [GitHub Issue](https://github.com/ldesign/crypto/issues)
+- **讨论**：加入 [社区讨论](https://github.com/ldesign/crypto/discussions)
 
-**A:** 获取帮助的途径：
+## 下一步
 
-1. **查看文档**：详细阅读 [API 文档](../api/) 和 [指南](../guide/)
-2. **查看示例**：参考 [示例代码](../examples/)
-3. **GitHub Issues**：在 GitHub 仓库提交问题
-4. **社区讨论**：参与社区讨论
-
-### Q: 如何报告安全漏洞？
-
-**A:** 安全漏洞报告：
-
-1. **不要公开披露**：不要在公共场所发布安全问题
-2. **私下联系**：通过安全邮箱联系维护者
-3. **提供详细信息**：包括复现步骤和影响范围
-4. **等待响应**：给维护者时间修复问题
-
-如果您还有其他问题，请查看我们的 [GitHub Issues](https://github.com/ldesign/crypto/issues) 或提交新
-的问题。
+- [快速开始](/guide/quick-start) - 开始使用
+- [API 参考](/api/) - 查看完整 API
+- [故障排查](/guide/troubleshooting) - 解决问题

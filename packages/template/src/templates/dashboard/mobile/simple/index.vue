@@ -1,63 +1,3 @@
-<template>
-  <div class="dashboard-mobile-container">
-    <!-- 顶部栏 -->
-    <header class="mobile-header">
-      <h1 class="header-title">Dashboard</h1>
-      <div class="header-actions">
-        <span class="user-name">{{ userName }}</span>
-        <button class="logout-btn" @click="handleLogout">🚪</button>
-      </div>
-    </header>
-
-    <!-- 内容区 -->
-    <main class="mobile-content">
-      <!-- 统计卡片 -->
-      <div class="stats-container">
-        <div
-          v-for="(stat, index) in stats"
-          :key="index"
-          class="stat-card"
-        >
-          <div class="stat-icon">{{ stat.icon || '📊' }}</div>
-          <div class="stat-info">
-            <div class="stat-label">{{ stat.label }}</div>
-            <div class="stat-value">{{ stat.value }}</div>
-            <div v-if="stat.trend" class="stat-trend" :class="`trend-${stat.trend}`">
-              <span v-if="stat.trend === 'up'">↗</span>
-              <span v-else-if="stat.trend === 'down'">↘</span>
-              <span v-else>→</span>
-              <span v-if="stat.change">{{ stat.change }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 图表占位 -->
-      <div class="chart-section">
-        <h2 class="section-title">数据概览</h2>
-        <div class="chart-card">
-          <div class="chart-placeholder">图表区域</div>
-        </div>
-      </div>
-    </main>
-
-    <!-- 底部导航 -->
-    <nav v-if="showBottomNav" class="bottom-nav">
-      <a
-        v-for="(item, index) in (bottomNavItems || menuItems)"
-        :key="index"
-        :href="item.href || '#'"
-        class="nav-item"
-        :class="{ 'active': item.active }"
-        @click="handleNavClick(item, $event)"
-      >
-        <span class="nav-icon">{{ item.icon || '•' }}</span>
-        <span class="nav-label">{{ item.label }}</span>
-      </a>
-    </nav>
-  </div>
-</template>
-
 <script setup lang="ts">
 import type { DashboardMobileProps } from '../../types'
 
@@ -78,17 +18,91 @@ const props = withDefaults(defineProps<DashboardMobileProps>(), {
   ],
 })
 
-const handleNavClick = (item: any, event: Event) => {
+function handleNavClick(item: any, event: Event) {
   if (item.onClick) {
     event.preventDefault()
     item.onClick()
   }
 }
 
-const handleLogout = () => {
+function handleLogout() {
   props.onLogout?.()
 }
 </script>
+
+<template>
+  <div class="dashboard-mobile-container">
+    <!-- 顶部栏 -->
+    <header class="mobile-header">
+      <h1 class="header-title">
+        Dashboard
+      </h1>
+      <div class="header-actions">
+        <span class="user-name">{{ userName }}</span>
+        <button class="logout-btn" @click="handleLogout">
+          🚪
+        </button>
+      </div>
+    </header>
+
+    <!-- 内容区 -->
+    <main class="mobile-content">
+      <!-- 统计卡片 -->
+      <div class="stats-container">
+        <div
+          v-for="(stat, index) in stats"
+          :key="index"
+          class="stat-card"
+        >
+          <div class="stat-icon">
+            {{ stat.icon || '📊' }}
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">
+              {{ stat.label }}
+            </div>
+            <div class="stat-value">
+              {{ stat.value }}
+            </div>
+            <div v-if="stat.trend" class="stat-trend" :class="`trend-${stat.trend}`">
+              <span v-if="stat.trend === 'up'">↗</span>
+              <span v-else-if="stat.trend === 'down'">↘</span>
+              <span v-else>→</span>
+              <span v-if="stat.change">{{ stat.change }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 图表占位 -->
+      <div class="chart-section">
+        <h2 class="section-title">
+          数据概览
+        </h2>
+        <div class="chart-card">
+          <div class="chart-placeholder">
+            图表区域
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 底部导航 -->
+    <nav v-if="showBottomNav" class="bottom-nav">
+      <a
+        v-for="(item, index) in (bottomNavItems || menuItems)"
+        :key="index"
+        :href="item.href || '#'"
+        class="nav-item"
+        :class="{ active: item.active }"
+        @click="handleNavClick(item, $event)"
+      >
+        <span class="nav-icon">{{ item.icon || '•' }}</span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </nav>
+  </div>
+</template>
 
 <style scoped>
 .dashboard-mobile-container {

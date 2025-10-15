@@ -1,89 +1,6 @@
-<template>
-  <div class="dashboard-sidebar-container" :class="{ 'dark': darkMode, 'collapsed': isCollapsed }">
-    <!-- 侧边栏 -->
-    <aside class="sidebar" :class="`width-${sidebarWidth}`">
-      <div class="sidebar-header">
-        <h1 class="sidebar-logo">Dashboard</h1>
-        <button v-if="collapsible" class="collapse-btn" @click="toggleSidebar">
-          {{ isCollapsed ? '→' : '←' }}
-        </button>
-      </div>
-
-      <nav class="sidebar-menu">
-        <a
-          v-for="(item, index) in menuItems"
-          :key="index"
-          :href="item.href || '#'"
-          class="menu-item"
-          :class="{ 'active': item.active }"
-          @click="handleMenuClick(item, $event)"
-        >
-          <span v-if="item.icon" class="menu-icon">{{ item.icon }}</span>
-          <span v-if="!isCollapsed" class="menu-label">{{ item.label }}</span>
-        </a>
-      </nav>
-
-      <div class="sidebar-footer">
-        <button class="logout-btn" @click="handleLogout">
-          <span class="menu-icon">🚪</span>
-          <span v-if="!isCollapsed">退出登录</span>
-        </button>
-      </div>
-    </aside>
-
-    <!-- 主内容区 -->
-    <main class="main-content">
-      <header class="top-bar">
-        <h2 class="page-title">数据概览</h2>
-        <div class="user-section">
-          <span class="user-name">{{ userName || '用户' }}</span>
-          <button class="theme-toggle" @click="toggleTheme">
-            {{ darkMode ? '☀️' : '🌙' }}
-          </button>
-        </div>
-      </header>
-
-      <div class="content-area">
-        <!-- 统计卡片 -->
-        <div class="stats-grid">
-          <div
-            v-for="(stat, index) in stats"
-            :key="index"
-            class="stat-card"
-          >
-            <div class="stat-header">
-              <span v-if="stat.icon" class="stat-icon">{{ stat.icon }}</span>
-              <span class="stat-label">{{ stat.label }}</span>
-            </div>
-            <div class="stat-value">{{ stat.value }}</div>
-            <div v-if="stat.trend" class="stat-trend" :class="`trend-${stat.trend}`">
-              <span v-if="stat.trend === 'up'">↗</span>
-              <span v-else-if="stat.trend === 'down'">↘</span>
-              <span v-else>→</span>
-              <span v-if="stat.change">{{ stat.change }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 图表区域占位 -->
-        <div class="charts-section">
-          <div class="chart-card">
-            <h3>趋势图表</h3>
-            <div class="chart-placeholder">图表内容区域</div>
-          </div>
-          <div class="chart-card">
-            <h3>数据分析</h3>
-            <div class="chart-placeholder">图表内容区域</div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import type { DashboardDesktopSidebarProps } from '../../types'
+import { ref } from 'vue'
 
 const props = withDefaults(defineProps<DashboardDesktopSidebarProps>(), {
   userName: 'Admin',
@@ -112,25 +29,118 @@ const emit = defineEmits<{
 
 const isCollapsed = ref(props.defaultCollapsed)
 
-const toggleSidebar = () => {
+function toggleSidebar() {
   isCollapsed.value = !isCollapsed.value
 }
 
-const toggleTheme = () => {
+function toggleTheme() {
   emit('update:darkMode', !props.darkMode)
 }
 
-const handleMenuClick = (item: any, event: Event) => {
+function handleMenuClick(item: any, event: Event) {
   if (item.onClick) {
     event.preventDefault()
     item.onClick()
   }
 }
 
-const handleLogout = () => {
+function handleLogout() {
   props.onLogout?.()
 }
 </script>
+
+<template>
+  <div class="dashboard-sidebar-container" :class="{ dark: darkMode, collapsed: isCollapsed }">
+    <!-- 侧边栏 -->
+    <aside class="sidebar" :class="`width-${sidebarWidth}`">
+      <div class="sidebar-header">
+        <h1 class="sidebar-logo">
+          Dashboard
+        </h1>
+        <button v-if="collapsible" class="collapse-btn" @click="toggleSidebar">
+          {{ isCollapsed ? '→' : '←' }}
+        </button>
+      </div>
+
+      <nav class="sidebar-menu">
+        <a
+          v-for="(item, index) in menuItems"
+          :key="index"
+          :href="item.href || '#'"
+          class="menu-item"
+          :class="{ active: item.active }"
+          @click="handleMenuClick(item, $event)"
+        >
+          <span v-if="item.icon" class="menu-icon">{{ item.icon }}</span>
+          <span v-if="!isCollapsed" class="menu-label">{{ item.label }}</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn" @click="handleLogout">
+          <span class="menu-icon">🚪</span>
+          <span v-if="!isCollapsed">退出登录</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+      <header class="top-bar">
+        <h2 class="page-title">
+          数据概览
+        </h2>
+        <div class="user-section">
+          <span class="user-name">{{ userName || '用户' }}</span>
+          <button class="theme-toggle" @click="toggleTheme">
+            {{ darkMode ? '☀️' : '🌙' }}
+          </button>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+          <div
+            v-for="(stat, index) in stats"
+            :key="index"
+            class="stat-card"
+          >
+            <div class="stat-header">
+              <span v-if="stat.icon" class="stat-icon">{{ stat.icon }}</span>
+              <span class="stat-label">{{ stat.label }}</span>
+            </div>
+            <div class="stat-value">
+              {{ stat.value }}
+            </div>
+            <div v-if="stat.trend" class="stat-trend" :class="`trend-${stat.trend}`">
+              <span v-if="stat.trend === 'up'">↗</span>
+              <span v-else-if="stat.trend === 'down'">↘</span>
+              <span v-else>→</span>
+              <span v-if="stat.change">{{ stat.change }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 图表区域占位 -->
+        <div class="charts-section">
+          <div class="chart-card">
+            <h3>趋势图表</h3>
+            <div class="chart-placeholder">
+              图表内容区域
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3>数据分析</h3>
+            <div class="chart-placeholder">
+              图表内容区域
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
 
 <style scoped>
 .dashboard-sidebar-container {

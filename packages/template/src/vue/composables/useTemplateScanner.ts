@@ -3,8 +3,8 @@
  * 用于扫描和搜索所有已注册的模板
  */
 
-import { ref, computed, onMounted } from 'vue'
 import type { TemplateMetadata, TemplateQueryOptions } from '../../types'
+import { computed, onMounted, ref } from 'vue'
 import { useTemplateManager } from './useTemplateManager'
 
 export interface UseTemplateScannerOptions {
@@ -33,10 +33,12 @@ export function useTemplateScanner(options: UseTemplateScannerOptions = {}) {
     try {
       const results = manager.query(queryOptions)
       templates.value = results.map(r => r.metadata)
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err as Error
       console.error('[useTemplateScanner] Failed to scan templates:', err)
-    } finally {
+    }
+ finally {
       loading.value = false
     }
   }
@@ -49,21 +51,28 @@ export function useTemplateScanner(options: UseTemplateScannerOptions = {}) {
 
     const lowerQuery = query.toLowerCase()
 
-    return templates.value.filter(t => {
+    return templates.value.filter((t) => {
       // 搜索名称
-      if (t.name.toLowerCase().includes(lowerQuery)) return true
+      if (t.name.toLowerCase().includes(lowerQuery))
+return true
       // 搜索显示名
-      if (t.displayName?.toLowerCase().includes(lowerQuery)) return true
+      if (t.displayName?.toLowerCase().includes(lowerQuery))
+return true
       // 搜索描述
-      if (t.description?.toLowerCase().includes(lowerQuery)) return true
+      if (t.description?.toLowerCase().includes(lowerQuery))
+return true
       // 搜索标签
-      if (t.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))) return true
+      if (t.tags?.some(tag => tag.toLowerCase().includes(lowerQuery)))
+return true
       // 搜索作者
-      if (t.author?.toLowerCase().includes(lowerQuery)) return true
+      if (t.author?.toLowerCase().includes(lowerQuery))
+return true
       // 搜索类别
-      if (t.category.toLowerCase().includes(lowerQuery)) return true
+      if (t.category.toLowerCase().includes(lowerQuery))
+return true
       // 搜索设备
-      if (t.device.toLowerCase().includes(lowerQuery)) return true
+      if (t.device.toLowerCase().includes(lowerQuery))
+return true
 
       return false
     })
@@ -73,7 +82,7 @@ export function useTemplateScanner(options: UseTemplateScannerOptions = {}) {
   const groupByCategory = computed(() => {
     const groups: Record<string, TemplateMetadata[]> = {}
 
-    templates.value.forEach(t => {
+    templates.value.forEach((t) => {
       if (!groups[t.category]) {
         groups[t.category] = []
       }
@@ -87,7 +96,7 @@ export function useTemplateScanner(options: UseTemplateScannerOptions = {}) {
   const groupByDevice = computed(() => {
     const groups: Record<string, TemplateMetadata[]> = {}
 
-    templates.value.forEach(t => {
+    templates.value.forEach((t) => {
       if (!groups[t.device]) {
         groups[t.device] = []
       }
@@ -101,7 +110,7 @@ export function useTemplateScanner(options: UseTemplateScannerOptions = {}) {
   const groupByCategoryAndDevice = computed(() => {
     const groups: Record<string, Record<string, TemplateMetadata[]>> = {}
 
-    templates.value.forEach(t => {
+    templates.value.forEach((t) => {
       if (!groups[t.category]) {
         groups[t.category] = {}
       }
@@ -129,7 +138,7 @@ export function useTemplateScanner(options: UseTemplateScannerOptions = {}) {
   // 获取所有标签
   const tags = computed(() => {
     const allTags = new Set<string>()
-    templates.value.forEach(t => {
+    templates.value.forEach((t) => {
       t.tags?.forEach(tag => allTags.add(tag))
     })
     return Array.from(allTags)

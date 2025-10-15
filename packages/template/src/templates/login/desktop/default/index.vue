@@ -1,15 +1,65 @@
+<script setup lang="ts">
+import type { LoginTemplateProps } from '../../types'
+import { reactive, ref } from 'vue'
+
+const props = withDefaults(defineProps<LoginTemplateProps>(), {
+  title: '欢迎登录',
+  subtitle: '',
+  logo: '',
+  showRemember: true,
+  showRegister: true,
+  showForgotPassword: true,
+})
+
+const formData = reactive({
+  username: '',
+  password: '',
+  remember: false,
+})
+
+const loading = ref(false)
+
+async function handleSubmit() {
+  if (!props.onLogin)
+return
+
+  loading.value = true
+  try {
+    await props.onLogin(formData)
+  }
+ catch (error) {
+    console.error('Login failed:', error)
+  }
+ finally {
+    loading.value = false
+  }
+}
+
+function handleRegister() {
+  props.onRegister?.()
+}
+
+function handleForgotPassword() {
+  props.onForgotPassword?.()
+}
+</script>
+
 <template>
   <div class="login-container">
     <!-- 模板切换器插槽 -->
     <div v-if="$slots.switcher" class="template-switcher-container">
-      <slot name="switcher"></slot>
+      <slot name="switcher" />
     </div>
-    
+
     <div class="login-card">
       <div class="login-header">
         <img v-if="logo" :src="logo" alt="Logo" class="login-logo">
-        <h1 class="login-title">{{ title }}</h1>
-        <p v-if="subtitle" class="login-subtitle">{{ subtitle }}</p>
+        <h1 class="login-title">
+          {{ title }}
+        </h1>
+        <p v-if="subtitle" class="login-subtitle">
+          {{ subtitle }}
+        </p>
       </div>
 
       <form class="login-form" @submit.prevent="handleSubmit">
@@ -57,49 +107,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { reactive, ref } from 'vue'
-import type { LoginTemplateProps } from '../../types'
-
-const props = withDefaults(defineProps<LoginTemplateProps>(), {
-  title: '欢迎登录',
-  subtitle: '',
-  logo: '',
-  showRemember: true,
-  showRegister: true,
-  showForgotPassword: true,
-})
-
-const formData = reactive({
-  username: '',
-  password: '',
-  remember: false,
-})
-
-const loading = ref(false)
-
-const handleSubmit = async () => {
-  if (!props.onLogin) return
-
-  loading.value = true
-  try {
-    await props.onLogin(formData)
-  } catch (error) {
-    console.error('Login failed:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleRegister = () => {
-  props.onRegister?.()
-}
-
-const handleForgotPassword = () => {
-  props.onForgotPassword?.()
-}
-</script>
 
 <style scoped>
 .template-switcher-container {

@@ -1,382 +1,225 @@
-# API 参考总览
+# @ldesign/device API 参考文档
 
-欢迎查阅 @ldesign/device 的 API 参考。本节提供核心类与工具的概览：
+欢迎使用 @ldesign/device 库的 API 参考文档。本文档详细介绍了所有公共 API、类型定义和使用示例。
 
-- DeviceDetector — 核心设备检测器
-- EventEmitter — 事件系统基类
-- ModuleLoader — 扩展模块加载器
+## 概述
 
-更多详细内容请查看左侧侧边栏的对应页面。
+@ldesign/device 是一个高性能的设备检测和信息获取库,提供以下核心功能:
 
-## DeviceDetector
+- **设备检测**: 检测设备类型(桌面、移动、平板)和屏幕方向
+- **事件系统**: 高性能的事件发射器,支持优先级和命名空间
+- **模块化加载**: 按需动态加载功能模块
+- **扩展模块**: 网络、电池、地理位置等设备信息模块
 
-设备检测器是库的核心类，提供设备信息检测和事件监听功能。
+## 核心类
 
-### 构造函数
-
-```typescript
-new DeviceDetector(options?: DeviceDetectorOptions)
-```
-
-#### 参数
-
-- `options` - 可选的配置选项
+### [DeviceDetector](./device-detector.md)
+设备检测器主类,负责检测设备类型、监听设备变化、管理扩展模块。
 
 ```typescript
-interface DeviceDetectorOptions {
-  /** 是否启用窗口大小变化监听 */
-  enableResize?: boolean
-  /** 是否启用屏幕方向变化监听 */
-  enableOrientation?: boolean
-  /** 防抖延迟时间（毫秒） */
-  debounceDelay?: number
-  /** 自定义断点配置 */
-  breakpoints?: {
-    mobile: number
-    tablet: number
-    desktop: number
-  }
-}
-```
+import { DeviceDetector } from '@ldesign/device'
 
-### 实例方法
-
-#### getDeviceInfo()
-
-获取当前设备信息。
-
-```typescript
-getDeviceInfo(): DeviceInfo
-```
-
-**返回值：**
-
-```typescript
-interface DeviceInfo {
-  /** 设备类型 */
-  type: 'mobile' | 'tablet' | 'desktop'
-  /** 屏幕方向 */
-  orientation: 'portrait' | 'landscape'
-  /** 屏幕宽度 */
-  width: number
-  /** 屏幕高度 */
-  height: number
-  /** 设备像素比 */
-  pixelRatio: number
-  /** 是否为触摸设备 */
-  isTouchDevice: boolean
-  /** 用户代理字符串 */
-  userAgent: string
-  /** 操作系统信息 */
-  os: {
-    name: string
-    version: string
-  }
-  /** 浏览器信息 */
-  browser: {
-    name: string
-    version: string
-  }
-}
-```
-
-#### isMobile()
-
-检测是否为移动设备。
-
-```typescript
-isMobile(): boolean
-```
-
-#### isTablet()
-
-检测是否为平板设备。
-
-```typescript
-isTablet(): boolean
-```
-
-#### isDesktop()
-
-检测是否为桌面设备。
-
-```typescript
-isDesktop(): boolean
-```
-
-#### getOrientation()
-
-获取当前屏幕方向。
-
-```typescript
-getOrientation(): 'portrait' | 'landscape'
-```
-
-#### refresh()
-
-手动刷新设备信息。
-
-```typescript
-refresh(): void
-```
-
-#### loadModule()
-
-加载扩展模块。
-
-```typescript
-loadModule<T = unknown>(name: string): Promise<T>
-```
-
-#### unloadModule()
-
-卸载扩展模块。
-
-```typescript
-unloadModule(name: string): void
-```
-
-#### getLoadedModules()
-
-获取已加载的模块列表。
-
-```typescript
-getLoadedModules(): string[]
-```
-
-#### destroy()
-
-销毁检测器实例，清理所有资源。
-
-```typescript
-destroy(): Promise<void>
-```
-
-### 事件监听
-
-DeviceDetector 继承自 EventEmitter，支持以下事件：
-
-#### deviceChange
-
-设备信息发生变化时触发。
-
-```typescript
-detector.on('deviceChange', (deviceInfo: DeviceInfo) => {
-  console.log('设备信息变化:', deviceInfo)
+const detector = new DeviceDetector({
+ enableResize: true,
+ enableOrientation: true,
+ modules: ['network', 'battery']
 })
 ```
 
-#### orientationChange
-
-屏幕方向发生变化时触发。
+### [EventEmitter](./event-emitter.md)
+高性能事件发射器,支持优先级、命名空间、通配符等高级特性。
 
 ```typescript
-detector.on('orientationChange', (orientation: 'portrait' | 'landscape') => {
-  console.log('屏幕方向变化:', orientation)
+import { EventEmitter } from '@ldesign/device'
+
+const emitter = new EventEmitter()
+emitter.on('myEvent', (data) => {
+ console.log(data)
 })
 ```
 
-#### resize
-
-窗口大小发生变化时触发。
-
-```typescript
-detector.on('resize', ({ width, height }: { width: number, height: number }) => {
-  console.log('窗口大小变化:', width, height)
-})
-```
-
-#### networkChange
-
-网络状态发生变化时触发（需要加载网络模块）。
+### [ModuleLoader](./module-loader.md)
+模块加载器,负责动态加载和管理扩展模块,支持依赖管理和并行加载。
 
 ```typescript
-detector.on('networkChange', (networkInfo: NetworkInfo) => {
-  console.log('网络状态变化:', networkInfo)
-})
-```
-
-#### batteryChange
-
-电池状态发生变化时触发（需要加载电池模块）。
-
-```typescript
-detector.on('batteryChange', (batteryInfo: BatteryInfo) => {
-  console.log('电池状态变化:', batteryInfo)
-})
+const loader = new ModuleLoader()
+const networkModule = await loader.loadModuleInstance('network')
 ```
 
 ## 扩展模块
 
-### NetworkModule
-
-网络状态检测模块。
-
-#### 方法
+### [NetworkModule](./network-module.md)
+网络信息模块,提供网络状态、连接类型、速度等信息。
 
 ```typescript
-interface NetworkModule {
-  /** 获取网络信息 */
-  getData: () => NetworkInfo
-  /** 检测是否在线 */
-  isOnline: () => boolean
-  /** 获取连接类型 */
-  getConnectionType: () => string
-}
+const networkModule = await detector.loadModule('network')
+console.log(networkModule.isOnline())
+console.log(networkModule.getConnectionType())
 ```
 
-#### NetworkInfo
+### [BatteryModule](./battery-module.md)
+电池信息模块,提供电池电量、充电状态、剩余时间等信息。
 
 ```typescript
-interface NetworkInfo {
-  /** 网络状态 */
-  status: 'online' | 'offline'
-  /** 连接类型 */
-  type: string
-  /** 下载速度（Mbps） */
-  downlink?: number
-  /** 往返时间（毫秒） */
-  rtt?: number
-  /** 是否启用数据节省模式 */
-  saveData?: boolean
-}
+const batteryModule = await detector.loadModule('battery')
+console.log(batteryModule.getLevel())
+console.log(batteryModule.isCharging())
 ```
 
-### BatteryModule
-
-电池状态检测模块。
-
-#### 方法
+### [GeolocationModule](./geolocation-module.md)
+地理位置模块,提供位置获取、位置监听、距离计算等功能。
 
 ```typescript
-interface BatteryModule {
-  /** 获取电池信息 */
-  getData: () => BatteryInfo
-  /** 获取电池电量 */
-  getLevel: () => number
-  /** 检测是否正在充电 */
-  isCharging: () => boolean
-  /** 获取电池状态描述 */
-  getBatteryStatus: () => string
-}
+const geoModule = await detector.loadModule('geolocation')
+const position = await geoModule.getCurrentPosition()
+console.log(position.latitude, position.longitude)
 ```
 
-#### BatteryInfo
+## 类型定义
+
+查看 [类型定义文档](./types.md) 了解所有 TypeScript 类型定义。
+
+## 快速开始
+
+### 安装
+
+```bash
+npm install @ldesign/device
+```
+
+### 基础使用
 
 ```typescript
-interface BatteryInfo {
-  /** 电池电量（0-1） */
-  level: number
-  /** 是否正在充电 */
-  charging: boolean
-  /** 充电时间（秒） */
-  chargingTime: number
-  /** 放电时间（秒） */
-  dischargingTime: number
-}
+import { DeviceDetector } from '@ldesign/device'
+
+// 创建检测器实例
+const detector = new DeviceDetector({
+ enableResize: true,
+ enableOrientation: true
+})
+
+// 获取设备信息
+const deviceInfo = detector.getDeviceInfo()
+console.log('设备类型:', deviceInfo.type)
+console.log('屏幕方向:', deviceInfo.orientation)
+console.log('浏览器:', deviceInfo.browser.name)
+console.log('操作系统:', deviceInfo.os.name)
+
+// 监听设备变化
+detector.on('deviceChange', (info) => {
+ console.log('设备信息更新:', info)
+})
+
+detector.on('orientationChange', (orientation) => {
+ console.log('屏幕方向变化:', orientation)
+})
+
+// 加载扩展模块
+const networkModule = await detector.loadModule('network')
+networkModule.on('networkChange', (info) => {
+ console.log('网络状态变化:', info)
+})
+
+// 清理资源
+await detector.destroy()
 ```
 
-### GeolocationModule
-
-地理位置检测模块。
-
-#### 方法
+### Vue 3 集成
 
 ```typescript
-interface GeolocationModule {
-  /** 获取位置信息 */
-  getData: () => GeolocationInfo | null
-  /** 检测是否支持地理位置 */
-  isSupported: () => boolean
-  /** 获取当前位置 */
-  getCurrentPosition: () => Promise<GeolocationInfo>
-  /** 开始监听位置变化 */
-  startWatching: (callback: (position: GeolocationInfo) => void) => Promise<number>
-  /** 停止监听位置变化 */
-  stopWatching: (watchId: number) => void
-}
+import { createApp } from 'vue'
+import { DevicePlugin } from '@ldesign/device'
+import App from './App.vue'
+
+const app = createApp(App)
+app.use(DevicePlugin, {
+ enableResize: true,
+ enableOrientation: true
+})
+app.mount('#app')
 ```
 
-#### GeolocationInfo
+在组件中使用:
+
+```vue
+<script setup>
+import { useDevice } from '@ldesign/device'
+
+const { deviceType, isMobile, isDesktop, deviceInfo } = useDevice()
+</script>
+
+<template>
+ <div>
+  <p>设备类型: {{ deviceType }}</p>
+  <p v-if="isMobile">移动端界面</p>
+  <p v-else-if="isDesktop">桌面端界面</p>
+ </div>
+</template>
+```
+
+## API 文档索引
+
+- [DeviceDetector API](./device-detector.md) - 设备检测器
+- [EventEmitter API](./event-emitter.md) - 事件发射器
+- [ModuleLoader API](./module-loader.md) - 模块加载器
+- [NetworkModule API](./network-module.md) - 网络模块
+- [BatteryModule API](./battery-module.md) - 电池模块
+- [GeolocationModule API](./geolocation-module.md) - 地理位置模块
+- [类型定义](./types.md) - TypeScript 类型
+
+## 进阶使用
+
+### 性能监控
 
 ```typescript
-interface GeolocationInfo {
-  /** 纬度 */
-  latitude: number
-  /** 经度 */
-  longitude: number
-  /** 精度（米） */
-  accuracy: number
-  /** 海拔（米） */
-  altitude?: number
-  /** 海拔精度（米） */
-  altitudeAccuracy?: number
-  /** 方向（度） */
-  heading?: number
-  /** 速度（米/秒） */
-  speed?: number
-  /** 时间戳 */
-  timestamp: number
-}
+const detector = new DeviceDetector()
+
+// 启用性能监控
+detector.enablePerformanceMonitoring()
+
+// 获取性能指标
+const metrics = detector.getDetectionMetrics()
+console.log('检测次数:', metrics.detectionCount)
+console.log('平均检测时间:', metrics.averageDetectionTime)
 ```
 
-## 工具函数
-
-### 设备检测工具
+### 自定义断点
 
 ```typescript
-/** 检测是否为移动设备 */
-function isMobileDevice(userAgent?: string): boolean
-
-/** 检测是否为触摸设备 */
-function isTouchDevice(): boolean
-
-/** 根据宽度判断设备类型 */
-function getDeviceTypeByWidth(width: number, breakpoints?: Breakpoints): DeviceType
-
-/** 获取屏幕方向 */
-function getScreenOrientation(width?: number, height?: number): Orientation
-
-/** 获取设备像素比 */
-function getPixelRatio(): number
+const detector = new DeviceDetector({
+ breakpoints: {
+  mobile: 640,  // 小于 640px 为移动设备
+  tablet: 1280  // 640-1280px 为平板设备
+ }
+})
 ```
 
-### 系统信息工具
+### 模块预加载
 
 ```typescript
-/** 解析操作系统信息 */
-function parseOS(userAgent: string): { name: string, version: string }
+const loader = new ModuleLoader()
 
-/** 解析浏览器信息 */
-function parseBrowser(userAgent: string): { name: string, version: string }
+// 设置模块优先级
+loader.setPriority('network', 10)
+loader.setPriority('battery', 5)
+
+// 预加载多个模块
+await loader.preload(['network', 'battery', 'geolocation'])
 ```
 
-### 通用工具
+## 浏览器支持
 
-```typescript
-/** 防抖函数 */
-function debounce<T extends (...args: unknown[]) => unknown>(
-  func: T,
-  wait: number,
-  immediate?: boolean
-): (...args: Parameters<T>) => void
+- Chrome >= 60
+- Firefox >= 55
+- Safari >= 11
+- Edge >= 79
 
-/** 节流函数 */
-function throttle<T extends (...args: unknown[]) => unknown>(
-  func: T,
-  wait: number,
-  options?: { leading?: boolean, trailing?: boolean }
-): (...args: Parameters<T>) => void
+## 相关资源
 
-/** 安全访问 navigator API */
-function safeNavigatorAccess<T>(accessor: (navigator: Navigator) => T, fallback: T): T
+- [GitHub 仓库](https://github.com/your-org/ldesign)
+- [更新日志](../../CHANGELOG.md)
+- [贡献指南](../../CONTRIBUTING.md)
 
-/** 检测 API 支持 */
-function isAPISupported(api: string): boolean
+## 许可证
 
-/** 格式化字节数 */
-function formatBytes(bytes: number, decimals?: number): string
-
-/** 生成唯一 ID */
-function generateId(prefix?: string): string
-```
+MIT License

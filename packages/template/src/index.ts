@@ -1,128 +1,128 @@
 /**
  * @ldesign/template - 统一入口
- * 
+ *
  * 功能强大、性能卓越的 Vue3 模板管理和渲染系统
- * 
+ *
  * @author ldesign
  * @version 1.0.0
  */
 
-// ======== 类型定义 ========
-export type * from './types'
-
 // ======== 核心层 ========
 export {
-  // 事件系统
-  EventEmitter,
-  getGlobalEmitter,
-  resetGlobalEmitter,
-
-  // 注册中心
-  TemplateRegistry,
-  getRegistry,
-  resetRegistry,
-
   // 缓存管理
   CacheManager,
-  getCache,
-  resetCache,
-
-  // 模板加载
-  TemplateLoader,
-  getLoader,
-  resetLoader,
-
   // 设备检测
   DeviceDetector,
+  // 事件系统
+  EventEmitter,
+
+  getCache,
   getDeviceDetector,
-  resetDeviceDetector,
+  getGlobalEmitter,
+
+  getLoader,
+  getRegistry,
+  isDesktop,
+
   isMobile,
   isTablet,
-  isDesktop,
+  resetCache,
+
+  resetDeviceDetector,
+  resetGlobalEmitter,
+  resetLoader,
+  resetRegistry,
+  // 模板加载
+  TemplateLoader,
+  // 注册中心
+  TemplateRegistry,
 } from './core'
 
 export type { LoadOptions } from './core'
 
+// ======== 插件系统 ========
+export { createLoggerPlugin, createPreloadPlugin } from './plugins'
+
 // ======== 运行时层 ========
 export {
-  // 模板管理器
-  TemplateManager,
   createTemplateManager,
+  getLifecycle,
 
+  getMonitor,
   // 生命周期
   LifecycleManager,
-  getLifecycle,
-  resetLifecycle,
-
   // 性能监控
   PerformanceMonitor,
-  getMonitor,
+
+  resetLifecycle,
   resetMonitor,
+  // 模板管理器
+  TemplateManager,
 } from './runtime'
 
-// ======== Vue集成层 ========
-export {
-  // Composables
-  useDevice,
-  useTemplateManager,
-  useTemplate,
-  useTemplateList,
-  useTemplateScanner,
-
-  // Components
-  TemplateRenderer,
-  TemplateSelector,
-
-  // Plugin
-  createTemplatePlugin,
-  TemplatePlugin,
-  TEMPLATE_MANAGER_KEY,
-} from './vue'
-
-export type {
-  UseTemplateOptions,
-  UseTemplateListOptions,
-  UseTemplateScannerOptions,
-  TemplatePluginOptions,
-} from './vue'
+// ======== 类型定义 ========
+export type * from './types'
 
 // ======== 工具函数 ========
 export {
   // 模板ID工具
   buildTemplateId,
-  parseTemplateId,
-
-  // 常用工具
-  delay,
-  debounce,
-  throttle,
-  deepClone,
-  deepMerge,
-  isBrowser,
-  isDev,
-  isPromise,
-  safeExecute,
-  formatBytes,
-  generateId,
   compareVersion,
 
+  debounce,
+  deepClone,
+  deepMerge,
+  DEFAULT_ANIMATION_DURATION,
   // 常量
   DEFAULT_BREAKPOINTS,
   DEFAULT_CACHE_CONFIG,
   DEFAULT_LOGGER_CONFIG,
-  DEFAULT_ANIMATION_DURATION,
   DEFAULT_PRELOAD_CONFIG,
+  // 常用工具
+  delay,
   ERROR_MESSAGES,
+  formatBytes,
+  generateId,
+
+  isBrowser,
+  isDev,
+  isPromise,
+  parseTemplateId,
   PERFORMANCE_THRESHOLDS,
-  VERSION,
   PLUGIN_VERSION,
+  safeExecute,
+  throttle,
+  VERSION,
 } from './utils'
 
 // ======== 模板扫描器 ========
 export { simpleTemplateScanner, SimpleTemplateScanner } from './utils/simpleScanner'
 
-// ======== 插件系统 ========
-export { createPreloadPlugin, createLoggerPlugin } from './plugins'
+// ======== Vue集成层 ========
+export {
+  // Plugin
+  createTemplatePlugin,
+  TEMPLATE_MANAGER_KEY,
+  TemplatePlugin,
+  // Components
+  TemplateRenderer,
+  TemplateSelector,
+
+  // Composables
+  useDevice,
+  useTemplate,
+
+  useTemplateList,
+  useTemplateManager,
+  useTemplateScanner,
+} from './vue'
+
+export type {
+  TemplatePluginOptions,
+  UseTemplateListOptions,
+  UseTemplateOptions,
+  UseTemplateScannerOptions,
+} from './vue'
 
 // ======== 默认导出 ========
 export { default } from './vue/plugin'

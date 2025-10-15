@@ -1,3 +1,35 @@
+<script setup lang="ts">
+import type { DashboardTemplateProps } from '../../types'
+
+const props = withDefaults(defineProps<DashboardTemplateProps>(), {
+  userName: 'Admin',
+  showSidebar: true,
+  darkMode: false,
+  stats: () => [
+    { label: '总用户数', value: '1,234', icon: '👥', trend: 'up' },
+    { label: '今日访问', value: '567', icon: '📊', trend: 'up' },
+    { label: '活跃用户', value: '890', icon: '✨', trend: 'neutral' },
+    { label: '收入', value: '¥12,345', icon: '💰', trend: 'up' },
+  ],
+  menuItems: () => [
+    { label: '首页', icon: '🏠', href: '#' },
+    { label: '用户', icon: '👥', href: '#' },
+    { label: '设置', icon: '⚙️', href: '#' },
+  ],
+})
+
+function handleMenuClick(item: any, event: Event) {
+  if (item.onClick) {
+    event.preventDefault()
+    item.onClick()
+  }
+}
+
+function handleLogout() {
+  props.onLogout?.()
+}
+</script>
+
 <template>
   <div class="dashboard">
     <aside v-if="showSidebar" class="dashboard-sidebar">
@@ -23,7 +55,9 @@
         <h1>仪表板</h1>
         <div class="header-right">
           <span class="user-name">{{ userName }}</span>
-          <button class="logout-btn" @click="handleLogout">退出</button>
+          <button class="logout-btn" @click="handleLogout">
+            退出
+          </button>
         </div>
       </header>
 
@@ -38,7 +72,9 @@
               <span class="stat-label">{{ stat.label }}</span>
               <span v-if="stat.icon" class="stat-icon">{{ stat.icon }}</span>
             </div>
-            <div class="stat-value">{{ stat.value }}</div>
+            <div class="stat-value">
+              {{ stat.value }}
+            </div>
             <div v-if="stat.trend" class="stat-trend" :class="`trend-${stat.trend}`">
               {{ stat.trend === 'up' ? '↑' : stat.trend === 'down' ? '↓' : '→' }}
             </div>
@@ -52,38 +88,6 @@
     </main>
   </div>
 </template>
-
-<script setup lang="ts">
-import type { DashboardTemplateProps } from '../../types'
-
-const props = withDefaults(defineProps<DashboardTemplateProps>(), {
-  userName: 'Admin',
-  showSidebar: true,
-  darkMode: false,
-  stats: () => [
-    { label: '总用户数', value: '1,234', icon: '👥', trend: 'up' },
-    { label: '今日访问', value: '567', icon: '📊', trend: 'up' },
-    { label: '活跃用户', value: '890', icon: '✨', trend: 'neutral' },
-    { label: '收入', value: '¥12,345', icon: '💰', trend: 'up' },
-  ],
-  menuItems: () => [
-    { label: '首页', icon: '🏠', href: '#' },
-    { label: '用户', icon: '👥', href: '#' },
-    { label: '设置', icon: '⚙️', href: '#' },
-  ],
-})
-
-const handleMenuClick = (item: any, event: Event) => {
-  if (item.onClick) {
-    event.preventDefault()
-    item.onClick()
-  }
-}
-
-const handleLogout = () => {
-  props.onLogout?.()
-}
-</script>
 
 <style scoped>
 .dashboard {

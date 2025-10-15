@@ -1,419 +1,568 @@
-# 数字签名
+# 数字签名指南
 
-数字签名用于验证数据的完整性和来源的真实性，是现代密码学的重要组成部分。
+本指南介绍如何使用 @ldesign/crypto 进行数字签名和验证。
 
-## 什么是数字签名
+## 概述
 
-数字签名具有以下特性：
+数字签名使用非对称加密技术，通过私钥对数据生成签名，然后使用对应的公钥验证签名的真实性。数字签名可以确保：
 
-- **身份验证**: 确认签名者的身份
-- **完整性**: 确保数据未被篡改
-- **不可否认**: 签名者无法否认已签名的数据
-- **不可伪造**: 他人无法伪造签名
+- **身份认证**：验证数据来源
+- **数据完整性**：确保数据未被篡改
+- **不可否认性**：签名者无法否认签名行为
 
-## RSA 数字签名
+## 基础用法
 
-@ldesign/crypto 使用 RSA 算法实现数字签名功能。
-
-### 基本流程
-
-1. **密钥生成**: 生成 RSA 密钥对（公钥和私钥）
-2. **签名**: 使用私钥对数据进行签名
-3. **验证**: 使用公钥验证签名的有效性
-
-### 基本用法
+### 生成密钥对
 
 ```typescript
-import { digitalSignature, rsa } from '@ldesign/crypto'
+import { rsa } from '@ldesign/crypto'
 
-// 1. 生成 RSA 密钥对
+// 生成 RSA 密钥对
 const keyPair = rsa.generateKeyPair(2048)
+
 console.log('公钥:', keyPair.publicKey)
 console.log('私钥:', keyPair.privateKey)
-
-// 2. 对数据进行签名
-const data = 'Important document content'
-const signature = digitalSignature.sign(data, keyPair.privateKey)
-console.log('数字签名:', signature)
-
-// 3. 验证签名
-const isValid = digitalSignature.verify(data, signature, keyPair.publicKey)
-console.log('签名验证结果:', isValid) // true
 ```
 
-### 指定哈希算法
+### 签名和验证
 
 ```typescript
-// 使用不同的哈希算法进行签名
-const signatureSHA256 = digitalSignature.sign(data, keyPair.privateKey, 'sha256')
-const signatureSHA384 = digitalSignature.sign(data, keyPair.privateKey, 'sha384')
-const signatureSHA512 = digitalSignature.sign(data, keyPair.privateKey, 'sha512')
+import { digitalSignature } from '@ldesign/crypto'
 
-// 验证时使用相同的哈希算法
-const isValidSHA256 = digitalSignature.verify(data, signatureSHA256, keyPair.publicKey, 'sha256')
-const isValidSHA384 = digitalSignature.verify(data, signatureSHA384, keyPair.publicKey, 'sha384')
-const isValidSHA512 = digitalSignature.verify(data, signatureSHA512, keyPair.publicKey, 'sha512')
+// 使用私钥签名
+const message = 'Important message'
+const signature = digitalSignature.sign(message, keyPair.privateKey, 'SHA256')
+
+console.log('签名:', signature)
+
+// 使用公钥验证
+const isValid = digitalSignature.verify(
+ message,
+ signature,
+ keyPair.publicKey,
+ 'SHA256'
+)
+
+console.log('签名有效:', isValid) // true
 ```
 
-## 实际应用场景
+## 支持的哈希算法
 
-### 1. 文档签名
+数字签名支持多种哈希算法：
 
 ```typescript
-interface SignedDocument {
-  content: string
-  signature: string
-  signerPublicKey: string
-  timestamp: number
-  algorithm: string
-}
+import { digitalSignature } from '@ldesign/crypto'
 
-class DocumentSigner {
-  private keyPair: any
+// SHA256（推荐）
+const sig256 = digitalSignature.sign(data, privateKey, 'SHA256')
 
-  constructor() {
-    this.keyPair = rsa.generateKeyPair(2048)
-  }
+// SHA512（更高安全性）
+const sig512 = digitalSignature.sign(data, privateKey, 'SHA512')
 
-  signDocument(content: string): SignedDocument {
-    const timestamp = Date.now()
-    const dataToSign = `${content}|${timestamp}`
-    const signature = digitalSignature.sign(dataToSign, this.keyPair.privateKey, 'sha256')
+// SHA1（不推荐，仅用于兼容性）
+const sig1 = digitalSignature.sign(data, privateKey, 'SHA1')
 
-    return {
-      content,
-      signature,
-      signerPublicKey: this.keyPair.publicKey,
-      timestamp,
-      algorithm: 'RSA-SHA256',
-    }
-  }
-
-  static verifyDocument(signedDoc: SignedDocument): boolean {
-    const dataToVerify = `${signedDoc.content}|${signedDoc.timestamp}`
-    return digitalSignature.verify(
-      dataToVerify,
-      signedDoc.signature,
-      signedDoc.signerPublicKey,
-      'sha256'
-    )
-  }
-}
-
-// 使用示例
-const signer = new DocumentSigner()
-const document = signer.signDocument('This is an important contract.')
-const isValid = DocumentSigner.verifyDocument(document)
-console.log('文档签名验证:', isValid)
+// MD5（不推荐，仅用于兼容性）
+const sigMd5 = digitalSignature.sign(data, privateKey, 'MD5')
 ```
 
-### 2. API 请求签名
+## 完整示例
+
+### 文档签名
 
 ```typescript
-interface APIRequest {
-  method: string
-  url: string
-  body: string
-  timestamp: number
+import { rsa, digitalSignature } from '@ldesign/crypto'
+
+// 1. 生成密钥对
+const keyPair = rsa.generateKeyPair(2048)
+
+// 2. 文档内容
+const document = {
+ id: '12345',
+ content: 'This is an important document',
+ timestamp: Date.now()
 }
 
-class APIRequestSigner {
-  constructor(private privateKey: string) {}
+// 3. 序列化文档
+const documentString = JSON.stringify(document)
 
-  signRequest(request: APIRequest): string {
-    const message = this.createSignatureMessage(request)
-    return digitalSignature.sign(message, this.privateKey, 'sha256')
-  }
+// 4. 签名
+const signature = digitalSignature.sign(
+ documentString,
+ keyPair.privateKey,
+ 'SHA256'
+)
 
-  private createSignatureMessage(request: APIRequest): string {
-    return `${request.method}\n${request.url}\n${request.body}\n${request.timestamp}`
-  }
-
-  static verifyRequest(request: APIRequest, signature: string, publicKey: string): boolean {
-    const message = `${request.method}\n${request.url}\n${request.body}\n${request.timestamp}`
-    return digitalSignature.verify(message, signature, publicKey, 'sha256')
-  }
+// 5. 发送文档和签名
+const signedDocument = {
+ document,
+ signature,
+ publicKey: keyPair.publicKey
 }
 
-// 使用示例
-const apiSigner = new APIRequestSigner(keyPair.privateKey)
-const request: APIRequest = {
-  method: 'POST',
-  url: '/api/transfer',
-  body: JSON.stringify({ amount: 1000, to: 'user123' }),
-  timestamp: Date.now(),
-}
+// 6. 验证签名
+const receivedDoc = signedDocument.document
+const receivedSig = signedDocument.signature
+const receivedPubKey = signedDocument.publicKey
 
-const requestSignature = apiSigner.signRequest(request)
-const isRequestValid = APIRequestSigner.verifyRequest(request, requestSignature, keyPair.publicKey)
+const isValid = digitalSignature.verify(
+ JSON.stringify(receivedDoc),
+ receivedSig,
+ receivedPubKey,
+ 'SHA256'
+)
+
+console.log('文档签名有效:', isValid)
 ```
 
-### 3. 软件包完整性验证
+### API 请求签名
 
 ```typescript
-interface SoftwarePackage {
-  name: string
-  version: string
-  content: string
-  signature: string
-  publisherPublicKey: string
+import { digitalSignature } from '@ldesign/crypto'
+
+// 签名 API 请求
+function signApiRequest(
+ method: string,
+ url: string,
+ body: any,
+ privateKey: string
+): string {
+ // 构建待签名字符串
+ const signString = `${method}\n${url}\n${JSON.stringify(body)}\n${Date.now()}`
+
+ // 生成签名
+ return digitalSignature.sign(signString, privateKey, 'SHA256')
 }
 
-class PackagePublisher {
-  constructor(private keyPair: any) {}
+// 验证 API 请求
+function verifyApiRequest(
+ method: string,
+ url: string,
+ body: any,
+ signature: string,
+ publicKey: string,
+ timestamp: number
+): boolean {
+ // 检查时间戳（防止重放攻击）
+ const now = Date.now()
+ if (now - timestamp > 60000) { // 60秒有效期
+  return false
+ }
 
-  publishPackage(name: string, version: string, content: string): SoftwarePackage {
-    const packageInfo = `${name}@${version}`
-    const dataToSign = `${packageInfo}\n${content}`
-    const signature = digitalSignature.sign(dataToSign, this.keyPair.privateKey, 'sha256')
+ // 重建待签名字符串
+ const signString = `${method}\n${url}\n${JSON.stringify(body)}\n${timestamp}`
 
-    return {
-      name,
-      version,
-      content,
-      signature,
-      publisherPublicKey: this.keyPair.publicKey,
-    }
-  }
-
-  static verifyPackage(pkg: SoftwarePackage): boolean {
-    const packageInfo = `${pkg.name}@${pkg.version}`
-    const dataToVerify = `${packageInfo}\n${pkg.content}`
-
-    return digitalSignature.verify(dataToVerify, pkg.signature, pkg.publisherPublicKey, 'sha256')
-  }
+ // 验证签名
+ return digitalSignature.verify(signString, signature, publicKey, 'SHA256')
 }
 
-// 使用示例
-const publisher = new PackagePublisher(rsa.generateKeyPair(2048))
-const package = publisher.publishPackage('my-library', '1.0.0', 'library code...')
-const isPackageValid = PackagePublisher.verifyPackage(package)
+// 使用
+const signature = signApiRequest('POST', '/api/data', { value: 123 }, privateKey)
+const isValid = verifyApiRequest('POST', '/api/data', { value: 123 }, signature, publicKey, Date.now())
 ```
 
-### 4. 电子邮件签名
+## 密钥管理
+
+### 密钥存储
 
 ```typescript
-interface SignedEmail {
-  from: string
-  to: string
-  subject: string
-  body: string
-  signature: string
-  timestamp: number
-}
+import { rsa } from '@ldesign/crypto'
 
-class EmailSigner {
-  constructor(private privateKey: string) {}
+// 生成密钥对
+const keyPair = rsa.generateKeyPair(2048)
 
-  signEmail(from: string, to: string, subject: string, body: string): SignedEmail {
-    const timestamp = Date.now()
-    const emailData = `From: ${from}\nTo: ${to}\nSubject: ${subject}\nTimestamp: ${timestamp}\n\n${body}`
-    const signature = digitalSignature.sign(emailData, this.privateKey, 'sha256')
+// 存储密钥（示例）
+localStorage.setItem('privateKey', keyPair.privateKey)
+localStorage.setItem('publicKey', keyPair.publicKey)
 
-    return {
-      from,
-      to,
-      subject,
-      body,
-      signature,
-      timestamp,
-    }
-  }
+// 读取密钥
+const storedPrivateKey = localStorage.getItem('privateKey')
+const storedPublicKey = localStorage.getItem('publicKey')
+```
 
-  static verifyEmail(signedEmail: SignedEmail, senderPublicKey: string): boolean {
-    const emailData = `From: ${signedEmail.from}\nTo: ${signedEmail.to}\nSubject: ${signedEmail.subject}\nTimestamp: ${signedEmail.timestamp}\n\n${signedEmail.body}`
+### 安全存储
 
-    return digitalSignature.verify(emailData, signedEmail.signature, senderPublicKey, 'sha256')
-  }
+```typescript
+import { aes, rsa } from '@ldesign/crypto'
+
+// 加密存储私钥
+const keyPair = rsa.generateKeyPair(2048)
+const masterPassword = 'user-master-password'
+
+// 加密私钥
+const encryptedPrivateKey = aes.encrypt(keyPair.privateKey, masterPassword)
+
+// 存储加密后的私钥
+localStorage.setItem('encryptedPrivateKey', JSON.stringify(encryptedPrivateKey))
+localStorage.setItem('publicKey', keyPair.publicKey)
+
+// 使用时解密
+const storedEncrypted = JSON.parse(localStorage.getItem('encryptedPrivateKey'))
+const decryptedKey = aes.decrypt(storedEncrypted, masterPassword)
+
+if (decryptedKey.success) {
+ const privateKey = decryptedKey.data
+ // 使用私钥进行签名
 }
 ```
 
-## 批量签名和验证
+## 签名格式
+
+### Base64 签名
 
 ```typescript
-class BatchSigner {
-  constructor(private privateKey: string) {}
+import { digitalSignature, base64 } from '@ldesign/crypto'
 
-  signMultiple(dataList: string[]): Array<{ data: string, signature: string }> {
-    return dataList.map(data => ({
-      data,
-      signature: digitalSignature.sign(data, this.privateKey, 'sha256'),
-    }))
-  }
+// 生成签名并编码为 Base64
+const signature = digitalSignature.sign(message, privateKey, 'SHA256')
+const base64Signature = base64.encode(signature)
 
-  static verifyMultiple(
-    signedDataList: Array<{ data: string, signature: string }>,
-    publicKey: string
-  ): boolean[] {
-    return signedDataList.map(item =>
-      digitalSignature.verify(item.data, item.signature, publicKey, 'sha256')
-    )
-  }
-}
-
-// 使用示例
-const batchSigner = new BatchSigner(keyPair.privateKey)
-const dataToSign = ['document1', 'document2', 'document3']
-const signedData = batchSigner.signMultiple(dataToSign)
-const verificationResults = BatchSigner.verifyMultiple(signedData, keyPair.publicKey)
+// 解码并验证
+const decodedSignature = base64.decode(base64Signature)
+const isValid = digitalSignature.verify(message, decodedSignature, publicKey, 'SHA256')
 ```
 
-## 安全最佳实践
-
-### 1. 密钥管理
+### Hex 签名
 
 ```typescript
-// 安全的密钥存储示例（概念）
-class SecureKeyManager {
-  private static encryptPrivateKey(privateKey: string, password: string): string {
-    // 使用密码加密私钥
-    const encrypted = encrypt.aes(privateKey, password)
-    return JSON.stringify(encrypted)
-  }
+import { digitalSignature, hex } from '@ldesign/crypto'
 
-  private static decryptPrivateKey(encryptedKey: string, password: string): string {
-    // 解密私钥
-    const encryptedData = JSON.parse(encryptedKey)
-    const decrypted = decrypt.aes(encryptedData, password)
-    if (!decrypted.success) {
-      throw new Error('Failed to decrypt private key')
-    }
-    return decrypted.data
-  }
+// 生成签名并编码为 Hex
+const signature = digitalSignature.sign(message, privateKey, 'SHA256')
+const hexSignature = hex.encode(signature)
 
-  static saveKeyPair(
-    keyPair: any,
-    password: string
-  ): { publicKey: string, encryptedPrivateKey: string } {
-    return {
-      publicKey: keyPair.publicKey,
-      encryptedPrivateKey: this.encryptPrivateKey(keyPair.privateKey, password),
-    }
-  }
+// 解码并验证
+const decodedSignature = hex.decode(hexSignature)
+const isValid = digitalSignature.verify(message, decodedSignature, publicKey, 'SHA256')
+```
 
-  static loadKeyPair(publicKey: string, encryptedPrivateKey: string, password: string): any {
-    return {
-      publicKey,
-      privateKey: this.decryptPrivateKey(encryptedPrivateKey, password),
-    }
-  }
+## 高级应用
+
+### 多重签名
+
+```typescript
+import { digitalSignature } from '@ldesign/crypto'
+
+// 多个签名者
+const signers = [
+ { name: 'Alice', keyPair: rsa.generateKeyPair(2048) },
+ { name: 'Bob', keyPair: rsa.generateKeyPair(2048) },
+ { name: 'Charlie', keyPair: rsa.generateKeyPair(2048) }
+]
+
+// 文档
+const document = 'Multi-signature document'
+
+// 每个签名者签名
+const signatures = signers.map(signer => ({
+ signer: signer.name,
+ signature: digitalSignature.sign(document, signer.keyPair.privateKey, 'SHA256'),
+ publicKey: signer.keyPair.publicKey
+}))
+
+// 验证所有签名
+const allValid = signatures.every(sig =>
+ digitalSignature.verify(document, sig.signature, sig.publicKey, 'SHA256')
+)
+
+console.log('所有签名有效:', allValid)
+```
+
+### 时间戳签名
+
+```typescript
+import { digitalSignature } from '@ldesign/crypto'
+
+// 带时间戳的签名
+function signWithTimestamp(data: string, privateKey: string): {
+ data: string
+ timestamp: number
+ signature: string
+} {
+ const timestamp = Date.now()
+ const signData = `${data}|${timestamp}`
+ const signature = digitalSignature.sign(signData, privateKey, 'SHA256')
+
+ return {
+  data,
+  timestamp,
+  signature
+ }
+}
+
+// 验证带时间戳的签名
+function verifyWithTimestamp(
+ data: string,
+ timestamp: number,
+ signature: string,
+ publicKey: string,
+ maxAge: number = 3600000 // 1小时
+): boolean {
+ // 检查时间戳
+ const now = Date.now()
+ if (now - timestamp > maxAge) {
+  return false
+ }
+
+ // 验证签名
+ const signData = `${data}|${timestamp}`
+ return digitalSignature.verify(signData, signature, publicKey, 'SHA256')
+}
+
+// 使用
+const signed = signWithTimestamp('important data', privateKey)
+const isValid = verifyWithTimestamp(
+ signed.data,
+ signed.timestamp,
+ signed.signature,
+ publicKey
+)
+```
+
+### 链式签名
+
+```typescript
+import { digitalSignature, hash } from '@ldesign/crypto'
+
+// 签名链（类似区块链）
+interface SignedBlock {
+ data: string
+ previousHash: string
+ timestamp: number
+ signature: string
+}
+
+function createSignedBlock(
+ data: string,
+ previousHash: string,
+ privateKey: string
+): SignedBlock {
+ const timestamp = Date.now()
+ const blockData = `${data}|${previousHash}|${timestamp}`
+ const signature = digitalSignature.sign(blockData, privateKey, 'SHA256')
+
+ return {
+  data,
+  previousHash,
+  timestamp,
+  signature
+ }
+}
+
+function verifySignedBlock(
+ block: SignedBlock,
+ publicKey: string
+): boolean {
+ const blockData = `${block.data}|${block.previousHash}|${block.timestamp}`
+ return digitalSignature.verify(blockData, block.signature, publicKey, 'SHA256')
+}
+
+// 使用
+const keyPair = rsa.generateKeyPair(2048)
+const genesisBlock = createSignedBlock('Genesis', '0', keyPair.privateKey)
+const block2 = createSignedBlock(
+ 'Block 2',
+ hash.sha256(JSON.stringify(genesisBlock)),
+ keyPair.privateKey
+)
+
+const isValid = verifySignedBlock(block2, keyPair.publicKey)
+```
+
+## Vue 3 集成
+
+### 使用组合式函数
+
+```vue
+<script setup>
+import { useSignature } from '@ldesign/crypto/vue'
+import { ref } from 'vue'
+
+const { sign, verify, generateKeyPair, loading, error } = useSignature()
+
+const message = ref('')
+const signature = ref('')
+const keyPair = ref(null)
+
+// 生成密钥对
+const handleGenerateKeys = async () => {
+ keyPair.value = await generateKeyPair(2048)
+}
+
+// 签名
+const handleSign = async () => {
+ if (!keyPair.value) return
+
+ signature.value = await sign(
+  message.value,
+  keyPair.value.privateKey,
+  'SHA256'
+ )
+}
+
+// 验证
+const handleVerify = async () => {
+ if (!keyPair.value || !signature.value) return
+
+ const isValid = await verify(
+  message.value,
+  signature.value,
+  keyPair.value.publicKey,
+  'SHA256'
+ )
+
+ console.log('签名有效:', isValid)
+}
+</script>
+
+<template>
+ <div>
+  <button @click="handleGenerateKeys">生成密钥对</button>
+  <input v-model="message" placeholder="输入消息" />
+  <button @click="handleSign" :disabled="!keyPair">签名</button>
+  <button @click="handleVerify" :disabled="!signature">验证</button>
+
+  <div v-if="loading">处理中...</div>
+  <div v-if="error">错误: {{ error }}</div>
+  <div v-if="signature">签名: {{ signature }}</div>
+ </div>
+</template>
+```
+
+## 错误处理
+
+```typescript
+import { digitalSignature } from '@ldesign/crypto'
+
+// 安全的签名
+function safeSign(
+ data: string,
+ privateKey: string,
+ algorithm: 'SHA256' | 'SHA512' = 'SHA256'
+): string | null {
+ try {
+  return digitalSignature.sign(data, privateKey, algorithm)
+ } catch (error) {
+  console.error('签名失败:', error)
+  return null
+ }
+}
+
+// 安全的验证
+function safeVerify(
+ data: string,
+ signature: string,
+ publicKey: string,
+ algorithm: 'SHA256' | 'SHA512' = 'SHA256'
+): boolean {
+ try {
+  return digitalSignature.verify(data, signature, publicKey, algorithm)
+ } catch (error) {
+  console.error('验证失败:', error)
+  return false
+ }
 }
 ```
 
-### 2. 时间戳验证
+## 安全建议
+
+### 密钥安全
 
 ```typescript
-class TimestampedSigner {
-  private static readonly MAX_AGE = 5 * 60 * 1000 // 5 分钟
+// 不要在客户端硬编码私钥
+// 错误示例：
+const privateKey = '-----BEGIN PRIVATE KEY-----...' // 危险！
 
-  static signWithTimestamp(
-    data: string,
-    privateKey: string
-  ): { signature: string, timestamp: number } {
-    const timestamp = Date.now()
-    const dataWithTimestamp = `${data}|${timestamp}`
-    const signature = digitalSignature.sign(dataWithTimestamp, privateKey, 'sha256')
+// 正确做法：
+// 1. 私钥存储在服务器端
+// 2. 或使用用户密码加密后存储
+// 3. 公钥可以公开分发
+```
 
-    return { signature, timestamp }
-  }
+### 算法选择
 
-  static verifyWithTimestamp(
-    data: string,
-    signature: string,
-    timestamp: number,
-    publicKey: string
-  ): { valid: boolean, expired: boolean } {
-    const dataWithTimestamp = `${data}|${timestamp}`
-    const valid = digitalSignature.verify(dataWithTimestamp, signature, publicKey, 'sha256')
-    const expired = Date.now() - timestamp > this.MAX_AGE
+```typescript
+// 推荐使用 SHA256 或 SHA512
+const signature = digitalSignature.sign(data, privateKey, 'SHA256')
 
-    return { valid, expired }
-  }
+// 避免使用 MD5 或 SHA1（安全性较弱）
+// const signature = digitalSignature.sign(data, privateKey, 'MD5') // 不推荐
+```
+
+### 密钥长度
+
+```typescript
+// 至少使用 2048 位密钥
+const keyPair = rsa.generateKeyPair(2048)
+
+// 更高安全性使用 4096 位
+const strongKeyPair = rsa.generateKeyPair(4096)
+
+// 不要使用 1024 位或更短（不安全）
+// const weakKeyPair = rsa.generateKeyPair(1024) // 不推荐
+```
+
+### 签名验证
+
+```typescript
+// 始终验证签名
+const isValid = digitalSignature.verify(data, signature, publicKey, 'SHA256')
+
+if (isValid) {
+ // 处理已验证的数据
+ processData(data)
+} else {
+ // 拒绝无效数据
+ console.error('签名验证失败，数据可能被篡改')
 }
 ```
 
-### 3. 签名链
+### 时间戳保护
 
 ```typescript
-interface SignatureChain {
-  data: string
-  signatures: Array<{
-    signature: string
-    signerPublicKey: string
-    signerName: string
-    timestamp: number
-  }>
-}
+// 使用时间戳防止重放攻击
+function createTimestampedSignature(data: string, privateKey: string) {
+ const timestamp = Date.now()
+ const nonce = Math.random().toString(36)
+ const signData = `${data}|${timestamp}|${nonce}`
 
-class MultiSigner {
-  static addSignature(
-    chain: SignatureChain,
-    signerPrivateKey: string,
-    signerPublicKey: string,
-    signerName: string
-  ): SignatureChain {
-    const timestamp = Date.now()
-    const dataToSign = `${chain.data}|${JSON.stringify(chain.signatures)}|${timestamp}`
-    const signature = digitalSignature.sign(dataToSign, signerPrivateKey, 'sha256')
-
-    return {
-      ...chain,
-      signatures: [
-        ...chain.signatures,
-        {
-          signature,
-          signerPublicKey,
-          signerName,
-          timestamp,
-        },
-      ],
-    }
-  }
-
-  static verifyChain(chain: SignatureChain): boolean[] {
-    return chain.signatures.map((sig, index) => {
-      const previousSignatures = chain.signatures.slice(0, index)
-      const dataToVerify = `${chain.data}|${JSON.stringify(previousSignatures)}|${sig.timestamp}`
-
-      return digitalSignature.verify(dataToVerify, sig.signature, sig.signerPublicKey, 'sha256')
-    })
-  }
+ return {
+  data,
+  timestamp,
+  nonce,
+  signature: digitalSignature.sign(signData, privateKey, 'SHA256')
+ }
 }
 ```
 
 ## 性能考虑
 
-### 密钥长度选择
-
-- **1024 位**: 不推荐，安全性不足
-- **2048 位**: 推荐用于一般用途
-- **3072 位**: 高安全要求
-- **4096 位**: 最高安全级别，但性能较慢
-
-### 哈希算法选择
-
-- **SHA-256**: 推荐用于一般用途
-- **SHA-384**: 平衡安全性和性能
-- **SHA-512**: 最高安全级别
-
-### 批量处理优化
+### 密钥生成
 
 ```typescript
-// 异步批量签名
-async function signBatchAsync(dataList: string[], privateKey: string): Promise<string[]> {
-  const batchSize = 10
-  const results: string[] = []
-
-  for (let i = 0; i < dataList.length; i += batchSize) {
-    const batch = dataList.slice(i, i + batchSize)
-    const batchPromises = batch.map(data =>
-      Promise.resolve(digitalSignature.sign(data, privateKey, 'sha256'))
-    )
-
-    const batchResults = await Promise.all(batchPromises)
-    results.push(...batchResults)
-  }
-
-  return results
-}
+// 密钥生成是耗时操作，建议提前生成并缓存
+const keyPair = rsa.generateKeyPair(2048) // 可能需要几百毫秒
 ```
+
+### 批量签名
+
+```typescript
+import { cryptoManager } from '@ldesign/crypto'
+
+// 使用批量操作提高性能
+const operations = messages.map((msg, index) => ({
+ id: String(index),
+ data: msg,
+ key: privateKey,
+ algorithm: 'RSA' as const
+}))
+
+const results = await cryptoManager.batchEncrypt(operations)
+```
+
+## 下一步
+
+- [加密](/guide/encryption) - 学习数据加密
+- [哈希](/guide/hashing) - 了解哈希函数
+- [安全性](/guide/security) - 安全最佳实践
+- [性能优化](/guide/performance) - 提升性能

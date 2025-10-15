@@ -1,569 +1,642 @@
 # 解密 API
 
-本页面详细介绍了 @ldesign/crypto 的解密 API。
+本文档描述了 @ldesign/crypto 提供的所有解密功能。
 
-## decrypt 模块
+## 目录
 
-### decrypt.aes()
+- [Decrypt 类](#decrypt-类)
+- [AES 解密](#aes-解密)
+- [RSA 解密](#rsa-解密)
+- [DES/3DES 解密](#des3des-解密)
+- [Blowfish 解密](#blowfish-解密)
+- [解码功能](#解码功能)
+- [链式解密](#链式解密)
+- [认证解密](#认证解密)
 
-AES 对称解密函数。
+## Decrypt 类
+
+`Decrypt` 类提供了统一的解密 API，与 `Encrypt` 类配套使用。
+
+### 导入方式
 
 ```typescript
-function aes(encryptedData: EncryptResult, key: string, options?: AESOptions): DecryptResult
+import { Decrypt, decrypt } from '@ldesign/crypto'
+
+// 使用类
+const decryptor = new Decrypt()
+
+// 使用实例（推荐）
+import { decrypt } from '@ldesign/crypto'
 ```
+
+### 通用解密方法
+
+#### `decrypt(encryptedData, key, algorithm?, options?)`
+
+根据算法类型自动选择合适的解密方法。
 
 **参数：**
 
-- `encryptedData` (EncryptResult): 加密结果对象
-- `key` (string): 解密密钥（必须与加密时使用的密钥相同）
-- `options` (AESOptions, 可选): 解密选项
+- `encryptedData` (string | EncryptResult) - 加密数据或加密结果对象
+- `key` (string) - 解密密钥
+- `algorithm` (EncryptionAlgorithm?) - 加密算法（如果传入 EncryptResult 可省略）
+- `options` (EncryptionOptions?) - 可选的解密选项
 
-**返回值：**
-
-- `DecryptResult`: 解密结果对象
+**返回值：** `DecryptResult`
 
 **示例：**
 
 ```typescript
-import { decrypt, encrypt } from '@ldesign/crypto'
-
-const data = 'Hello, World!'
-const key = 'my-secret-key'
+import { encrypt, decrypt } from '@ldesign/crypto'
 
 // 加密
-const encrypted = encrypt.aes(data, key)
+const encrypted = encrypt.aes('Hello World', 'my-secret-key')
 
-// 解密
-const decrypted = decrypt.aes(encrypted, key)
+// 方式 1：传入 EncryptResult（推荐）
+const result1 = decrypt.decrypt(encrypted, 'my-secret-key')
 
-if (decrypted.success) {
-  console.log('解密成功:', decrypted.data)
+// 方式 2：传入字符串并指定算法
+const result2 = decrypt.decrypt(encrypted.data!, 'my-secret-key', 'AES', {
+    iv: encrypted.iv,
+    keySize: encrypted.keySize
+})
+
+if (result1.success) {
+    console.log('解密成功:', result1.data)
+} else {
+    console.error('解密失败:', result1.error)
 }
-else {
-  console.error('解密失败:', decrypted.error)
-}
 ```
 
-### decrypt.aes128()
+---
 
-AES-128 解密的便捷方法。
+## AES 解密
 
-```typescript
-function aes128(encryptedData: EncryptResult, key: string, options?: AESOptions): DecryptResult
-```
+### `aes(encryptedData, key, options?)`
 
-**示例：**
-
-```typescript
-const encrypted = encrypt.aes128('Hello, World!', 'my-key')
-const decrypted = decrypt.aes128(encrypted, 'my-key')
-```
-
-### decrypt.aes192()
-
-AES-192 解密的便捷方法。
-
-```typescript
-function aes192(encryptedData: EncryptResult, key: string, options?: AESOptions): DecryptResult
-```
-
-### decrypt.aes256()
-
-AES-256 解密的便捷方法。
-
-```typescript
-function aes256(encryptedData: EncryptResult, key: string, options?: AESOptions): DecryptResult
-```
-
-### decrypt.rsa()
-
-RSA 非对称解密函数。
-
-```typescript
-function rsa(encryptedData: EncryptResult, privateKey: string, options?: RSAOptions): DecryptResult
-```
+使用 AES 算法解密数据。
 
 **参数：**
 
-- `encryptedData` (EncryptResult): 加密结果对象
-- `privateKey` (string): RSA 私钥
-- `options` (RSAOptions, 可选): 解密选项
+- `encryptedData` (string | EncryptResult) - 加密数据
+- `key` (string) - 解密密钥（与加密时使用的密钥相同）
+- `options` (AESOptions?) - 解密选项
+
+**返回值：** `DecryptResult`
 
 **示例：**
 
 ```typescript
-import { decrypt, encrypt, rsa } from '@ldesign/crypto'
+import { encrypt, decrypt } from '@ldesign/crypto'
+
+// 加密
+const encrypted = encrypt.aes256('Hello World', 'my-secret-key')
+
+// 解密 - 方式 1：传入 EncryptResult（最简单）
+const decrypted1 = decrypt.aes(encrypted, 'my-secret-key')
+console.log(decrypted1.data) // 'Hello World'
+
+// 解密 - 方式 2：传入字符串（需要提供完整选项）
+const decrypted2 = decrypt.aes(encrypted.data!, 'my-secret-key', {
+    iv: encrypted.iv,
+    keySize: 256,
+    mode: 'CBC'
+})
+
+// 解密 - 方式 3：使用 CryptoJS 默认格式
+const defaultFormatEncrypted = 'U2FsdGVkX1...' // CryptoJS 默认格式
+const decrypted3 = decrypt.aes(defaultFormatEncrypted, 'my-secret-key')
+```
+
+### AES 快捷方法
+
+#### `aes128(encryptedData, key, options?)`
+
+使用 AES-128 解密。
+
+```typescript
+const decrypted = decrypt.aes128(encrypted, 'key')
+```
+
+#### `aes192(encryptedData, key, options?)`
+
+使用 AES-192 解密。
+
+```typescript
+const decrypted = decrypt.aes192(encrypted, 'key')
+```
+
+#### `aes256(encryptedData, key, options?)`
+
+使用 AES-256 解密（推荐）。
+
+```typescript
+const decrypted = decrypt.aes256(encrypted, 'key')
+```
+
+### 解密选项
+
+与加密时相同的选项：
+
+```typescript
+interface AESOptions {
+    mode?: 'CBC' | 'ECB' | 'CFB' | 'OFB' | 'CTR' | 'GCM'
+    keySize?: 128 | 192 | 256
+    iv?: string
+    padding?: string
+    salt?: string
+    iterations?: number
+}
+```
+
+### 处理不同格式
+
+```typescript
+// 1. 处理 EncryptResult 对象
+const encrypted = encrypt.aes('data', 'key')
+const decrypted = decrypt.aes(encrypted, 'key')
+
+// 2. 处理 CryptoJS 默认格式字符串（包含 IV）
+const cryptojsFormat = 'U2FsdGVkX1...'
+const decrypted2 = decrypt.aes(cryptojsFormat, 'key')
+
+// 3. 处理纯密文字符串（需要提供 IV）
+const ciphertext = 'abc123...'
+const iv = '0123456789abcdef0123456789abcdef'
+const decrypted3 = decrypt.aes(ciphertext, 'key', { iv })
+```
+
+---
+
+## RSA 解密
+
+### `rsa(encryptedData, privateKey, options?)`
+
+使用 RSA 私钥解密数据。
+
+**参数：**
+
+- `encryptedData` (string | EncryptResult) - 加密数据
+- `privateKey` (string) - RSA 私钥（PEM 格式）
+- `options` (RSAOptions?) - 解密选项
+
+**返回值：** `DecryptResult`
+
+**示例：**
+
+```typescript
+import { encrypt, decrypt, keyGenerator } from '@ldesign/crypto'
 
 // 生成密钥对
-const keyPair = rsa.generateKeyPair(2048)
+const keyPair = keyGenerator.generateRSAKeyPair(2048)
 
 // 加密
-const encrypted = encrypt.rsa('Hello, RSA!', keyPair.publicKey)
+const encrypted = encrypt.rsa('Hello World', keyPair.publicKey)
 
 // 解密
 const decrypted = decrypt.rsa(encrypted, keyPair.privateKey)
 
 if (decrypted.success) {
-  console.log('解密成功:', decrypted.data)
-}
-```
-
-### decrypt.base64()
-
-Base64 解码函数。
-
-```typescript
-function base64(encodedData: string): string
-```
-
-**参数：**
-
-- `encodedData` (string): Base64 编码的字符串
-
-**返回值：**
-
-- `string`: 解码后的原始字符串
-
-**示例：**
-
-```typescript
-const encoded = 'SGVsbG8sIEJhc2U2NCE='
-const decoded = decrypt.base64(encoded)
-// 输出: "Hello, Base64!"
-```
-
-### decrypt.base64Url()
-
-URL 安全的 Base64 解码函数。
-
-```typescript
-function base64Url(encodedData: string): string
-```
-
-**示例：**
-
-```typescript
-const encoded = 'SGVsbG8sIFVSTC1zYWZlIEJhc2U2NCE'
-const decoded = decrypt.base64Url(encoded)
-```
-
-### decrypt.hex()
-
-十六进制解码函数。
-
-```typescript
-function hex(encodedData: string): string
-```
-
-**示例：**
-
-```typescript
-const encoded = '48656c6c6f2c20486578210'
-const decoded = decrypt.hex(encoded)
-// 输出: "Hello, Hex!"
-```
-
-## 类型定义
-
-### DecryptResult
-
-解密操作的结果类型。
-
-```typescript
-interface DecryptResult {
-  success: boolean // 解密是否成功
-  data: string // 解密后的数据（成功时）
-  error?: string // 错误信息（失败时）
-  algorithm?: string // 使用的算法
-  timestamp?: number // 解密时间戳
-}
-```
-
-### EncryptResult
-
-作为解密输入的加密结果类型。
-
-```typescript
-interface EncryptResult {
-  data: string // 加密后的数据
-  algorithm: string // 使用的算法
-  iv?: string // 初始化向量
-  keySize?: number // 密钥长度
-  mode?: string // 加密模式
-  timestamp?: number // 加密时间戳
-}
-```
-
-## 错误处理
-
-### DecryptionError
-
-解密操作可能抛出的错误类型。
-
-```typescript
-class DecryptionError extends Error {
-  constructor(message: string, algorithm: string, cause?: Error)
-}
-```
-
-### 常见错误类型
-
-1. **密钥错误**：使用了错误的解密密钥
-2. **数据损坏**：加密数据被篡改或损坏
-3. **算法不匹配**：解密算法与加密算法不匹配
-4. **格式错误**：输入数据格式不正确
-
-**错误处理示例：**
-
-```typescript
-try {
-  const decrypted = decrypt.aes(encryptedData, key)
-
-  if (!decrypted.success) {
-    console.error('解密失败:', decrypted.error)
-    return
-  }
-
-  console.log('解密成功:', decrypted.data)
-}
-catch (error) {
-  if (error instanceof DecryptionError) {
-    console.error('解密异常:', error.message)
-    console.error('算法:', error.algorithm)
-  }
-}
-```
-
-## 高级用法
-
-### 批量解密
-
-```typescript
-function batchDecrypt(encryptedList: EncryptResult[], key: string): DecryptResult[] {
-  return encryptedList.map(encrypted => decrypt.aes(encrypted, key))
+    console.log('解密成功:', decrypted.data)
 }
 
-// 使用示例
-const encryptedList = [
-  encrypt.aes('data1', 'key'),
-  encrypt.aes('data2', 'key'),
-  encrypt.aes('data3', 'key'),
-]
-
-const decryptedList = batchDecrypt(encryptedList, 'key')
-
-// 检查解密结果
-decryptedList.forEach((result, index) => {
-  if (result.success) {
-    console.log(`数据 ${index + 1} 解密成功:`, result.data)
-  }
-  else {
-    console.error(`数据 ${index + 1} 解密失败:`, result.error)
-  }
+// 指定选项
+const decrypted2 = decrypt.rsa(encrypted.data!, keyPair.privateKey, {
+    padding: 'OAEP',
+    keySize: 2048
 })
 ```
 
-### 流式解密
+### RSA 解密注意事项
+
+1. **密钥匹配**：必须使用与加密时配对的私钥
+2. **填充方式**：必须与加密时使用的填充方式相同
+3. **数据完整性**：任何数据损坏都会导致解密失败
+
+---
+
+## DES/3DES 解密
+
+### `des(encryptedData, key, options?)`
+
+使用 DES 解密数据。
+
+**参数：**
+
+- `encryptedData` (string | EncryptResult) - 加密数据
+- `key` (string) - 解密密钥（8 字节）
+- `options` (DESOptions?) - 解密选项
+
+**示例：**
 
 ```typescript
-class StreamDecryptor {
-  private key: string
-  private options: AESOptions
+import { encrypt, decrypt } from '@ldesign/crypto'
 
-  constructor(key: string, options: AESOptions = {}) {
-    this.key = key
-    this.options = options
-  }
+const encrypted = encrypt.des('Hello', '8bytekey')
+const decrypted = decrypt.des(encrypted, '8bytekey')
 
-  decryptChunk(encryptedChunk: EncryptResult): DecryptResult {
-    return decrypt.aes(encryptedChunk, this.key, this.options)
-  }
-
-  decryptStream(encryptedChunks: EncryptResult[]): string | null {
-    const decryptedChunks: string[] = []
-
-    for (const chunk of encryptedChunks) {
-      const result = this.decryptChunk(chunk)
-
-      if (!result.success) {
-        console.error('解密块失败:', result.error)
-        return null
-      }
-
-      decryptedChunks.push(result.data)
-    }
-
-    return decryptedChunks.join('')
-  }
-}
-
-// 使用示例
-const decryptor = new StreamDecryptor('my-key', { keySize: 256 })
-const originalData = decryptor.decryptStream(encryptedChunks)
+console.log(decrypted.data) // 'Hello'
 ```
 
-### 安全解密包装器
+### `des3(encryptedData, key, options?)` / `tripledes(encryptedData, key, options?)`
+
+使用 3DES 解密数据。
+
+**参数：**
+
+- `encryptedData` (string | EncryptResult) - 加密数据
+- `key` (string) - 解密密钥（24 字节）
+- `options` (TripleDESOptions?) - 解密选项
+
+**示例：**
 
 ```typescript
-class SecureDecryptor {
-  private maxRetries: number
-  private retryDelay: number
-
-  constructor(maxRetries = 3, retryDelay = 1000) {
-    this.maxRetries = maxRetries
-    this.retryDelay = retryDelay
-  }
-
-  async secureDecrypt(
-    encryptedData: EncryptResult,
-    key: string,
-    options?: AESOptions
-  ): Promise<DecryptResult> {
-    let lastError: string = ''
-
-    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
-      try {
-        const result = decrypt.aes(encryptedData, key, options)
-
-        if (result.success) {
-          return result
-        }
-
-        lastError = result.error || '未知错误'
-
-        if (attempt < this.maxRetries) {
-          console.warn(`解密尝试 ${attempt} 失败，${this.retryDelay}ms 后重试`)
-          await this.delay(this.retryDelay)
-        }
-      }
-      catch (error) {
-        lastError = error instanceof Error ? error.message : '解密异常'
-
-        if (attempt < this.maxRetries) {
-          await this.delay(this.retryDelay)
-        }
-      }
-    }
-
-    return {
-      success: false,
-      data: '',
-      error: `解密失败，已重试 ${this.maxRetries} 次。最后错误: ${lastError}`,
-    }
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
-  }
-}
-
-// 使用示例
-const secureDecryptor = new SecureDecryptor()
-const result = await secureDecryptor.secureDecrypt(encryptedData, key)
+const encrypted = encrypt.des3('Hello', '24-byte-long-secret-key!')
+const decrypted = decrypt.des3(encrypted, '24-byte-long-secret-key!')
+// 或者
+const decrypted2 = decrypt.tripledes(encrypted, '24-byte-long-secret-key!')
 ```
 
-## 数据验证
+---
 
-### 解密前验证
+## Blowfish 解密
+
+### `blowfish(encryptedData, key, options?)`
+
+使用 Blowfish 解密数据。
+
+**参数：**
+
+- `encryptedData` (string | EncryptResult) - 加密数据
+- `key` (string) - 解密密钥（4-56 字节）
+- `options` (BlowfishOptions?) - 解密选项
+
+**示例：**
 
 ```typescript
-function validateEncryptedData(encryptedData: any): boolean {
-  // 检查必需字段
-  if (!encryptedData || typeof encryptedData !== 'object') {
-    return false
-  }
+import { encrypt, decrypt } from '@ldesign/crypto'
 
-  if (!encryptedData.data || typeof encryptedData.data !== 'string') {
-    return false
-  }
+const encrypted = encrypt.blowfish('Hello World', 'secret-key')
+const decrypted = decrypt.blowfish(encrypted, 'secret-key')
 
-  if (!encryptedData.algorithm || typeof encryptedData.algorithm !== 'string') {
-    return false
-  }
-
-  // 检查算法支持
-  const supportedAlgorithms = ['AES-128-CBC', 'AES-192-CBC', 'AES-256-CBC', 'RSA']
-  if (!supportedAlgorithms.includes(encryptedData.algorithm)) {
-    return false
-  }
-
-  return true
-}
-
-// 安全解密函数
-function safeDecrypt(encryptedData: any, key: string): DecryptResult {
-  if (!validateEncryptedData(encryptedData)) {
-    return {
-      success: false,
-      data: '',
-      error: '无效的加密数据格式',
-    }
-  }
-
-  return decrypt.aes(encryptedData, key)
-}
+console.log(decrypted.data) // 'Hello World'
 ```
 
-### 解密后验证
+---
+
+## 解码功能
+
+Decrypt 类还提供了解码功能。
+
+### `base64(encodedData)`
+
+将 Base64 字符串解码为原始字符串。
 
 ```typescript
-function validateDecryptedData(data: string, expectedFormat?: string): boolean {
-  if (!data || typeof data !== 'string') {
-    return false
-  }
-
-  // 根据期望格式进行验证
-  switch (expectedFormat) {
-    case 'json':
-      try {
-        JSON.parse(data)
-        return true
-      }
-      catch {
-        return false
-      }
-
-    case 'base64':
-      return /^[A-Z0-9+/]*={0,2}$/i.test(data)
-
-    case 'hex':
-      return /^[0-9a-f]*$/i.test(data)
-
-    default:
-      return true
-  }
-}
-
-// 带验证的解密
-function decryptWithValidation(
-  encryptedData: EncryptResult,
-  key: string,
-  expectedFormat?: string
-): DecryptResult {
-  const result = decrypt.aes(encryptedData, key)
-
-  if (result.success && !validateDecryptedData(result.data, expectedFormat)) {
-    return {
-      success: false,
-      data: '',
-      error: '解密数据格式验证失败',
-    }
-  }
-
-  return result
-}
+const decoded = decrypt.base64('SGVsbG8gV29ybGQ=')
+console.log(decoded) // 'Hello World'
 ```
 
-## 性能优化
+### `base64Url(encodedData)`
 
-### 解密缓存
+将 URL 安全的 Base64 字符串解码。
 
 ```typescript
-class DecryptionCache {
-  private cache = new Map<string, DecryptResult>()
-  private maxSize: number
-
-  constructor(maxSize = 1000) {
-    this.maxSize = maxSize
-  }
-
-  private generateCacheKey(encryptedData: EncryptResult, key: string): string {
-    // 使用加密数据和密钥的哈希作为缓存键
-    const dataHash = this.simpleHash(encryptedData.data)
-    const keyHash = this.simpleHash(key)
-    return `${dataHash}:${keyHash}`
-  }
-
-  private simpleHash(str: string): string {
-    let hash = 0
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i)
-      hash = (hash << 5) - hash + char
-      hash = hash & hash
-    }
-    return hash.toString(36)
-  }
-
-  cachedDecrypt(encryptedData: EncryptResult, key: string): DecryptResult {
-    const cacheKey = this.generateCacheKey(encryptedData, key)
-
-    // 检查缓存
-    if (this.cache.has(cacheKey)) {
-      return this.cache.get(cacheKey)!
-    }
-
-    // 执行解密
-    const result = decrypt.aes(encryptedData, key)
-
-    // 只缓存成功的结果
-    if (result.success) {
-      // 管理缓存大小
-      if (this.cache.size >= this.maxSize) {
-        const firstKey = this.cache.keys().next().value
-        this.cache.delete(firstKey)
-      }
-
-      this.cache.set(cacheKey, result)
-    }
-
-    return result
-  }
-
-  clearCache(): void {
-    this.cache.clear()
-  }
-
-  getCacheStats() {
-    return {
-      size: this.cache.size,
-      maxSize: this.maxSize,
-    }
-  }
-}
-
-// 使用示例
-const decryptCache = new DecryptionCache()
-const result = decryptCache.cachedDecrypt(encryptedData, key)
+const decoded = decrypt.base64Url('SGVsbG8gV29ybGQ')
 ```
 
-## 安全注意事项
+### `hex(encodedData)`
 
-### 密钥安全
-
-1. **密钥一致性**：确保解密使用的密钥与加密时完全相同
-2. **密钥存储**：安全存储解密密钥，避免泄露
-3. **密钥轮换**：定期更换密钥，并能解密旧数据
-
-### 数据完整性
-
-1. **验证数据**：解密前验证数据完整性
-2. **错误处理**：正确处理解密错误，避免信息泄露
-3. **时间攻击**：使用常数时间比较避免时间攻击
-
-### 内存安全
+将十六进制字符串解码为原始字符串。
 
 ```typescript
-// 安全清理解密结果
-function secureDecryptAndClean(encryptedData: EncryptResult, key: string): string | null {
-  const result = decrypt.aes(encryptedData, key)
+const decoded = decrypt.hex('48656c6c6f')
+console.log(decoded) // 'Hello'
+```
 
-  if (!result.success) {
-    return null
-  }
+### `decode(encodedData, encodingType)`
 
-  // 复制结果
-  const data = result.data
+通用解码方法。
 
-  // 清理原始结果
-  result.data = ''
+```typescript
+const original1 = decrypt.decode('SGVsbG8=', 'base64')
+const original2 = decrypt.decode('48656c6c6f', 'hex')
+const original3 = decrypt.decode('Hello', 'utf8')
+```
 
-  return data
+---
+
+## 链式解密
+
+使用链式 API 进行流畅的解密操作。
+
+### 基本用法
+
+```typescript
+import { chain } from '@ldesign/crypto'
+
+// 解码并解密
+const decrypted = chain(encryptedBase64String)
+    .fromBase64()
+    .decrypt('AES', 'secret-key')
+    .execute()
+
+console.log('解密结果:', decrypted)
+```
+
+### 完整流程
+
+```typescript
+import { chain } from '@ldesign/crypto'
+
+// 加密流程
+const encrypted = chain('Hello World')
+    .encrypt('AES', 'secret-key')
+    .base64()
+    .execute()
+
+// 解密流程（反向操作）
+const decrypted = chain(encrypted)
+    .fromBase64()
+    .decrypt('AES', 'secret-key')
+    .execute()
+
+console.log(decrypted) // 'Hello World'
+```
+
+### 多步骤解密
+
+```typescript
+// 假设数据经过：加密 -> Base64 -> Hex 编码
+const decrypted = chain(hexEncodedData)
+    .fromHex()          // 1. 解码 Hex
+    .fromBase64()       // 2. 解码 Base64
+    .decrypt('AES', 'key') // 3. 解密
+    .execute()
+```
+
+---
+
+## 认证解密
+
+认证解密（AEAD）解密数据并验证完整性。
+
+### `decryptWithAuth(encryptedData, key, options?)`
+
+解密数据并验证认证标签。
+
+**参数：**
+
+- `encryptedData` (AuthenticatedEncryptResult | string) - 认证加密结果
+- `key` (string) - 解密密钥
+- `options` (AuthenticatedEncryptionOptions?) - 选项
+
+**返回值：** `AuthenticatedDecryptResult`
+
+```typescript
+interface AuthenticatedDecryptResult {
+    success: boolean
+    data: string          // 解密后的数据
+    verified: boolean     // 认证是否通过
+    error?: string        // 错误信息
 }
 ```
 
-## 相关 API
+**示例：**
 
-- [加密 API](./encryption.md) - 加密相关函数
-- [哈希 API](./hashing.md) - 哈希和验证函数
-- [密钥生成 API](./key-generation.md) - 密钥管理函数
-- [工具函数 API](./utilities.md) - 辅助工具函数
+```typescript
+import { encryptWithAuth, decryptWithAuth } from '@ldesign/crypto'
+
+// 加密
+const encrypted = encryptWithAuth('敏感数据', 'secret-key')
+
+// 解密并验证
+const decrypted = decryptWithAuth(encrypted, 'secret-key')
+
+if (decrypted.success && decrypted.verified) {
+    console.log('数据完整，解密成功:', decrypted.data)
+} else {
+    console.error('数据可能被篡改!', decrypted.error)
+}
+
+// 错误密钥会导致验证失败
+const wrongKey = decryptWithAuth(encrypted, 'wrong-key')
+console.log(wrongKey.verified) // false
+```
+
+### JSON 认证解密
+
+```typescript
+import { encryptJSONWithAuth, decryptJSONWithAuth } from '@ldesign/crypto'
+
+// 加密 JSON
+const userData = { id: 1, name: 'Alice' }
+const encrypted = encryptJSONWithAuth(userData, 'secret-key')
+
+// 解密 JSON
+const result = decryptJSONWithAuth<typeof userData>(encrypted, 'secret-key')
+
+if (result.verified && result.data) {
+    console.log('用户 ID:', result.data.id)
+    console.log('用户名:', result.data.name)
+} else {
+    console.error('验证失败:', result.error)
+}
+```
+
+### 数据完整性验证
+
+认证解密会自动验证：
+
+1. **数据完整性**：数据未被修改
+2. **认证标签**：验证消息来源
+3. **附加数据**：如果使用了 AAD，也会验证
+
+```typescript
+const encrypted = encryptWithAuth('data', 'key', {
+    aad: 'user-id:123'
+})
+
+// 正确解密
+const result1 = decryptWithAuth(encrypted, 'key')
+console.log(result1.verified) // true
+
+// 篡改数据
+encrypted.ciphertext = 'tampered-data'
+const result2 = decryptWithAuth(encrypted, 'key')
+console.log(result2.verified) // false
+```
+
+---
+
+## 错误处理
+
+### 检查解密结果
+
+```typescript
+const result = decrypt.aes(encrypted, 'key')
+
+if (result.success) {
+    console.log('解密成功:', result.data)
+} else {
+    console.error('解密失败:', result.error)
+}
+```
+
+### 常见错误
+
+```typescript
+// 1. 密钥错误
+const wrong = decrypt.aes(encrypted, 'wrong-key')
+console.log(wrong.error) // 'Decrypted data contains invalid characters'
+
+// 2. IV 缺失
+const noIv = decrypt.aes('ciphertext', 'key')
+console.log(noIv.error) // 'IV not found in encrypted data'
+
+// 3. 格式错误
+const badFormat = decrypt.aes('invalid-base64!@#', 'key')
+console.log(badFormat.error) // 'Invalid encrypted data format'
+
+// 4. 算法不匹配
+const wrongAlgo = decrypt.des(aesEncrypted, 'key')
+console.log(wrongAlgo.error) // 'Decryption failed'
+```
+
+### 链式解密错误处理
+
+```typescript
+const chain = decrypt.chain(encrypted)
+    .fromBase64()
+    .decrypt('AES', 'key')
+
+if (chain.hasError()) {
+    const error = chain.getError()
+    console.error('解密过程出错:', error?.message)
+
+    // 清除错误并继续
+    chain.clearError()
+}
+```
+
+---
+
+## 完整示例
+
+### 加密解密完整流程
+
+```typescript
+import { encrypt, decrypt } from '@ldesign/crypto'
+
+// 1. 加密
+const originalData = '这是需要保护的敏感信息'
+const secretKey = 'my-secret-key-2023'
+
+const encrypted = encrypt.aes256(originalData, secretKey)
+
+if (encrypted.success) {
+    console.log('加密成功!')
+    console.log('密文:', encrypted.data)
+    console.log('IV:', encrypted.iv)
+
+    // 2. 可以将 encrypted 对象序列化存储
+    const stored = JSON.stringify(encrypted)
+
+    // 3. 从存储恢复
+    const restored = JSON.parse(stored)
+
+    // 4. 解密
+    const decrypted = decrypt.aes(restored, secretKey)
+
+    if (decrypted.success) {
+        console.log('解密成功!')
+        console.log('原文:', decrypted.data)
+        console.log('验证:', decrypted.data === originalData) // true
+    }
+}
+```
+
+### 文件解密
+
+```typescript
+import { decrypt } from '@ldesign/crypto'
+
+// 从文件或数据库读取加密数据
+const encryptedFileData = {
+    data: '...',
+    iv: '...',
+    algorithm: 'AES',
+    keySize: 256
+}
+
+// 解密
+const decrypted = decrypt.aes(encryptedFileData, fileEncryptionKey)
+
+if (decrypted.success) {
+    // 使用解密后的内容
+    console.log('文件内容:', decrypted.data)
+} else {
+    console.error('文件解密失败:', decrypted.error)
+}
+```
+
+### 混合加密解密
+
+```typescript
+import { encrypt, decrypt, keyGenerator } from '@ldesign/crypto'
+
+// 1. 加密方：生成 AES 密钥并加密数据
+const aesKey = keyGenerator.generateKey(32)
+const encryptedData = encrypt.aes256(largeData, aesKey)
+
+// 2. 加密方：用 RSA 公钥加密 AES 密钥
+const encryptedKey = encrypt.rsa(aesKey, recipientPublicKey)
+
+// 3. 传输 encryptedData 和 encryptedKey
+
+// 4. 解密方：用 RSA 私钥解密 AES 密钥
+const decryptedKey = decrypt.rsa(encryptedKey, recipientPrivateKey)
+
+// 5. 解密方：用 AES 密钥解密数据
+if (decryptedKey.success) {
+    const decryptedData = decrypt.aes(encryptedData, decryptedKey.data!)
+    console.log('最终数据:', decryptedData.data)
+}
+```
+
+---
+
+## 最佳实践
+
+1. **使用 EncryptResult 对象**
+   - 推荐传入完整的加密结果对象
+   - 自动包含所有必要的参数（IV、算法等）
+
+2. **密钥管理**
+   - 使用相同的密钥解密
+   - 安全存储解密密钥
+   - 不要在客户端暴露私钥
+
+3. **错误处理**
+   - 始终检查 `success` 字段
+   - 妥善处理解密失败情况
+   - 不要泄露详细的错误信息
+
+4. **数据验证**
+   - 验证解密后的数据格式
+   - 使用认证加密确保完整性
+   - 检查数据的合法性
+
+5. **性能优化**
+   - 缓存解密密钥
+   - 批量解密使用管理器
+   - 避免重复解密
+
+---
+
+## 相关链接
+
+- [加密 API](./encryption.md)
+- [密钥生成 API](./key-generation.md)
+- [管理器 API](./manager.md)
+- [类型定义](./types.md)

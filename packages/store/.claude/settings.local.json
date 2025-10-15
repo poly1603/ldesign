@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "Bash(pnpm add:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,528 +1,536 @@
-# 自定义配置
+# 配置指南
 
-@ldesign/crypto 提供了灵活的配置选项，允许您根据项目需求自定义加密行为。
+本指南介绍如何配置 @ldesign/crypto 以满足不同的需求。
 
-## 全局配置
+## 基础配置
 
-### 基本配置
+### CryptoManager 配置
 
 ```typescript
-import { setGlobalConfig } from '@ldesign/crypto'
+import { CryptoManager } from '@ldesign/crypto'
 
-// 设置全局默认配置
-setGlobalConfig({
-  // AES 配置
-  aes: {
-    keySize: 256, // 默认密钥长度
-    mode: 'CBC', // 默认加密模式
-    padding: 'Pkcs7', // 填充方式
-    encoding: 'hex', // 输出编码
-  },
+const manager = new CryptoManager({
+ // 默认算法
+ defaultAlgorithm: 'AES',
 
-  // RSA 配置
-  rsa: {
-    keySize: 2048, // 默认密钥长度
-    keyFormat: 'pem', // 密钥格式
-    padding: 'OAEP', // 填充方式
-    hashAlgorithm: 'SHA256', // 哈希算法
-  },
+ // 性能优化
+ enableCache: true,
+ maxCacheSize: 1000,
+ enableParallel: true,
 
-  // 哈希配置
-  hash: {
-    algorithm: 'SHA256', // 默认哈希算法
-    encoding: 'hex', // 输出编码
-    iterations: 1000, // PBKDF2 迭代次数
-  },
+ // 安全选项
+ autoGenerateIV: true,
+ keyDerivation: false,
 
-  // 编码配置
-  encoding: {
-    charset: 'utf8', // 字符编码
-    urlSafe: false, // Base64 URL 安全模式
-  },
+ // 调试选项
+ debug: false,
+ logLevel: 'error' // 'error' | 'warn' | 'info' | 'debug'
 })
 ```
 
-### 环境特定配置
+### 性能优化器配置
 
 ```typescript
-// config/crypto.ts
-const baseConfig = {
-  aes: {
-    keySize: 256,
-    mode: 'CBC',
-  },
-  rsa: {
-    keySize: 2048,
-    keyFormat: 'pem',
-  },
-}
+import { PerformanceOptimizer } from '@ldesign/crypto'
 
-export const cryptoConfigs = {
-  development: {
-    ...baseConfig,
-    // 开发环境：优化性能
-    aes: {
-      ...baseConfig.aes,
-      keySize: 128, // 使用较小的密钥提高开发速度
-    },
-    debug: true,
-    strictValidation: false,
-  },
+const optimizer = new PerformanceOptimizer({
+ // 最大缓存数量
+ maxCacheSize: 1000,
 
-  production: {
-    ...baseConfig,
-    // 生产环境：最高安全性
-    aes: {
-      ...baseConfig.aes,
-      keySize: 256,
-    },
-    rsa: {
-      ...baseConfig.rsa,
-      keySize: 4096, // 使用更大的密钥
-    },
-    debug: false,
-    strictValidation: true,
-  },
+ // 缓存过期时间（毫秒）
+ cacheTTL: 5 * 60 * 1000, // 5分钟
 
-  test: {
-    ...baseConfig,
-    // 测试环境：快速执行
-    aes: {
-      ...baseConfig.aes,
-      keySize: 128,
-    },
-    debug: false,
-    strictValidation: true,
-  },
-}
+ // 是否启用缓存
+ enableCache: true,
 
-// 根据环境加载配置
-const env = process.env.NODE_ENV || 'development'
-export const currentConfig = cryptoConfigs[env]
-```
+ // 最大操作时间记录数
+ maxOperationTimes: 1000,
 
-### 动态配置
+ // 自动清理间隔（毫秒）
+ autoCleanupInterval: 60 * 1000, // 1分钟
 
-```typescript
-import { getGlobalConfig, resetGlobalConfig, updateGlobalConfig } from '@ldesign/crypto'
+ // 内存使用阈值（字节）
+ memoryThreshold: 50 * 1024 * 1024, // 50MB
 
-// 获取当前配置
-const currentConfig = getGlobalConfig()
+ // 是否启用 Worker 并行处理
+ enableWorker: false,
 
-console.log('当前配置:', currentConfig)
+ // Worker 线程池大小
+ workerPoolSize: 4,
 
-// 动态更新配置
-updateGlobalConfig({
-  aes: {
-    keySize: 192, // 只更新 AES 密钥长度
-  },
+ // 批量操作最大并发数
+ maxConcurrency: 10
 })
-resetGlobalConfig()
 ```
 
-## 算法特定配置
+## 加密算法配置
 
-### AES 配置选项
+### AES 配置
 
 ```typescript
-import { encrypt } from '@ldesign/crypto'
+import { aes } from '@ldesign/crypto'
 
-// 方式1：通过选项参数配置
-const encrypted = encrypt.aes(data, key, {
-  keySize: 256, // 密钥长度：128, 192, 256
-  mode: 'CBC', // 加密模式：CBC, ECB, CFB, OFB, CTR
-  padding: 'Pkcs7', // 填充方式：Pkcs7, NoPadding
-  iv: 'custom-iv', // 自定义初始化向量
-  encoding: 'base64', // 输出编码：hex, base64
+// AES-256-CBC（推荐）
+const result1 = aes.encrypt('data', 'key', {
+ keySize: 256,
+ mode: 'CBC',
+ padding: 'Pkcs7'
 })
 
-// 方式2：创建配置对象
-const aesConfig = {
-  keySize: 256,
-  mode: 'GCM', // 认证加密模式
-  tagLength: 128, // GCM 标签长度
-  additionalData: 'metadata', // 附加认证数据
-}
+// AES-192-CTR
+const result2 = aes.encrypt('data', 'key', {
+ keySize: 192,
+ mode: 'CTR',
+ padding: 'Pkcs7'
+})
 
-const encrypted = encrypt.aes(data, key, aesConfig)
+// AES-128-GCM（如果支持）
+const result3 = aes.encrypt('data', 'key', {
+ keySize: 128,
+ mode: 'GCM',
+ padding: 'NoPadding'
+})
+
+// 自定义 IV
+const result4 = aes.encrypt('data', 'key', {
+ keySize: 256,
+ mode: 'CBC',
+ iv: 'custom-iv-16bytes'
+})
 ```
 
-### RSA 配置选项
+### RSA 配置
 
 ```typescript
 import { rsa } from '@ldesign/crypto'
 
-// 密钥生成配置
-const keyPair = rsa.generateKeyPair(2048, {
-  keyFormat: 'pem', // 密钥格式：pem, der
-  publicKeyEncoding: {
-    type: 'spki',
-    format: 'pem',
-  },
-  privateKeyEncoding: {
-    type: 'pkcs8',
-    format: 'pem',
-    cipher: 'aes256', // 私钥加密算法
-    passphrase: 'secret', // 私钥密码
-  },
-})
+// 生成密钥对
+const keyPair1 = rsa.generateKeyPair(2048) // 标准
+const keyPair2 = rsa.generateKeyPair(4096) // 高安全性
 
 // 加密配置
-const encrypted = encrypt.rsa(data, publicKey, {
-  padding: 'OAEP', // 填充方式：OAEP, PKCS1
-  hashAlgorithm: 'SHA256', // 哈希算法
-  mgf: 'MGF1', // 掩码生成函数
-  saltLength: 32, // 盐值长度
+const encrypted1 = rsa.encrypt('data', publicKey, {
+ padding: 'OAEP',       // OAEP（推荐）
+ hashAlgorithm: 'SHA256'  // SHA256（推荐）
+})
+
+const encrypted2 = rsa.encrypt('data', publicKey, {
+ padding: 'PKCS1',       // PKCS1 v1.5
+ hashAlgorithm: 'SHA1'
 })
 ```
 
-### 哈希配置选项
+## 哈希配置
+
+### 哈希算法选择
 
 ```typescript
 import { hash } from '@ldesign/crypto'
 
-// 基本哈希配置
-const hashValue = hash.sha256(data, {
-  encoding: 'hex', // 输出编码：hex, base64, binary
-  iterations: 1, // 迭代次数
-  salt: 'custom-salt', // 自定义盐值
-})
+// SHA-256（推荐）
+const hash1 = hash.sha256('data')
 
-// PBKDF2 配置
-const derivedKey = hash.pbkdf2(password, salt, {
-  iterations: 10000, // 迭代次数
-  keyLength: 32, // 输出密钥长度
-  hashAlgorithm: 'SHA256', // 哈希算法
-})
+// SHA-512（更高安全性）
+const hash2 = hash.sha512('data')
 
-// Scrypt 配置
-const scryptKey = hash.scrypt(password, salt, {
-  N: 16384, // CPU/内存成本参数
-  r: 8, // 块大小参数
-  p: 1, // 并行化参数
-  keyLength: 32, // 输出密钥长度
+// SHA-384
+const hash3 = hash.sha384('data')
+
+// 指定编码
+const hash4 = hash.sha256('data', { encoding: 'base64' })
+const hash5 = hash.sha256('data', { encoding: 'hex' })
+```
+
+### HMAC 配置
+
+```typescript
+import { hmac } from '@ldesign/crypto'
+
+// HMAC-SHA256（推荐）
+const mac1 = hmac.sha256('message', 'key')
+
+// HMAC-SHA512
+const mac2 = hmac.sha512('message', 'key')
+
+// 指定编码
+const mac3 = hmac.sha256('message', 'key', { encoding: 'base64' })
+```
+
+## 密钥派生配置
+
+### PBKDF2 配置
+
+```typescript
+import { deriveKey } from '@ldesign/crypto'
+
+const derived = deriveKey('user-password', 'salt', {
+ // 迭代次数（越多越安全，但越慢）
+ iterations: 100000, // 推荐 100,000+
+
+ // 密钥长度（字节）
+ keyLength: 32, // 256 位
+
+ // 哈希算法
+ digest: 'SHA256' // 'SHA1' | 'SHA256' | 'SHA512'
 })
 ```
 
-## Vue 3 插件配置
+### 密钥生成配置
 
-### 插件安装配置
+```typescript
+import { RandomUtils } from '@ldesign/crypto'
+
+// 生成 AES 密钥
+const aesKey256 = RandomUtils.generateKey(32) // 256 位
+const aesKey192 = RandomUtils.generateKey(24) // 192 位
+const aesKey128 = RandomUtils.generateKey(16) // 128 位
+
+// 生成盐值
+const salt = RandomUtils.generateSalt(16) // 128 位
+
+// 生成 IV
+const iv = RandomUtils.generateIV(16) // 128 位
+```
+
+## 存储配置
+
+### 安全存储配置
+
+```typescript
+import { SecureStorage } from '@ldesign/crypto'
+
+// 使用 localStorage
+const storage1 = new SecureStorage({
+ key: 'encryption-key',
+ prefix: 'app_',
+ useSessionStorage: false,
+ ttl: 24 * 60 * 60 * 1000 // 24小时
+})
+
+// 使用 sessionStorage
+const storage2 = new SecureStorage({
+ key: 'encryption-key',
+ prefix: 'session_',
+ useSessionStorage: true,
+ ttl: 0 // 不过期
+})
+```
+
+## Vue 插件配置
+
+### 基础配置
 
 ```typescript
 import { CryptoPlugin } from '@ldesign/crypto/vue'
-import { createApp } from 'vue'
-// main.ts
-
-const app = createApp(App)
 
 app.use(CryptoPlugin, {
-  // 全局属性名称
-  globalPropertyName: '$crypto',
-
-  // 是否注册全局组合式函数
-  registerComposables: true,
-
-  // 是否启用开发工具支持
-  devtools: process.env.NODE_ENV === 'development',
-
-  // 自定义配置
-  config: {
-    // 默认算法参数
-    defaultAESKeySize: 256,
-    defaultRSAKeySize: 2048,
-    defaultHashAlgorithm: 'SHA256',
-    defaultEncoding: 'hex',
-
-    // 性能配置
-    enableCache: true,
-    cacheSize: 100,
-    enableWorker: true,
-
-    // 安全配置
-    strictMode: true,
-    validateInputs: true,
-    clearMemoryOnError: true,
-
-    // 调试配置
-    enableLogs: process.env.NODE_ENV === 'development',
-    logLevel: 'info',
-  },
+ globalPropertyName: '$crypto',
+ registerComposables: true,
+ config: {
+  defaultAESKeySize: 256,
+  defaultRSAKeySize: 2048,
+  defaultHashAlgorithm: 'SHA256',
+  defaultEncoding: 'base64'
+ }
 })
 ```
 
-### Composable 配置
+### 高级配置
 
 ```typescript
-// 使用自定义配置的 composable
-import { useCrypto } from '@ldesign/crypto/vue'
+import { CryptoPlugin } from '@ldesign/crypto/vue'
 
-const crypto = useCrypto({
-  // 自动重试配置
-  autoRetry: true,
-  retryCount: 3,
-  retryDelay: 1000,
+app.use(CryptoPlugin, {
+ // 自定义全局属性名
+ globalPropertyName: '$security',
 
-  // 缓存配置
-  enableCache: true,
-  cacheTimeout: 300000, // 5分钟
+ // 禁用全局组合式函数
+ registerComposables: false,
 
-  // 错误处理配置
-  throwOnError: false,
-  logErrors: true,
+ // 详细配置
+ config: {
+  // AES 配置
+  defaultAESKeySize: 256,   // 128 | 192 | 256
 
-  // 性能配置
-  enableWorker: false,
-  batchSize: 10,
+  // RSA 配置
+  defaultRSAKeySize: 2048,   // 1024 | 2048 | 3072 | 4096
+
+  // 哈希配置
+  defaultHashAlgorithm: 'SHA256', // 'MD5' | 'SHA1' | ... | 'SHA512'
+
+  // 编码配置
+  defaultEncoding: 'base64'    // 'base64' | 'hex' | 'utf8'
+ }
 })
 ```
 
-## 高级配置
+## 环境配置
 
-### 自定义算法实现
+### 开发环境
 
 ```typescript
-import { registerAlgorithm } from '@ldesign/crypto'
-
-// 注册自定义算法
-registerAlgorithm('CUSTOM_AES', {
-  encrypt: (data, key, options) => {
-    // 自定义加密实现
-    return customEncrypt(data, key, options)
-  },
-
-  decrypt: (encryptedData, key, options) => {
-    // 自定义解密实现
-    return customDecrypt(encryptedData, key, options)
-  },
-
-  generateKey: (keySize) => {
-    // 自定义密钥生成
-    return customGenerateKey(keySize)
-  },
-})
-
-// 使用自定义算法
-const encrypted = encrypt.custom('CUSTOM_AES', data, key)
+// .env.development
+VITE_CRYPTO_DEBUG=true
+VITE_CRYPTO_LOG_LEVEL=debug
+VITE_ENCRYPTION_KEY=dev-encryption-key
+VITE_ENABLE_CACHE=true
 ```
 
-### 中间件配置
+```typescript
+// config/crypto.config.ts
+export const cryptoConfig = {
+ debug: import.meta.env.VITE_CRYPTO_DEBUG === 'true',
+ logLevel: import.meta.env.VITE_CRYPTO_LOG_LEVEL || 'error',
+ encryptionKey: import.meta.env.VITE_ENCRYPTION_KEY,
+ enableCache: import.meta.env.VITE_ENABLE_CACHE === 'true'
+}
+```
+
+### 生产环境
 
 ```typescript
-import { addMiddleware } from '@ldesign/crypto'
+// .env.production
+VITE_CRYPTO_DEBUG=false
+VITE_CRYPTO_LOG_LEVEL=error
+VITE_ENCRYPTION_KEY= # 从安全渠道注入
+VITE_ENABLE_CACHE=true
+```
 
-// 添加加密前中间件
-addMiddleware('beforeEncrypt', (data, key, options) => {
-  console.log('准备加密:', data.length, '字节')
+## 流式加密配置
 
-  // 数据预处理
-  if (options.compress) {
-    data = compress(data)
-  }
+### ChunkEncryptor 配置
 
-  // 密钥验证
-  if (!validateKey(key)) {
-    throw new Error('无效的密钥')
-  }
+```typescript
+import { ChunkEncryptor } from '@ldesign/crypto'
 
-  return { data, key, options }
-})
-
-// 添加加密后中间件
-addMiddleware('afterEncrypt', (result, originalData, key, options) => {
-  console.log('加密完成:', result.algorithm)
-
-  // 结果后处理
-  if (options.addChecksum) {
-    result.checksum = calculateChecksum(result.data)
-  }
-
-  return result
+const encryptor = new ChunkEncryptor({
+ algorithm: 'aes',
+ key: 'encryption-key',
+ chunkSize: 64 * 1024, // 64KB
+ mode: 'CBC',
+ keySize: 256
 })
 ```
 
-### 性能配置
+### 文件加密配置
 
 ```typescript
-import { setPerformanceConfig } from '@ldesign/crypto'
+import { encryptFile } from '@ldesign/crypto'
 
-setPerformanceConfig({
-  // Web Worker 配置
-  worker: {
-    enabled: true,
-    maxWorkers: navigator.hardwareConcurrency || 4,
-    taskTimeout: 30000,
-    workerScript: '/crypto-worker.js',
-  },
+await encryptFile('input.txt', 'output.enc', 'key', {
+ algorithm: 'aes',
+ chunkSize: 64 * 1024,
+ onProgress: (progress) => {
+  console.log(`Progress: ${progress.percentage}%`)
+ }
+})
+```
 
-  // 缓存配置
-  cache: {
-    enabled: true,
-    maxSize: 1000,
-    ttl: 300000, // 5分钟
-    strategy: 'lru', // LRU 策略
-  },
+## Worker 配置
 
-  // 批处理配置
-  batch: {
-    enabled: true,
-    maxBatchSize: 100,
-    batchTimeout: 1000, // 1秒
-  },
+### Worker 池配置
 
-  // 内存管理
-  memory: {
-    autoCleanup: true,
-    cleanupInterval: 60000, // 1分钟
-    maxMemoryUsage: 100 * 1024 * 1024, // 100MB
-  },
+```typescript
+import { getGlobalWorkerPool } from '@ldesign/crypto'
+
+const pool = getGlobalWorkerPool({
+ maxWorkers: 4,    // 最大 Worker 数量
+ timeout: 30000     // 超时时间（毫秒）
+})
+
+// 使用 Worker 池
+const result = await pool.execute({
+ type: 'encrypt',
+ algorithm: 'aes',
+ data: 'large data',
+ key: 'key'
+})
+```
+
+## 缓存配置
+
+### LRU 缓存配置
+
+```typescript
+import { LRUCache } from '@ldesign/crypto'
+
+const cache = new LRUCache({
+ maxSize: 1000,             // 最大缓存项数
+ ttl: 5 * 60 * 1000,       // 过期时间（毫秒）
+ updateAgeOnGet: true,        // 获取时更新年龄
+ onEvict: (key, value) => {  // 淘汰回调
+  console.log(`Evicted: ${key}`)
+ }
 })
 ```
 
 ## 配置验证
 
-### 配置验证器
+### 运行时验证
 
 ```typescript
-import { validateConfig } from '@ldesign/crypto'
+import { ValidationUtils } from '@ldesign/crypto'
 
-const config = {
-  aes: {
-    keySize: 256,
-    mode: 'CBC',
-  },
-  rsa: {
-    keySize: 2048,
-  },
+// 验证密钥长度
+function validateKeyLength(key: string, algorithm: string): boolean {
+ const minLengths = {
+  'AES-128': 16,
+  'AES-192': 24,
+  'AES-256': 32,
+  'DES': 8,
+  '3DES': 24
+ }
+
+ const minLength = minLengths[algorithm]
+ return !minLength || key.length >= minLength
 }
 
 // 验证配置
-const validation = validateConfig(config)
+function validateConfig(config: any): boolean {
+ if (config.enableCache && config.maxCacheSize <= 0) {
+  throw new Error('Invalid maxCacheSize')
+ }
 
-if (!validation.valid) {
-  console.error('配置错误:', validation.errors)
-  // 处理配置错误
+ if (config.cacheTTL < 0) {
+  throw new Error('Invalid cacheTTL')
+ }
+
+ return true
 }
 ```
 
-### 自定义验证规则
+## TypeScript 配置
+
+### 类型定义
 
 ```typescript
-import { addConfigValidator } from '@ldesign/crypto'
+import type {
+ CryptoConfig,
+ PerformanceOptimizerConfig,
+ SecureStorageOptions,
+ AESOptions,
+ RSAOptions,
+ HashOptions
+} from '@ldesign/crypto'
 
-// 添加自定义验证规则
-addConfigValidator('aes.keySize', (value) => {
-  const validSizes = [128, 192, 256]
-  if (!validSizes.includes(value)) {
-    return `AES 密钥长度必须是 ${validSizes.join(', ')} 之一`
-  }
-  return null
+// 自定义配置类型
+interface CustomCryptoConfig extends CryptoConfig {
+ customOption?: string
+}
+
+// 使用类型
+const config: CustomCryptoConfig = {
+ defaultAlgorithm: 'AES',
+ enableCache: true,
+ customOption: 'value'
+}
+```
+
+## 配置最佳实践
+
+### 安全配置
+
+```typescript
+// 1. 使用环境变量
+const key = process.env.ENCRYPTION_KEY // Node.js
+const key = import.meta.env.VITE_ENCRYPTION_KEY // Vite
+
+// 2. 验证配置
+if (!key) {
+ throw new Error('Encryption key not configured')
+}
+
+// 3. 使用强密钥
+if (key.length < 32) {
+ console.warn('Weak encryption key')
+}
+```
+
+### 性能配置
+
+```typescript
+// 根据应用规模调整缓存大小
+const config = {
+ // 小型应用
+ maxCacheSize: 100,
+
+ // 中型应用
+ maxCacheSize: 1000,
+
+ // 大型应用
+ maxCacheSize: 10000
+}
+```
+
+### 调试配置
+
+```typescript
+// 开发环境启用调试
+const isDev = process.env.NODE_ENV === 'development'
+
+const config = {
+ debug: isDev,
+ logLevel: isDev ? 'debug' : 'error'
+}
+```
+
+## 配置迁移
+
+### 从旧版本迁移
+
+```typescript
+// 旧配置（假设）
+const oldConfig = {
+ algorithm: 'AES',
+ cacheEnabled: true
+}
+
+// 新配置
+const newConfig = {
+ defaultAlgorithm: oldConfig.algorithm,
+ enableCache: oldConfig.cacheEnabled,
+ maxCacheSize: 1000,
+ enableParallel: true
+}
+```
+
+## 配置示例
+
+### 完整配置示例
+
+```typescript
+import { CryptoManager, PerformanceOptimizer } from '@ldesign/crypto'
+
+// 创建性能优化器
+const optimizer = new PerformanceOptimizer({
+ maxCacheSize: 1000,
+ cacheTTL: 5 * 60 * 1000,
+ enableCache: true,
+ maxOperationTimes: 1000,
+ autoCleanupInterval: 60 * 1000,
+ memoryThreshold: 50 * 1024 * 1024,
+ enableWorker: false,
+ maxConcurrency: 10
 })
 
-addConfigValidator('rsa.keySize', (value) => {
-  if (value < 1024) {
-    return 'RSA 密钥长度不能小于 1024 位'
-  }
-  if (value % 8 !== 0) {
-    return 'RSA 密钥长度必须是 8 的倍数'
-  }
-  return null
+// 创建加密管理器
+const manager = new CryptoManager({
+ defaultAlgorithm: 'AES',
+ enableCache: true,
+ maxCacheSize: 1000,
+ enableParallel: true,
+ autoGenerateIV: true,
+ keyDerivation: false,
+ debug: process.env.NODE_ENV === 'development',
+ logLevel: 'error'
 })
+
+// 导出配置
+export { optimizer, manager }
 ```
 
-## 配置文件管理
+## 下一步
 
-### 配置文件结构
-
-```typescript
-// crypto.config.ts
-export default {
-  // 基础配置
-  base: {
-    aes: { keySize: 256, mode: 'CBC' },
-    rsa: { keySize: 2048, keyFormat: 'pem' },
-    hash: { algorithm: 'SHA256', encoding: 'hex' },
-  },
-
-  // 环境覆盖
-  environments: {
-    development: {
-      aes: { keySize: 128 },
-      debug: true,
-    },
-    production: {
-      rsa: { keySize: 4096 },
-      strictMode: true,
-    },
-  },
-
-  // 功能特定配置
-  features: {
-    vue: {
-      globalPropertyName: '$crypto',
-      registerComposables: true,
-    },
-    performance: {
-      enableCache: true,
-      enableWorker: true,
-    },
-  },
-}
-```
-
-### 配置加载器
-
-```typescript
-// utils/configLoader.ts
-import defaultConfig from '../crypto.config'
-
-export class ConfigLoader {
-  private config: any
-
-  constructor() {
-    this.config = this.loadConfig()
-  }
-
-  private loadConfig() {
-    const env = process.env.NODE_ENV || 'development'
-    const envConfig = defaultConfig.environments[env] || {}
-
-    return {
-      ...defaultConfig.base,
-      ...envConfig,
-      ...defaultConfig.features,
-    }
-  }
-
-  get(path: string, defaultValue?: any) {
-    return this.getNestedValue(this.config, path, defaultValue)
-  }
-
-  set(path: string, value: any) {
-    this.setNestedValue(this.config, path, value)
-  }
-
-  private getNestedValue(obj: any, path: string, defaultValue?: any) {
-    return path.split('.').reduce((current, key) => {
-      return current && current[key] !== undefined ? current[key] : defaultValue
-    }, obj)
-  }
-
-  private setNestedValue(obj: any, path: string, value: any) {
-    const keys = path.split('.')
-    const lastKey = keys.pop()!
-    const target = keys.reduce((current, key) => {
-      if (!current[key])
-        current[key] = {}
-      return current[key]
-    }, obj)
-    target[lastKey] = value
-  }
-}
-
-// 使用配置加载器
-const configLoader = new ConfigLoader()
-const aesKeySize = configLoader.get('aes.keySize', 256)
-```
-
-通过这些配置选项，您可以根据项目需求灵活地自定义 @ldesign/crypto 的行为，确保在不同环境和场景下都能
-获得最佳的性能和安全性。
+- [性能优化](/guide/performance) - 优化性能
+- [安全性](/guide/security) - 安全配置
+- [部署指南](/guide/deployment) - 生产环境配置

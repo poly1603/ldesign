@@ -10,7 +10,7 @@ export default defineConfig({
       // 配置 JSX 选项
       transformOn: true,
       mergeProps: true,
-    })
+    }),
   ],
   test: {
     globals: true,
@@ -21,7 +21,7 @@ export default defineConfig({
       '**/node_modules/**',
       '**/dist/**',
       '**/example/**',
-      '**/test-apps/**'
+      '**/test-apps/**',
     ],
     coverage: {
       provider: 'v8',
@@ -30,23 +30,23 @@ export default defineConfig({
         '**/example/**',
         '**/test-apps/**',
         '**/test-utils/**',
-        '**/__tests__/**'
+        '**/__tests__/**',
       ],
       thresholds: {
         global: {
           branches: 90,
           functions: 90,
           lines: 90,
-          statements: 90
-        }
-      }
-    }
+          statements: 90,
+        },
+      },
+    },
   },
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
       '@test-utils': resolve(__dirname, './src/test-utils'),
-    }
+    },
   },
   esbuild: {
     jsxFactory: 'h',
@@ -56,6 +56,6 @@ export default defineConfig({
   define: {
     __VUE_OPTIONS_API__: true,
     __VUE_PROD_DEVTOOLS__: false,
-    __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false
+    __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
   },
 })

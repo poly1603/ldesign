@@ -1,19 +1,20 @@
+import pptxjs from 'pptxjs';
 import type { IDocumentRenderer, DocumentMetadata, ViewerOptions } from '../types';
 
 /**
  * PowerPoint Document Renderer
- * Currently uses a simplified approach for rendering PPTX files
- * Note: Full PPTX rendering is complex and would require extensive parsing
+ * Uses pptxjs for high-fidelity rendering with styles and layouts
  */
 export class PowerPointRenderer implements IDocumentRenderer {
  private container: HTMLElement | null = null;
  private currentSlide: number = 0;
- private slides: any[] = [];
+ private slideCount: number = 0;
  private currentData: ArrayBuffer | null = null;
  private options: ViewerOptions | null = null;
  private slideContainer: HTMLElement | null = null;
  private thumbnailsContainer: HTMLElement | null = null;
  private autoPlayInterval: number | null = null;
+ private pptxContainer: HTMLElement | null = null;
 
  /**
   * Render PowerPoint document
@@ -24,57 +25,40 @@ export class PowerPointRenderer implements IDocumentRenderer {
   this.options = options;
 
   try {
-   // Parse PPTX file
-   await this.parsePPTX(data);
-
-   if (this.slides.length === 0) {
-    throw new Error('No slides found in PowerPoint file');
-   }
-
    // Clear container
    container.innerHTML = '';
 
    // Create wrapper
    const wrapper = document.createElement('div');
    wrapper.className = 'powerpoint-viewer-wrapper';
+   wrapper.style.width = '100%';
+   wrapper.style.height = '100%';
+   wrapper.style.position = 'relative';
 
-   // Create main content area
-   const mainContent = document.createElement('div');
-   mainContent.className = 'powerpoint-main-content';
+   // Create content container for pptxjs
+   this.pptxContainer = document.createElement('div');
+   this.pptxContainer.className = 'pptxjs-container';
+   this.pptxContainer.style.width = '100%';
+   this.pptxContainer.style.height = '100%';
+   this.pptxContainer.style.overflow = 'auto';
 
-   // Create slide container
-   this.slideContainer = document.createElement('div');
-   this.slideContainer.className = 'powerpoint-slide-container';
-
-   // Create navigation if enabled
-   if (options.powerpoint?.showNavigation !== false) {
-    const nav = this.createNavigation();
-    mainContent.appendChild(nav);
-   }
-
-   mainContent.appendChild(this.slideContainer);
-
-   // Create slide counter
-   const counter = document.createElement('div');
-   counter.className = 'powerpoint-slide-counter';
-   counter.textContent = `1 / ${this.slides.length}`;
-   mainContent.appendChild(counter);
-
-   wrapper.appendChild(mainContent);
-
-   // Create thumbnails if enabled
-   if (options.powerpoint?.showThumbnails) {
-    this.thumbnailsContainer = this.createThumbnails();
-    wrapper.appendChild(this.thumbnailsContainer);
-   }
-
+   wrapper.appendChild(this.pptxContainer);
    container.appendChild(wrapper);
 
-   // Render first slide
-   this.renderSlide(0);
+   // Render PPTX using pptxjs
+   await pptxjs.load(data, this.pptxContainer);
+
+   // Get slide count after rendering
+   const slides = this.pptxContainer.querySelectorAll('.slide');
+   this.slideCount = slides.length;
+
+   // Add navigation controls if enabled
+   if (options.powerpoint?.showNavigation !== false && this.slideCount > 0) {
+    this.addNavigationControls(wrapper);
+   }
 
    // Setup auto-play if enabled
-   if (options.powerpoint?.autoPlay) {
+   if (options.powerpoint?.autoPlay && this.slideCount > 1) {
     this.startAutoPlay(options.powerpoint.autoPlayInterval || 3000);
    }
 
@@ -88,172 +72,63 @@ export class PowerPointRenderer implements IDocumentRenderer {
  }
 
  /**
-  * Parse PPTX file (simplified version)
-  * Note: Full implementation would require JSZip and XML parsing
+  * Add navigation controls
   */
- private async parsePPTX(data: ArrayBuffer): Promise<void> {
-  // For now, create placeholder slides
-  // In a full implementation, you would:
-  // 1. Use JSZip to extract PPTX contents
-  // 2. Parse XML files in ppt/slides/
-  // 3. Extract images from ppt/media/
-  // 4. Parse relationships and themes
-  // 5. Render slide content with proper formatting
-
-  // Create a placeholder implementation
-  // This would be replaced with actual PPTX parsing
-  this.slides = [
-   {
-    title: 'Slide 1',
-    content: 'PowerPoint viewer is loading...',
-    notes: ''
-   }
-  ];
-
-  // Attempt to detect slide count from file structure
-  // This is a simplified placeholder
-  try {
-   const JSZip = (await import('jszip')).default;
-   const zip = await JSZip.loadAsync(data);
-
-   // Get slide files
-   const slideFiles = Object.keys(zip.files).filter(name =>
-    name.startsWith('ppt/slides/slide') && name.endsWith('.xml')
-   );
-
-   // Parse each slide (simplified)
-   this.slides = await Promise.all(
-    slideFiles.map(async (filename, index) => {
-     const content = await zip.files[filename].async('string');
-     return this.parseSlideXML(content, index + 1);
-    })
-   );
-  } catch (error) {
-   console.warn('Failed to parse PPTX structure, using fallback:', error);
-   // If parsing fails, show a message
-   this.slides = [{
-    title: 'PowerPoint Viewer',
-    content: `
-     <div class="pptx-message">
-      <h2>PowerPoint Viewer</h2>
-      <p>This is a simplified PowerPoint viewer.</p>
-      <p>For full PPTX support, additional libraries (jszip, xml2js) need to be installed.</p>
-      <p>File size: ${(data.byteLength / 1024).toFixed(2)} KB</p>
-     </div>
-    `,
-    notes: ''
-   }];
-  }
- }
-
- /**
-  * Parse slide XML content (simplified)
-  */
- private parseSlideXML(xml: string, slideNumber: number): any {
-  // Extract text content from XML (very simplified)
-  const textMatches = xml.match(/<a:t[^>]*>([^<]*)<\/a:t>/g) || [];
-  const texts = textMatches.map(match => {
-   const text = match.replace(/<\/?a:t[^>]*>/g, '');
-   return text;
-  });
-
-  const title = texts[0] || `Slide ${slideNumber}`;
-  const content = texts.slice(1).join('<br>');
-
-  return {
-   title,
-   content: `<h2>${title}</h2><p>${content}</p>`,
-   notes: ''
-  };
- }
-
- /**
-  * Create navigation controls
-  */
- private createNavigation(): HTMLElement {
+ private addNavigationControls(wrapper: HTMLElement): void {
   const nav = document.createElement('div');
   nav.className = 'powerpoint-navigation';
-  nav.innerHTML = `
-   <button class="nav-btn prev-slide" title="Previous Slide">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-     <polyline points="15 18 9 12 15 6"></polyline>
-    </svg>
-   </button>
-   <button class="nav-btn next-slide" title="Next Slide">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-     <polyline points="9 18 15 12 9 6"></polyline>
-    </svg>
-   </button>
+  nav.style.cssText = `
+   position: absolute;
+   bottom: 20px;
+   left: 50%;
+   transform: translateX(-50%);
+   display: flex;
+   gap: 10px;
+   z-index: 1000;
+   background: rgba(0, 0, 0, 0.7);
+   padding: 10px;
+   border-radius: 8px;
   `;
 
-  nav.querySelector('.prev-slide')?.addEventListener('click', () => this.previousSlide());
-  nav.querySelector('.next-slide')?.addEventListener('click', () => this.nextSlide());
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'nav-btn prev-slide';
+  prevBtn.innerHTML = '&larr; Previous';
+  prevBtn.style.cssText = `
+   padding: 8px 16px;
+   background: #fff;
+   border: none;
+   border-radius: 4px;
+   cursor: pointer;
+  `;
+  prevBtn.addEventListener('click', () => this.previousSlide());
 
-  return nav;
- }
-
- /**
-  * Create thumbnails
-  */
- private createThumbnails(): HTMLElement {
-  const container = document.createElement('div');
-  container.className = 'powerpoint-thumbnails';
-
-  this.slides.forEach((slide, index) => {
-   const thumbnail = document.createElement('div');
-   thumbnail.className = 'thumbnail';
-   thumbnail.dataset.index = String(index);
-   thumbnail.innerHTML = `
-    <div class="thumbnail-number">${index + 1}</div>
-    <div class="thumbnail-preview">${slide.title}</div>
-   `;
-
-   if (index === 0) {
-    thumbnail.classList.add('active');
-   }
-
-   thumbnail.addEventListener('click', () => this.goToSlide(index));
-   container.appendChild(thumbnail);
-  });
-
-  return container;
- }
-
- /**
-  * Render a specific slide
-  */
- private renderSlide(slideIndex: number): void {
-  if (!this.slideContainer || slideIndex < 0 || slideIndex >= this.slides.length) {
-   return;
-  }
-
-  this.currentSlide = slideIndex;
-  const slide = this.slides[slideIndex];
-
-  this.slideContainer.innerHTML = `
-   <div class="slide-content">
-    ${slide.content}
-   </div>
+  const counter = document.createElement('span');
+  counter.className = 'powerpoint-slide-counter';
+  counter.textContent = `1 / ${this.slideCount}`;
+  counter.style.cssText = `
+   color: white;
+   line-height: 32px;
+   padding: 0 10px;
   `;
 
-  // Update counter
-  const counter = this.container?.querySelector('.powerpoint-slide-counter');
-  if (counter) {
-   counter.textContent = `${slideIndex + 1} / ${this.slides.length}`;
-  }
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'nav-btn next-slide';
+  nextBtn.innerHTML = 'Next &rarr;';
+  nextBtn.style.cssText = `
+   padding: 8px 16px;
+   background: #fff;
+   border: none;
+   border-radius: 4px;
+   cursor: pointer;
+  `;
+  nextBtn.addEventListener('click', () => this.nextSlide());
 
-  // Update thumbnail active state
-  if (this.thumbnailsContainer) {
-   const thumbnails = this.thumbnailsContainer.querySelectorAll('.thumbnail');
-   thumbnails.forEach((thumb, index) => {
-    if (index === slideIndex) {
-     thumb.classList.add('active');
-    } else {
-     thumb.classList.remove('active');
-    }
-   });
-  }
+  nav.appendChild(prevBtn);
+  nav.appendChild(counter);
+  nav.appendChild(nextBtn);
+  wrapper.appendChild(nav);
  }
+
 
  /**
   * Navigate to previous slide
@@ -268,7 +143,7 @@ export class PowerPointRenderer implements IDocumentRenderer {
   * Navigate to next slide
   */
  nextSlide(): void {
-  if (this.currentSlide < this.slides.length - 1) {
+  if (this.currentSlide < this.slideCount - 1) {
    this.goToSlide(this.currentSlide + 1);
   } else if (this.options?.powerpoint?.autoPlay) {
    // Loop back to first slide
@@ -280,7 +155,22 @@ export class PowerPointRenderer implements IDocumentRenderer {
   * Navigate to specific slide
   */
  goToSlide(slideIndex: number): void {
-  this.renderSlide(slideIndex);
+  if (!this.pptxContainer || slideIndex < 0 || slideIndex >= this.slideCount) {
+   return;
+  }
+
+  this.currentSlide = slideIndex;
+  const slides = this.pptxContainer.querySelectorAll('.slide');
+  
+  if (slides[slideIndex]) {
+   slides[slideIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // Update counter
+  const counter = this.container?.querySelector('.powerpoint-slide-counter');
+  if (counter) {
+   counter.textContent = `${slideIndex + 1} / ${this.slideCount}`;
+  }
  }
 
  /**
@@ -310,33 +200,42 @@ export class PowerPointRenderer implements IDocumentRenderer {
   * Get document metadata
   */
  async getMetadata(data: ArrayBuffer): Promise<DocumentMetadata> {
-  await this.parsePPTX(data);
+  try {
+   const JSZip = (await import('jszip')).default;
+   const zip = await JSZip.loadAsync(data);
+   
+   // Count slide files
+   const slideFiles = Object.keys(zip.files).filter(name =>
+    name.startsWith('ppt/slides/slide') && name.endsWith('.xml')
+   );
 
-  return {
-   title: 'PowerPoint Presentation',
-   pageCount: this.slides.length
-  };
+   return {
+    title: 'PowerPoint Presentation',
+    pageCount: slideFiles.length
+   };
+  } catch (error) {
+   return {
+    title: 'PowerPoint Presentation',
+    pageCount: 0
+   };
+  }
  }
 
  /**
   * Export document to different formats
   */
  async export(format: 'pdf' | 'html' | 'text'): Promise<Blob> {
-  if (this.slides.length === 0) {
+  if (!this.pptxContainer) {
    throw new Error('No document loaded');
   }
 
   switch (format) {
    case 'html':
-    const htmlContent = this.slides
-     .map((slide, index) => `<div class="slide" data-slide="${index + 1}">${slide.content}</div>`)
-     .join('\n');
+    const htmlContent = this.pptxContainer.innerHTML;
     return new Blob([htmlContent], { type: 'text/html' });
 
    case 'text':
-    const textContent = this.slides
-     .map((slide, index) => `Slide ${index + 1}: ${slide.title}\n${slide.content}\n`)
-     .join('\n');
+    const textContent = this.pptxContainer.textContent || '';
     return new Blob([textContent], { type: 'text/plain' });
 
    case 'pdf':
@@ -360,7 +259,7 @@ export class PowerPointRenderer implements IDocumentRenderer {
   this.container = null;
   this.slideContainer = null;
   this.thumbnailsContainer = null;
-  this.slides = [];
+  this.pptxContainer = null;
   this.currentData = null;
   this.options = null;
  }

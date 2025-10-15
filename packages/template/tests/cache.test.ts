@@ -11,16 +11,16 @@ import { AdvancedCache, ComponentCache, componentCache } from '../src/utils/cach
 const mockMemory = {
   usedJSHeapSize: 50 * 1024 * 1024, // 50MB
   totalJSHeapSize: 100 * 1024 * 1024, // 100MB
-  jsHeapSizeLimit: 200 * 1024 * 1024 // 200MB
+  jsHeapSizeLimit: 200 * 1024 * 1024, // 200MB
 }
 
 Object.defineProperty(global, 'window', {
   value: {
     performance: {
-      memory: mockMemory
-    }
+      memory: mockMemory,
+    },
   },
-  writable: true
+  writable: true,
 })
 
 // 模拟Vue组件
@@ -38,7 +38,7 @@ describe('AdvancedCache (LRU模式)', () => {
     cache = new AdvancedCache<string>({
       strategy: 'LRU',
       maxItems: 3,
-      defaultTTL: 1000
+      defaultTTL: 1000,
     })
     vi.useFakeTimers()
   })
@@ -377,7 +377,7 @@ describe('缓存性能测试', () => {
   it('应该高效处理LRU淘汰', () => {
     const smallCache = new AdvancedCache<string>({
       strategy: 'LRU',
-      maxItems: 100
+      maxItems: 100,
     })
 
     const startTime = Date.now()
@@ -401,7 +401,7 @@ describe('内存监控功能', () => {
       strategy: 'LRU',
       maxItems: 100,
       enableMemoryWarning: true,
-      memoryWarningThreshold: 0.8
+      memoryWarningThreshold: 0.8,
     })
     vi.useFakeTimers()
   })
@@ -454,7 +454,7 @@ describe('内存监控功能', () => {
     // 创建新缓存实例应该不会抛出错误
     expect(() => {
       new AdvancedCache<string>({
-        enableMemoryWarning: true
+        enableMemoryWarning: true,
       })
     }).not.toThrow()
 

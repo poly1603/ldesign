@@ -1,15 +1,15 @@
 /**
  * 模板加载器
- * 
+ *
  * 负责加载模板组件，支持缓存和重试机制
  */
 
-import type { TemplateId, TemplateLoadResult } from '../types'
 import type { Component } from 'vue'
-import { TemplateRegistry } from './registry'
-import { CacheManager } from './cache'
-import { getGlobalEmitter } from './events'
+import type { TemplateId, TemplateLoadResult } from '../types'
+import type { CacheManager } from './cache'
+import type { TemplateRegistry } from './registry'
 import { ERROR_MESSAGES } from '../utils/constants'
+import { getGlobalEmitter } from './events'
 
 /**
  * 加载选项
@@ -62,7 +62,7 @@ export class TemplateLoader {
         if (cached) {
           const loadTime = Date.now() - startTime
           const registration = this.registry.get(id)
-          
+
           return {
             id,
             component: cached,
@@ -84,10 +84,10 @@ export class TemplateLoader {
         if (useCache) {
           this.cache.set(id, registration.component)
         }
-        
+
         const loadTime = Date.now() - startTime
         await this.emitter.emit('template:loaded', { id, loadTime })
-        
+
         return {
           id,
           component: registration.component,
@@ -103,7 +103,7 @@ export class TemplateLoader {
           id,
           registration.loader,
           maxRetries,
-          timeout
+          timeout,
         )
 
         if (useCache) {
@@ -123,7 +123,8 @@ export class TemplateLoader {
       }
 
       throw new Error(`${ERROR_MESSAGES.TEMPLATE_LOAD_FAILED}: No component or loader`)
-    } catch (error) {
+    }
+ catch (error) {
       // 发射错误事件
       await this.emitter.emit('template:error', { id, error })
 
@@ -144,7 +145,7 @@ export class TemplateLoader {
     id: TemplateId,
     loader: () => Promise<{ default: Component } | Component>,
     maxRetries: number,
-    timeout: number
+    timeout: number,
   ): Promise<Component> {
     // 如果正在加载，等待现有的Promise
     if (this.loadingPromises.has(id)) {
@@ -155,7 +156,7 @@ export class TemplateLoader {
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        const loadPromise = this.loadWithTimeout(loader, timeout).then(module => {
+        const loadPromise = this.loadWithTimeout(loader, timeout).then((module) => {
           // 处理不同的模块格式
           console.log('[Loader] Module loaded:', module)
           if (module && typeof module === 'object') {
@@ -172,13 +173,14 @@ export class TemplateLoader {
 
         this.loadingPromises.delete(id)
         return component
-      } catch (error) {
+      }
+ catch (error) {
         lastError = error as Error
         console.warn(`[Loader] Load attempt ${attempt + 1} failed for ${id}:`, error)
 
         if (attempt < maxRetries) {
           // 等待一段时间后重试
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100))
+          await new Promise(resolve => setTimeout(resolve, 2 ** attempt * 100))
         }
       }
     }
@@ -192,12 +194,12 @@ export class TemplateLoader {
    */
   private loadWithTimeout(
     loader: () => Promise<{ default: Component } | Component>,
-    timeout: number
+    timeout: number,
   ): Promise<any> {
     return Promise.race([
       loader(),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Load timeout')), timeout)
+        setTimeout(() => reject(new Error('Load timeout')), timeout),
       ),
     ])
   }
@@ -207,7 +209,7 @@ export class TemplateLoader {
    */
   async loadBatch(
     ids: TemplateId[],
-    options: LoadOptions = {}
+    options: LoadOptions = {},
   ): Promise<TemplateLoadResult[]> {
     return Promise.all(ids.map(id => this.load(id, options)))
   }
@@ -218,7 +220,8 @@ export class TemplateLoader {
   async preload(ids: TemplateId[], options: LoadOptions = {}): Promise<void> {
     try {
       await this.loadBatch(ids, options)
-    } catch (error) {
+    }
+ catch (error) {
       console.error('[Loader] Preload failed:', error)
     }
   }
@@ -232,8 +235,8 @@ let instance: TemplateLoader | null = null
  */
 export function getLoader(): TemplateLoader {
   if (!instance) {
-    const { getRegistry } = require('./registry')
     const { getCache } = require('./cache')
+    const { getRegistry } = require('./registry')
     instance = new TemplateLoader(getRegistry(), getCache())
   }
   return instance

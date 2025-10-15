@@ -1,26 +1,6 @@
-<template>
-  <div class="template-switcher" v-if="templates.length > 1">
-    <label class="switcher-label">模板:</label>
-    <select 
-      :value="currentTemplate || defaultTemplate" 
-      @change="handleChange"
-      class="switcher-select"
-    >
-      <option 
-        v-for="template in templates" 
-        :key="template.name"
-        :value="template.name"
-      >
-        {{ template.displayName || template.name }}
-        {{ template.isDefault ? ' (默认)' : '' }}
-      </option>
-    </select>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { inject, computed } from 'vue'
 import type { TemplateManager } from '../../runtime/manager'
+import { computed, inject } from 'vue'
 import { useDevice } from '../composables'
 
 interface Props {
@@ -41,12 +21,13 @@ const { device } = useDevice()
 
 // 获取当前设备的模板列表
 const templates = computed(() => {
-  if (!manager) return []
+  if (!manager)
+return []
   const currentDevice = device.value
   console.log('[TemplateSwitcher] Current device:', currentDevice)
   const results = manager.query({
     category: props.category,
-    device: currentDevice
+    device: currentDevice,
   })
   console.log('[TemplateSwitcher] Templates found:', results.length, results.map(r => r.metadata.name))
   return results.map(r => r.metadata)
@@ -59,11 +40,31 @@ const defaultTemplate = computed(() => {
 })
 
 // 处理切换
-const handleChange = (event: Event) => {
+function handleChange(event: Event) {
   const target = event.target as HTMLSelectElement
   emit('change', target.value)
 }
 </script>
+
+<template>
+  <div v-if="templates.length > 1" class="template-switcher">
+    <label class="switcher-label">模板:</label>
+    <select
+      :value="currentTemplate || defaultTemplate"
+      class="switcher-select"
+      @change="handleChange"
+    >
+      <option
+        v-for="template in templates"
+        :key="template.name"
+        :value="template.name"
+      >
+        {{ template.displayName || template.name }}
+        {{ template.isDefault ? ' (默认)' : '' }}
+      </option>
+    </select>
+  </div>
+</template>
 
 <style scoped>
 .template-switcher {

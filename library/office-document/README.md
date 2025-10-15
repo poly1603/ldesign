@@ -353,9 +353,9 @@ npm run dev
 
 ## 📝 技术栈
 
-- **Word 渲染**：[mammoth.js](https://github.com/mwilliamson/mammoth.js) - 将 DOCX 转换为 HTML
-- **Excel 渲染**：[SheetJS](https://sheetjs.com/) - 解析和渲染 Excel 文件
-- **PowerPoint 渲染**：自定义实现，使用 JSZip 解析 PPTX 结构
+- **Word 渲染**：[docx-preview](https://github.com/VolodymyrBaydalka/docxjs) - 高保真 DOCX 渲染，支持完整样式和布局
+- **Excel 渲染**：[x-data-spreadsheet](https://github.com/myliang/x-spreadsheet) - 功能强大的电子表格渲染器，支持完整样式和公式
+- **PowerPoint 渲染**：[pptxjs](https://github.com/meshesha/pptx.js) - 高质量 PPTX 渲染，支持样式和布局
 - **JSZip**：解析 ZIP 格式文件（.docx, .xlsx, .pptx 都是 ZIP 格式）
 - **TypeScript**：完整的类型支持
 - **Rollup**：模块打包

@@ -1,13 +1,13 @@
 /**
  * 设备检测器
- * 
+ *
  * 轻量级设备类型检测，支持响应式更新和自定义检测器
  */
 
-import type { DeviceType, DeviceConfig } from '../types'
+import type { DeviceConfig, DeviceType } from '../types'
 import { isBrowser } from '../utils'
-import { getGlobalEmitter } from './events'
 import { DEFAULT_BREAKPOINTS } from '../utils/constants'
+import { getGlobalEmitter } from './events'
 
 /**
  * 设备检测器类
@@ -56,9 +56,11 @@ export class DeviceDetector {
 
     if (width < this.config.breakpoints.mobile) {
       return 'mobile'
-    } else if (width < this.config.breakpoints.tablet) {
+    }
+ else if (width < this.config.breakpoints.tablet) {
       return 'tablet'
-    } else {
+    }
+ else {
       return 'desktop'
     }
   }
@@ -67,14 +69,15 @@ export class DeviceDetector {
    * 初始化媒体查询监听器
    */
   private initializeListeners(): void {
-    if (!isBrowser()) return
+    if (!isBrowser())
+return
 
     // 创建媒体查询
     const mobileQuery = window.matchMedia(
-      `(max-width: ${this.config.breakpoints.mobile - 1}px)`
+      `(max-width: ${this.config.breakpoints.mobile - 1}px)`,
     )
     const tabletQuery = window.matchMedia(
-      `(min-width: ${this.config.breakpoints.mobile}px) and (max-width: ${this.config.breakpoints.tablet - 1}px)`
+      `(min-width: ${this.config.breakpoints.mobile}px) and (max-width: ${this.config.breakpoints.tablet - 1}px)`,
     )
 
     // 保存引用
@@ -140,10 +143,11 @@ export class DeviceDetector {
    * 通知所有监听器
    */
   private notifyListeners(device: DeviceType): void {
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener(device)
-      } catch (error) {
+      }
+ catch (error) {
         console.error('[DeviceDetector] Listener error:', error)
       }
     })
@@ -171,10 +175,10 @@ export class DeviceDetector {
     }
 
     // 如果断点变化，重新检测设备
-    const breakpointsChanged =
-      config.breakpoints &&
-      (config.breakpoints.mobile !== oldBreakpoints.mobile ||
-        config.breakpoints.tablet !== oldBreakpoints.tablet)
+    const breakpointsChanged
+      = config.breakpoints
+        && (config.breakpoints.mobile !== oldBreakpoints.mobile
+          || config.breakpoints.tablet !== oldBreakpoints.tablet)
 
     if (breakpointsChanged) {
       const newDevice = this.detectDevice()

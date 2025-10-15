@@ -73,10 +73,10 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: rgba(102, 126, 234, 0.1);
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  background: var(--ld-color-primary-100);
+  border: 1px solid var(--ld-color-primary-200);
   border-radius: 8px;
-  color: #2c3e50;
+  color: var(--ld-color-gray-800);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -84,8 +84,8 @@ onUnmounted(() => {
 }
 
 .language-button:hover {
-  background: rgba(102, 126, 234, 0.2);
-  border-color: rgba(102, 126, 234, 0.3);
+  background: var(--ld-color-primary-200);
+  border-color: var(--ld-color-primary-300);
 }
 
 .flag {
@@ -106,10 +106,10 @@ onUnmounted(() => {
   top: 100%;
   right: 0;
   margin-top: 8px;
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--ld-color-gray-50, white);
+  border: 1px solid var(--ld-color-gray-200);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px var(--ld-color-gray-300, rgba(0, 0, 0, 0.1));
   overflow: hidden;
   z-index: 1000;
   min-width: 160px;
@@ -123,7 +123,7 @@ onUnmounted(() => {
   padding: 10px 16px;
   background: none;
   border: none;
-  color: #2c3e50;
+  color: var(--ld-color-gray-800);
   font-size: 14px;
   cursor: pointer;
   transition: background 0.2s;
@@ -131,12 +131,12 @@ onUnmounted(() => {
 }
 
 .language-option:hover {
-  background: rgba(102, 126, 234, 0.1);
+  background: var(--ld-color-primary-100);
 }
 
 .language-option.active {
-  background: rgba(102, 126, 234, 0.15);
-  color: #667eea;
+  background: var(--ld-color-primary-100);
+  color: var(--ld-color-primary-500);
   font-weight: 600;
 }
 
@@ -145,7 +145,7 @@ onUnmounted(() => {
 }
 
 .check {
-  color: #667eea;
+  color: var(--ld-color-primary-500);
   font-weight: bold;
 }
 

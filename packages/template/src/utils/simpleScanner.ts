@@ -14,7 +14,7 @@ class SimpleTemplateScanner {
   getAsyncComponent(
     category: string,
     device: DeviceType,
-    name: string
+    name: string,
   ): Component | null {
     const registry = getRegistry()
     const registration = registry.get(category, device, name)
@@ -41,7 +41,7 @@ class SimpleTemplateScanner {
   getComponent(
     category: string,
     device: DeviceType,
-    name: string
+    name: string,
   ): Component | null {
     const registry = getRegistry()
     const registration = registry.get(category, device, name)
@@ -60,7 +60,7 @@ class SimpleTemplateScanner {
 
     // 如果是函数，则不支持同步获取
     console.warn(
-      `[simpleTemplateScanner] Template ${category}/${device}/${name} is async, use getAsyncComponent instead`
+      `[simpleTemplateScanner] Template ${category}/${device}/${name} is async, use getAsyncComponent instead`,
     )
     return null
   }

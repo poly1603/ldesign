@@ -1,15 +1,77 @@
+<script setup lang="ts">
+import type { LoginDesktopSplitProps } from '../../types'
+import { computed, reactive, ref } from 'vue'
+
+const props = withDefaults(defineProps<LoginDesktopSplitProps>(), {
+  title: '欢迎回来',
+  subtitle: '请输入您的账号信息登录',
+  logo: '',
+  showRemember: true,
+  showRegister: true,
+  showForgotPassword: true,
+  sidebarTitle: '探索精彩内容',
+  sidebarDescription: '立即登录开启您的专属体验',
+  themeColor: '#667eea',
+  backgroundImage: '',
+})
+
+const formData = reactive({
+  username: '',
+  password: '',
+  remember: false,
+})
+
+const loading = ref(false)
+
+const sidebarStyle = computed(() => ({
+  backgroundImage: props.backgroundImage ? `url(${props.backgroundImage})` : `linear-gradient(135deg, ${props.themeColor} 0%, #764ba2 100%)`,
+}))
+
+const buttonStyle = computed(() => ({
+  background: `linear-gradient(135deg, ${props.themeColor} 0%, #764ba2 100%)`,
+}))
+
+async function handleSubmit() {
+  if (!props.onLogin)
+return
+
+  loading.value = true
+  try {
+    await props.onLogin(formData)
+  }
+ catch (error) {
+    console.error('Login failed:', error)
+  }
+ finally {
+    loading.value = false
+  }
+}
+
+function handleRegister() {
+  props.onRegister?.()
+}
+
+function handleForgotPassword() {
+  props.onForgotPassword?.()
+}
+</script>
+
 <template>
   <div class="login-split-container">
     <!-- 模板切换器插槽 -->
     <div v-if="$slots.switcher" class="template-switcher-container">
-      <slot name="switcher"></slot>
+      <slot name="switcher" />
     </div>
-    
+
     <!-- 左侧装饰区域 -->
     <div class="login-sidebar" :style="sidebarStyle">
       <div class="sidebar-content">
-        <h1 class="sidebar-title">{{ sidebarTitle }}</h1>
-        <p class="sidebar-description">{{ sidebarDescription }}</p>
+        <h1 class="sidebar-title">
+          {{ sidebarTitle }}
+        </h1>
+        <p class="sidebar-description">
+          {{ sidebarDescription }}
+        </p>
       </div>
     </div>
 
@@ -18,8 +80,12 @@
       <div class="login-form-wrapper">
         <div class="login-header">
           <img v-if="logo" :src="logo" alt="Logo" class="login-logo">
-          <h2 class="login-title">{{ title }}</h2>
-          <p v-if="subtitle" class="login-subtitle">{{ subtitle }}</p>
+          <h2 class="login-title">
+            {{ title }}
+          </h2>
+          <p v-if="subtitle" class="login-subtitle">
+            {{ subtitle }}
+          </p>
         </div>
 
         <form class="login-form" @submit.prevent="handleSubmit">
@@ -68,61 +134,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { reactive, ref, computed } from 'vue'
-import type { LoginDesktopSplitProps } from '../../types'
-
-const props = withDefaults(defineProps<LoginDesktopSplitProps>(), {
-  title: '欢迎回来',
-  subtitle: '请输入您的账号信息登录',
-  logo: '',
-  showRemember: true,
-  showRegister: true,
-  showForgotPassword: true,
-  sidebarTitle: '探索精彩内容',
-  sidebarDescription: '立即登录开启您的专属体验',
-  themeColor: '#667eea',
-  backgroundImage: '',
-})
-
-const formData = reactive({
-  username: '',
-  password: '',
-  remember: false,
-})
-
-const loading = ref(false)
-
-const sidebarStyle = computed(() => ({
-  backgroundImage: props.backgroundImage ? `url(${props.backgroundImage})` : `linear-gradient(135deg, ${props.themeColor} 0%, #764ba2 100%)`,
-}))
-
-const buttonStyle = computed(() => ({
-  background: `linear-gradient(135deg, ${props.themeColor} 0%, #764ba2 100%)`,
-}))
-
-const handleSubmit = async () => {
-  if (!props.onLogin) return
-
-  loading.value = true
-  try {
-    await props.onLogin(formData)
-  } catch (error) {
-    console.error('Login failed:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleRegister = () => {
-  props.onRegister?.()
-}
-
-const handleForgotPassword = () => {
-  props.onForgotPassword?.()
-}
-</script>
 
 <style scoped>
 .template-switcher-container {

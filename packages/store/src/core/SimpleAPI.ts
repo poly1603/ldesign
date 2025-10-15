@@ -244,7 +244,10 @@ export function createSimpleStore<
   ) as UnwrapRef<S>
 
   // 初始状态快照（用于重置）
-  const initialState = JSON.parse(JSON.stringify(state))
+  // 使用 structuredClone 提升性能（如果支持）
+  const initialState = typeof structuredClone !== 'undefined'
+    ? structuredClone(state)
+    : JSON.parse(JSON.stringify(state))
 
   // 创建计算属性
   const getters: any = {}
@@ -368,7 +371,9 @@ export function createSimpleStore<
 
     // 创建快照
     snapshot() {
-      return JSON.parse(JSON.stringify(state)) as S
+      return (typeof structuredClone !== 'undefined'
+        ? structuredClone(state)
+        : JSON.parse(JSON.stringify(state))) as S
     },
 
     // 恢复快照
@@ -453,38 +458,45 @@ function applyPersistence(store: any, options: PersistOptions): void {
     console.error('Failed to restore state:', error)
   }
 
-  // 监听变化并保存
-  store.$subscribe(() => {
-    try {
-      let dataToSave = store.state
+  // 监听变化并保存（使用防抖避免频繁写入）
+  let saveTimeout: ReturnType<typeof setTimeout> | null = null
+  const debouncedSave = () => {
+    if (saveTimeout) clearTimeout(saveTimeout)
 
-      if (paths) {
-        // 只保存指定路径
-        dataToSave = {}
-        paths.forEach(path => {
-          const keys = path.split('.')
-          let source = store.state
-          let target: any = dataToSave
+    saveTimeout = setTimeout(() => {
+      try {
+        let dataToSave = store.state
 
-          for (let i = 0; i < keys.length - 1; i++) {
-            source = source[keys[i]]
-            if (!target[keys[i]]) {
-              target[keys[i]] = {}
+        if (paths) {
+          // 只保存指定路径
+          dataToSave = {}
+          paths.forEach(path => {
+            const keys = path.split('.')
+            let source = store.state
+            let target: any = dataToSave
+
+            for (let i = 0; i < keys.length - 1; i++) {
+              source = source[keys[i]]
+              if (!target[keys[i]]) {
+                target[keys[i]] = {}
+              }
+              target = target[keys[i]]
             }
-            target = target[keys[i]]
-          }
 
-          if (keys.length > 0) {
-            target[keys[keys.length - 1]] = source[keys[keys.length - 1]]
-          }
-        })
+            if (keys.length > 0) {
+              target[keys[keys.length - 1]] = source[keys[keys.length - 1]]
+            }
+          })
+        }
+
+        storage.setItem(key, serializer.serialize(dataToSave))
+      } catch (error) {
+        console.error('Failed to persist state:', error)
       }
+    }, 300) // 300ms 防抖延迟
+  }
 
-      storage.setItem(key, serializer.serialize(dataToSave))
-    } catch (error) {
-      console.error('Failed to persist state:', error)
-    }
-  })
+  store.$subscribe(debouncedSave)
 }
 
 /**
@@ -642,9 +654,10 @@ export interface AsyncStore<T> {
 }
 
 /**
- * Store工厂（支持依赖注入）
+ * Store 注册中心（支持依赖注入）
+ * 注意：与 core/StoreFactory 不同，这是一个简单的依赖注入容器
  */
-export class StoreFactory {
+export class SimpleStoreRegistry {
   private stores = new Map<string, any>()
 
   /**
@@ -682,8 +695,8 @@ export class StoreFactory {
   }
 }
 
-// 导出全局工厂实例
-export const storeFactory = new StoreFactory()
+// 导出全局注册中心实例
+export const storeRegistry = new SimpleStoreRegistry()
 
 // 导出便捷函数
 export { store as $ } // 超短别名

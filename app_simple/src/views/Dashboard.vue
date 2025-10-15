@@ -294,13 +294,13 @@ onBeforeUnmount(() => {
 
 .dashboard-title {
   font-size: 36px;
-  color: #2c3e50;
+  color: var(--ld-color-gray-800, #2c3e50);
   margin: 0 0 10px 0;
 }
 
 .dashboard-subtitle {
   font-size: 18px;
-  color: #666;
+  color: var(--ld-color-gray-600, #666);
   margin: 0;
 }
 
@@ -313,9 +313,9 @@ onBeforeUnmount(() => {
 
 /* 卡片样式 */
 .dashboard-card {
-  background: white;
+  background: var(--ld-color-gray-50, white);
   border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 5px 20px var(--ld-color-gray-200, rgba(0, 0, 0, 0.05));
   overflow: hidden;
 }
 
@@ -325,11 +325,11 @@ onBeforeUnmount(() => {
 
 .card-title {
   font-size: 18px;
-  color: #2c3e50;
+  color: var(--ld-color-gray-800, #2c3e50);
   margin: 0;
   padding: 20px;
-  background: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
+  background: var(--ld-color-gray-50, #f8f9fa);
+  border-bottom: 1px solid var(--ld-color-gray-300, #e0e0e0);
 }
 
 .card-content {
@@ -341,7 +341,7 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--ld-color-gray-200, #f0f0f0);
 }
 
 .info-row:last-child {
@@ -350,11 +350,11 @@ onBeforeUnmount(() => {
 
 .info-label {
   font-weight: 600;
-  color: #666;
+  color: var(--ld-color-gray-600, #666);
 }
 
 .info-value {
-  color: #2c3e50;
+  color: var(--ld-color-gray-800, #2c3e50);
   font-family: monospace;
 }
 
@@ -368,16 +368,16 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: space-between;
   padding: 8px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--ld-color-gray-200, #f0f0f0);
 }
 
 .history-time {
-  color: #999;
+  color: var(--ld-color-gray-500, #999);
   font-size: 12px;
 }
 
 .history-path {
-  color: #2c3e50;
+  color: var(--ld-color-gray-800, #2c3e50);
   font-family: monospace;
 }
 
@@ -387,8 +387,8 @@ onBeforeUnmount(() => {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
-  background: #667eea;
-  color: white;
+  background: var(--ld-color-primary-500);
+  color: var(--ld-color-gray-50, white);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -397,16 +397,16 @@ onBeforeUnmount(() => {
 }
 
 .action-button:hover {
-  background: #5567d8;
+  background: var(--ld-color-primary-600);
   transform: translateX(5px);
 }
 
 .action-button.danger {
-  background: #e74c3c;
+  background: var(--ld-color-danger-500);
 }
 
 .action-button.danger:hover {
-  background: #c0392b;
+  background: var(--ld-color-danger-600);
 }
 
 /* 性能监控 */
@@ -423,12 +423,12 @@ onBeforeUnmount(() => {
 .performance-value {
   font-size: 24px;
   font-weight: bold;
-  color: #667eea;
+  color: var(--ld-color-primary-500);
 }
 
 .performance-label {
   font-size: 12px;
-  color: #666;
+  color: var(--ld-color-gray-600, #666);
   margin-top: 5px;
   text-transform: uppercase;
 }
@@ -442,13 +442,13 @@ onBeforeUnmount(() => {
 .route-table th {
   text-align: left;
   padding: 10px;
-  background: #f8f9fa;
-  border-bottom: 2px solid #e0e0e0;
+  background: var(--ld-color-gray-50, #f8f9fa);
+  border-bottom: 2px solid var(--ld-color-gray-300, #e0e0e0);
 }
 
 .route-table td {
   padding: 10px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--ld-color-gray-200, #f0f0f0);
 }
 
 .badge {
@@ -459,33 +459,33 @@ onBeforeUnmount(() => {
 }
 
 .badge-success {
-  background: #d4edda;
-  color: #155724;
+  background: var(--ld-color-success-100);
+  color: var(--ld-color-success-700);
 }
 
 .badge-warning {
-  background: #fff3cd;
-  color: #856404;
+  background: var(--ld-color-warning-100);
+  color: var(--ld-color-warning-700);
 }
 
 .link-button {
   padding: 4px 12px;
   background: transparent;
-  color: #667eea;
-  border: 1px solid #667eea;
+  color: var(--ld-color-primary-500);
+  border: 1px solid var(--ld-color-primary-500);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .link-button:hover {
-  background: #667eea;
-  color: white;
+  background: var(--ld-color-primary-500);
+  color: var(--ld-color-gray-50, white);
 }
 
 .empty-state {
   text-align: center;
-  color: #999;
+  color: var(--ld-color-gray-500, #999);
   padding: 20px;
 }
 

@@ -1,21 +1,79 @@
+<script setup lang="ts">
+import type { LoginTabletProps } from '../../types'
+import { reactive, ref } from 'vue'
+
+const props = withDefaults(defineProps<LoginTabletProps>(), {
+  title: 'LDesign',
+  subtitle: '欢迎使用我们的服务，请登录您的账号开始使用',
+  logo: '',
+  showRemember: true,
+  showRegister: true,
+  showForgotPassword: true,
+  layout: 'landscape',
+  useSplitLayout: true,
+})
+
+const formData = reactive({
+  username: '',
+  password: '',
+  remember: false,
+})
+
+const loading = ref(false)
+
+async function handleSubmit() {
+  if (!props.onLogin)
+return
+
+  loading.value = true
+  try {
+    await props.onLogin(formData)
+  }
+ catch (error) {
+    console.error('Login failed:', error)
+  }
+ finally {
+    loading.value = false
+  }
+}
+
+function handleRegister() {
+  props.onRegister?.()
+}
+
+function handleForgotPassword() {
+  props.onForgotPassword?.()
+}
+</script>
+
 <template>
-  <div class="login-landscape-container">
+  <div class="landscape-login-container">
+    <!-- 模板切换器插槽 -->
+    <div v-if="$slots.switcher" class="template-switcher-container">
+      <slot name="switcher" />
+    </div>
     <div class="login-wrapper">
       <!-- 左侧信息区 -->
       <div class="info-section">
         <div class="info-content">
           <div class="brand">
             <img v-if="logo" :src="logo" alt="Logo" class="brand-logo">
-            <h2 class="brand-name">{{ title }}</h2>
+            <h2 class="brand-name">
+              {{ title }}
+            </h2>
           </div>
-          <p class="info-text">{{ subtitle }}</p>
+          <p class="info-text">
+            {{ subtitle }}
+          </p>
         </div>
       </div>
 
       <!-- 右侧表单区 -->
       <div class="form-section">
         <form class="login-form" @submit.prevent="handleSubmit">
-          <h1 class="form-title">账号登录</h1>
+          <h1 class="form-title">
+            账号登录
+          </h1>
 
           <div class="form-group">
             <label for="username">用户名 / 邮箱</label>
@@ -63,51 +121,6 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { reactive, ref } from 'vue'
-import type { LoginTabletProps } from '../../types'
-
-const props = withDefaults(defineProps<LoginTabletProps>(), {
-  title: 'LDesign',
-  subtitle: '欢迎使用我们的服务，请登录您的账号开始使用',
-  logo: '',
-  showRemember: true,
-  showRegister: true,
-  showForgotPassword: true,
-  layout: 'landscape',
-  useSplitLayout: true,
-})
-
-const formData = reactive({
-  username: '',
-  password: '',
-  remember: false,
-})
-
-const loading = ref(false)
-
-const handleSubmit = async () => {
-  if (!props.onLogin) return
-
-  loading.value = true
-  try {
-    await props.onLogin(formData)
-  } catch (error) {
-    console.error('Login failed:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleRegister = () => {
-  props.onRegister?.()
-}
-
-const handleForgotPassword = () => {
-  props.onForgotPassword?.()
-}
-</script>
-
 <style scoped>
 .login-landscape-container {
   min-height: 100vh;
@@ -145,7 +158,7 @@ const handleForgotPassword = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
+  background:
     radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
 }

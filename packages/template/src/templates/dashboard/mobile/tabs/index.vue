@@ -1,52 +1,4 @@
-<template>
-  <div class="dashboard-tabs-container">
-    <header class="mobile-header">
-      <h1 class="header-title">Dashboard</h1>
-      <button class="logout-btn" @click="handleLogout">🚪</button>
-    </header>
-
-    <!-- 标签切换 -->
-    <div class="tabs-bar">
-      <button
-        v-for="tab in tabs"
-        :key="tab.value"
-        class="tab-item"
-        :class="{ 'active': activeTab === tab.value }"
-        @click="handleTabChange(tab.value)"
-      >
-        <span v-if="tab.icon" class="tab-icon">{{ tab.icon }}</span>
-        <span class="tab-label">{{ tab.label }}</span>
-      </button>
-    </div>
-
-    <main class="tab-content">
-      <div class="stats-grid">
-        <div v-for="(stat, index) in stats" :key="index" class="stat-card">
-          <div class="stat-icon">{{ stat.icon || '📊' }}</div>
-          <div class="stat-info">
-            <div class="stat-label">{{ stat.label }}</div>
-            <div class="stat-value">{{ stat.value }}</div>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <nav v-if="showBottomNav" class="bottom-nav">
-      <a
-        v-for="(item, index) in (bottomNavItems || menuItems)"
-        :key="index"
-        class="nav-item"
-        :class="{ 'active': item.active }"
-      >
-        <span class="nav-icon">{{ item.icon || '•' }}</span>
-        <span class="nav-label">{{ item.label }}</span>
-      </a>
-    </nav>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
 import type { DashboardMobileTabsProps } from '../../types'
 
 const props = withDefaults(defineProps<DashboardMobileTabsProps>(), {
@@ -72,14 +24,71 @@ const props = withDefaults(defineProps<DashboardMobileTabsProps>(), {
   ],
 })
 
-const handleTabChange = (value: string) => {
+function handleTabChange(value: string) {
   props.onTabChange?.(value)
 }
 
-const handleLogout = () => {
+function handleLogout() {
   props.onLogout?.()
 }
 </script>
+
+<template>
+  <div class="dashboard-tabs-container">
+    <header class="mobile-header">
+      <h1 class="header-title">
+        Dashboard
+      </h1>
+      <button class="logout-btn" @click="handleLogout">
+        🚪
+      </button>
+    </header>
+
+    <!-- 标签切换 -->
+    <div class="tabs-bar">
+      <button
+        v-for="tab in tabs"
+        :key="tab.value"
+        class="tab-item"
+        :class="{ active: activeTab === tab.value }"
+        @click="handleTabChange(tab.value)"
+      >
+        <span v-if="tab.icon" class="tab-icon">{{ tab.icon }}</span>
+        <span class="tab-label">{{ tab.label }}</span>
+      </button>
+    </div>
+
+    <main class="tab-content">
+      <div class="stats-grid">
+        <div v-for="(stat, index) in stats" :key="index" class="stat-card">
+          <div class="stat-icon">
+            {{ stat.icon || '📊' }}
+          </div>
+          <div class="stat-info">
+            <div class="stat-label">
+              {{ stat.label }}
+            </div>
+            <div class="stat-value">
+              {{ stat.value }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <nav v-if="showBottomNav" class="bottom-nav">
+      <a
+        v-for="(item, index) in (bottomNavItems || menuItems)"
+        :key="index"
+        class="nav-item"
+        :class="{ active: item.active }"
+      >
+        <span class="nav-icon">{{ item.icon || '•' }}</span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </nav>
+  </div>
+</template>
 
 <style scoped>
 .dashboard-tabs-container {

@@ -3,37 +3,7 @@
  * 提供可视化调试、状态检查和开发工具集成
  */
 
-// Web端EventEmitter实现
-class EventEmitter {
-  private events: Record<string, Function[]> = {};
-
-  on(event: string, listener: Function) {
-    if (!this.events[event]) {
-      this.events[event] = [];
-    }
-    this.events[event].push(listener);
-  }
-
-  emit(event: string, ...args: any[]) {
-    if (this.events[event]) {
-      this.events[event].forEach(listener => listener(...args));
-    }
-  }
-
-  off(event: string, listener: Function) {
-    if (this.events[event]) {
-      this.events[event] = this.events[event].filter(l => l !== listener);
-    }
-  }
-
-  removeAllListeners(event?: string) {
-    if (event) {
-      delete this.events[event];
-    } else {
-      this.events = {};
-    }
-  }
-}
+import { EventEmitter } from './utils/event-emitter'
 
 // ============= DevTools Types =============
 interface StoreSnapshot {
@@ -164,6 +134,8 @@ export class StoreDevTools extends EventEmitter {
   private connection?: DevToolsConnection;
   private config: Required<DevToolsConfig>;
   private timeTravelIndex = new Map<string, number>();
+  private watchers = new Map<string, Array<{ path: string; callback: string }>>();
+  private subscribers = new Map<string, number>();
 
   constructor(config: DevToolsConfig = {}) {
     super();
@@ -215,12 +187,17 @@ export class StoreDevTools extends EventEmitter {
     this.stores.set(name, store);
     this.history.set(name, []);
     this.timeTravelIndex.set(name, -1);
+    this.watchers.set(name, []);
+    this.subscribers.set(name, 0);
 
     // 拦截 actions
     this.interceptActions(name, store);
 
     // 监听状态变化
     this.watchStateChanges(name, store);
+
+    // 追踪订阅者
+    this.trackSubscribers(name, store);
 
     // 发送初始状态
     this.sendStoreUpdate(name, store);
@@ -283,6 +260,14 @@ export class StoreDevTools extends EventEmitter {
   // 监听状态变化
   private watchStateChanges(storeName: string, store: any): void {
     if (store.watch) {
+      // 追踪根路径 watcher
+      const watchersList = this.watchers.get(storeName) || [];
+      watchersList.push({
+        path: '*',
+        callback: 'DevTools.watchStateChanges'
+      });
+      this.watchers.set(storeName, watchersList);
+
       store.watch('*', (newValue: any, oldValue: any, path: string) => {
         if (this.config.logState) {
           console.log(`📊 [${storeName}] State changed at ${path}:`, {
@@ -293,6 +278,64 @@ export class StoreDevTools extends EventEmitter {
 
         this.sendStoreUpdate(storeName, store);
       });
+    }
+
+    // 拦截 watch 方法以追踪所有 watchers
+    if (store.watch) {
+      const originalWatch = store.watch.bind(store);
+      store.watch = (path: string, callback: Function) => {
+        const watchersList = this.watchers.get(storeName) || [];
+        watchersList.push({
+          path,
+          callback: callback.name || 'anonymous'
+        });
+        this.watchers.set(storeName, watchersList);
+
+        return originalWatch(path, callback);
+      };
+    }
+  }
+
+  // 追踪订阅者
+  private trackSubscribers(storeName: string, store: any): void {
+    // 拦截 $subscribe 方法以追踪订阅者数量
+    if (store.$subscribe) {
+      const original$Subscribe = store.$subscribe.bind(store);
+      store.$subscribe = (callback: Function, options?: any) => {
+        // 增加订阅者计数
+        const currentCount = this.subscribers.get(storeName) || 0;
+        this.subscribers.set(storeName, currentCount + 1);
+
+        // 调用原始 $subscribe 方法
+        const unsubscribe = original$Subscribe(callback, options);
+
+        // 包装 unsubscribe 以在取消订阅时减少计数
+        return () => {
+          const count = this.subscribers.get(storeName) || 0;
+          this.subscribers.set(storeName, Math.max(0, count - 1));
+          unsubscribe();
+        };
+      };
+    }
+
+    // 拦截 $onAction 方法以追踪 action 订阅者
+    if (store.$onAction) {
+      const original$OnAction = store.$onAction.bind(store);
+      store.$onAction = (callback: Function) => {
+        // 增加订阅者计数
+        const currentCount = this.subscribers.get(storeName) || 0;
+        this.subscribers.set(storeName, currentCount + 1);
+
+        // 调用原始 $onAction 方法
+        const unsubscribe = original$OnAction(callback);
+
+        // 包装 unsubscribe 以在取消订阅时减少计数
+        return () => {
+          const count = this.subscribers.get(storeName) || 0;
+          this.subscribers.set(storeName, Math.max(0, count - 1));
+          unsubscribe();
+        };
+      };
     }
   }
 
@@ -413,8 +456,8 @@ export class StoreDevTools extends EventEmitter {
       state: this.cloneState(store.state),
       computed: this.getComputedValues(store),
       actions: Object.keys(store.actions || {}),
-      watchers: [], // TODO: 实现 watcher 追踪
-      subscribers: 0, // TODO: 实现订阅者计数
+      watchers: this.watchers.get(storeName) || [],
+      subscribers: this.subscribers.get(storeName) || 0,
       history: storeHistory
     };
   }
@@ -554,6 +597,8 @@ export class StoreDevTools extends EventEmitter {
     this.stores.clear();
     this.history.clear();
     this.timeTravelIndex.clear();
+    this.watchers.clear();
+    this.subscribers.clear();
     this.removeAllListeners();
   }
 }

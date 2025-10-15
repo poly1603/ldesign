@@ -1,123 +1,6 @@
-<template>
-  <div v-if="visible" class="ldesign-template-selector" @click.self="handleClose">
-    <div class="selector-modal">
-      <div class="selector-header">
-        <h3>选择模板</h3>
-        <button class="close-btn" @click="handleClose" aria-label="关闭">×</button>
-      </div>
-
-      <!-- 搜索栏 -->
-      <div v-if="searchable" class="selector-search">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="搜索模板..."
-          class="search-input"
-        />
-      </div>
-
-      <!-- 过滤器 -->
-      <div class="selector-filters">
-        <div class="filter-group">
-          <label>类别:</label>
-          <select v-model="selectedCategory" class="filter-select">
-            <option value="">全部</option>
-            <option v-for="cat in categories" :key="cat" :value="cat">
-              {{ cat }}
-            </option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label>设备:</label>
-          <select v-model="selectedDevice" class="filter-select">
-            <option value="">全部</option>
-            <option value="desktop">桌面</option>
-            <option value="tablet">平板</option>
-            <option value="mobile">移动</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- 模板列表 -->
-      <div class="selector-body">
-        <div v-if="loading" class="selector-loading">
-          <div class="loading-spinner"></div>
-          <p>加载中...</p>
-        </div>
-
-        <div v-else-if="error" class="selector-error">
-          <p>{{ error.message }}</p>
-          <button @click="loadTemplates" class="retry-btn">重试</button>
-        </div>
-
-        <div v-else-if="filteredTemplates.length === 0" class="selector-empty">
-          <p>没有找到匹配的模板</p>
-        </div>
-
-        <div v-else class="template-grid">
-          <div
-            v-for="template in filteredTemplates"
-            :key="`${template.category}-${template.device}-${template.name}`"
-            class="template-card"
-            :class="{
-              active: template.name === currentTemplate,
-              default: template.isDefault
-            }"
-            @click="handleSelect(template)"
-          >
-            <div class="card-header">
-              <h4 class="card-title">{{ template.displayName || template.name }}</h4>
-              <span v-if="template.isDefault" class="default-badge">默认</span>
-            </div>
-
-            <p class="card-description">{{ template.description || '暂无描述' }}</p>
-
-            <div class="card-meta">
-              <span class="meta-item">
-                <span class="meta-label">类别:</span>
-                <span class="meta-value">{{ template.category }}</span>
-              </span>
-              <span class="meta-item">
-                <span class="meta-label">设备:</span>
-                <span class="meta-value">{{ deviceLabel(template.device) }}</span>
-              </span>
-              <span v-if="template.version" class="meta-item">
-                <span class="meta-label">版本:</span>
-                <span class="meta-value">{{ template.version }}</span>
-              </span>
-            </div>
-
-            <div v-if="template.tags && template.tags.length > 0" class="card-tags">
-              <span
-                v-for="tag in template.tags"
-                :key="tag"
-                class="tag"
-              >
-                {{ tag }}
-              </span>
-            </div>
-
-            <div v-if="template.author" class="card-author">
-              作者: {{ template.author }}
-            </div>
-
-            <button
-              class="select-btn"
-              :class="{ active: template.name === currentTemplate }"
-              @click.stop="handleSelect(template)"
-            >
-              {{ template.name === currentTemplate ? '已选择' : '选择' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
 import type { DeviceType, TemplateMetadata } from '../../types'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useTemplateScanner } from '../composables/useTemplateScanner'
 
 interface Props {
@@ -191,7 +74,7 @@ const filteredTemplates = computed(() => {
 })
 
 // 设备标签映射
-const deviceLabel = (device: DeviceType): string => {
+function deviceLabel(device: DeviceType): string {
   const labels: Record<DeviceType, string> = {
     desktop: '桌面',
     tablet: '平板',
@@ -201,12 +84,12 @@ const deviceLabel = (device: DeviceType): string => {
 }
 
 // 处理选择
-const handleSelect = (template: TemplateMetadata) => {
+function handleSelect(template: TemplateMetadata) {
   emit('select', template.name, template)
 }
 
 // 处理关闭
-const handleClose = () => {
+function handleClose() {
   emit('close')
 }
 
@@ -233,6 +116,141 @@ onMounted(() => {
   }
 })
 </script>
+
+<template>
+  <div v-if="visible" class="ldesign-template-selector" @click.self="handleClose">
+    <div class="selector-modal">
+      <div class="selector-header">
+        <h3>选择模板</h3>
+        <button class="close-btn" aria-label="关闭" @click="handleClose">
+          ×
+        </button>
+      </div>
+
+      <!-- 搜索栏 -->
+      <div v-if="searchable" class="selector-search">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="搜索模板..."
+          class="search-input"
+        >
+      </div>
+
+      <!-- 过滤器 -->
+      <div class="selector-filters">
+        <div class="filter-group">
+          <label>类别:</label>
+          <select v-model="selectedCategory" class="filter-select">
+            <option value="">
+              全部
+            </option>
+            <option v-for="cat in categories" :key="cat" :value="cat">
+              {{ cat }}
+            </option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>设备:</label>
+          <select v-model="selectedDevice" class="filter-select">
+            <option value="">
+              全部
+            </option>
+            <option value="desktop">
+              桌面
+            </option>
+            <option value="tablet">
+              平板
+            </option>
+            <option value="mobile">
+              移动
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 模板列表 -->
+      <div class="selector-body">
+        <div v-if="loading" class="selector-loading">
+          <div class="loading-spinner" />
+          <p>加载中...</p>
+        </div>
+
+        <div v-else-if="error" class="selector-error">
+          <p>{{ error.message }}</p>
+          <button class="retry-btn" @click="loadTemplates">
+            重试
+          </button>
+        </div>
+
+        <div v-else-if="filteredTemplates.length === 0" class="selector-empty">
+          <p>没有找到匹配的模板</p>
+        </div>
+
+        <div v-else class="template-grid">
+          <div
+            v-for="template in filteredTemplates"
+            :key="`${template.category}-${template.device}-${template.name}`"
+            class="template-card"
+            :class="{
+              active: template.name === currentTemplate,
+              default: template.isDefault,
+            }"
+            @click="handleSelect(template)"
+          >
+            <div class="card-header">
+              <h4 class="card-title">
+                {{ template.displayName || template.name }}
+              </h4>
+              <span v-if="template.isDefault" class="default-badge">默认</span>
+            </div>
+
+            <p class="card-description">
+              {{ template.description || '暂无描述' }}
+            </p>
+
+            <div class="card-meta">
+              <span class="meta-item">
+                <span class="meta-label">类别:</span>
+                <span class="meta-value">{{ template.category }}</span>
+              </span>
+              <span class="meta-item">
+                <span class="meta-label">设备:</span>
+                <span class="meta-value">{{ deviceLabel(template.device) }}</span>
+              </span>
+              <span v-if="template.version" class="meta-item">
+                <span class="meta-label">版本:</span>
+                <span class="meta-value">{{ template.version }}</span>
+              </span>
+            </div>
+
+            <div v-if="template.tags && template.tags.length > 0" class="card-tags">
+              <span
+                v-for="tag in template.tags"
+                :key="tag"
+                class="tag"
+              >
+                {{ tag }}
+              </span>
+            </div>
+
+            <div v-if="template.author" class="card-author">
+              作者: {{ template.author }}
+            </div>
+
+            <button
+              class="select-btn"
+              :class="{ active: template.name === currentTemplate }"
+              @click.stop="handleSelect(template)"
+            >
+              {{ template.name === currentTemplate ? '已选择' : '选择' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .ldesign-template-selector {

@@ -2,161 +2,166 @@
 layout: home
 
 hero:
-  name: '@ldesign/crypto'
-  text: '全面的加解密库'
-  tagline: '支持所有主流 JavaScript 框架，专为 Vue 3 深度集成'
-  image:
-    src: /logo.svg
-    alt: LDesign Crypto
-  actions:
-    - theme: brand
-      text: 快速开始
-      link: /guide/quick-start
-    - theme: alt
-      text: 查看示例
-      link: /examples/
-    - theme: alt
-      text: GitHub
-      link: https://github.com/ldesign/crypto
+ name: "@ldesign/crypto"
+ text: "现代加密库"
+ tagline: 功能强大、类型安全的加密解决方案，支持Vue 3集成
+ actions:
+  - theme: brand
+   text: 快速开始
+   link: /guide/quick-start
+  - theme: alt
+   text: 查看示例
+   link: /examples/
+  - theme: alt
+   text: GitHub
+   link: https://github.com/ldesign/crypto
 
 features:
-  - icon: 🔐
-    title: 全面的加密算法
-    details: 支持 AES、DES、3DES、Blowfish、RSA、MD5、SHA系列、Base64、HMAC 等所有主流加密算法
-  - icon: 🚀
-    title: 高性能优化
-    details: 优化的算法实现，适合生产环境使用，支持大数据量处理
-  - icon: 🎯
-    title: 框架无关
-    details: 可在任何 JavaScript 环境中使用，包括浏览器、Node.js 等
-  - icon: 🔧
-    title: Vue 3 深度集成
-    details: 提供 Composition API hooks 和插件，完美融入 Vue 3 生态系统
-  - icon: 📦
-    title: 多种构建格式
-    details: 支持 ESM、UMD、CommonJS 等多种格式，满足不同使用场景
-  - icon: 🛡️
-    title: TypeScript 支持
-    details: 完整的类型定义，提供优秀的开发体验和类型安全
-  - icon: ✅
-    title: 完整测试覆盖
-    details: 单元测试和端到端测试，确保代码质量和稳定性
-  - icon: 📚
-    title: 详细文档
-    details: 完整的 API 文档和使用示例，快速上手和深入学习
+ - icon: 🔐
+  title: 多种加密算法
+  details: 支持 AES、RSA、DES、3DES、Blowfish、ChaCha20、XSalsa20 等多种加密算法
+
+ - icon: 🛡️
+  title: 量子安全加密
+  details: 支持 LWE、SPHINCS+、Dilithium 等后量子密码算法，为未来做好准备
+
+ - icon: 🔑
+  title: 丰富的哈希函数
+  details: MD5、SHA1、SHA224、SHA256、SHA384、SHA512、HMAC、BLAKE2b
+
+ - icon: 📝
+  title: 多种编码方式
+  details: Base64、Hex、URL-safe Base64 等常用编码格式
+
+ - icon: 🎯
+  title: TypeScript 支持
+  details: 完整的类型定义和智能提示，提供更好的开发体验
+
+ - icon: 🚀
+  title: 现代 API
+  details: 支持 Promise 和异步操作，符合现代 JavaScript 开发习惯
+
+ - icon: 🔧
+  title: Vue 3 深度集成
+  details: 提供 Composition API 钩子和插件系统，无缝集成 Vue 3
+
+ - icon: 📦
+  title: 模块化设计
+  details: 按需导入，Tree-shaking 友好，减小打包体积
+
+ - icon: 🛡️
+  title: 安全性
+  details: 遵循最佳安全实践，支持密钥管理和轮换
+
+ - icon: ⚡
+  title: 高性能
+  details: WASM 加速、LRU 缓存优化、批量处理、密钥派生缓存（2.11x 加速）
+
+ - icon: 💾
+  title: 内存优化
+  details: 智能缓存管理、自动过期清理、内存泄漏防护
+
+ - icon: 🌐
+  title: 跨平台
+  details: 支持浏览器和 Node.js 环境，一套代码多端运行
 ---
 
-## 快速体验
-
-### 基础用法
+## 快速示例
 
 ```typescript
-import { cryptoManager, decrypt, encrypt, hash } from '@ldesign/crypto'
+import { aes, hash, encoding } from '@ldesign/crypto'
 
 // AES 加密
-const encrypted = encrypt.aes('Hello World', 'secret-key')
-const decrypted = decrypt.aes(encrypted, 'secret-key')
+const encrypted = aes.encrypt('Hello World', 'secret-key')
+console.log(encrypted.data)
 
-// DES 加密
-const desEncrypted = encrypt.des('Hello World', 'secret-key')
-const desDecrypted = decrypt.des(desEncrypted, 'secret-key')
+// AES 解密
+const decrypted = aes.decrypt(encrypted, 'secret-key')
+console.log(decrypted.data) // 'Hello World'
 
-// 3DES 加密
-const tripleDesEncrypted = encrypt.des3('Hello World', 'secret-key-123456789012')
-const tripleDesDecrypted = decrypt.des3(tripleDesEncrypted, 'secret-key-123456789012')
-
-// 使用统一管理器
-const result = await cryptoManager.encryptData('Hello World', 'secret-key', 'AES')
-const decryptedResult = await cryptoManager.decryptData(result, 'secret-key')
-
-// 哈希计算
-const md5Hash = hash.md5('Hello World')
+// 哈希
 const sha256Hash = hash.sha256('Hello World')
+console.log(sha256Hash)
 
 // Base64 编码
-const encoded = encrypt.base64('Hello World')
-const decoded = decrypt.base64(encoded)
+const encoded = encoding.encode('Hello World', 'base64')
+console.log(encoded) // 'SGVsbG8gV29ybGQ='
 ```
 
-### Vue 3 集成
+## Vue 3 集成
 
 ```vue
 <script setup>
-import { useCrypto } from '@ldesign/crypto/vue'
-import { ref } from 'vue'
+import { useEncryption, useHash } from '@ldesign/crypto/vue'
 
-const { encryptAES, isEncrypting } = useCrypto()
+// 使用加密功能
+const encryption = useEncryption()
+const encrypted = await encryption.encryptText('Hello World', 'password')
 
-const data = ref('')
-const key = ref('')
-const encryptedData = ref('')
-
-async function handleEncrypt() {
-  const result = await encryptAES(data.value, key.value)
-  encryptedData.value = result.data
-}
+// 使用哈希功能
+const hashUtil = useHash()
+const hash = await hashUtil.sha256('Hello World')
 </script>
-
-<template>
-  <div>
-    <input v-model="data" placeholder="输入要加密的数据">
-    <input v-model="key" placeholder="输入密钥">
-    <button :disabled="isEncrypting" @click="handleEncrypt">
-      {{ isEncrypting ? '加密中...' : '加密' }}
-    </button>
-    <div v-if="encryptedData">
-      加密结果: {{ encryptedData }}
-    </div>
-  </div>
-</template>
 ```
+
+## 主要特性
+
+### 丰富的算法支持
+
+- **对称加密**：AES-128/192/256、DES、3DES、Blowfish、ChaCha20、XSalsa20
+- **非对称加密**：RSA（PKCS1、OAEP）
+- **后量子加密**：LWE、SPHINCS+、Dilithium
+- **哈希算法**：MD5、SHA-1、SHA-224、SHA-256、SHA-384、SHA-512、BLAKE2b
+- **消息认证码**：HMAC-MD5、HMAC-SHA1、HMAC-SHA256
+- **密钥派生**：PBKDF2、HKDF
+
+### 完善的安全特性
+
+- 自动 IV 生成和管理
+- 密钥派生和轮换
+- 安全随机数生成（CSPRNG）
+- 认证加密（AEAD）
+- 数字签名和验证
+- 常数时间比较
+
+### 卓越的性能
+
+- LRU 缓存优化，减少重复计算
+- 批量处理支持，提升吞吐量
+- Worker 线程池，利用多核性能
+- 流式加密，处理大文件
+- 对象池管理，减少 GC 压力
+- 密钥派生缓存，性能提升 2.11x
+
+### 开发者友好
+
+- 完整的 TypeScript 类型定义
+- 详细的 JSDoc 注释
+- 链式调用 API
+- 统一的错误处理
+- 性能监控和基准测试
+- 丰富的示例和文档
 
 ## 安装
 
-::: code-group
-
-```bash [pnpm]
+```bash
+# 使用 pnpm
 pnpm add @ldesign/crypto
-```
 
-```bash [npm]
+# 使用 npm
 npm install @ldesign/crypto
-```
 
-```bash [yarn]
+# 使用 yarn
 yarn add @ldesign/crypto
 ```
 
-:::
+## 下一步
 
-## 支持的算法
-
-| 类型       | 算法                               | 描述                       |
-| ---------- | ---------------------------------- | -------------------------- |
-| 对称加密   | AES-128/192/256                    | 高级加密标准，支持多种模式 |
-| 对称加密   | DES                                | 数据加密标准               |
-| 对称加密   | 3DES (Triple DES)                  | 三重数据加密标准           |
-| 对称加密   | Blowfish                           | 快速分组密码算法           |
-| 非对称加密 | RSA                                | 公钥加密算法，支持签名验证 |
-| 哈希算法   | MD5, SHA-1/224/256/384/512         | 消息摘要算法               |
-| 消息认证   | HMAC-MD5/SHA1/SHA256/SHA384/SHA512 | 基于哈希的消息认证码       |
-| 编码算法   | Base64, Hex                        | 数据编码转换               |
-
-## 为什么选择 @ldesign/crypto？
-
-- **🎯 专业性**: 专注于加密领域，提供最全面的加密解决方案
-- **🔧 易用性**: 简洁的 API 设计，降低学习成本
-- **⚡ 性能**: 优化的算法实现，适合生产环境
-- **🛡️ 安全性**: 遵循最佳安全实践，保障数据安全
-- **🔄 兼容性**: 支持多种环境和框架
-- **📖 文档**: 详细的文档和示例，快速上手
-
-## 社区与支持
-
-- [GitHub Issues](https://github.com/ldesign/crypto/issues) - 报告问题和功能请求
-- [GitHub Discussions](https://github.com/ldesign/crypto/discussions) - 社区讨论
-- [更新日志](https://github.com/ldesign/crypto/blob/main/CHANGELOG.md) - 查看版本更新
+- [快速开始](/guide/quick-start) - 开始使用 @ldesign/crypto
+- [API 参考](/api/) - 查看完整的 API 文档
+- [示例](/examples/) - 浏览更多示例代码
+- [Vue 集成](/guide/vue-plugin) - 了解 Vue 3 集成
 
 ## 许可证
 
-[MIT License](https://github.com/ldesign/crypto/blob/main/LICENSE) © 2024 LDesign Team
+MIT License © 2024-present LDesign

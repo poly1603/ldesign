@@ -2,11 +2,11 @@
  * Vue 集成层统一导出
  */
 
-// Composables
-export * from './composables'
-
 // Components
 export * from './components'
+
+// Composables
+export * from './composables'
 
 // Plugin
 export { createTemplatePlugin, TEMPLATE_MANAGER_KEY } from './plugin'

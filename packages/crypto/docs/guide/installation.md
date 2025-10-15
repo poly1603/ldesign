@@ -1,11 +1,16 @@
 # 安装
 
+## 系统要求
+
+- Node.js >= 16.0.0
+- 支持 ES 模块的现代浏览器
+- TypeScript >= 4.5.0（如果使用 TypeScript）
+
 ## 包管理器安装
 
-推荐使用包管理器安装 @ldesign/crypto：
+使用你喜欢的包管理器安装 @ldesign/crypto：
 
-::: code-group
-
+:::: code-group
 ```bash [pnpm]
 pnpm add @ldesign/crypto
 ```
@@ -17,239 +22,113 @@ npm install @ldesign/crypto
 ```bash [yarn]
 yarn add @ldesign/crypto
 ```
+::::
 
-:::
+## Vue 3 项目
+
+如果你在 Vue 3 项目中使用，Vue 已经是 peer dependency，确保安装了 Vue 3：
+
+```bash
+pnpm add vue@^3.3.0 @ldesign/crypto
+```
 
 ## CDN 引入
 
-如果你不使用包管理器，也可以通过 CDN 直接引入：
-
-### UMD 格式
+你也可以通过 CDN 直接在浏览器中使用：
 
 ```html
-<!-- 开发版本 -->
-<script src="https://unpkg.com/@ldesign/crypto/dist/index.js"></script>
+<!-- 使用 unpkg -->
+<script src="https://unpkg.com/@ldesign/crypto@latest/dist/index.min.js"></script>
 
-<!-- 生产版本（压缩） -->
-<script src="https://unpkg.com/@ldesign/crypto/dist/index.min.js"></script>
+<!-- 使用 jsDelivr -->
+<script src="https://cdn.jsdelivr.net/npm/@ldesign/crypto@latest/dist/index.min.js"></script>
 ```
 
-使用 UMD 格式时，库会暴露为全局变量 `LDesignCrypto`：
+通过 CDN 引入后，库会挂载到全局变量 `LDesignCrypto` 上：
 
 ```html
 <script>
-  const { encrypt, decrypt, hash } = LDesignCrypto
-
-  const encrypted = encrypt.aes('Hello World', 'secret-key')
-  console.log(encrypted)
+ // 使用全局变量
+ const encrypted = LDesignCrypto.aes.encrypt('Hello', 'key')
+ console.log(encrypted)
 </script>
 ```
-
-### ESM 格式
-
-```html
-<script type="module">
-  import { encrypt, decrypt, hash } from 'https://unpkg.com/@ldesign/crypto/es/index.js'
-
-  const encrypted = encrypt.aes('Hello World', 'secret-key')
-  console.log(encrypted)
-</script>
-```
-
-## Vue 3 项目安装
-
-如果你在 Vue 3 项目中使用，建议同时安装 Vue 3：
-
-```bash
-pnpm add vue @ldesign/crypto
-```
-
-## 依赖说明
-
-@ldesign/crypto 依赖以下库：
-
-- `crypto-js`: 提供基础的加密算法实现
-- `node-forge`: 提供 RSA 加密和数字签名功能
-- `tslib`: TypeScript 运行时库
-
-这些依赖会自动安装，无需手动处理。
-
-## 可选依赖
-
-- `vue`: 仅在使用 Vue 3 集成功能时需要
-
-## 环境要求
-
-### 浏览器环境
-
-- 现代浏览器（支持 ES2020）
-- 支持 Web Crypto API（用于安全随机数生成）
-
-### Node.js 环境
-
-- Node.js ≥ 16.0.0
-- 支持 ESM 和 CommonJS
 
 ## 验证安装
 
-安装完成后，可以通过以下代码验证是否安装成功：
+创建一个简单的测试文件来验证安装：
 
-### Node.js 环境
+```typescript
+import { aes } from '@ldesign/crypto'
 
-```javascript
-// ESM
-import { encrypt, decrypt, hash } from '@ldesign/crypto'
+const encrypted = aes.encrypt('Hello World', 'secret-key')
+console.log('加密成功:', encrypted.success)
+console.log('加密数据:', encrypted.data)
 
-// CommonJS
-const { encrypt, decrypt, hash } = require('@ldesign/crypto')
-
-// 测试基本功能
-const encrypted = encrypt.aes('Hello World', 'test-key')
-const decrypted = decrypt.aes(encrypted, 'test-key')
-
-console.log('Original:', 'Hello World')
-console.log('Encrypted:', encrypted.data)
-console.log('Decrypted:', decrypted.data)
-console.log('Success:', decrypted.data === 'Hello World')
+const decrypted = aes.decrypt(encrypted, 'secret-key')
+console.log('解密成功:', decrypted.success)
+console.log('原始数据:', decrypted.data)
 ```
 
-### 浏览器环境
+如果能正常运行并输出结果，说明安装成功！
 
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Crypto Test</title>
-  </head>
-  <body>
-    <script type="module">
-      import { encrypt, decrypt, hash } from '@ldesign/crypto'
+## TypeScript 配置
 
-      // 测试基本功能
-      const encrypted = encrypt.aes('Hello World', 'test-key')
-      const decrypted = decrypt.aes(encrypted, 'test-key')
+如果你使用 TypeScript，建议在 `tsconfig.json` 中配置以下选项：
 
-      console.log('Original:', 'Hello World')
-      console.log('Encrypted:', encrypted.data)
-      console.log('Decrypted:', decrypted.data)
-      console.log('Success:', decrypted.data === 'Hello World')
-    </script>
-  </body>
-</html>
+```json
+{
+ "compilerOptions": {
+  "module": "ESNext",
+  "moduleResolution": "bundler",
+  "resolveJsonModule": true,
+  "types": ["node"]
+ }
+}
 ```
 
-### Vue 3 环境
+## 导入方式
 
-```vue
-<script setup>
+### 命名导入（推荐）
+
+```typescript
+import { aes, rsa, hash, encoding } from '@ldesign/crypto'
+```
+
+### 命名空间导入
+
+```typescript
+import * as crypto from '@ldesign/crypto'
+
+crypto.aes.encrypt('data', 'key')
+```
+
+### 默认导入
+
+```typescript
+import LDesignCrypto from '@ldesign/crypto'
+
+LDesignCrypto.aes.encrypt('data', 'key')
+```
+
+### 子路径导入
+
+```typescript
+// 仅导入算法模块
+import { aes } from '@ldesign/crypto/algorithms'
+
+// 仅导入核心功能
+import { encrypt, decrypt } from '@ldesign/crypto/core'
+
+// 导入 Vue 适配器
 import { useCrypto } from '@ldesign/crypto/vue'
-import { onMounted, ref } from 'vue'
 
-const { encryptAES, decryptAES } = useCrypto()
-
-const original = ref('Hello World')
-const encrypted = ref('')
-const decrypted = ref('')
-const success = ref(false)
-
-onMounted(async () => {
-  try {
-    const encryptResult = await encryptAES(original.value, 'test-key')
-    encrypted.value = encryptResult.data
-
-    const decryptResult = await decryptAES(encryptResult, 'test-key')
-    decrypted.value = decryptResult.data
-
-    success.value = decryptResult.data === original.value
-  }
-  catch (error) {
-    console.error('Test failed:', error)
-  }
-})
-</script>
-
-<template>
-  <div>
-    <h1>Crypto Test</h1>
-    <p>Original: {{ original }}</p>
-    <p>Encrypted: {{ encrypted }}</p>
-    <p>Decrypted: {{ decrypted }}</p>
-    <p>Success: {{ success }}</p>
-  </div>
-</template>
+// 导入工具函数
+import { RandomUtils } from '@ldesign/crypto/utils'
 ```
-
-## 构建工具配置
-
-### Vite
-
-Vite 开箱即用，无需额外配置。
-
-### Webpack
-
-如果使用 Webpack，可能需要配置 polyfill：
-
-```javascript
-// webpack.config.js
-module.exports = {
-  resolve: {
-    fallback: {
-      crypto: require.resolve('crypto-browserify'),
-      stream: require.resolve('stream-browserify'),
-      buffer: require.resolve('buffer'),
-    },
-  },
-}
-```
-
-### Rollup
-
-```javascript
-import commonjs from '@rollup/plugin-commonjs'
-// rollup.config.js
-import { nodeResolve } from '@rollup/plugin-node-resolve'
-
-export default {
-  plugins: [
-    nodeResolve({
-      browser: true,
-      preferBuiltins: false,
-    }),
-    commonjs(),
-  ],
-}
-```
-
-## 故障排除
-
-### 常见问题
-
-1. **模块解析错误**
-
-   - 确保使用正确的导入路径
-   - 检查构建工具配置
-
-2. **类型错误**
-
-   - 确保安装了 TypeScript 类型定义
-   - 检查 tsconfig.json 配置
-
-3. **运行时错误**
-   - 检查浏览器兼容性
-   - 确保依赖正确安装
-
-### 获取帮助
-
-如果遇到安装问题，可以：
-
-- 查看 [GitHub Issues](https://github.com/ldesign/crypto/issues)
-- 提交新的 Issue
-- 参与 [GitHub Discussions](https://github.com/ldesign/crypto/discussions)
 
 ## 下一步
 
-安装完成后，继续阅读：
-
-- [快速开始](./quick-start) - 学习基本用法
-- [加密算法](./encryption) - 了解支持的加密算法
-- [Vue 3 集成](./vue-composables) - 在 Vue 项目中使用
+- [快速开始](/guide/quick-start) - 学习基础用法
+- [加密](/guide/encryption) - 了解加密功能
+- [Vue 集成](/guide/vue-plugin) - 在 Vue 3 中使用

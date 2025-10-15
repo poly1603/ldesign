@@ -12,38 +12,38 @@ const mockPerformance = {
   memory: {
     usedJSHeapSize: 50 * 1024 * 1024, // 50MB
     totalJSHeapSize: 100 * 1024 * 1024, // 100MB
-    jsHeapSizeLimit: 200 * 1024 * 1024 // 200MB
-  }
+    jsHeapSizeLimit: 200 * 1024 * 1024, // 200MB
+  },
 }
 
 // Mock window object
 Object.defineProperty(global, 'window', {
   value: {
     performance: mockPerformance,
-    requestIdleCallback: vi.fn((callback) => setTimeout(callback, 0)),
-    IntersectionObserver: vi.fn().mockImplementation((callback) => ({
+    requestIdleCallback: vi.fn(callback => setTimeout(callback, 0)),
+    IntersectionObserver: vi.fn().mockImplementation(callback => ({
       observe: vi.fn(),
       unobserve: vi.fn(),
       disconnect: vi.fn(),
-      callback
-    }))
+      callback,
+    })),
   },
-  writable: true
+  writable: true,
 })
 
 // Mock global IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation((callback) => ({
+global.IntersectionObserver = vi.fn().mockImplementation(callback => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-  callback
+  callback,
 }))
 
 // Mock component loader
 vi.mock('../../src/utils/loader', () => ({
   componentLoader: {
-    preloadComponent: vi.fn().mockResolvedValue(undefined)
-  }
+    preloadComponent: vi.fn().mockResolvedValue(undefined),
+  },
 }))
 
 describe('Performance Utilities', () => {
@@ -65,7 +65,7 @@ describe('Performance Utilities', () => {
         count: 3,
         avg: 150,
         min: 100,
-        max: 200
+        max: 200,
       })
     })
 
@@ -75,7 +75,7 @@ describe('Performance Utilities', () => {
         count: 0,
         avg: 0,
         min: 0,
-        max: 0
+        max: 0,
       })
     })
 
@@ -112,8 +112,8 @@ describe('Performance Utilities', () => {
           name: 'template1',
           displayName: 'Template 1',
           description: 'Test template 1',
-          version: '1.0.0'
-        }
+          version: '1.0.0',
+        },
       },
       {
         id: 'template2',
@@ -125,9 +125,9 @@ describe('Performance Utilities', () => {
           name: 'template2',
           displayName: 'Template 2',
           description: 'Test template 2',
-          version: '1.0.0'
-        }
-      }
+          version: '1.0.0',
+        },
+      },
     ]
 
     beforeEach(() => {
@@ -135,7 +135,7 @@ describe('Performance Utilities', () => {
         maxConcurrent: 2,
         priority: ['Template 1'],
         delayMs: 0,
-        maxRetries: 1
+        maxRetries: 1,
       })
       vi.clearAllMocks()
     })
@@ -147,14 +147,14 @@ describe('Performance Utilities', () => {
     it('should add templates to preload queue', () => {
       preloader.addToQueue(mockTemplates)
 
-      // Check that templates were added (we can't directly access the queue, 
+      // Check that templates were added (we can't directly access the queue,
       // but we can verify through side effects)
       expect(mockTemplates.length).toBe(2)
     })
 
     it('should prioritize templates correctly', () => {
       const priorityPreloader = new PreloadController({
-        priority: ['Template 2', 'Template 1']
+        priority: ['Template 2', 'Template 1'],
       })
 
       priorityPreloader.addToQueue(mockTemplates)
@@ -181,7 +181,7 @@ describe('Performance Utilities', () => {
     it('should respect max concurrent limit', () => {
       const preloader = new PreloadController({
         maxConcurrent: 1,
-        delayMs: 0
+        delayMs: 0,
       })
 
       preloader.addToQueue(mockTemplates)
@@ -192,7 +192,7 @@ describe('Performance Utilities', () => {
 
     it('should setup intersection observer when enabled', () => {
       const preloader = new PreloadController({
-        enableIntersectionObserver: true
+        enableIntersectionObserver: true,
       })
 
       expect(window.IntersectionObserver).toHaveBeenCalled()
@@ -202,7 +202,7 @@ describe('Performance Utilities', () => {
       vi.clearAllMocks()
 
       const preloader = new PreloadController({
-        enableIntersectionObserver: false
+        enableIntersectionObserver: false,
       })
 
       expect(window.IntersectionObserver).not.toHaveBeenCalled()

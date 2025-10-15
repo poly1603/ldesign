@@ -6,7 +6,9 @@
       "Bash(find:*)",
       "Bash(pnpm run build:*)",
       "Bash(npx tsc:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(rm:*)",
+      "Bash(if not exist guide mkdir guide)"
     ],
     "deny": [],
     "ask": []

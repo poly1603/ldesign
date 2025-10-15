@@ -1,611 +1,561 @@
 # 最佳实践
 
-本指南提供了使用 @ldesign/device 的最佳实践和常见模式，帮助你构建高性能、可维护的应用。
+本指南汇总了使用 @ldesign/device 的最佳实践和推荐模式，帮助你构建高质量的应用。
+
+## 基础使用
+
+### ✅ 单例模式
+
+在整个应用中共享一个检测器实例：
+
+```typescript
+// ✅ 推荐：创建单例
+// deviceDetector.ts
+import { DeviceDetector } from '@ldesign/device'
+
+export const detector = new DeviceDetector({
+ enableResize: true,
+ enableOrientation: true
+})
+
+// 在其他文件中使用
+import { detector } from './deviceDetector'
+```
+
+```typescript
+// ❌ 避免：重复创建实例
+// 每次都创建新实例会浪费资源
+function Component() {
+ const detector = new DeviceDetector() // 不推荐
+}
+```
+
+### ✅ 及时清理
+
+组件卸载时清理资源：
+
+```typescript
+// ✅ 推荐：手动清理
+const detector = new DeviceDetector()
+
+// 使用完毕后清理
+onUnmounted(async () => {
+ await detector.destroy()
+})
+```
+
+在 Vue 中使用 composable 时自动处理：
+
+```vue
+<script setup>
+// ✅ 推荐：使用 composable 自动清理
+import { useDevice } from '@ldesign/device/vue'
+
+const { deviceType } = useDevice()
+// 组件卸载时自动清理，无需手动调用
+</script>
+```
+
+### ✅ 错误处理
+
+始终添加错误处理：
+
+```typescript
+// ✅ 推荐：完善的错误处理
+try {
+ const batteryModule = await detector.loadModule('battery')
+ const info = batteryModule.getData()
+} catch (error) {
+ console.warn('电池模块不可用:', error)
+ // 提供降级方案
+ showFeatureUnavailable('battery')
+}
+```
+
+```typescript
+// ❌ 避免：忽略错误
+const batteryModule = await detector.loadModule('battery') // 可能失败
+```
 
 ## 性能优化
 
-### 1. 按需加载模块
+### ✅ 按需加载模块
 
-只加载应用实际需要的模块，避免不必要的资源消耗：
+只在需要时加载模块：
 
 ```typescript
 // ✅ 推荐：按需加载
+const showNetworkInfo = async () => {
+ const networkModule = await detector.loadModule('network')
+ const info = networkModule.getData()
+ displayNetworkInfo(info)
+}
+```
+
+```typescript
+// ❌ 避免：初始化时加载所有模块
 const detector = new DeviceDetector()
-
-// 只在需要时加载网络模块
-if (needNetworkInfo) {
-  const networkModule = await detector.loadModule('network')
-}
-
-// ❌ 避免：一次性加载所有模块
-await Promise.all([
-  detector.loadModule('network'),
-  detector.loadModule('battery'),
-  detector.loadModule('geolocation'),
-])
+await detector.loadModule('network')  // 可能不需要
+await detector.loadModule('battery')  // 可能不需要
+await detector.loadModule('geolocation') // 可能不需要
 ```
 
-### 2. 合理使用防抖
+### ✅ 合理设置防抖
 
-根据应用需求调整防抖延迟：
+根据场景调整防抖延迟：
 
 ```typescript
-// 对于实时性要求高的应用
+// ✅ 实时性要求高的场景
 const detector = new DeviceDetector({
-  debounceDelay: 100,
+ debounceDelay: 50 // 快速响应
 })
 
-// 对于性能敏感的应用
+// ✅ 性能优先的场景
 const detector = new DeviceDetector({
-  debounceDelay: 500,
+ debounceDelay: 300 // 减少触发频率
 })
 ```
 
-### 3. 避免频繁检测
+### ✅ 条件启用监听
 
-缓存检测结果，避免重复计算：
+根据需要启用监听：
 
 ```typescript
-class DeviceManager {
-  private cachedInfo: DeviceInfo | null = null
-  private lastUpdate = 0
-  private readonly CACHE_DURATION = 5000 // 5秒缓存
-
-  getDeviceInfo(): DeviceInfo {
-    const now = Date.now()
-
-    if (this.cachedInfo && now - this.lastUpdate < this.CACHE_DURATION) {
-      return this.cachedInfo
-    }
-
-    this.cachedInfo = this.detector.getDeviceInfo()
-    this.lastUpdate = now
-    return this.cachedInfo
-  }
-}
+// ✅ 只启用需要的监听
+const detector = new DeviceDetector({
+ enableResize: true,     // 需要响应窗口变化
+ enableOrientation: false  // 不需要方向监听
+})
 ```
 
-### 4. 优化事件监听
-
-及时清理事件监听器，避免内存泄漏：
-
 ```typescript
-class ComponentManager {
-  private detector: DeviceDetector
-  private handlers = new Map()
-
-  constructor() {
-    this.detector = new DeviceDetector()
-    this.setupEventListeners()
-  }
-
-  private setupEventListeners() {
-    const deviceChangeHandler = (info: DeviceInfo) => {
-      this.handleDeviceChange(info)
-    }
-
-    this.detector.on('deviceChange', deviceChangeHandler)
-    this.handlers.set('deviceChange', deviceChangeHandler)
-  }
-
-  destroy() {
-    // 清理所有事件监听器
-    this.handlers.forEach((handler, event) => {
-      this.detector.off(event, handler)
-    })
-    this.handlers.clear()
-
-    // 销毁检测器
-    this.detector.destroy()
-  }
-}
+// ❌ 总是启用所有监听
+const detector = new DeviceDetector({
+ enableResize: true,
+ enableOrientation: true // 可能不需要
+})
 ```
 
 ## 响应式设计
 
-### 1. 设备类型适配
+### ✅ 使用断点系统
 
-根据设备类型提供不同的用户体验：
-
-```typescript
-function adaptLayout(deviceType: DeviceType) {
-  switch (deviceType) {
-    case 'mobile':
-      return {
-        columns: 1,
-        spacing: 8,
-        fontSize: 14,
-      }
-    case 'tablet':
-      return {
-        columns: 2,
-        spacing: 12,
-        fontSize: 16,
-      }
-    case 'desktop':
-      return {
-        columns: 3,
-        spacing: 16,
-        fontSize: 18,
-      }
-  }
-}
-```
-
-### 2. 屏幕方向处理
-
-优雅处理屏幕方向变化：
+利用配置的断点系统：
 
 ```typescript
-class OrientationManager {
-  private currentOrientation: Orientation = 'portrait'
-
-  constructor(private detector: DeviceDetector) {
-    this.detector.on('orientationChange', this.handleOrientationChange.bind(this))
-  }
-
-  private handleOrientationChange(orientation: Orientation) {
-    // 添加过渡动画
-    document.body.classList.add('orientation-changing')
-
-    setTimeout(() => {
-      this.currentOrientation = orientation
-      this.updateLayout()
-      document.body.classList.remove('orientation-changing')
-    }, 300)
-  }
-
-  private updateLayout() {
-    if (this.currentOrientation === 'landscape') {
-      // 横屏布局
-      this.enableLandscapeMode()
-    }
-    else {
-      // 竖屏布局
-      this.enablePortraitMode()
-    }
-  }
-}
-```
-
-### 3. 自定义断点
-
-根据设计需求定义合适的断点：
-
-```typescript
-// 针对内容密集型应用
-const contentAppBreakpoints = {
-  mobile: 480,
-  tablet: 768,
-  desktop: 1024,
-}
-
-// 针对数据可视化应用
-const dashboardBreakpoints = {
-  mobile: 600,
-  tablet: 1200,
-  desktop: 1600,
-}
-
+// ✅ 推荐：使用检测器的断点
 const detector = new DeviceDetector({
-  breakpoints: contentAppBreakpoints,
+ breakpoints: {
+  mobile: 768,
+  tablet: 1024
+ }
 })
+
+if (detector.isMobile()) {
+ // 移动端布局
+}
+```
+
+```typescript
+// ❌ 避免：硬编码断点
+if (window.innerWidth < 768) { // 不推荐
+ // 移动端布局
+}
+```
+
+### ✅ 监听设备变化
+
+响应设备类型变化：
+
+```vue
+<script setup>
+// ✅ 推荐：监听变化
+import { useDevice } from '@ldesign/device/vue'
+import { watch } from 'vue'
+
+const { deviceType } = useDevice()
+
+watch(deviceType, (newType) => {
+ // 设备类型变化时调整布局
+ adjustLayout(newType)
+})
+</script>
+```
+
+### ✅ 使用 v-device 指令
+
+声明式控制元素显示：
+
+```vue
+<template>
+ <!-- ✅ 推荐：使用指令 -->
+ <nav v-device="'mobile'" class="mobile-nav" />
+ <nav v-device="'desktop'" class="desktop-nav" />
+
+ <!-- ❌ 避免：手动判断 -->
+ <nav v-if="isMobile" class="mobile-nav" />
+ <nav v-if="isDesktop" class="desktop-nav" />
+</template>
+```
+
+## 模块使用
+
+### ✅ 缓存模块实例
+
+避免重复加载：
+
+```typescript
+// ✅ 推荐：缓存模块
+let networkModule = null
+
+async function getNetworkModule() {
+ if (!networkModule) {
+  networkModule = await detector.loadModule('network')
+ }
+ return networkModule
+}
+```
+
+### ✅ 及时卸载模块
+
+不使用时卸载：
+
+```typescript
+// ✅ 推荐：使用完毕后卸载
+const geoModule = await detector.loadModule('geolocation')
+const position = await geoModule.getCurrentPosition()
+
+// 获取完位置后卸载
+await detector.unloadModule('geolocation')
+```
+
+### ✅ 条件加载模块
+
+根据设备类型加载：
+
+```typescript
+// ✅ 推荐：只在移动设备加载电池模块
+if (detector.isMobile()) {
+ const batteryModule = await detector.loadModule('battery')
+ // 使用电池模块
+}
+```
+
+## 用户体验
+
+### ✅ 提供视觉反馈
+
+操作时提供反馈：
+
+```vue
+<script setup>
+import { useGeolocation } from '@ldesign/device/vue'
+import { ref } from 'vue'
+
+const { getCurrentPosition } = useGeolocation()
+const loading = ref(false)
+
+const getLocation = async () => {
+ loading.value = true
+ try {
+  await getCurrentPosition()
+ } finally {
+  loading.value = false
+ }
+}
+</script>
+
+<template>
+ <!-- ✅ 推荐：显示加载状态 -->
+ <button @click="getLocation" :disabled="loading">
+  {{ loading ? '定位中...' : '获取位置' }}
+ </button>
+</template>
+```
+
+### ✅ 优雅降级
+
+为不支持的功能提供替代方案：
+
+```typescript
+// ✅ 推荐：优雅降级
+try {
+ const batteryModule = await detector.loadModule('battery')
+ showBatteryWidget(batteryModule)
+} catch (error) {
+ // 电池 API 不可用，隐藏相关功能
+ hideBatteryWidget()
+ console.info('电池功能在此设备上不可用')
+}
+```
+
+### ✅ 明确告知用户
+
+说明为什么需要权限：
+
+```vue
+<template>
+ <div v-if="needsPermission">
+  <p>我们需要访问您的位置来显示附近的商店</p>
+  <button @click="requestLocation">允许访问位置</button>
+ </div>
+</template>
 ```
 
 ## 网络优化
 
-### 1. 根据网络状态优化资源加载
+### ✅ 根据网络状况调整
+
+自适应网络质量：
 
 ```typescript
-class ResourceManager {
-  constructor(private detector: DeviceDetector) {
-    this.setupNetworkOptimization()
-  }
+// ✅ 推荐：根据网络调整资源质量
+const networkModule = await detector.loadModule('network')
 
-  private async setupNetworkOptimization() {
-    const networkModule = await this.detector.loadModule('network')
-    const networkInfo = networkModule.getData()
-
-    this.detector.on('networkChange', (info) => {
-      this.adaptToNetworkCondition(info)
-    })
-
-    this.adaptToNetworkCondition(networkInfo)
-  }
-
-  private adaptToNetworkCondition(networkInfo: NetworkInfo) {
-    if (networkInfo.type === '2g' || networkInfo.saveData) {
-      // 低速网络：加载低质量资源
-      this.loadLowQualityAssets()
-    }
-    else if (networkInfo.type === '4g' || networkInfo.type === '5g') {
-      // 高速网络：加载高质量资源
-      this.loadHighQualityAssets()
-    }
-  }
-
-  private loadLowQualityAssets() {
-    // 加载压缩图片、减少动画等
-  }
-
-  private loadHighQualityAssets() {
-    // 加载高清图片、启用动画等
-  }
-}
+detector.on('networkChange', (info) => {
+ if (info.saveData || info.type === 'cellular') {
+  // 省流量模式：加载低质量资源
+  imageLoader.setQuality('low')
+  videoPlayer.setQuality('360p')
+ } else if (info.downlink > 5) {
+  // 高速网络：加载高质量资源
+  imageLoader.setQuality('high')
+  videoPlayer.setQuality('1080p')
+ }
+})
 ```
 
-### 2. 离线状态处理
+### ✅ 离线支持
+
+提供离线功能：
 
 ```typescript
-class OfflineManager {
-  private isOnline = true
+// ✅ 推荐：支持离线模式
+const networkModule = await detector.loadModule('network')
 
-  constructor(private detector: DeviceDetector) {
-    this.setupOfflineHandling()
-  }
-
-  private async setupOfflineHandling() {
-    const networkModule = await this.detector.loadModule('network')
-
-    this.detector.on('networkChange', (info) => {
-      const wasOnline = this.isOnline
-      this.isOnline = info.status === 'online'
-
-      if (!wasOnline && this.isOnline) {
-        // 从离线恢复到在线
-        this.handleBackOnline()
-      }
-      else if (wasOnline && !this.isOnline) {
-        // 从在线变为离线
-        this.handleGoOffline()
-      }
-    })
-  }
-
-  private handleBackOnline() {
-    // 同步离线期间的数据
-    this.syncOfflineData()
-    // 显示恢复连接提示
-    this.showConnectionRestoredMessage()
-  }
-
-  private handleGoOffline() {
-    // 启用离线模式
-    this.enableOfflineMode()
-    // 显示离线提示
-    this.showOfflineMessage()
-  }
+if (networkModule.isOffline()) {
+ // 离线时从缓存加载
+ loadFromCache()
+} else {
+ // 在线时从服务器加载
+ loadFromServer()
 }
 ```
 
 ## 电池优化
 
-### 1. 根据电池状态调整功能
+### ✅ 根据电量调整性能
+
+自适应电池状态：
 
 ```typescript
-class PowerManager {
-  constructor(private detector: DeviceDetector) {
-    this.setupPowerOptimization()
-  }
+// ✅ 推荐：根据电量调整性能
+const batteryModule = await detector.loadModule('battery')
 
-  private async setupPowerOptimization() {
-    try {
-      const batteryModule = await this.detector.loadModule('battery')
-
-      this.detector.on('batteryChange', (info) => {
-        this.adaptToBatteryLevel(info)
-      })
-
-      // 初始检查
-      const batteryInfo = batteryModule.getData()
-      this.adaptToBatteryLevel(batteryInfo)
-    }
-    catch (error) {
-      console.warn('电池 API 不支持，跳过电池优化')
-    }
-  }
-
-  private adaptToBatteryLevel(batteryInfo: BatteryInfo) {
-    if (batteryInfo.level < 0.2 && !batteryInfo.charging) {
-      // 低电量且未充电：启用省电模式
-      this.enablePowerSavingMode()
-    }
-    else if (batteryInfo.level > 0.8 || batteryInfo.charging) {
-      // 高电量或正在充电：启用完整功能
-      this.enableFullFeatures()
-    }
-  }
-
-  private enablePowerSavingMode() {
-    // 减少动画
-    document.body.classList.add('power-saving')
-    // 降低刷新频率
-    this.reduceUpdateFrequency()
-    // 暂停非关键功能
-    this.pauseNonEssentialFeatures()
-  }
-
-  private enableFullFeatures() {
-    document.body.classList.remove('power-saving')
-    this.restoreUpdateFrequency()
-    this.resumeAllFeatures()
-  }
-}
-```
-
-## 地理位置最佳实践
-
-### 1. 权限处理
-
-```typescript
-class LocationManager {
-  private watchId: number | null = null
-
-  async requestLocation(): Promise<GeolocationInfo | null> {
-    try {
-      const geolocationModule = await this.detector.loadModule('geolocation')
-
-      if (!geolocationModule.isSupported()) {
-        throw new Error('地理位置不支持')
-      }
-
-      return await geolocationModule.getCurrentPosition()
-    }
-    catch (error) {
-      this.handleLocationError(error)
-      return null
-    }
-  }
-
-  private handleLocationError(error: any) {
-    switch (error.code) {
-      case 1: // PERMISSION_DENIED
-        this.showPermissionDeniedMessage()
-        break
-      case 2: // POSITION_UNAVAILABLE
-        this.showPositionUnavailableMessage()
-        break
-      case 3: // TIMEOUT
-        this.showTimeoutMessage()
-        break
-      default:
-        this.showGenericErrorMessage()
-    }
-  }
-
-  async startLocationWatching(callback: (position: GeolocationInfo) => void) {
-    try {
-      const geolocationModule = await this.detector.loadModule('geolocation')
-      this.watchId = await geolocationModule.startWatching(callback)
-    }
-    catch (error) {
-      this.handleLocationError(error)
-    }
-  }
-
-  stopLocationWatching() {
-    if (this.watchId !== null) {
-      const geolocationModule = this.detector.getModule('geolocation')
-      geolocationModule?.stopWatching(this.watchId)
-      this.watchId = null
-    }
-  }
-}
-```
-
-## Vue 集成最佳实践
-
-### 1. 组合式 API 使用
-
-```vue
-<script setup>
-import { useBattery, useDevice, useNetwork } from '@ldesign/device/vue'
-import { computed, watch } from 'vue'
-
-// 基础设备信息
-const { deviceType, orientation, isMobile } = useDevice()
-
-// 网络状态
-const { isOnline, connectionType } = useNetwork()
-
-// 电池状态
-const { level: batteryLevel, isCharging } = useBattery()
-
-// 计算属性：综合状态
-const deviceStatus = computed(() => ({
-  device: deviceType.value,
-  network: isOnline.value ? 'online' : 'offline',
-  battery: batteryLevel.value ? `${Math.round(batteryLevel.value * 100)}%` : 'unknown',
-}))
-
-// 监听设备变化
-watch(deviceType, (newType, oldType) => {
-  console.log(`设备类型从 ${oldType} 变为 ${newType}`)
-  // 根据设备类型调整布局
-  adjustLayoutForDevice(newType)
-})
-
-// 监听网络变化
-watch(isOnline, (online) => {
-  if (online) {
-    // 网络恢复，同步数据
-    syncData()
-  }
-  else {
-    // 网络断开，启用离线模式
-    enableOfflineMode()
-  }
-})
-</script>
-```
-
-### 2. 指令使用
-
-```vue
-<template>
-  <!-- 基础指令使用 -->
-  <nav v-device-mobile class="mobile-nav">
-    移动端导航
-  </nav>
-
-  <nav v-device-desktop class="desktop-nav">
-    桌面端导航
-  </nav>
-
-  <!-- 组合条件 -->
-  <div v-device="{ type: 'mobile', orientation: 'portrait' }">
-    移动端竖屏专用内容
-  </div>
-
-  <!-- 多设备支持 -->
-  <div v-device="['tablet', 'desktop']">
-    平板和桌面设备内容
-  </div>
-</template>
-```
-
-## 错误处理
-
-### 1. 优雅降级
-
-```typescript
-class DeviceService {
-  private detector: DeviceDetector | null = null
-
-  async initialize() {
-    try {
-      this.detector = new DeviceDetector()
-      return true
-    }
-    catch (error) {
-      console.warn('设备检测初始化失败，使用默认配置', error)
-      this.setupFallback()
-      return false
-    }
-  }
-
-  private setupFallback() {
-    // 提供基础的设备检测功能
-    this.detector = {
-      getDeviceInfo: () => this.getFallbackDeviceInfo(),
-      isMobile: () => this.isMobileUserAgent(),
-      // ... 其他基础方法
-    } as DeviceDetector
-  }
-
-  private getFallbackDeviceInfo(): DeviceInfo {
-    return {
-      type: this.isMobileUserAgent() ? 'mobile' : 'desktop',
-      orientation: window.innerWidth > window.innerHeight ? 'landscape' : 'portrait',
-      width: window.innerWidth,
-      height: window.innerHeight,
-      pixelRatio: window.devicePixelRatio || 1,
-      isTouchDevice: 'ontouchstart' in window,
-      userAgent: navigator.userAgent,
-      os: { name: 'unknown', version: 'unknown' },
-      browser: { name: 'unknown', version: 'unknown' },
-    }
-  }
-}
-```
-
-### 2. 模块加载错误处理
-
-```typescript
-class ModuleManager {
-  private loadedModules = new Set<string>()
-
-  async safeLoadModule<T>(name: string): Promise<T | null> {
-    try {
-      if (this.loadedModules.has(name)) {
-        return this.detector.getModule(name) as T
-      }
-
-      const module = await this.detector.loadModule<T>(name)
-      this.loadedModules.add(name)
-      return module
-    }
-    catch (error) {
-      console.warn(`模块 ${name} 加载失败:`, error)
-      return null
-    }
-  }
-
-  async getNetworkInfo(): Promise<NetworkInfo | null> {
-    const networkModule = await this.safeLoadModule<NetworkModule>('network')
-    return networkModule?.getData() || null
-  }
-
-  async getBatteryInfo(): Promise<BatteryInfo | null> {
-    const batteryModule = await this.safeLoadModule<BatteryModule>('battery')
-    return batteryModule?.getData() || null
-  }
-}
-```
-
-## 测试建议
-
-### 1. 单元测试
-
-```typescript
-import { DeviceDetector } from '@ldesign/device'
-
-describe('DeviceDetector', () => {
-  let detector: DeviceDetector
-
-  beforeEach(() => {
-    detector = new DeviceDetector()
-  })
-
-  afterEach(async () => {
-    await detector.destroy()
-  })
-
-  it('应该正确检测设备类型', () => {
-    const deviceInfo = detector.getDeviceInfo()
-    expect(['mobile', 'tablet', 'desktop']).toContain(deviceInfo.type)
-  })
-
-  it('应该正确处理事件监听', (done) => {
-    detector.on('deviceChange', (info) => {
-      expect(info).toBeDefined()
-      done()
-    })
-
-    detector.refresh()
-  })
+detector.on('batteryChange', (info) => {
+ if (info.level < 0.2 && !info.charging) {
+  // 低电量：启用省电模式
+  app.disableAnimations()
+  app.reduceBackgroundActivity()
+ } else {
+  // 电量充足：正常模式
+  app.enableAnimations()
+  app.normalBackgroundActivity()
+ }
 })
 ```
 
-### 2. 集成测试
+### ✅ 避免频繁通知
+
+设置通知冷却：
 
 ```typescript
-// 模拟不同设备环境
-function mockMobileEnvironment() {
-  Object.defineProperty(window, 'innerWidth', { value: 375 })
-  Object.defineProperty(window, 'innerHeight', { value: 667 })
-  Object.defineProperty(navigator, 'userAgent', {
-    value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
-  })
-}
+// ✅ 推荐：限制通知频率
+let lastNotificationTime = 0
+const COOLDOWN = 5 * 60 * 1000 // 5分钟
 
-function mockDesktopEnvironment() {
-  Object.defineProperty(window, 'innerWidth', { value: 1920 })
-  Object.defineProperty(window, 'innerHeight', { value: 1080 })
-  Object.defineProperty(navigator, 'userAgent', {
-    value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-  })
+detector.on('batteryChange', (info) => {
+ const now = Date.now()
+
+ if (now - lastNotificationTime < COOLDOWN) {
+  return // 跳过通知
+ }
+
+ if (info.level < 0.2 && !info.charging) {
+  showNotification('电量不足')
+  lastNotificationTime = now
+ }
+})
+```
+
+## TypeScript 使用
+
+### ✅ 使用类型定义
+
+充分利用 TypeScript 类型：
+
+```typescript
+// ✅ 推荐：使用类型定义
+import type {
+ DeviceInfo,
+ DeviceType,
+ NetworkInfo,
+ BatteryInfo
+} from '@ldesign/device'
+
+function handleDevice(info: DeviceInfo) {
+ const type: DeviceType = info.type
+ // 享受类型检查和自动补全
 }
 ```
 
-## 总结
+### ✅ 类型守卫
 
-遵循这些最佳实践可以帮助你：
+使用类型守卫确保类型安全：
 
-1. **提升性能** - 通过按需加载、缓存和优化事件处理
-2. **改善用户体验** - 根据设备特性提供适配的界面和功能
-3. **增强稳定性** - 通过错误处理和优雅降级
-4. **便于维护** - 通过清晰的代码结构和测试覆盖
+```typescript
+// ✅ 推荐：类型守卫
+function isDeviceInfo(obj: unknown): obj is DeviceInfo {
+ return (
+  typeof obj === 'object'
+  && obj !== null
+  && 'type' in obj
+  && 'orientation' in obj
+ )
+}
+```
 
-记住，设备检测应该用于增强用户体验，而不是限制功能。始终提供可访问的备选方案，确保所有用户都能正常使
-用你的应用。
+## 测试
+
+### ✅ 模拟设备环境
+
+在测试中模拟不同设备：
+
+```typescript
+// ✅ 推荐：模拟设备
+import { vi } from 'vitest'
+
+describe('Device Detection', () => {
+ it('should detect mobile device', () => {
+  // 模拟移动设备
+  vi.stubGlobal('innerWidth', 375)
+  vi.stubGlobal('innerHeight', 667)
+
+  const detector = new DeviceDetector()
+  expect(detector.isMobile()).toBe(true)
+ })
+})
+```
+
+### ✅ 测试事件监听
+
+确保事件正确触发：
+
+```typescript
+// ✅ 推荐：测试事件
+it('should emit deviceChange event', async () => {
+ const detector = new DeviceDetector()
+ const handler = vi.fn()
+
+ detector.on('deviceChange', handler)
+
+ // 触发变化
+ window.innerWidth = 375
+ window.dispatchEvent(new Event('resize'))
+
+ await vi.waitFor(() => {
+  expect(handler).toHaveBeenCalled()
+ })
+})
+```
+
+## 常见陷阱
+
+### ❌ 避免内存泄漏
+
+```typescript
+// ❌ 错误：忘记清理
+const detector = new DeviceDetector()
+detector.on('deviceChange', handler)
+// 组件销毁时忘记清理
+
+// ✅ 正确：及时清理
+onUnmounted(async () => {
+ detector.off('deviceChange', handler)
+ await detector.destroy()
+})
+```
+
+### ❌ 避免过度监听
+
+```typescript
+// ❌ 错误：监听过于频繁
+const detector = new DeviceDetector({
+ debounceDelay: 0 // 立即触发
+})
+
+// ✅ 正确：合理防抖
+const detector = new DeviceDetector({
+ debounceDelay: 100 // 适度防抖
+})
+```
+
+### ❌ 避免阻塞初始化
+
+```typescript
+// ❌ 错误：阻塞应用启动
+const detector = new DeviceDetector()
+await detector.loadModule('network')
+await detector.loadModule('battery')
+await detector.loadModule('geolocation')
+// 启动应用
+
+// ✅ 正确：异步加载
+const detector = new DeviceDetector()
+// 立即启动应用
+startApp()
+
+// 后台加载模块
+loadModulesInBackground()
+```
+
+## 推荐配置
+
+### 通用应用
+
+```typescript
+const detector = new DeviceDetector({
+ enableResize: true,
+ enableOrientation: true,
+ breakpoints: {
+  mobile: 768,
+  tablet: 1024
+ },
+ debounceDelay: 150
+})
+```
+
+### 高性能应用
+
+```typescript
+const detector = new DeviceDetector({
+ enableResize: true,
+ enableOrientation: false,
+ debounceDelay: 300
+})
+```
+
+### 实时应用
+
+```typescript
+const detector = new DeviceDetector({
+ enableResize: true,
+ enableOrientation: true,
+ debounceDelay: 50
+})
+```
+
+## 下一步
+
+- [性能优化](./performance.md) - 深入了解性能优化技巧
+- [常见问题](./faq.md) - 查看常见问题解答

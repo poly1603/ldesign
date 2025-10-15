@@ -1,46 +1,3 @@
-<template>
-  <div class="dashboard-tablet-container" :class="`layout-${layout}`">
-    <header class="tablet-header">
-      <h1 class="header-title">Dashboard</h1>
-      <div class="header-actions">
-        <span class="user-name">{{ userName }}</span>
-        <button class="logout-btn" @click="handleLogout">退出</button>
-      </div>
-    </header>
-
-    <main class="tablet-content" :class="{ 'compact': compact }">
-      <div class="stats-grid">
-        <div v-for="(stat, index) in stats" :key="index" class="stat-card">
-          <div class="stat-header">
-            <span v-if="stat.icon" class="stat-icon">{{ stat.icon }}</span>
-            <span class="stat-label">{{ stat.label }}</span>
-          </div>
-          <div class="stat-value">{{ stat.value }}</div>
-          <div v-if="stat.trend" class="stat-trend" :class="`trend-${stat.trend}`">
-            <span v-if="stat.trend === 'up'">↗</span>
-            <span v-else-if="stat.trend === 'down'">↘</span>
-            <span v-else>→</span>
-            <span v-if="stat.change">{{ stat.change }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="menu-grid">
-        <a
-          v-for="(item, index) in menuItems"
-          :key="index"
-          :href="item.href || '#'"
-          class="menu-card"
-          :class="{ 'active': item.active }"
-        >
-          <span v-if="item.icon" class="menu-icon">{{ item.icon }}</span>
-          <span class="menu-label">{{ item.label }}</span>
-        </a>
-      </div>
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
 import type { DashboardTabletProps } from '../../types'
 
@@ -64,10 +21,59 @@ const props = withDefaults(defineProps<DashboardTabletProps>(), {
   ],
 })
 
-const handleLogout = () => {
+function handleLogout() {
   props.onLogout?.()
 }
 </script>
+
+<template>
+  <div class="dashboard-tablet-container" :class="`layout-${layout}`">
+    <header class="tablet-header">
+      <h1 class="header-title">
+        Dashboard
+      </h1>
+      <div class="header-actions">
+        <span class="user-name">{{ userName }}</span>
+        <button class="logout-btn" @click="handleLogout">
+          退出
+        </button>
+      </div>
+    </header>
+
+    <main class="tablet-content" :class="{ compact }">
+      <div class="stats-grid">
+        <div v-for="(stat, index) in stats" :key="index" class="stat-card">
+          <div class="stat-header">
+            <span v-if="stat.icon" class="stat-icon">{{ stat.icon }}</span>
+            <span class="stat-label">{{ stat.label }}</span>
+          </div>
+          <div class="stat-value">
+            {{ stat.value }}
+          </div>
+          <div v-if="stat.trend" class="stat-trend" :class="`trend-${stat.trend}`">
+            <span v-if="stat.trend === 'up'">↗</span>
+            <span v-else-if="stat.trend === 'down'">↘</span>
+            <span v-else>→</span>
+            <span v-if="stat.change">{{ stat.change }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-grid">
+        <a
+          v-for="(item, index) in menuItems"
+          :key="index"
+          :href="item.href || '#'"
+          class="menu-card"
+          :class="{ active: item.active }"
+        >
+          <span v-if="item.icon" class="menu-icon">{{ item.icon }}</span>
+          <span class="menu-label">{{ item.label }}</span>
+        </a>
+      </div>
+    </main>
+  </div>
+</template>
 
 <style scoped>
 .dashboard-tablet-container {

@@ -1,29 +1,231 @@
+<script setup lang="ts">
+import type { TemplateManager } from '../../runtime/manager'
+import { computed, inject, ref, watch } from 'vue'
+import { useDevice } from '../composables'
+
+export interface SwitcherConfig {
+  // 显示配置
+  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'custom'
+  style?: 'minimal' | 'card' | 'floating' | 'embedded'
+  selectorType?: 'dropdown' | 'buttons' | 'cards'
+
+  // 功能配置
+  collapsible?: boolean
+  autoHide?: boolean
+  autoHideDelay?: number
+
+  // 内容配置
+  showTitle?: boolean
+  showLabel?: boolean
+  showDevice?: boolean
+  showInfo?: boolean
+  showIcon?: boolean
+  title?: string
+  label?: string
+
+  // 动画配置
+  animation?: 'fade' | 'slide' | 'scale' | 'none'
+  animationMode?: 'in-out' | 'out-in' | 'default'
+  animationDuration?: number
+
+  // 排序配置
+  sortBy?: 'name' | 'displayName' | 'default' | 'custom'
+  sortOrder?: 'asc' | 'desc'
+}
+
+interface Props {
+  category: string
+  currentTemplate?: string
+  config?: SwitcherConfig
+  visible?: boolean
+}
+
+interface Emits {
+  (e: 'change', templateName: string): void
+  (e: 'device-change', device: string): void
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  visible: true,
+  config: () => ({}),
+})
+
+const emit = defineEmits<Emits>()
+
+// 默认配置
+const defaultConfig: Required<SwitcherConfig> = {
+  position: 'top-right',
+  style: 'floating',
+  selectorType: 'dropdown',
+  collapsible: true,
+  autoHide: false,
+  autoHideDelay: 3000,
+  showTitle: false,
+  showLabel: true,
+  showDevice: true,
+  showInfo: false,
+  showIcon: false,
+  title: '模板选择',
+  label: '模板:',
+  animation: 'fade',
+  animationMode: 'out-in',
+  animationDuration: 300,
+  sortBy: 'default',
+  sortOrder: 'asc',
+}
+
+// 合并配置
+const config = computed(() => ({
+  ...defaultConfig,
+  ...props.config,
+}))
+
+// 状态
+const isCollapsed = ref(false)
+const isHovered = ref(false)
+
+// 获取管理器和设备
+const manager = inject<TemplateManager>('templateManager')
+const { device } = useDevice()
+
+// 获取模板列表
+const templates = computed(() => {
+  if (!manager)
+return []
+  const currentDevice = device.value
+  const results = manager.query({
+    category: props.category,
+    device: currentDevice,
+  })
+  return results.map(r => r.metadata)
+})
+
+// 排序后的模板列表
+const sortedTemplates = computed(() => {
+  const list = [...templates.value]
+  const { sortBy, sortOrder } = config.value
+
+  list.sort((a, b) => {
+    let result = 0
+
+    switch (sortBy) {
+      case 'name':
+        result = a.name.localeCompare(b.name)
+        break
+      case 'displayName':
+        result = (a.displayName || a.name).localeCompare(b.displayName || b.name)
+        break
+      case 'default':
+        // 默认模板优先
+        if (a.isDefault && !b.isDefault)
+return -1
+        if (!a.isDefault && b.isDefault)
+return 1
+        result = a.name.localeCompare(b.name)
+        break
+      default:
+        result = 0
+    }
+
+    return sortOrder === 'desc' ? -result : result
+  })
+
+  return list
+})
+
+// 获取默认模板
+const defaultTemplate = computed(() => {
+  const defaultTpl = templates.value.find(t => t.isDefault)
+  return defaultTpl?.name || templates.value[0]?.name || ''
+})
+
+// 获取当前选中的模板
+const selectedTemplate = computed(() => {
+  const name = props.currentTemplate || defaultTemplate.value
+  return templates.value.find(t => t.name === name)
+})
+
+// 设备标签
+const deviceLabel = computed(() => {
+  const labels = {
+    desktop: '桌面',
+    tablet: '平板',
+    mobile: '移动',
+  }
+  return labels[device.value as keyof typeof labels] || device.value
+})
+
+// 处理选择变化
+function handleChange(event: Event) {
+  const target = event.target as HTMLSelectElement
+  emit('change', target.value)
+}
+
+// 处理选择
+function handleSelect(templateName: string) {
+  emit('change', templateName)
+}
+
+// 监听设备变化
+watch(device, (newDevice) => {
+  emit('device-change', newDevice)
+})
+
+// 自动隐藏功能
+let hideTimeout: NodeJS.Timeout | null = null
+
+function startAutoHide() {
+  if (config.value.autoHide && !isHovered.value) {
+    hideTimeout = setTimeout(() => {
+      isCollapsed.value = true
+    }, config.value.autoHideDelay)
+  }
+}
+
+function cancelAutoHide() {
+  if (hideTimeout) {
+    clearTimeout(hideTimeout)
+    hideTimeout = null
+  }
+}
+
+watch(isHovered, (hovered) => {
+  if (hovered) {
+    cancelAutoHide()
+    isCollapsed.value = false
+  }
+ else {
+    startAutoHide()
+  }
+})
+</script>
+
 <template>
   <transition :name="config.animation" :mode="config.animationMode">
-    <div 
-      v-if="visible && templates.length > 1" 
+    <div
+      v-if="visible && templates.length > 1"
       class="enhanced-template-switcher"
       :class="[
         `position-${config.position}`,
         `style-${config.style}`,
-        { 'is-collapsed': isCollapsed }
+        { 'is-collapsed': isCollapsed },
       ]"
     >
       <!-- 折叠按钮 -->
-      <button 
+      <button
         v-if="config.collapsible"
         class="collapse-btn"
-        @click="isCollapsed = !isCollapsed"
         :aria-label="isCollapsed ? '展开' : '折叠'"
+        @click="isCollapsed = !isCollapsed"
       >
         <span class="collapse-icon">{{ isCollapsed ? '◀' : '▶' }}</span>
       </button>
 
       <!-- 主内容区 -->
-      <div class="switcher-content" v-show="!isCollapsed">
+      <div v-show="!isCollapsed" class="switcher-content">
         <!-- 标题 -->
         <div v-if="config.showTitle" class="switcher-header">
-          <span class="switcher-icon" v-if="config.showIcon">🎨</span>
+          <span v-if="config.showIcon" class="switcher-icon">🎨</span>
           <span class="switcher-title">{{ config.title }}</span>
         </div>
 
@@ -38,15 +240,15 @@
           <label v-if="config.showLabel" class="selector-label">
             {{ config.label }}
           </label>
-          
+
           <!-- 下拉选择 -->
-          <select 
+          <select
             v-if="config.selectorType === 'dropdown'"
             :value="currentTemplate || defaultTemplate"
-            @change="handleChange"
             class="selector-dropdown"
+            @change="handleChange"
           >
-            <option 
+            <option
               v-for="template in sortedTemplates"
               :key="template.name"
               :value="template.name"
@@ -62,8 +264,8 @@
               v-for="template in sortedTemplates"
               :key="template.name"
               :class="{ active: (currentTemplate || defaultTemplate) === template.name }"
-              @click="handleSelect(template.name)"
               class="selector-button"
+              @click="handleSelect(template.name)"
             >
               {{ template.displayName || template.name }}
             </button>
@@ -75,10 +277,12 @@
               v-for="template in sortedTemplates"
               :key="template.name"
               :class="{ active: (currentTemplate || defaultTemplate) === template.name }"
-              @click="handleSelect(template.name)"
               class="selector-card"
+              @click="handleSelect(template.name)"
             >
-              <div class="card-name">{{ template.displayName || template.name }}</div>
+              <div class="card-name">
+                {{ template.displayName || template.name }}
+              </div>
               <div v-if="template.description" class="card-desc">
                 {{ template.description }}
               </div>
@@ -106,205 +310,6 @@
     </div>
   </transition>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, inject, watch } from 'vue'
-import type { TemplateManager } from '../../runtime/manager'
-import type { TemplateMetadata } from '../../types'
-import { useDevice } from '../composables'
-
-export interface SwitcherConfig {
-  // 显示配置
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'custom'
-  style?: 'minimal' | 'card' | 'floating' | 'embedded'
-  selectorType?: 'dropdown' | 'buttons' | 'cards'
-  
-  // 功能配置
-  collapsible?: boolean
-  autoHide?: boolean
-  autoHideDelay?: number
-  
-  // 内容配置
-  showTitle?: boolean
-  showLabel?: boolean
-  showDevice?: boolean
-  showInfo?: boolean
-  showIcon?: boolean
-  title?: string
-  label?: string
-  
-  // 动画配置
-  animation?: 'fade' | 'slide' | 'scale' | 'none'
-  animationMode?: 'in-out' | 'out-in' | 'default'
-  animationDuration?: number
-  
-  // 排序配置
-  sortBy?: 'name' | 'displayName' | 'default' | 'custom'
-  sortOrder?: 'asc' | 'desc'
-}
-
-interface Props {
-  category: string
-  currentTemplate?: string
-  config?: SwitcherConfig
-  visible?: boolean
-}
-
-interface Emits {
-  (e: 'change', templateName: string): void
-  (e: 'device-change', device: string): void
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  visible: true,
-  config: () => ({})
-})
-
-const emit = defineEmits<Emits>()
-
-// 默认配置
-const defaultConfig: Required<SwitcherConfig> = {
-  position: 'top-right',
-  style: 'floating',
-  selectorType: 'dropdown',
-  collapsible: true,
-  autoHide: false,
-  autoHideDelay: 3000,
-  showTitle: false,
-  showLabel: true,
-  showDevice: true,
-  showInfo: false,
-  showIcon: false,
-  title: '模板选择',
-  label: '模板:',
-  animation: 'fade',
-  animationMode: 'out-in',
-  animationDuration: 300,
-  sortBy: 'default',
-  sortOrder: 'asc'
-}
-
-// 合并配置
-const config = computed(() => ({
-  ...defaultConfig,
-  ...props.config
-}))
-
-// 状态
-const isCollapsed = ref(false)
-const isHovered = ref(false)
-
-// 获取管理器和设备
-const manager = inject<TemplateManager>('templateManager')
-const { device } = useDevice()
-
-// 获取模板列表
-const templates = computed(() => {
-  if (!manager) return []
-  const currentDevice = device.value
-  const results = manager.query({
-    category: props.category,
-    device: currentDevice
-  })
-  return results.map(r => r.metadata)
-})
-
-// 排序后的模板列表
-const sortedTemplates = computed(() => {
-  const list = [...templates.value]
-  const { sortBy, sortOrder } = config.value
-  
-  list.sort((a, b) => {
-    let result = 0
-    
-    switch (sortBy) {
-      case 'name':
-        result = a.name.localeCompare(b.name)
-        break
-      case 'displayName':
-        result = (a.displayName || a.name).localeCompare(b.displayName || b.name)
-        break
-      case 'default':
-        // 默认模板优先
-        if (a.isDefault && !b.isDefault) return -1
-        if (!a.isDefault && b.isDefault) return 1
-        result = a.name.localeCompare(b.name)
-        break
-      default:
-        result = 0
-    }
-    
-    return sortOrder === 'desc' ? -result : result
-  })
-  
-  return list
-})
-
-// 获取默认模板
-const defaultTemplate = computed(() => {
-  const defaultTpl = templates.value.find(t => t.isDefault)
-  return defaultTpl?.name || templates.value[0]?.name || ''
-})
-
-// 获取当前选中的模板
-const selectedTemplate = computed(() => {
-  const name = props.currentTemplate || defaultTemplate.value
-  return templates.value.find(t => t.name === name)
-})
-
-// 设备标签
-const deviceLabel = computed(() => {
-  const labels = {
-    desktop: '桌面',
-    tablet: '平板',
-    mobile: '移动'
-  }
-  return labels[device.value as keyof typeof labels] || device.value
-})
-
-// 处理选择变化
-const handleChange = (event: Event) => {
-  const target = event.target as HTMLSelectElement
-  emit('change', target.value)
-}
-
-// 处理选择
-const handleSelect = (templateName: string) => {
-  emit('change', templateName)
-}
-
-// 监听设备变化
-watch(device, (newDevice) => {
-  emit('device-change', newDevice)
-})
-
-// 自动隐藏功能
-let hideTimeout: NodeJS.Timeout | null = null
-
-const startAutoHide = () => {
-  if (config.value.autoHide && !isHovered.value) {
-    hideTimeout = setTimeout(() => {
-      isCollapsed.value = true
-    }, config.value.autoHideDelay)
-  }
-}
-
-const cancelAutoHide = () => {
-  if (hideTimeout) {
-    clearTimeout(hideTimeout)
-    hideTimeout = null
-  }
-}
-
-watch(isHovered, (hovered) => {
-  if (hovered) {
-    cancelAutoHide()
-    isCollapsed.value = false
-  } else {
-    startAutoHide()
-  }
-})
-</script>
 
 <style scoped>
 /* 动画 */
@@ -647,11 +652,11 @@ watch(isHovered, (hovered) => {
     right: 10px;
     max-width: calc(100vw - 20px);
   }
-  
+
   .style-card {
     min-width: auto;
   }
-  
+
   .selector-cards {
     max-height: 200px;
   }

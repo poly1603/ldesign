@@ -17,7 +17,7 @@ export interface LoginTemplateProps {
   /** 是否显示忘记密码 */
   showForgotPassword?: boolean
   /** 登录回调 */
-  onLogin?: (data: { username: string; password: string; remember: boolean }) => void | Promise<void>
+  onLogin?: (data: { username: string, password: string, remember: boolean }) => void | Promise<void>
   /** 注册回调 */
   onRegister?: () => void
   /** 忘记密码回调 */

@@ -1,39 +1,7 @@
-<template>
-  <div class="app">
-    <!-- 模板切换动画 -->
-    <transition 
-      :name="transitionName" 
-      mode="out-in"
-      @before-leave="handleBeforeLeave"
-      @enter="handleEnter"
-    >
-      <div :key="templateKey" class="template-container">
-        <TemplateRenderer
-          category="login"
-          :template-name="currentTemplate || undefined"
-          :responsive="true"
-          :props="templateProps"
-          @template-change="handleTemplateLoaded"
-        >
-          <template #switcher>
-            <EnhancedTemplateSwitcher 
-              category="login"
-              :current-template="currentTemplate"
-              :config="switcherConfig"
-              @change="handleTemplateChange"
-              @device-change="handleDeviceChange"
-            />
-          </template>
-        </TemplateRenderer>
-      </div>
-    </transition>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { TemplateRenderer, EnhancedTemplateSwitcher } from '../../src/vue/components'
 import type { SwitcherConfig } from '../../src/vue/components/EnhancedTemplateSwitcher.vue'
+import { ref } from 'vue'
+import { EnhancedTemplateSwitcher, TemplateRenderer } from '../../src/vue/components'
 
 // 当前模板和设备
 const currentTemplate = ref('')
@@ -43,7 +11,7 @@ const templateKey = ref(0)
 // 切换器配置
 const switcherConfig: SwitcherConfig = {
   position: 'top-right',
-  style: 'floating', 
+  style: 'floating',
   selectorType: 'dropdown', // 可以改为 'buttons' 或 'cards'
   collapsible: true,
   showDevice: true,
@@ -52,7 +20,7 @@ const switcherConfig: SwitcherConfig = {
   animation: 'slide',
   animationDuration: 300,
   sortBy: 'default',
-  sortOrder: 'asc'
+  sortOrder: 'asc',
 }
 
 // 动画配置
@@ -60,30 +28,30 @@ const transitionName = ref('template-fade')
 const isTransitioning = ref(false)
 
 // 处理模板切换
-const handleTemplateChange = (templateName: string) => {
+function handleTemplateChange(templateName: string) {
   console.log('切换模板:', templateName)
-  
+
   // 触发动画
   isTransitioning.value = true
   transitionName.value = currentDevice.value === 'mobile' ? 'template-slide' : 'template-fade'
-  
+
   // 更新模板
   currentTemplate.value = templateName
   templateKey.value++ // 强制重新渲染
 }
 
 // 处理设备变化
-const handleDeviceChange = (device: string) => {
+function handleDeviceChange(device: string) {
   console.log('设备变化:', device)
   currentDevice.value = device
-  
+
   // 设备变化时使用不同的动画
   transitionName.value = 'template-scale'
   templateKey.value++
 }
 
 // 处理模板加载完成
-const handleTemplateLoaded = (templateName: string) => {
+function handleTemplateLoaded(templateName: string) {
   console.log('模板已加载:', templateName)
   if (!currentTemplate.value) {
     currentTemplate.value = templateName
@@ -91,11 +59,11 @@ const handleTemplateLoaded = (templateName: string) => {
 }
 
 // 动画钩子
-const handleBeforeLeave = () => {
+function handleBeforeLeave() {
   console.log('Template leaving...')
 }
 
-const handleEnter = () => {
+function handleEnter() {
   console.log('Template entering...')
   setTimeout(() => {
     isTransitioning.value = false
@@ -118,6 +86,38 @@ const templateProps = {
   },
 }
 </script>
+
+<template>
+  <div class="app">
+    <!-- 模板切换动画 -->
+    <transition
+      :name="transitionName"
+      mode="out-in"
+      @before-leave="handleBeforeLeave"
+      @enter="handleEnter"
+    >
+      <div :key="templateKey" class="template-container">
+        <TemplateRenderer
+          category="login"
+          :template-name="currentTemplate || undefined"
+          :responsive="true"
+          :props="templateProps"
+          @template-change="handleTemplateLoaded"
+        >
+          <template #switcher>
+            <EnhancedTemplateSwitcher
+              category="login"
+              :current-template="currentTemplate"
+              :config="switcherConfig"
+              @change="handleTemplateChange"
+              @device-change="handleDeviceChange"
+            />
+          </template>
+        </TemplateRenderer>
+      </div>
+    </transition>
+  </div>
+</template>
 
 <style scoped>
 .app {

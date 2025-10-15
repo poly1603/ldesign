@@ -1,36 +1,3 @@
-<template>
-  <div class="dashboard-grid-container">
-    <header class="grid-header">
-      <h1 class="header-title">Dashboard</h1>
-      <div class="header-actions">
-        <span class="user-name">{{ userName }}</span>
-        <button class="logout-btn" @click="handleLogout">🚪</button>
-      </div>
-    </header>
-
-    <main class="grid-content" :class="`columns-${columns}`">
-      <div class="grid-layout" :class="`gap-${gap}`">
-        <div v-for="(stat, index) in stats" :key="index" class="grid-item">
-          <div class="item-icon">{{ stat.icon || '📊' }}</div>
-          <div class="item-label">{{ stat.label }}</div>
-          <div class="item-value">{{ stat.value }}</div>
-          <div v-if="stat.trend" class="item-trend" :class="`trend-${stat.trend}`">
-            <span v-if="stat.trend === 'up'">↗</span>
-            <span v-else-if="stat.trend === 'down'">↘</span>
-            <span v-else>→</span>
-            <span v-if="stat.change">{{ stat.change }}</span>
-          </div>
-        </div>
-
-        <div v-for="(item, index) in menuItems" :key="`menu-${index}`" class="grid-item menu-item">
-          <div class="item-icon">{{ item.icon || '•' }}</div>
-          <div class="item-label">{{ item.label }}</div>
-        </div>
-      </div>
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
 import type { DashboardTabletGridProps } from '../../types'
 
@@ -54,10 +21,57 @@ const props = withDefaults(defineProps<DashboardTabletGridProps>(), {
   ],
 })
 
-const handleLogout = () => {
+function handleLogout() {
   props.onLogout?.()
 }
 </script>
+
+<template>
+  <div class="dashboard-grid-container">
+    <header class="grid-header">
+      <h1 class="header-title">
+        Dashboard
+      </h1>
+      <div class="header-actions">
+        <span class="user-name">{{ userName }}</span>
+        <button class="logout-btn" @click="handleLogout">
+          🚪
+        </button>
+      </div>
+    </header>
+
+    <main class="grid-content" :class="`columns-${columns}`">
+      <div class="grid-layout" :class="`gap-${gap}`">
+        <div v-for="(stat, index) in stats" :key="index" class="grid-item">
+          <div class="item-icon">
+            {{ stat.icon || '📊' }}
+          </div>
+          <div class="item-label">
+            {{ stat.label }}
+          </div>
+          <div class="item-value">
+            {{ stat.value }}
+          </div>
+          <div v-if="stat.trend" class="item-trend" :class="`trend-${stat.trend}`">
+            <span v-if="stat.trend === 'up'">↗</span>
+            <span v-else-if="stat.trend === 'down'">↘</span>
+            <span v-else>→</span>
+            <span v-if="stat.change">{{ stat.change }}</span>
+          </div>
+        </div>
+
+        <div v-for="(item, index) in menuItems" :key="`menu-${index}`" class="grid-item menu-item">
+          <div class="item-icon">
+            {{ item.icon || '•' }}
+          </div>
+          <div class="item-label">
+            {{ item.label }}
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
 
 <style scoped>
 .dashboard-grid-container {

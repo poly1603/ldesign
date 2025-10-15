@@ -1,150 +1,116 @@
 # 常见问题
 
-## 基础问题
+本页面汇总了使用 @ldesign/device 时的常见问题和解决方案。
 
-### Q: @ldesign/device 支持哪些浏览器？
+## 安装和配置
 
-A: @ldesign/device 支持所有现代浏览器：
+### 如何安装 @ldesign/device？
 
-- **Chrome** 60+
-- **Firefox** 55+
-- **Safari** 12+
-- **Edge** 79+
-- **移动端浏览器** (iOS Safari, Chrome Mobile, Samsung Internet 等)
+使用你喜欢的包管理器：
 
-对于不支持的浏览器，库会提供基础的降级功能。
+```bash
+# pnpm
+pnpm add @ldesign/device
 
-### Q: 库的体积有多大？
+# npm
+npm install @ldesign/device
 
-A: @ldesign/device 经过优化，体积非常小：
+# yarn
+yarn add @ldesign/device
 
-- **核心库**: ~8KB (gzipped)
-- **Vue 集成**: +2KB (gzipped)
-- **扩展模块**: 按需加载，每个模块约 1-2KB
+# bun
+bun add @ldesign/device
+```
 
-支持 Tree Shaking，只打包使用的功能。
+### 是否支持 TypeScript？
 
-### Q: 是否支持服务端渲染 (SSR)？
-
-A: 是的，@ldesign/device 完全支持 SSR：
+是的，@ldesign/device 使用 TypeScript 编写，提供完整的类型定义。无需额外安装 @types 包。
 
 ```typescript
-// 在服务端环境下会返回安全的默认值
+import type { DeviceInfo, DeviceType } from '@ldesign/device'
+```
+
+### 是否需要 Vue？
+
+核心功能不需要 Vue。Vue 集成是可选的。
+
+```typescript
+// 纯 JavaScript 使用
+import { DeviceDetector } from '@ldesign/device'
+
+// Vue 3 集成（可选）
+import { useDevice } from '@ldesign/device/vue'
+```
+
+## 基础使用
+
+### 如何判断设备类型？
+
+```typescript
 const detector = new DeviceDetector()
-const deviceInfo = detector.getDeviceInfo()
-// 服务端: { type: 'desktop', orientation: 'landscape', ... }
-```
 
-在客户端激活后，会自动检测真实的设备信息。
-
-### Q: 如何在 TypeScript 项目中使用？
-
-A: @ldesign/device 提供完整的 TypeScript 支持：
-
-```typescript
-import { DeviceDetector, DeviceInfo, DeviceType } from '@ldesign/device'
-
-const detector = new DeviceDetector()
-const deviceInfo: DeviceInfo = detector.getDeviceInfo()
-const deviceType: DeviceType = deviceInfo.type
-```
-
-所有 API 都有完整的类型定义，享受完整的类型检查和智能提示。
-
-## 功能问题
-
-### Q: 为什么某些 API 在我的浏览器中不工作？
-
-A: 某些 Web API 有特定的要求：
-
-1. **地理位置 API**: 需要 HTTPS 环境和用户授权
-2. **电池 API**: 部分浏览器已移除支持
-3. **网络信息 API**: 主要在移动设备上支持
-
-库会自动检测 API 支持情况并提供降级方案：
-
-```typescript
-try {
-  const geolocationModule = await detector.loadModule('geolocation')
-  if (geolocationModule.isSupported()) {
-    // 使用地理位置功能
-  }
-  else {
-    // 提供替代方案
-  }
+// 方法 1：快捷方法
+if (detector.isMobile()) {
+ console.log('移动设备')
 }
-catch (error) {
-  console.warn('地理位置不支持:', error)
-}
+
+// 方法 2：获取类型字符串
+const type = detector.getDeviceType() // 'mobile' | 'tablet' | 'desktop'
 ```
 
-### Q: 如何自定义设备类型的断点？
+### 如何自定义断点？
 
-A: 可以在初始化时自定义断点：
+在创建检测器时传入配置：
 
 ```typescript
 const detector = new DeviceDetector({
-  breakpoints: {
-    mobile: 480, // 0-480px 为移动设备
-    tablet: 1024, // 481-1024px 为平板设备
-    desktop: 1025, // 1025px+ 为桌面设备
-  },
+ breakpoints: {
+  mobile: 480,  // 小于 480px 为移动设备
+  tablet: 768   // 480-768px 为平板
+ }
 })
 ```
 
-### Q: 如何处理设备方向变化的延迟？
+### 如何监听设备变化？
 
-A: 可以调整防抖延迟或使用立即模式：
+使用事件监听：
 
 ```typescript
-// 方法1: 调整防抖延迟
-const detector = new DeviceDetector({
-  debounceDelay: 100, // 减少延迟
+detector.on('deviceChange', (deviceInfo) => {
+ console.log('设备类型变化:', deviceInfo.type)
 })
 
-// 方法2: 监听原生事件获得更快响应
-window.addEventListener('orientationchange', () => {
-  setTimeout(() => {
-    detector.refresh()
-  }, 100)
+detector.on('orientationChange', (orientation) => {
+ console.log('屏幕方向变化:', orientation)
 })
 ```
 
-### Q: 为什么电池信息显示为 null？
+## Vue 集成
 
-A: 电池 API 的支持情况：
+### 如何在 Vue 3 中使用？
 
-1. **Chrome**: 已在桌面版本中移除支持
-2. **Firefox**: 默认禁用，需要手动启用
-3. **Safari**: 不支持
-4. **移动浏览器**: 部分支持
+使用 `useDevice` composable：
 
-这是正常现象，库会在不支持时返回 null：
+```vue
+<script setup>
+import { useDevice } from '@ldesign/device/vue'
 
-```typescript
-const batteryModule = await detector.loadModule('battery')
-const batteryInfo = batteryModule.getData()
+const { deviceType, isMobile, isTablet } = useDevice()
+</script>
 
-if (batteryInfo) {
-  // 电池信息可用
-  console.log('电量:', batteryInfo.level)
-}
-else {
-  // 电池信息不可用
-  console.log('电池信息不支持')
-}
+<template>
+ <div v-if="isMobile">移动端布局</div>
+</template>
 ```
 
-## Vue 集成问题
+### 如何全局注册？
 
-### Q: 在 Vue 3 中如何全局使用？
-
-A: 安装插件后即可全局使用：
+使用插件方式：
 
 ```typescript
-import { DevicePlugin } from '@ldesign/device/vue'
 // main.ts
 import { createApp } from 'vue'
+import { DevicePlugin } from '@ldesign/device/vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -152,303 +118,408 @@ app.use(DevicePlugin)
 app.mount('#app')
 ```
 
-```vue
-<!-- 任意组件中 -->
-<script setup>
-import { inject } from 'vue'
-const device = inject('device')
-</script>
+### v-device 指令如何使用？
 
+```vue
 <template>
-  <div v-device-mobile>
-    移动端内容
-  </div>
+ <!-- 只在移动设备显示 -->
+ <div v-device="'mobile'">移动端内容</div>
+
+ <!-- 只在桌面显示 -->
+ <div v-device="'desktop'">桌面端内容</div>
+
+ <!-- 在平板或桌面显示 -->
+ <div v-device="['tablet', 'desktop']">非移动端内容</div>
 </template>
 ```
 
-### Q: 为什么 v-device 指令不工作？
+### 是否支持 Nuxt？
 
-A: 确保已正确安装插件：
-
-```typescript
-// ✅ 正确安装
-app.use(DevicePlugin)
-
-// ❌ 忘记安装插件
-// 指令不会注册
-```
-
-或者手动注册指令：
-
-```typescript
-import { vDevice } from '@ldesign/device/vue'
-
-app.directive('device', vDevice)
-```
-
-### Q: 如何在 Composition API 中监听设备变化？
-
-A: 使用 watch 监听响应式数据：
+是的，支持 Nuxt 3。在 SSR 环境中会自动处理：
 
 ```vue
 <script setup>
 import { useDevice } from '@ldesign/device/vue'
-import { watch } from 'vue'
 
-const { deviceType, orientation } = useDevice()
-
-watch(deviceType, (newType, oldType) => {
-  console.log(`设备类型变化: ${oldType} -> ${newType}`)
-})
-
-watch(orientation, (newOrientation) => {
-  console.log('屏幕方向变化:', newOrientation)
-})
+// 在 Nuxt 中直接使用
+const { deviceType } = useDevice()
 </script>
+```
+
+## 模块系统
+
+### 如何加载扩展模块？
+
+使用 `loadModule` 方法：
+
+```typescript
+const detector = new DeviceDetector()
+
+// 加载网络模块
+const networkModule = await detector.loadModule('network')
+
+// 加载电池模块
+const batteryModule = await detector.loadModule('battery')
+
+// 加载地理位置模块
+const geoModule = await detector.loadModule('geolocation')
+```
+
+### 模块加载失败怎么办？
+
+使用 try-catch 处理：
+
+```typescript
+try {
+ const batteryModule = await detector.loadModule('battery')
+} catch (error) {
+ console.warn('电池 API 不可用:', error)
+ // 提供降级方案
+}
+```
+
+### 如何卸载模块？
+
+```typescript
+// 卸载单个模块
+await detector.unloadModule('network')
+
+// 销毁检测器时会自动卸载所有模块
+await detector.destroy()
+```
+
+## 网络模块
+
+### 如何检测网络状态？
+
+```typescript
+const networkModule = await detector.loadModule('network')
+
+const info = networkModule.getData()
+console.log('是否在线:', info.online)
+console.log('连接类型:', info.type)
+console.log('下载速度:', info.downlink)
+```
+
+### 如何监听网络变化？
+
+```typescript
+detector.on('networkChange', (networkInfo) => {
+ if (networkInfo.status === 'offline') {
+  showOfflineMessage()
+ } else {
+  hideOfflineMessage()
+ }
+})
+```
+
+### 浏览器不支持 Network API 怎么办？
+
+库会自动降级，提供基础的在线/离线检测：
+
+```typescript
+const info = networkModule.getData()
+
+if (!info.supported) {
+ // 不支持 Network Information API
+ // 只能获取 online/offline 状态
+ console.log('在线状态:', info.online)
+}
+```
+
+## 电池模块
+
+### 如何获取电池信息？
+
+```typescript
+const batteryModule = await detector.loadModule('battery')
+
+const info = batteryModule.getData()
+console.log('电池电量:', info.level * 100, '%')
+console.log('是否充电:', info.charging)
+```
+
+### Safari 不支持电池 API 怎么办？
+
+Safari 不支持 Battery Status API。建议使用 try-catch 处理：
+
+```typescript
+try {
+ const batteryModule = await detector.loadModule('battery')
+ // 显示电池信息
+} catch (error) {
+ // 隐藏电池功能
+ console.info('电池 API 不可用')
+}
+```
+
+### 如何监听电池变化？
+
+```typescript
+detector.on('batteryChange', (batteryInfo) => {
+ if (batteryInfo.level < 0.2 && !batteryInfo.charging) {
+  enablePowerSavingMode()
+ }
+})
+```
+
+## 地理位置模块
+
+### 如何获取当前位置？
+
+```typescript
+const geoModule = await detector.loadModule('geolocation')
+
+try {
+ const position = await geoModule.getCurrentPosition()
+ console.log('纬度:', position.latitude)
+ console.log('经度:', position.longitude)
+} catch (error) {
+ console.error('获取位置失败:', error)
+}
+```
+
+### 用户拒绝位置权限怎么办？
+
+捕获错误并处理：
+
+```typescript
+try {
+ const position = await geoModule.getCurrentPosition()
+} catch (error) {
+ if (error.code === 1) {
+  // PERMISSION_DENIED
+  showMessage('需要位置权限才能使用此功能')
+ }
+}
+```
+
+### 如何监听位置变化？
+
+```typescript
+// 开始监听
+await geoModule.startWatching()
+
+detector.on('positionChange', (position) => {
+ console.log('位置更新:', position)
+ updateMap(position)
+})
+
+// 停止监听
+await geoModule.stopWatching()
 ```
 
 ## 性能问题
 
-### Q: 如何优化检测性能？
+### 包体积太大怎么办？
 
-A: 几个优化建议：
-
-1. **调整防抖延迟**:
+1. 确保使用 Tree Shaking：
 
 ```typescript
-const detector = new DeviceDetector({
-  debounceDelay: 300, // 根据需求调整
-})
+// ✅ 只导入需要的功能
+import { DeviceDetector } from '@ldesign/device'
+
+// ❌ 避免导入整个库
+import * as Device from '@ldesign/device'
 ```
 
-2. **按需加载模块**:
+2. 按需加载模块：
 
 ```typescript
 // ✅ 只在需要时加载
-if (needNetworkInfo) {
-  await detector.loadModule('network')
-}
+const networkModule = await detector.loadModule('network')
 
-// ❌ 避免预加载所有模块
+// ❌ 避免一次性加载所有模块
 ```
 
-3. **缓存检测结果**:
+### 事件触发太频繁怎么办？
+
+增加防抖延迟：
 
 ```typescript
-let cachedDeviceInfo: DeviceInfo | null = null
-
-function getDeviceInfo(): DeviceInfo {
-  if (!cachedDeviceInfo) {
-    cachedDeviceInfo = detector.getDeviceInfo()
-  }
-  return cachedDeviceInfo
-}
+const detector = new DeviceDetector({
+ debounceDelay: 300 // 增加到 300ms
+})
 ```
 
-### Q: 为什么页面加载时有短暂的闪烁？
+### 内存泄漏怎么办？
 
-A: 这通常是因为初始渲染和设备检测的时序问题：
+确保正确清理资源：
 
-```vue
-<script setup>
-import { useDevice } from '@ldesign/device/vue'
-import { onMounted, ref } from 'vue'
+```typescript
+// 保存处理器引用
+const handler = (info) => console.log(info)
+detector.on('deviceChange', handler)
 
-const { deviceType } = useDevice()
-const isReady = ref(false)
-
-onMounted(() => {
-  // 确保设备检测完成后再显示内容
-  isReady.value = true
+// 组件卸载时清理
+onUnmounted(() => {
+ detector.off('deviceChange', handler)
+ detector.destroy()
 })
-</script>
-
-<template>
-  <div v-if="isReady">
-    <div v-device-mobile>
-      移动端内容
-    </div>
-    <div v-device-desktop>
-      桌面端内容
-    </div>
-  </div>
-  <div v-else>
-    <!-- 加载状态 -->
-    <div class="loading">
-      检测设备中...
-    </div>
-  </div>
-</template>
 ```
 
 ## 错误处理
 
-### Q: 如何处理模块加载失败？
-
-A: 使用 try-catch 包装模块加载：
+### 模块加载失败
 
 ```typescript
-async function loadModuleSafely<T>(name: string): Promise<T | null> {
-  try {
-    return await detector.loadModule<T>(name)
-  }
-  catch (error) {
-    console.warn(`模块 ${name} 加载失败:`, error)
-    return null
-  }
-}
-
-// 使用
-const networkModule = await loadModuleSafely<NetworkModule>('network')
-if (networkModule) {
-  const networkInfo = networkModule.getData()
+try {
+ const module = await detector.loadModule('battery')
+} catch (error) {
+ console.warn('模块加载失败:', error.message)
+ // 提供降级方案
 }
 ```
 
-### Q: 如何处理权限被拒绝的情况？
-
-A: 针对不同的权限错误提供相应的处理：
+### 设备检测错误
 
 ```typescript
-async function requestLocation() {
-  try {
-    const geolocationModule = await detector.loadModule('geolocation')
-    return await geolocationModule.getCurrentPosition()
-  }
-  catch (error) {
-    switch (error.code) {
-      case 1: // PERMISSION_DENIED
-        showMessage('需要位置权限才能使用此功能')
-        break
-      case 2: // POSITION_UNAVAILABLE
-        showMessage('无法获取位置信息')
-        break
-      case 3: // TIMEOUT
-        showMessage('获取位置超时，请重试')
-        break
-      default:
-        showMessage('位置获取失败')
-    }
-    return null
-  }
-}
-```
-
-## 兼容性问题
-
-### Q: 如何在旧版浏览器中使用？
-
-A: 库会自动降级，但你也可以提供 polyfill：
-
-```html
-<!-- 为旧版浏览器添加 polyfill -->
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,es2017,es2018"></script>
-```
-
-```typescript
-// 检测功能支持并提供降级
-function getDeviceTypeWithFallback(): DeviceType {
-  try {
-    return detector.getDeviceInfo().type
-  }
-  catch (error) {
-    // 降级到简单的用户代理检测
-    const ua = navigator.userAgent
-    if (/Mobile|Android|iPhone|iPad/.test(ua)) {
-      return 'mobile'
-    }
-    return 'desktop'
-  }
-}
-```
-
-### Q: 在 Nuxt.js 中如何使用？
-
-A: 创建插件并正确处理 SSR：
-
-```typescript
-// plugins/device.client.ts
-import { DevicePlugin } from '@ldesign/device/vue'
-
-export default defineNuxtPlugin((nuxtApp) => {
-  nuxtApp.vueApp.use(DevicePlugin)
+detector.on('error', (error) => {
+ console.error('检测错误:', error)
+ // 错误恢复策略
 })
 ```
+
+## SSR/SSG
+
+### 在 Nuxt 3 中如何使用？
 
 ```vue
-<!-- pages/index.vue -->
-<template>
-  <div>
-    <ClientOnly>
-      <div v-device-mobile>
-        移动端内容
-      </div>
-      <div v-device-desktop>
-        桌面端内容
-      </div>
-      <template #fallback>
-        <div>加载中...</div>
-      </template>
-    </ClientOnly>
-  </div>
-</template>
+<script setup>
+import { useDevice } from '@ldesign/device/vue'
+
+// 直接使用，会自动处理 SSR
+const { deviceType } = useDevice()
+</script>
 ```
 
-## 调试问题
+### 在 Next.js 中如何使用？
 
-### Q: 如何调试设备检测问题？
-
-A: 启用调试模式并查看详细信息：
+使用客户端组件：
 
 ```typescript
-// 开发环境下启用详细日志
-const detector = new DeviceDetector()
+'use client'
 
-// 监听所有事件
-detector.on('deviceChange', (info) => {
-  console.log('设备变化:', info)
-})
+import { DeviceDetector } from '@ldesign/device'
+import { useEffect, useState } from 'react'
 
-detector.on('orientationChange', (orientation) => {
-  console.log('方向变化:', orientation)
-})
+export function DeviceInfo() {
+ const [deviceType, setDeviceType] = useState('desktop')
 
-// 查看当前设备信息
-console.table(detector.getDeviceInfo())
+ useEffect(() => {
+  const detector = new DeviceDetector()
+  setDeviceType(detector.getDeviceType())
 
-// 查看已加载的模块
-console.log('已加载模块:', detector.getLoadedModules())
+  return () => {
+   detector.destroy()
+  }
+ }, [])
+
+ return <div>Device: {deviceType}</div>
+}
 ```
 
-### Q: 如何测试不同的设备环境？
+### 服务端渲染有默认值吗？
 
-A: 使用浏览器开发者工具：
-
-1. **Chrome DevTools**:
-
-   - 打开开发者工具
-   - 点击设备模拟按钮
-   - 选择不同的设备预设
-
-2. **手动模拟**:
+是的，SSR 环境下会返回默认的桌面设备信息：
 
 ```typescript
-// 模拟移动设备
-Object.defineProperty(window, 'innerWidth', { value: 375 })
-Object.defineProperty(window, 'innerHeight', { value: 667 })
-detector.refresh()
-
-// 模拟方向变化
-window.dispatchEvent(new Event('orientationchange'))
+if (typeof window === 'undefined') {
+ // 服务端：返回默认值
+ // type: 'desktop'
+ // orientation: 'landscape'
+ // width: 1920
+ // height: 1080
+}
 ```
 
-## 获取帮助
+## 浏览器兼容性
 
-如果以上问题没有解决你的疑问，可以通过以下方式获取帮助：
+### 支持哪些浏览器？
 
-- 📖 查看[完整文档](../api/)
-- 🐛 提交 [GitHub Issue](https://github.com/ldesign-org/device/issues)
-- 💬 参与 [GitHub Discussions](https://github.com/ldesign-org/device/discussions)
-- 📧 发送邮件至 support@ldesign.org
+核心功能支持：
+- Chrome 60+
+- Firefox 55+
+- Safari 12+
+- Edge 79+
 
-我们会尽快回复并帮助解决问题！
+模块支持因浏览器而异，详见各模块文档。
+
+### IE 11 兼容吗？
+
+不支持 IE 11。库使用现代 JavaScript 特性，建议使用现代浏览器。
+
+### 如何检测浏览器支持情况？
+
+```typescript
+// 检查模块支持
+const networkModule = await detector.loadModule('network')
+if (!networkModule.getData().supported) {
+ console.warn('Network API 不支持')
+}
+
+// 检查地理位置支持
+const geoModule = await detector.loadModule('geolocation')
+if (!geoModule.isSupported()) {
+ console.warn('Geolocation API 不支持')
+}
+```
+
+## 其他问题
+
+### 可以同时创建多个检测器实例吗？
+
+可以，但不推荐。建议使用单例模式：
+
+```typescript
+// ✅ 推荐：单例
+export const detector = new DeviceDetector()
+
+// ❌ 不推荐：多个实例
+const detector1 = new DeviceDetector()
+const detector2 = new DeviceDetector()
+```
+
+### 如何调试？
+
+启用调试日志：
+
+```typescript
+// 查看性能指标
+const metrics = detector.getDetectionMetrics()
+console.log('性能指标:', metrics)
+
+// 监听错误事件
+detector.on('error', (error) => {
+ console.error('检测错误:', error)
+})
+```
+
+### 如何贡献代码？
+
+欢迎贡献！请访问 [GitHub 仓库](https://github.com/ldesign-org/device)：
+
+1. Fork 项目
+2. 创建功能分支
+3. 提交代码
+4. 创建 Pull Request
+
+### 在哪里报告 Bug？
+
+请在 [GitHub Issues](https://github.com/ldesign-org/device/issues) 提交 Bug 报告。
+
+### 如何获取帮助？
+
+- 查看 [完整文档](../)
+- 搜索 [GitHub Issues](https://github.com/ldesign-org/device/issues)
+- 在 [Discussions](https://github.com/ldesign-org/device/discussions) 提问
+
+## 更多问题？
+
+如果你的问题不在此列表中，请：
+
+1. 查看 [完整文档](../)
+2. 搜索 [GitHub Issues](https://github.com/ldesign-org/device/issues)
+3. 在 [Discussions](https://github.com/ldesign-org/device/discussions) 提问
+
+我们会持续更新此 FAQ 页面，帮助更多开发者。

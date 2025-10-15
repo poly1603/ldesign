@@ -1,8 +1,8 @@
 {
   "name": "@ldesign/template-demo",
+  "type": "module",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",

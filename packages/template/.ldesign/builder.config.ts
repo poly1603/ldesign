@@ -1,14 +1,14 @@
-﻿import { defineConfig } from '@ldesign/builder'
+import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
   // Output format config
   output: {
-    format: ['esm', 'cjs', 'umd']
+    format: ['esm', 'cjs', 'umd'],
   },
 
   // 绂佺敤鏋勫缓鍚庨獙璇侊紙搴撻」鐩笉闇€瑕佽繍琛屾祴璇曢獙璇侊級
   postBuildValidation: {
-    enabled: false
+    enabled: false,
   },
 
   // 鐢熸垚绫诲瀷澹版槑鏂囦欢
@@ -27,7 +27,7 @@ export default defineConfig({
   umd: {
     enabled: true,
     minify: true, // UMD鐗堟湰鍚敤鍘嬬缉
-    fileName: 'index.js' // 鍘绘帀 .umd 鍚庣紑
+    fileName: 'index.js', // 鍘绘帀 .umd 鍚庣紑
   },
 
   // 澶栭儴渚濊禆閰嶇疆
@@ -45,12 +45,12 @@ export default defineConfig({
     'node:url',
     'node:buffer',
     'node:child_process',
-    'node:worker_threads'
+    'node:worker_threads',
 ],
 
   // 鍏ㄥ眬鍙橀噺閰嶇疆
   globals: {
-    'vue': 'Vue'
+    vue: 'Vue',
 },
 
   // 鏃ュ織绾у埆璁剧疆涓?silent锛屽彧鏄剧ず閿欒淇℃伅
@@ -62,8 +62,8 @@ export default defineConfig({
     rollupOptions: {
       onwarn: (warning, warn) => {
         // 瀹屽叏闈欓粯锛屼笉杈撳嚭浠讳綍璀﹀憡
-        return
-      }
-    }
-  }
+
+      },
+    },
+  },
 })

@@ -7,7 +7,7 @@ import {
   createTemplateScanner,
   createSimpleTemplateScanner,
   createCacheConfig,
-  createDeviceConfig
+  createDeviceConfig,
 } from '../../src/utils/factory'
 import type { TemplateSystemConfig } from '../../src/types/config'
 
@@ -28,52 +28,52 @@ describe('Factory Functions', () => {
           excludePatterns: ['node_modules'],
           watchMode: false,
           debounceDelay: 300,
-          batchSize: 10
+          batchSize: 10,
         },
         cache: {
           enabled: true,
           strategy: 'lru',
           maxSize: 50,
           ttl: 0,
-          checkPeriod: 60000
+          checkPeriod: 60000,
         },
         deviceDetection: {
           breakpoints: {
             mobile: 768,
             tablet: 1024,
-            desktop: 1200
+            desktop: 1200,
           },
           debounceDelay: 100,
           enableResize: true,
-          enableOrientation: true
+          enableOrientation: true,
         },
         preload: {
           enabled: true,
           mode: 'lazy',
           maxConcurrent: 3,
           delayMs: 100,
-          priority: []
+          priority: [],
         },
         performance: {
           enableLazyLoading: true,
           enableVirtualScroll: false,
           chunkSize: 20,
           enableMetrics: false,
-          metricsInterval: 5000
+          metricsInterval: 5000,
         },
         errorHandling: {
           enableGlobalHandler: true,
           enableReporting: false,
           maxRetries: 3,
-          retryDelay: 1000
+          retryDelay: 1000,
         },
         devtools: {
           enabled: false,
           enableInspector: false,
           enableLogger: false,
           logLevel: 'info',
-          enableTimeline: false
-        }
+          enableTimeline: false,
+        },
       }
 
       const scanner = createTemplateScanner(config)
@@ -96,52 +96,52 @@ describe('Factory Functions', () => {
           excludePatterns: ['node_modules'],
           watchMode: false,
           debounceDelay: 300,
-          batchSize: 10
+          batchSize: 10,
         },
         cache: {
           enabled: true,
           strategy: 'lru',
           maxSize: 50,
           ttl: 0,
-          checkPeriod: 60000
+          checkPeriod: 60000,
         },
         deviceDetection: {
           breakpoints: {
             mobile: 768,
             tablet: 1024,
-            desktop: 1200
+            desktop: 1200,
           },
           debounceDelay: 100,
           enableResize: true,
-          enableOrientation: true
+          enableOrientation: true,
         },
         preload: {
           enabled: true,
           mode: 'lazy',
           maxConcurrent: 3,
           delayMs: 100,
-          priority: []
+          priority: [],
         },
         performance: {
           enableLazyLoading: true,
           enableVirtualScroll: false,
           chunkSize: 20,
           enableMetrics: false,
-          metricsInterval: 5000
+          metricsInterval: 5000,
         },
         errorHandling: {
           enableGlobalHandler: true,
           enableReporting: false,
           maxRetries: 3,
-          retryDelay: 1000
+          retryDelay: 1000,
         },
         devtools: {
           enabled: true,
           enableInspector: false,
           enableLogger: true,
           logLevel: 'info',
-          enableTimeline: false
-        }
+          enableTimeline: false,
+        },
       }
 
       const onScanComplete = vi.fn()
@@ -149,7 +149,7 @@ describe('Factory Functions', () => {
 
       const scanner = createTemplateScanner(config, {
         onScanComplete,
-        onScanError
+        onScanError,
       })
 
       expect(scanner).toBeDefined()
@@ -169,7 +169,7 @@ describe('Factory Functions', () => {
       const scanner = createSimpleTemplateScanner(
         'custom/templates',
         false,
-        false
+        false,
       )
       expect(scanner).toBeDefined()
     })
@@ -183,7 +183,7 @@ describe('Factory Functions', () => {
         strategy: 'lru',
         maxSize: 50,
         ttl: 0,
-        checkPeriod: 5 * 60 * 1000
+        checkPeriod: 5 * 60 * 1000,
       })
     })
 
@@ -194,7 +194,7 @@ describe('Factory Functions', () => {
         strategy: 'fifo',
         maxSize: 100,
         ttl: 60000,
-        checkPeriod: 120000
+        checkPeriod: 120000,
       })
     })
   })
@@ -206,8 +206,8 @@ describe('Factory Functions', () => {
         breakpoints: {
           mobile: 768,
           tablet: 1024,
-          desktop: 1200
-        }
+          desktop: 1200,
+        },
       })
     })
 
@@ -217,8 +217,8 @@ describe('Factory Functions', () => {
         breakpoints: {
           mobile: 480,
           tablet: 768,
-          desktop: 1024
-        }
+          desktop: 1024,
+        },
       })
     })
   })

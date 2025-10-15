@@ -70,8 +70,23 @@
 /* 确保表格单元格可编辑时的样式 */
 .ldesign-editor-content table th[contenteditable="true"]:focus,
 .ldesign-editor-content table td[contenteditable="true"]:focus {
-  outline: 2px solid #3b82f6 !important;
-  outline-offset: -2px !important;
+  outline: none !important;
+  background: #eff6ff !important;
+  box-shadow: inset 0 0 0 2px #3b82f6 !important;
+  position: relative !important;
+}
+
+/* 防止点击时的抖动 */
+.ldesign-editor-content table th[contenteditable="true"],
+.ldesign-editor-content table td[contenteditable="true"] {
+  transition: background-color 0.15s ease, box-shadow 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+
+/* 鼠标按下时的样式，避免边框变化 */
+.ldesign-editor-content table th[contenteditable="true"]:active,
+.ldesign-editor-content table td[contenteditable="true"]:active {
+  outline: none !important;
   background: #eff6ff !important;
 }
 

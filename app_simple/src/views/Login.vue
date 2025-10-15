@@ -126,17 +126,17 @@ onMounted(() => {
 }
 
 .login-card {
-  background: white;
+  background: var(--ld-color-gray-50, white);
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 60px var(--ld-color-gray-300, rgba(0, 0, 0, 0.1));
   width: 100%;
   max-width: 400px;
   overflow: hidden;
 }
 
 .login-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--ld-color-primary-500) 0%, var(--ld-color-primary-700) 100%);
+  color: var(--ld-color-gray-50, white);
   padding: 30px;
   text-align: center;
 }
@@ -163,7 +163,7 @@ onMounted(() => {
 .form-label {
   display: block;
   margin-bottom: 8px;
-  color: #2c3e50;
+  color: var(--ld-color-gray-800, #2c3e50);
   font-size: 14px;
   font-weight: 600;
 }
@@ -171,7 +171,7 @@ onMounted(() => {
 .form-input {
   width: 100%;
   padding: 12px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--ld-color-gray-300, #e0e0e0);
   border-radius: 8px;
   font-size: 14px;
   transition: all 0.3s;
@@ -180,8 +180,8 @@ onMounted(() => {
 
 .form-input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--ld-color-primary-500);
+  box-shadow: 0 0 0 3px var(--ld-color-primary-100);
 }
 
 .checkbox-group {
@@ -193,7 +193,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   cursor: pointer;
-  color: #2c3e50;
+  color: var(--ld-color-gray-800, #2c3e50);
   font-size: 14px;
 }
 
@@ -205,8 +205,8 @@ onMounted(() => {
 }
 
 .error-message {
-  background: #fee;
-  color: #c00;
+  background: var(--ld-color-danger-100);
+  color: var(--ld-color-danger-700);
   padding: 10px;
   border-radius: 6px;
   margin-bottom: 20px;
@@ -217,8 +217,8 @@ onMounted(() => {
 .submit-button {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--ld-color-primary-500) 0%, var(--ld-color-primary-700) 100%);
+  color: var(--ld-color-gray-50, white);
   border: none;
   border-radius: 8px;
   font-size: 16px;
@@ -229,7 +229,7 @@ onMounted(() => {
 
 .submit-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 30px var(--ld-color-primary-300, rgba(102, 126, 234, 0.3));
 }
 
 .submit-button:disabled {
@@ -239,18 +239,18 @@ onMounted(() => {
 
 .login-footer {
   padding: 20px 30px;
-  background: #f8f9fa;
+  background: var(--ld-color-gray-50, #f8f9fa);
   text-align: center;
 }
 
 .hint {
-  color: #666;
+  color: var(--ld-color-gray-600, #666);
   font-size: 13px;
   margin: 0 0 10px 0;
 }
 
 .back-link {
-  color: #667eea;
+  color: var(--ld-color-primary-500);
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
@@ -258,6 +258,6 @@ onMounted(() => {
 }
 
 .back-link:hover {
-  color: #764ba2;
+  color: var(--ld-color-primary-700);
 }
 </style>

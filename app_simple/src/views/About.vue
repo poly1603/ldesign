@@ -2,19 +2,19 @@
   <div class="about-container">
     <div class="about-content">
       <h1 class="about-title">{{ t('about.title') }}</h1>
-      
+
       <div class="about-section">
         <h2>{{ t('about.subtitle') }}</h2>
         <p>{{ t('about.description') }}</p>
       </div>
-      
+
       <div class="about-section">
         <h2>{{ t('about.goals.title') || '我们的目标' }}</h2>
         <ul>
           <li v-for="(item, index) in goalItems" :key="index">{{ item }}</li>
         </ul>
       </div>
-      
+
       <div class="about-section">
         <h2>{{ t('about.features.title') }}</h2>
         <div class="feature-list">
@@ -24,14 +24,14 @@
           </div>
         </div>
       </div>
-      
+
       <div class="about-section">
         <h2>{{ t('about.techStack') || '技术栈' }}</h2>
         <div class="tech-stack">
           <span class="tech-badge" v-for="tech in techStack" :key="tech">{{ tech }}</span>
         </div>
       </div>
-      
+
       <div class="about-section">
         <h2>{{ t('about.version') }}</h2>
         <table class="version-table">
@@ -55,7 +55,7 @@
           </tbody>
         </table>
       </div>
-      
+
       <div class="about-section">
         <h2>{{ t('about.contact.title') }}</h2>
         <p>{{ t('about.team.description') }}</p>
@@ -65,7 +65,7 @@
           <a href="#" class="contribute-link">{{ t('about.contact.community') || '讨论区' }}</a>
         </div>
       </div>
-      
+
       <div class="about-footer">
         <p>{{ t('about.team.title') }}</p>
         <p class="copyright">{{ t('app.copyright') }}</p>
@@ -123,26 +123,23 @@ onMounted(() => {
 
 <style scoped>
 .about-container {
-  max-width: 800px;
+  width: 100%;
   margin: 0 auto;
   padding: 20px;
 }
 
 .about-content {
-  background: white;
+  background: var(--ld-color-gray-50, white);
   border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 40px var(--ld-color-gray-200, rgba(0, 0, 0, 0.05));
   padding: 40px;
 }
 
 .about-title {
   font-size: 36px;
-  color: #2c3e50;
+  color: var(--color-text-primary);
   margin: 0 0 40px 0;
   text-align: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .about-section {
@@ -151,20 +148,20 @@ onMounted(() => {
 
 .about-section h2 {
   font-size: 24px;
-  color: #2c3e50;
+  color: var(--ld-color-gray-800, #2c3e50);
   margin: 0 0 20px 0;
   padding-bottom: 10px;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid var(--ld-color-gray-200, #f0f0f0);
 }
 
 .about-section p {
-  color: #666;
+  color: var(--ld-color-gray-600, #666);
   line-height: 1.8;
   margin: 0 0 15px 0;
 }
 
 .about-section ul {
-  color: #666;
+  color: var(--ld-color-gray-600, #666);
   line-height: 1.8;
   padding-left: 20px;
 }
@@ -182,18 +179,18 @@ onMounted(() => {
 
 .feature-item {
   padding: 20px;
-  background: #f8f9fa;
+  background: var(--ld-color-gray-50, #f8f9fa);
   border-radius: 8px;
 }
 
 .feature-item h3 {
-  color: #667eea;
+  color: var(--ld-color-primary-500);
   font-size: 18px;
   margin: 0 0 10px 0;
 }
 
 .feature-item p {
-  color: #666;
+  color: var(--ld-color-gray-600, #666);
   font-size: 14px;
   margin: 0;
 }
@@ -208,8 +205,8 @@ onMounted(() => {
 .tech-badge {
   display: inline-block;
   padding: 8px 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--ld-color-primary-500) 0%, var(--ld-color-primary-700) 100%);
+  color: var(--ld-color-gray-50, white);
   border-radius: 20px;
   font-size: 14px;
   font-weight: 600;
@@ -222,12 +219,12 @@ onMounted(() => {
 }
 
 .version-table tr {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--ld-color-gray-200, #f0f0f0);
 }
 
 .version-table td {
   padding: 12px;
-  color: #666;
+  color: var(--ld-color-gray-600, #666);
 }
 
 .version-table td:first-child {
@@ -244,9 +241,9 @@ onMounted(() => {
 
 .contribute-link {
   padding: 10px 20px;
-  background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
+  background: var(--ld-color-gray-50, white);
+  color: var(--ld-color-primary-500);
+  border: 2px solid var(--ld-color-primary-500);
   border-radius: 6px;
   text-decoration: none;
   font-weight: 600;
@@ -254,8 +251,8 @@ onMounted(() => {
 }
 
 .contribute-link:hover {
-  background: #667eea;
-  color: white;
+  background: var(--ld-color-primary-500);
+  color: var(--ld-color-gray-50, white);
 }
 
 /* 页脚 */
@@ -263,11 +260,11 @@ onMounted(() => {
   text-align: center;
   margin-top: 40px;
   padding-top: 20px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--ld-color-gray-200, #f0f0f0);
 }
 
 .about-footer p {
-  color: #999;
+  color: var(--ld-color-gray-500, #999);
   margin: 5px 0;
 }
 
@@ -279,15 +276,15 @@ onMounted(() => {
   .about-content {
     padding: 20px;
   }
-  
+
   .about-title {
     font-size: 28px;
   }
-  
+
   .feature-list {
     grid-template-columns: 1fr;
   }
-  
+
   .contribute-links {
     flex-direction: column;
   }

@@ -2,10 +2,10 @@
  * 日志插件
  */
 
-import type { Plugin, LoggerPluginConfig } from '../types'
 import type { TemplateManager } from '../runtime/manager'
-import { PLUGIN_VERSION } from '../utils/constants'
+import type { LoggerPluginConfig, Plugin } from '../types'
 import { getGlobalEmitter } from '../core/events'
+import { PLUGIN_VERSION } from '../utils/constants'
 
 export function createLoggerPlugin(config: LoggerPluginConfig = {}): Plugin {
   const {
@@ -25,14 +25,16 @@ export function createLoggerPlugin(config: LoggerPluginConfig = {}): Plugin {
   const currentLevel = levels[level]
 
   const log = (logLevel: string, message: string, ...args: any[]) => {
-    if (levels[logLevel as keyof typeof levels] < currentLevel) return
+    if (levels[logLevel as keyof typeof levels] < currentLevel)
+return
 
     const time = timestamp ? `[${new Date().toLocaleTimeString()}]` : ''
     const fullPrefix = `${time} ${prefix}`.trim()
 
     if (config.handler) {
       config.handler(logLevel, message, ...args)
-    } else {
+    }
+ else {
       console[logLevel as 'log' | 'info' | 'warn' | 'error'](fullPrefix, message, ...args)
     }
   }
