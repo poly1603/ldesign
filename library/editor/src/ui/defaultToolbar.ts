@@ -96,30 +96,13 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
     },
   },
   
-  // 标题
+  // 标题（下拉）
   {
-    name: 'heading1',
-    title: '标题 1',
+    name: 'heading',
+    title: '标题/正文',
     icon: 'heading-1',
-    command: execCommand('formatBlock', '<h1>'),
-  },
-  {
-    name: 'heading2',
-    title: '标题 2',
-    icon: 'heading-2',
-    command: execCommand('formatBlock', '<h2>'),
-  },
-  {
-    name: 'heading3',
-    title: '标题 3',
-    icon: 'heading-3',
-    command: execCommand('formatBlock', '<h3>'),
-  },
-  {
-    name: 'paragraph',
-    title: '正文',
-    icon: 'pilcrow',
-    command: execCommand('formatBlock', '<p>'),
+    // 由 Toolbar.ts 以下拉方式处理
+    command: () => true,
   },
   
   // 引用和代码块
@@ -179,34 +162,13 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
     command: execCommand('indent'),
   },
   
-  // 对齐
+  // 对齐（下拉）
   {
-    name: 'alignLeft',
-    title: '左对齐',
+    name: 'align',
+    title: '对齐方式',
     icon: 'align-left',
-    command: execCommand('justifyLeft'),
-    active: isCommandActive('justifyLeft'),
-  },
-  {
-    name: 'alignCenter',
-    title: '居中',
-    icon: 'align-center',
-    command: execCommand('justifyCenter'),
-    active: isCommandActive('justifyCenter'),
-  },
-  {
-    name: 'alignRight',
-    title: '右对齐',
-    icon: 'align-right',
-    command: execCommand('justifyRight'),
-    active: isCommandActive('justifyRight'),
-  },
-  {
-    name: 'alignJustify',
-    title: '两端对齐',
-    icon: 'align-justify',
-    command: execCommand('justifyFull'),
-    active: isCommandActive('justifyFull'),
+    // 由 Toolbar.ts 以下拉方式处理
+    command: () => true,
   },
   
   // 插入
@@ -283,6 +245,20 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
     title: '水平线',
     icon: 'minus',
     command: execCommand('insertHorizontalRule'),
+  },
+  
+  // 字体
+  {
+    name: 'fontSize',
+    title: '字体大小',
+    icon: 'type',
+    command: () => true, // 由 Toolbar.ts 特殊处理
+  },
+  {
+    name: 'fontFamily',
+    title: '字体',
+    icon: 'a-large-small',
+    command: () => true, // 由 Toolbar.ts 特殊处理
   },
   
   // 颜色
@@ -456,12 +432,13 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
 export const TOOLBAR_GROUPS = {
   history: ['undo', 'redo'],
   format: ['bold', 'italic', 'underline', 'strike', 'code'],
-  heading: ['heading1', 'heading2', 'heading3', 'paragraph'],
+  heading: ['heading'],
   block: ['blockquote', 'codeblock'],
   list: ['bulletList', 'orderedList', 'taskList'],
   indent: ['outdent', 'indent'],
-  align: ['alignLeft', 'alignCenter', 'alignRight', 'alignJustify'],
+  align: ['align'],
   insert: ['link', 'unlink', 'image', 'video', 'audio', 'file', 'table', 'horizontalRule'],
+  font: ['fontSize', 'fontFamily'],
   color: ['textColor', 'backgroundColor'],
   tools: ['removeFormat', 'fullscreen', 'search', 'wordCount'],
 }

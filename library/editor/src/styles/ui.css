@@ -141,6 +141,37 @@
   min-width: 150px;
 }
 
+/* 自定义工具提示 */
+.editor-tooltip {
+  position: fixed;
+  background: rgba(17, 24, 39, 0.95);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  pointer-events: none;
+  transform: translateY(-4px);
+  opacity: 0;
+  transition: opacity .12s ease, transform .12s ease;
+  z-index: 10001;
+}
+.editor-tooltip.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.editor-tooltip::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 5px 5px 5px;
+  border-style: solid;
+  border-color: transparent transparent rgba(17, 24, 39, 0.95) transparent;
+}
+
 .editor-dropdown-list {
   padding: 4px 0;
 }

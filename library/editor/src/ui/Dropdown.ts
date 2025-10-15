@@ -37,6 +37,11 @@ export function createDropdown(options: DropdownOptions): HTMLElement {
       optionElement.style.fontFamily = item.value
     }
 
+    // 防止选项获取焦点导致选区丢失
+    optionElement.addEventListener('mousedown', (e) => {
+      e.preventDefault()
+    })
+
     optionElement.addEventListener('click', (e) => {
       e.preventDefault()
       e.stopPropagation()

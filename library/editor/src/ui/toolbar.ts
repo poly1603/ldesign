@@ -10,6 +10,7 @@ import { showDropdown } from './Dropdown'
 import { FONT_SIZES, FONT_FAMILIES } from '../plugins/font'
 import { LINE_HEIGHTS } from '../plugins/line-height'
 import { DEFAULT_TOOLBAR_ITEMS } from './defaultToolbar'
+import { bindTooltip } from './Tooltip'
 
 export interface ToolbarOptions {
   items?: ToolbarItem[]
@@ -83,16 +84,45 @@ export class Toolbar {
     const button = document.createElement('button')
     button.className = 'ldesign-editor-toolbar-button'
     button.type = 'button'
-    button.title = item.title
+    // 使用自定义 Tooltip，避免原生 title 样式受限
+    if (item.title) {
+      bindTooltip(button, item.title)
+    }
     button.setAttribute('data-name', item.name)
+
+    // 判断是否是下拉按钮（需要箭头指示器）
+    const isDropdown = ['heading', 'align', 'fontSize', 'fontFamily', 'lineHeight', 'textTransform'].includes(item.name)
+    
+    // 如果是下拉按钮，需要更宽的按钮容纳图标和箭头
+    if (isDropdown) {
+      button.style.width = 'auto'
+      button.style.minWidth = '48px'
+      button.style.paddingLeft = '8px'
+      button.style.paddingRight = '8px'
+      button.style.gap = '4px'
+    }
 
     // 创建图标
     const iconElement = createIcon(item.icon)
     if (iconElement) {
       button.appendChild(iconElement)
+      
+      // 如果是下拉按钮，添加向下箭头
+      if (isDropdown) {
+        const chevron = createIcon('chevron-down')
+        if (chevron) {
+          chevron.style.opacity = '0.6'
+          button.appendChild(chevron)
+        }
+      }
     } else {
       button.textContent = item.title
     }
+
+    // 防止按钮获取焦点导致选区丢失
+    button.addEventListener('mousedown', (e) => {
+      e.preventDefault()
+    })
 
     // 绑定点击事件
     button.addEventListener('click', (e) => {
@@ -112,6 +142,65 @@ export class Toolbar {
         showColorPicker(button, {
           onSelect: (color) => {
             this.editor.commands.execute('setBackgroundColor', color)
+          }
+        })
+        return
+      }
+
+      // 特殊处理：标题级别下拉
+      if (item.name === 'heading') {
+        showDropdown(button, {
+          options: [
+            { label: '正文', value: 'p' },
+            { label: '标题 1', value: 'h1' },
+            { label: '标题 2', value: 'h2' },
+            { label: '标题 3', value: 'h3' },
+            { label: '标题 4', value: 'h4' },
+            { label: '标题 5', value: 'h5' },
+            { label: '标题 6', value: 'h6' }
+          ],
+          onSelect: (value) => {
+            const map: Record<string, string> = {
+              p: 'setParagraph',
+              h1: 'setHeading1',
+              h2: 'setHeading2',
+              h3: 'setHeading3',
+              h4: 'setHeading4',
+              h5: 'setHeading5',
+              h6: 'setHeading6',
+            }
+            const cmd = map[value]
+            if (cmd) {
+              this.editor.commands.execute(cmd)
+            } else {
+              // 回退到原生命令
+              document.execCommand('formatBlock', false, value)
+            }
+          }
+        })
+        return
+      }
+
+      // 特殊处理：对齐方式下拉
+      if (item.name === 'align') {
+        showDropdown(button, {
+          options: [
+            { label: '左对齐', value: 'left' },
+            { label: '居中', value: 'center' },
+            { label: '右对齐', value: 'right' },
+            { label: '两端对齐', value: 'justify' },
+          ],
+          onSelect: (value) => {
+            const map: Record<string, string> = {
+              left: 'alignLeft',
+              center: 'alignCenter',
+              right: 'alignRight',
+              justify: 'alignJustify',
+            }
+            const cmd = map[value]
+            if (cmd) {
+              this.editor.commands.execute(cmd)
+            }
           }
         })
         return
@@ -193,7 +282,7 @@ export class Toolbar {
    */
   private shouldAddSeparator(index: number, items: ToolbarItem[]): boolean {
     // 在特定组之间添加分隔符
-    const separatorAfter = ['redo', 'code', 'paragraph', 'codeblock', 'taskList', 'indent', 'alignJustify', 'horizontalRule', 'backgroundColor', 'removeFormat']
+    const separatorAfter = ['redo', 'code', 'heading', 'codeblock', 'taskList', 'indent', 'align', 'horizontalRule', 'fontFamily', 'backgroundColor', 'removeFormat']
     return separatorAfter.includes(items[index].name) && index < items.length - 1
   }
 
