@@ -3,7 +3,7 @@
  * Provides modern dialogs for inserting images, videos, and audio
  */
 
-import type { Plugin } from '../types'
+import type { Plugin, UploadHandler, UploadProgress } from '../types'
 import { getLucideIcon } from '../utils/icons'
 
 /**
@@ -13,6 +13,14 @@ class MediaDialog {
   private dialog: HTMLDivElement | null = null
   private overlay: HTMLDivElement | null = null
   private callback: ((url: string, file?: File) => void) | null = null
+  private uploadHandler: UploadHandler | null = null
+  
+  /**
+   * Set upload handler
+   */
+  setUploadHandler(uploadHandler: UploadHandler | undefined) {
+    this.uploadHandler = uploadHandler || null
+  }
   
   /**
    * Show the media dialog
@@ -309,7 +317,7 @@ class MediaDialog {
     })
     
     // 处理多个文件，自动插入
-    const handleMultipleFiles = (files: FileList) => {
+    const handleMultipleFiles = async (files: FileList) => {
       const cb = this.callback
       if (!cb) {
         console.warn('[MediaDialog] No callback available')
@@ -322,22 +330,38 @@ class MediaDialog {
       this.close()
       
       // 处理每个文件
-      Array.from(files).forEach((file, index) => {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          const dataUrl = e.target?.result as string
-          try {
-            console.log(`[MediaDialog] Auto-inserting file ${index + 1}/${files.length}: ${file.name}`)
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        try {
+          // 如果有上传处理器，先上传
+          if (this.uploadHandler) {
+            console.log(`[MediaDialog] Uploading file ${i + 1}/${files.length}: ${file.name}`)
+            
+            // 显示上传进度（可选）
+            const url = await this.uploadHandler(file, (progress) => {
+              console.log(`[MediaDialog] Upload progress for ${file.name}: ${progress.percent}%`)
+              // TODO: 可以在这里显示进度条
+            })
+            
+            console.log(`[MediaDialog] File uploaded successfully: ${url}`)
+            cb(url, file)
+          } else {
+            // 没有上传处理器，使用 data URL
+            const reader = new FileReader()
+            const dataUrl = await new Promise<string>((resolve, reject) => {
+              reader.onload = (e) => resolve(e.target?.result as string)
+              reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`))
+              reader.readAsDataURL(file)
+            })
+            
+            console.log(`[MediaDialog] Auto-inserting file ${i + 1}/${files.length}: ${file.name}`)
             cb(dataUrl, file)
-          } catch (err) {
-            console.error(`[MediaDialog] Error inserting file ${file.name}:`, err)
           }
+        } catch (err) {
+          console.error(`[MediaDialog] Error processing file ${file.name}:`, err)
+          // 继续处理下一个文件
         }
-        reader.onerror = () => {
-          console.error(`[MediaDialog] Failed to read file: ${file.name}`)
-        }
-        reader.readAsDataURL(file)
-      })
+      }
     }
     
     const handleFileSelect = (file: File) => {
@@ -487,6 +511,14 @@ export const MediaDialogPlugin: Plugin = {
     if (!mediaDialog) {
       console.log('[MediaDialogPlugin] Creating MediaDialog instance')
       mediaDialog = new MediaDialog()
+    }
+    
+    // 设置上传处理器（如果有）
+    if (editor.options?.uploadHandler) {
+      console.log('[MediaDialogPlugin] Setting upload handler from editor options')
+      mediaDialog.setUploadHandler(editor.options.uploadHandler)
+    } else {
+      console.log('[MediaDialogPlugin] No upload handler configured, will use data URLs')
     }
     
     // Register image insertion command (only if not already registered)

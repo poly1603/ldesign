@@ -29,7 +29,7 @@ export class Editor {
   public toolbar?: Toolbar // 工具栏
 
   // 选项
-  private options: EditorOptions
+  public options: EditorOptions
   private editable: boolean = true
 
   // DOM

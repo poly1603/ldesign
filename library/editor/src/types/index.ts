@@ -141,6 +141,16 @@ export interface ToolbarItem {
   disabled?: (state: EditorState) => boolean
 }
 
+// 上传进度回调
+export interface UploadProgress {
+  loaded: number  // 已上传字节数
+  total: number   // 总字节数
+  percent: number // 百分比 (0-100)
+}
+
+// 文件上传处理器
+export type UploadHandler = (file: File, onProgress?: (progress: UploadProgress) => void) => Promise<string>
+
 // 编辑器选项
 export interface EditorOptions {
   element?: HTMLElement | string
@@ -151,6 +161,7 @@ export interface EditorOptions {
   editable?: boolean
   autofocus?: boolean
   placeholder?: string
+  uploadHandler?: UploadHandler  // 文件上传处理器
   onChange?: (content: string) => void
   onUpdate?: (state: EditorState) => void
   onFocus?: () => void
