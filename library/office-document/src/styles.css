@@ -352,6 +352,43 @@
  overflow: hidden;
 }
 
+/* Better slide text rendering */
+.pptxjs-container .slide h1,
+.pptxjs-container .slide h2,
+.pptxjs-container .slide h3,
+.pptxjs-container .slide p,
+.pptxjs-container .slide div {
+ color: inherit;
+ word-wrap: break-word;
+}
+
+.pptxjs-container .slide h1 {
+ font-size: 36px;
+ font-weight: bold;
+ margin-bottom: 24px;
+}
+
+.pptxjs-container .slide h2 {
+ font-size: 28px;
+ font-weight: 600;
+ margin-bottom: 20px;
+}
+
+.pptxjs-container .slide p {
+ font-size: 18px;
+ line-height: 1.6;
+ margin-bottom: 12px;
+}
+
+.pptxjs-container .slide-number {
+ position: absolute;
+ bottom: 16px;
+ right: 24px;
+ font-size: 14px;
+ color: #666;
+ font-weight: 500;
+}
+
 .powerpoint-main-content {
  flex: 1;
  display: flex;

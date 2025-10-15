@@ -46,7 +46,7 @@ export class ExcelRenderer implements IDocumentRenderer {
    const xsData = this.convertWorkbookToXS(this.workbook);
 
    // Initialize x-data-spreadsheet with correct data format
-   const spreadsheetData = xsData.length > 0 ? xsData : [{ name: 'Sheet1', rows: {} }];
+   const spreadsheetData = xsData && xsData.length > 0 ? xsData : [{ name: 'Sheet1', rows: {}, cols: {} }];
    
    this.spreadsheet = new Spreadsheet(wrapper, {
     mode: options.excel?.enableEditing ? 'edit' : 'read',
@@ -54,8 +54,8 @@ export class ExcelRenderer implements IDocumentRenderer {
     showGrid: options.excel?.showGridLines !== false,
     showContextmenu: options.excel?.enableEditing || false,
     view: {
-     height: () => wrapper.clientHeight,
-     width: () => wrapper.clientWidth
+     height: () => wrapper.clientHeight || 600,
+     width: () => wrapper.clientWidth || 800
     },
     row: {
      len: 100,
@@ -70,9 +70,15 @@ export class ExcelRenderer implements IDocumentRenderer {
    });
 
    // Load data - x-data-spreadsheet expects array of sheet objects
-   if (spreadsheetData.length > 0) {
-    // loadData expects the data in a specific format
-    this.spreadsheet.loadData(spreadsheetData);
+   if (spreadsheetData && spreadsheetData.length > 0) {
+    try {
+     // loadData expects the data in a specific format
+     this.spreadsheet.loadData(spreadsheetData);
+    } catch (loadError) {
+     console.error('Error loading data into spreadsheet:', loadError);
+     // Try with minimal data structure
+     this.spreadsheet.loadData([{ name: 'Sheet1', rows: {}, cols: {} }]);
+    }
    }
 
    // Call onLoad callback
@@ -93,13 +99,14 @@ export class ExcelRenderer implements IDocumentRenderer {
   workbook.worksheets.forEach((worksheet) => {
    const rows: any = {};
    const cols: any = {};
+   const styles: any[] = []; // Store styles
 
    // Get dimensions
    const rowCount = worksheet.rowCount || 0;
    const columnCount = worksheet.columnCount || 0;
 
    // Convert cells
-   worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+   worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
     const rowData: any = { cells: {} };
     const R = rowNumber - 1; // Convert to 0-based index
     
@@ -179,7 +186,9 @@ export class ExcelRenderer implements IDocumentRenderer {
       }
      }
      
-     if (cellData.text !== undefined) {
+     if (cellData.text !== undefined || Object.keys(cellData).length > 0) {
+      // Ensure text exists even if empty
+      if (!cellData.text) cellData.text = '';
       rowData.cells[C] = cellData;
      }
     });
@@ -189,6 +198,7 @@ export class ExcelRenderer implements IDocumentRenderer {
      rowData.height = Math.round(row.height);
     }
     
+    // Only add rows that have cells
     if (Object.keys(rowData.cells).length > 0) {
      rows[R] = rowData;
     }
@@ -210,13 +220,26 @@ export class ExcelRenderer implements IDocumentRenderer {
     }
    });
 
-   sheets.push({
-    name: worksheet.name,
-    rows,
-    cols,
-    merges,
-    freeze: worksheet.views?.[0]?.state === 'frozen' ? worksheet.views[0].xSplit + ':' + worksheet.views[0].ySplit : 'A1'
-   });
+   // Ensure we have valid data structure
+   const sheetData: any = {
+    name: worksheet.name || `Sheet${sheets.length + 1}`,
+    rows: Object.keys(rows).length > 0 ? rows : {},
+    cols: Object.keys(cols).length > 0 ? cols : {}
+   };
+   
+   // Add optional properties only if they have values
+   if (merges && merges.length > 0) {
+    sheetData.merges = merges;
+   }
+   
+   if (worksheet.views?.[0]?.state === 'frozen') {
+    const view = worksheet.views[0];
+    if (view.xSplit || view.ySplit) {
+     sheetData.freeze = `${view.xSplit || 0}:${view.ySplit || 0}`;
+    }
+   }
+   
+   sheets.push(sheetData);
   });
   
   return sheets;

@@ -14,6 +14,7 @@ import type { App } from 'vue'
 import type { SystemConfig, TemplateManager } from '../types'
 import { createTemplateManager } from '../runtime'
 import { registerBuiltinTemplates } from '../templates'
+import { autoRegisterTemplates } from '../utils/autoScanner'
 import * as components from './components'
 
 export const TEMPLATE_MANAGER_KEY = Symbol('templateManager')
@@ -33,6 +34,13 @@ export interface TemplatePluginOptions extends SystemConfig {
    * @default true
    */
   registerBuiltinTemplates?: boolean
+  
+  /**
+   * 是否使用自动扫描模式
+   * 开启后会自动扫描 templates 目录下的所有模板
+   * @default false
+   */
+  autoScan?: boolean
   
   /**
    * 自定义模板注册函数
@@ -129,7 +137,21 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
   
   // 注册内置模板
   if (mergedOptions.registerBuiltinTemplates) {
-    registerBuiltinTemplates(manager)
+    // 如果开启自动扫描，使用自动扫描模式
+    if (mergedOptions.autoScan) {
+      // 使用异步方式加载，避免阻塞
+      autoRegisterTemplates(manager, { debug: mergedOptions.debug }).then(() => {
+        if (mergedOptions.debug) {
+          const templates = manager.query({})
+          console.log(`[🎯 @ldesign/template] 自动扫描完成，共注册 ${templates.length} 个模板`)
+        }
+      }).catch((error) => {
+        console.error('[❌ @ldesign/template] 自动扫描失败:', error)
+      })
+    } else {
+      // 使用传统手动注册方式
+      registerBuiltinTemplates(manager)
+    }
     
     if (mergedOptions.debug) {
       const templates = manager.query({})

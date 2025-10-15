@@ -1,0 +1,8 @@
+{
+  "displayName": "默认登录页",
+  "description": "简洁大方的桌面端登录页面",
+  "version": "1.0.0",
+  "author": "LDesign Team",
+  "tags": ["login", "desktop", "default", "simple", "clean"],
+  "isDefault": true
+}

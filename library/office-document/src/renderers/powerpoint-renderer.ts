@@ -133,17 +133,18 @@ export class PowerPointRenderer implements IDocumentRenderer {
     }
    }
 
-   // Create content container
-   const slideContent = document.createElement('div');
-   slideContent.style.cssText = `
-    width: 100%;
-    height: 100%;
-    padding: 48px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-   `;
+  // Create content container
+  const slideContent = document.createElement('div');
+  slideContent.style.cssText = `
+   width: 100%;
+   height: 100%;
+   padding: 48px;
+   box-sizing: border-box;
+   display: flex;
+   flex-direction: column;
+   position: relative;
+   font-family: 'Calibri', 'Arial', sans-serif;
+  `;
 
    // Extract shapes and text
    const shapes = xmlDoc.querySelectorAll('sp');
@@ -206,8 +207,14 @@ export class PowerPointRenderer implements IDocumentRenderer {
 
    // Render content elements
    if (contentElements.length > 0) {
+    // Detect title (first element with large font)
+    const titleIndex = contentElements.findIndex(el => el.style.fontSize > 24);
+    
     contentElements.forEach((element, index) => {
-     if (index === 0 && element.style.fontSize > 24) {
+     // Determine if this is the title
+     const isTitle = (index === 0 && element.style.fontSize > 20) || index === titleIndex;
+     
+     if (isTitle) {
       // Title
       const title = document.createElement('h1');
       title.textContent = element.text;
@@ -215,11 +222,12 @@ export class PowerPointRenderer implements IDocumentRenderer {
        font-size: ${element.style.fontSize}px;
        font-weight: ${element.style.fontWeight};
        color: ${element.style.color};
-       margin: 0 0 24px 0;
+       margin: 0 0 32px 0;
        line-height: 1.2;
+       font-family: 'Calibri', 'Arial', sans-serif;
       `;
       slideContent.appendChild(title);
-     } else if (element.text.startsWith('•') || element.text.startsWith('-')) {
+     } else if (element.text.startsWith('•') || element.text.startsWith('-') || element.text.trim().startsWith('•')) {
       // Bullet point
       const li = document.createElement('div');
       li.textContent = element.text;
@@ -227,20 +235,25 @@ export class PowerPointRenderer implements IDocumentRenderer {
        font-size: ${element.style.fontSize}px;
        font-weight: ${element.style.fontWeight};
        color: ${element.style.color};
-       margin: 8px 0 8px 24px;
+       margin: 8px 0 8px 32px;
        line-height: 1.5;
+       position: relative;
+       padding-left: 8px;
+       font-family: 'Calibri', 'Arial', sans-serif;
       `;
       slideContent.appendChild(li);
-     } else {
-      // Regular paragraph
-      const p = document.createElement('p');
+     } else if (element.text.length > 0) {
+      // Regular paragraph or subtitle
+      const isSubtitle = !isTitle && index < 2 && element.style.fontSize > 16;
+      const p = document.createElement(isSubtitle ? 'h2' : 'p');
       p.textContent = element.text;
       p.style.cssText = `
        font-size: ${element.style.fontSize}px;
        font-weight: ${element.style.fontWeight};
        color: ${element.style.color};
-       margin: 12px 0;
-       line-height: 1.6;
+       margin: ${isSubtitle ? '0 0 24px 0' : '12px 0'};
+       line-height: ${isSubtitle ? '1.3' : '1.6'};
+       font-family: 'Calibri', 'Arial', sans-serif;
       `;
       slideContent.appendChild(p);
      }
