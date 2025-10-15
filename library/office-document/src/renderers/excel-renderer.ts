@@ -43,7 +43,7 @@ export class ExcelRenderer implements IDocumentRenderer {
    container.appendChild(wrapper);
 
    // Convert workbook to x-data-spreadsheet format
-   const xsData = this.convertWorkbookToSimpleFormat(this.workbook);
+   const xsData = this.convertWorkbookToXDataSpreadsheetFormat(this.workbook);
    
    // Initialize x-data-spreadsheet
    this.spreadsheet = new Spreadsheet(wrapper, {
@@ -82,63 +82,136 @@ export class ExcelRenderer implements IDocumentRenderer {
  }
 
  /**
-  * Convert workbook to simple format for x-data-spreadsheet
+  * Convert workbook to x-data-spreadsheet format 
   */
- private convertWorkbookToSimpleFormat(workbook: ExcelJS.Workbook): any[] {
+ private convertWorkbookToXDataSpreadsheetFormat(workbook: ExcelJS.Workbook): any[] {
   const sheets: any[] = [];
   
   workbook.worksheets.forEach((worksheet) => {
-   // Create basic sheet structure
-   const sheetData: any = {
-    name: worksheet.name || 'Sheet',
-    rows: {},
-    cols: {},
-    merges: [],
-    styles: []
-   };
+   const rows: any = {};
+   const cols: any = {};
+   const merges: string[] = [];
+   const styles: any[] = [];
    
-   // Process each row
+   // Process columns
+   worksheet.columns?.forEach((column, index) => {
+    if (column && column.width) {
+     cols[index] = { width: Math.round(column.width * 7) };
+    }
+   });
+   
+   // Process rows
+   let maxRow = 0;
+   let maxCol = 0;
+   
    worksheet.eachRow((row, rowNumber) => {
     const rowIndex = rowNumber - 1;
-    const rowData: any = {
-     cells: {}
-    };
+    maxRow = Math.max(maxRow, rowIndex);
     
-    // Process each cell in the row
+    const rowData: any = { cells: {} };
+    
+    if (row.height) {
+     rowData.height = Math.round(row.height);
+    }
+    
     row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
      const colIndex = colNumber - 1;
+     maxCol = Math.max(maxCol, colIndex);
      
-     // Create cell data object
      const cellData: any = {};
      
-     // Get cell value as text
+     // Get cell value
      if (cell.value !== null && cell.value !== undefined) {
       if (cell.type === ExcelJS.ValueType.Date) {
        cellData.text = (cell.value as Date).toLocaleDateString();
       } else if (cell.type === ExcelJS.ValueType.Formula) {
-       cellData.text = String((cell as any).result || '');
+       const result = (cell as any).result;
+       cellData.text = result !== null && result !== undefined ? String(result) : '';
       } else {
        cellData.text = String(cell.value);
       }
-     } else {
-      cellData.text = '';
      }
      
-     // Only add cell if it has content
-     if (cellData.text) {
+     // Apply basic styles
+     if (cell.font || cell.fill || cell.alignment || cell.border) {
+      const style: any = {};
+      
+      if (cell.font) {
+       if (cell.font.bold) style.bold = true;
+       if (cell.font.italic) style.italic = true;
+       if (cell.font.underline) style.underline = true;
+       if (cell.font.strike) style.strike = true;
+       if (cell.font.size) style.fontSize = cell.font.size;
+       if (cell.font.color?.argb) {
+        style.color = this.argbToHex(cell.font.color.argb);
+       }
+      }
+      
+      if (cell.fill && cell.fill.type === 'pattern') {
+       const patternFill = cell.fill as ExcelJS.FillPattern;
+       if (patternFill.fgColor?.argb) {
+        style.bgcolor = this.argbToHex(patternFill.fgColor.argb);
+       }
+      }
+      
+      if (cell.alignment) {
+       if (cell.alignment.horizontal) style.align = cell.alignment.horizontal;
+       if (cell.alignment.vertical) style.valign = cell.alignment.vertical;
+       if (cell.alignment.wrapText) style.textwrap = true;
+      }
+      
+      if (cell.border) {
+       const border: any = {};
+       if (cell.border.top) border.top = ['thin', '#000'];
+       if (cell.border.bottom) border.bottom = ['thin', '#000'];
+       if (cell.border.left) border.left = ['thin', '#000'];
+       if (cell.border.right) border.right = ['thin', '#000'];
+       if (Object.keys(border).length > 0) {
+        style.border = border;
+       }
+      }
+      
+      // Find or add style
+      let styleIndex = styles.findIndex(s => JSON.stringify(s) === JSON.stringify(style));
+      if (styleIndex === -1) {
+       styles.push(style);
+       styleIndex = styles.length - 1;
+      }
+      cellData.style = styleIndex;
+     }
+     
+     if (cellData.text || cellData.style !== undefined) {
       rowData.cells[colIndex] = cellData;
      }
     });
     
-    // Only add row if it has cells
-    if (Object.keys(rowData.cells).length > 0) {
-     sheetData.rows[rowIndex] = rowData;
+    if (Object.keys(rowData.cells).length > 0 || rowData.height) {
+     rows[rowIndex] = rowData;
     }
    });
    
+   // Process merges
+   worksheet.model.merges?.forEach((merge: string) => {
+    merges.push(merge);
+   });
+   
+   // Create sheet data
+   const sheetData: any = {
+    name: worksheet.name || 'Sheet',
+    rows,
+    cols,
+    styles,
+    merges
+   };
+   
+   // Add freeze if present
+   if (worksheet.views?.[0]?.state === 'frozen') {
+    const view = worksheet.views[0];
+    sheetData.freeze = `${view.ySplit || 0}-${view.xSplit || 0}`;
+   }
+   
    sheets.push(sheetData);
   });
-  
   return sheets;
  }
 
@@ -475,6 +548,123 @@ export class ExcelRenderer implements IDocumentRenderer {
   });
   
   return sheets;
+ }
+
+ /**
+  * Convert cell address (e.g., 'A1') to row and column index
+  */
+ private cellAddressToIndex(address: string): [number, number] {
+  const match = address.match(/^([A-Z]+)(\d+)$/);
+  if (!match) return [0, 0];
+  
+  const col = match[1];
+  const row = parseInt(match[2], 10) - 1;
+  
+  let colIndex = 0;
+  for (let i = 0; i < col.length; i++) {
+   colIndex = colIndex * 26 + col.charCodeAt(i) - 64;
+  }
+  colIndex--;
+  
+  return [row, colIndex];
+ }
+
+ /**
+  * Get or create style for cell
+  */
+ private getCellStyle(cell: ExcelJS.Cell, styles: any[]): number {
+  const style: any = {};
+  
+  // Font styles
+  if (cell.font) {
+   const font: any = {};
+   if (cell.font.bold) font.bold = true;
+   if (cell.font.italic) font.italic = true;
+   if (cell.font.underline) font.underline = true;
+   if (cell.font.strike) font.strike = true;
+   if (cell.font.name) font.name = cell.font.name;
+   if (cell.font.size) font.size = Math.round(cell.font.size);
+   if (cell.font.color?.argb) {
+    font.color = this.argbToHex(cell.font.color.argb);
+   }
+   if (Object.keys(font).length > 0) {
+    style.font = font;
+   }
+  }
+  
+  // Fill/Background
+  if (cell.fill && cell.fill.type === 'pattern') {
+   const patternFill = cell.fill as ExcelJS.FillPattern;
+   if (patternFill.fgColor?.argb) {
+    style.bgcolor = this.argbToHex(patternFill.fgColor.argb);
+   }
+  } else if (cell.fill && cell.fill.type === 'gradient') {
+   const gradientFill = cell.fill as ExcelJS.FillGradient;
+   // Use first stop color as background
+   if (gradientFill.stops?.[0]?.color?.argb) {
+    style.bgcolor = this.argbToHex(gradientFill.stops[0].color.argb);
+   }
+  }
+  
+  // Alignment
+  if (cell.alignment) {
+   if (cell.alignment.horizontal) {
+    style.align = cell.alignment.horizontal;
+   }
+   if (cell.alignment.vertical) {
+    style.valign = cell.alignment.vertical;
+   }
+   if (cell.alignment.wrapText) {
+    style.textwrap = true;
+   }
+   if (cell.alignment.textRotation) {
+    style.textRotation = cell.alignment.textRotation;
+   }
+   if (cell.alignment.indent) {
+    style.indent = cell.alignment.indent;
+   }
+  }
+  
+  // Borders
+  if (cell.border) {
+   const border: any = {};
+   
+   const convertBorder = (b: any) => {
+    if (!b) return null;
+    const style = b.style || 'thin';
+    const color = b.color?.argb ? this.argbToHex(b.color.argb) : '#000000';
+    return [style, color];
+   };
+   
+   if (cell.border.top) border.top = convertBorder(cell.border.top);
+   if (cell.border.bottom) border.bottom = convertBorder(cell.border.bottom);
+   if (cell.border.left) border.left = convertBorder(cell.border.left);
+   if (cell.border.right) border.right = convertBorder(cell.border.right);
+   
+   if (Object.keys(border).length > 0) {
+    style.border = border;
+   }
+  }
+  
+  // Number format
+  if (cell.numFmt) {
+   style.format = cell.numFmt;
+  }
+  
+  // Return style index or -1 if no style
+  if (Object.keys(style).length === 0) {
+   return -1;
+  }
+  
+  // Check if this style already exists
+  const existingIndex = styles.findIndex(s => JSON.stringify(s) === JSON.stringify(style));
+  if (existingIndex !== -1) {
+   return existingIndex;
+  }
+  
+  // Add new style and return its index
+  styles.push(style);
+  return styles.length - 1;
  }
 
  /**

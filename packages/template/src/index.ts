@@ -34,7 +34,7 @@ export {
 } from './composables'
 
 // Vue 组件
-export { TemplateRenderer } from './components'
+export { TemplateRenderer, TemplateSelector, AutoTemplate } from './components'
 
 // 默认导出
 export { getManager as default } from './core'

@@ -32,6 +32,15 @@
         <p>暂无模板</p>
       </slot>
     </div>
+
+    <!-- 模板选择器 -->
+    <TemplateSelector
+      v-if="showSelector && component"
+      :category="category"
+      :device="device"
+      :current-template="name"
+      @select="handleTemplateSelect"
+    />
   </div>
 </template>
 
@@ -39,6 +48,7 @@
 import { computed, toRefs } from 'vue'
 import { useTemplate } from '../composables/useTemplate'
 import type { TemplateLoadOptions } from '../types'
+import TemplateSelector from './TemplateSelector.vue'
 
 /**
  * 组件属性
@@ -55,10 +65,13 @@ const props = withDefaults(
     componentProps?: Record<string, any>
     /** 加载选项 */
     loadOptions?: TemplateLoadOptions
+    /** 是否显示模板选择器 */
+    showSelector?: boolean
   }>(),
   {
     componentProps: () => ({}),
     loadOptions: undefined,
+    showSelector: true,
   }
 )
 
@@ -69,6 +82,7 @@ const emit = defineEmits<{
   load: [component: any]
   error: [error: Error]
   reload: []
+  'template-change': [templateName: string]
 }>()
 
 /**
@@ -104,6 +118,13 @@ const eventName = computed(() => {
   // Vue 3 会自动处理事件转发
   return ''
 })
+
+/**
+ * 处理模板选择
+ */
+const handleTemplateSelect = (templateName: string) => {
+  emit('template-change', templateName)
+}
 </script>
 
 <style scoped>
