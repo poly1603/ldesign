@@ -111,10 +111,10 @@ export const StrikePlugin: Plugin = createPlugin({
 /**
  * 行内代码插件
  */
-export const CodePlugin: Plugin = createPlugin({
-  name: 'code',
+export const InlineCodePlugin: Plugin = createPlugin({
+  name: 'inlineCode',
   commands: {
-    toggleCode: (state, dispatch) => {
+    toggleInlineCode: (state, dispatch) => {
       if (!dispatch) return true
 
       const selection = window.getSelection()
@@ -124,28 +124,100 @@ export const CodePlugin: Plugin = createPlugin({
       const selectedText = range.toString()
 
       if (selectedText) {
-        const code = document.createElement('code')
-        code.textContent = selectedText
-        range.deleteContents()
-        range.insertNode(code)
+        // 检查是否已经是代码
+        const parent = range.commonAncestorContainer.parentElement
+        if (parent && parent.tagName === 'CODE') {
+          // 移除代码标记
+          const textNode = document.createTextNode(selectedText)
+          parent.parentNode?.replaceChild(textNode, parent)
+        } else {
+          // 添加代码标记
+          const code = document.createElement('code')
+          code.style.cssText = `
+            padding: 2px 4px;
+            margin: 0 2px;
+            background-color: rgba(135, 131, 120, 0.15);
+            border-radius: 3px;
+            font-size: 85%;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+          `
+          code.textContent = selectedText
+          range.deleteContents()
+          range.insertNode(code)
+          
+          // 设置光标到代码后面
+          const newRange = document.createRange()
+          newRange.setStartAfter(code)
+          newRange.collapse(true)
+          selection.removeAllRanges()
+          selection.addRange(newRange)
+        }
       }
 
       return true
     }
   },
   keys: {
-    'Mod-E': (state, dispatch) => {
+    'Mod-`': (state, dispatch) => {
       if (!dispatch) return true
+      const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) return false
+      
+      const range = selection.getRangeAt(0)
+      const selectedText = range.toString()
+      
+      if (selectedText) {
+        // 检查是否已经是代码
+        const parent = range.commonAncestorContainer.parentElement
+        if (parent && parent.tagName === 'CODE') {
+          // 移除代码标记
+          const textNode = document.createTextNode(selectedText)
+          parent.parentNode?.replaceChild(textNode, parent)
+        } else {
+          // 添加代码标记  
+          document.execCommand('insertHTML', false, `<code style="padding: 2px 4px; margin: 0 2px; background-color: rgba(135, 131, 120, 0.15); border-radius: 3px; font-size: 85%; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;">${selectedText}</code>`)
+        }
+      }
       return true
     }
   },
   toolbar: [{
-    name: 'code',
-    title: '代码',
+    name: 'inlineCode',
+    title: '行内代码 (Ctrl+`)',
     icon: 'code',
-    command: (state, dispatch) => true
+    command: (state, dispatch) => {
+      if (!dispatch) return true
+      const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) return false
+      
+      const range = selection.getRangeAt(0)
+      const selectedText = range.toString()
+      
+      if (selectedText) {
+        // 检查是否已经是代码
+        const parent = range.commonAncestorContainer.parentElement
+        if (parent && parent.tagName === 'CODE') {
+          // 移除代码标记
+          const textNode = document.createTextNode(selectedText)
+          parent.parentNode?.replaceChild(textNode, parent)
+        } else {
+          // 添加代码标记
+          document.execCommand('insertHTML', false, `<code style="padding: 2px 4px; margin: 0 2px; background-color: rgba(135, 131, 120, 0.15); border-radius: 3px; font-size: 85%; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;">${selectedText}</code>`)
+        }
+      }
+      return true
+    },
+    active: () => {
+      const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) return false
+      const parent = selection.getRangeAt(0).commonAncestorContainer.parentElement
+      return parent?.tagName === 'CODE'
+    }
   }]
 })
+
+// 为了兼容性保留旧的导出名称
+export const CodePlugin = InlineCodePlugin
 
 /**
  * 清除格式插件

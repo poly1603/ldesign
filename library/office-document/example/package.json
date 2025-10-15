@@ -9,6 +9,7 @@
   "preview": "vite preview"
  },
  "dependencies": {
+  "@vue-office/pptx": "^1.0.1",
   "docx-preview": "^0.3.7",
   "exceljs": "^4.4.0",
   "jszip": "^3.10.1",
@@ -18,6 +19,9 @@
   "xlsx": "^0.18.5"
  },
  "devDependencies": {
+  "@vue-office/docx": "^1.6.3",
+  "@vue-office/excel": "^1.7.14",
+  "@vue-office/pdf": "^2.0.10",
   "typescript": "^5.3.3",
   "vite": "^5.0.10"
  }

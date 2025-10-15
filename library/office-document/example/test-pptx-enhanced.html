@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced PowerPoint Viewer Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .file-label:hover {
+            background: #0056b3;
+        }
+        
+        .renderer-options {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .renderer-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .renderer-option input[type="radio"] {
+            cursor: pointer;
+        }
+        
+        .renderer-option label {
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .viewer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 600px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        #documentViewer {
+            width: 100%;
+            height: 800px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            overflow: auto;
+            background: #fafafa;
+        }
+        
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .info {
+            margin: 20px auto;
+            max-width: 1200px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .info h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .info ul {
+            line-height: 1.8;
+        }
+        
+        .info code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="controls">
+            <div class="file-input-wrapper">
+                <input type="file" id="fileInput" accept=".pptx">
+                <label for="fileInput" class="file-label">Choose PowerPoint File</label>
+            </div>
+            
+            <div class="renderer-options">
+                <span style="font-weight: 500;">Renderer:</span>
+                <div class="renderer-option">
+                    <input type="radio" id="vueOffice" name="renderer" value="vue-office" checked>
+                    <label for="vueOffice">@vue-office/pptx</label>
+                </div>
+                <div class="renderer-option">
+                    <input type="radio" id="enhanced" name="renderer" value="enhanced">
+                    <label for="enhanced">Enhanced Manual</label>
+                </div>
+                <div class="renderer-option">
+                    <input type="radio" id="original" name="renderer" value="original">
+                    <label for="original">Original</label>
+                </div>
+            </div>
+            
+            <button id="loadSample" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Load Sample PPTX
+            </button>
+        </div>
+        <div id="status" class="status" style="display: none;"></div>
+    </div>
+    
+    <div class="info">
+        <h2>Enhanced PowerPoint Viewer Features</h2>
+        <ul>
+            <li><strong>Multiple Renderers:</strong> Choose between <code>@vue-office/pptx</code> for full-featured rendering, enhanced manual parsing, or the original renderer</li>
+            <li><strong>Better Style Support:</strong> Extracts and applies theme colors, fonts, and layouts from the presentation</li>
+            <li><strong>Responsive Design:</strong> Slides maintain proper aspect ratio and scale responsively</li>
+            <li><strong>Theme Colors:</strong> Properly maps and applies PowerPoint theme colors (accent colors, dark/light colors)</li>
+            <li><strong>Font Schemes:</strong> Uses major and minor fonts defined in the theme</li>
+            <li><strong>Background Styles:</strong> Supports solid fills and gradient backgrounds</li>
+            <li><strong>Navigation Controls:</strong> Easy slide navigation with keyboard shortcuts</li>
+            <li><strong>Auto-play Support:</strong> Can automatically advance slides</li>
+        </ul>
+    </div>
+
+    <div class="viewer-container">
+        <div id="documentViewer"></div>
+    </div>
+
+    <!-- Load the @vue-office/pptx library -->
+    <script src="./node_modules/@vue-office/pptx/lib/index.js"></script>
+    
+    <script type="module">
+        // Import the document viewer library
+        import { DocumentViewer } from '../dist/office-document.es.js';
+        
+        const viewerContainer = document.getElementById('documentViewer');
+        const fileInput = document.getElementById('fileInput');
+        const statusDiv = document.getElementById('status');
+        const loadSampleBtn = document.getElementById('loadSample');
+        
+        let currentViewer = null;
+        
+        function showStatus(message, type = 'loading') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        async function loadFile(file) {
+            const renderer = document.querySelector('input[name="renderer"]:checked').value;
+            
+            showStatus(`Loading ${file.name} with ${renderer} renderer...`);
+            
+            // Destroy existing viewer
+            if (currentViewer) {
+                currentViewer.destroy();
+                currentViewer = null;
+            }
+            
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                
+                // Determine which renderer to use
+                let rendererOption = {};
+                if (renderer === 'vue-office') {
+                    rendererOption = {
+                        renderer: 'enhanced', // Use enhanced renderer
+                        powerpoint: {
+                            useVueOffice: true,
+                            renderer: 'vue-office',
+                            showNavigation: true,
+                            autoPlay: false
+                        }
+                    };
+                } else if (renderer === 'enhanced') {
+                    rendererOption = {
+                        renderer: 'enhanced',
+                        powerpoint: {
+                            useVueOffice: false,
+                            showNavigation: true,
+                            autoPlay: false
+                        }
+                    };
+                } else {
+                    rendererOption = {
+                        renderer: 'original',
+                        powerpoint: {
+                            showNavigation: true,
+                            autoPlay: false
+                        }
+                    };
+                }
+                
+                // Create viewer with selected renderer
+                currentViewer = new DocumentViewer(viewerContainer, {
+                    ...rendererOption,
+                    onLoad: () => {
+                        showStatus(`Successfully loaded ${file.name}`, 'success');
+                        console.log('Document loaded successfully');
+                    },
+                    onError: (error) => {
+                        showStatus(`Error loading file: ${error.message}`, 'error');
+                        console.error('Error loading document:', error);
+                    }
+                });
+                
+                // Render the PowerPoint file
+                await currentViewer.render(arrayBuffer, 'pptx');
+                
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+                console.error('Error:', error);
+            }
+        }
+        
+        // File input handler
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.name.endsWith('.pptx')) {
+                loadFile(file);
+            } else {
+                showStatus('Please select a .pptx file', 'error');
+            }
+        });
+        
+        // Load sample button handler
+        loadSampleBtn.addEventListener('click', async () => {
+            try {
+                showStatus('Loading sample presentation...');
+                const response = await fetch('./samples/sample.pptx');
+                if (!response.ok) {
+                    throw new Error('Failed to load sample file');
+                }
+                const blob = await response.blob();
+                const file = new File([blob], 'sample.pptx', { type: blob.type });
+                loadFile(file);
+            } catch (error) {
+                showStatus(`Error loading sample: ${error.message}`, 'error');
+                console.error('Error loading sample:', error);
+            }
+        });
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (currentViewer && currentViewer.renderer) {
+                if (e.key === 'ArrowLeft') {
+                    currentViewer.renderer.previousSlide?.();
+                } else if (e.key === 'ArrowRight') {
+                    currentViewer.renderer.nextSlide?.();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

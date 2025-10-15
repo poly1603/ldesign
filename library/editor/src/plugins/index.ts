@@ -26,6 +26,7 @@ export * from './export-markdown'
 export * from './media-dialog'
 export * from './media-context-menu'
 export * from './image-resize'
+export * from './emoji'
 
 // 导出右键菜单插件
 import ContextMenuPlugin from './context-menu'
@@ -33,7 +34,7 @@ export { ContextMenuPlugin }
 
 
 // 默认插件集合
-export { BoldPlugin, ItalicPlugin, UnderlinePlugin, StrikePlugin, CodePlugin, ClearFormatPlugin } from './formatting'
+export { BoldPlugin, ItalicPlugin, UnderlinePlugin, StrikePlugin, InlineCodePlugin, CodePlugin, ClearFormatPlugin } from './formatting'
 export { HeadingPlugin } from './heading'
 export { BulletListPlugin, OrderedListPlugin, TaskListPlugin } from './list'
 export { BlockquotePlugin } from './blockquote'
@@ -57,3 +58,4 @@ export { ExportMarkdownPlugin, htmlToMarkdown } from './export-markdown'
 export { MediaDialogPlugin } from './media-dialog'
 export { MediaContextMenuPlugin } from './media-context-menu'
 export { ImageResizePlugin } from './image-resize'
+export { EmojiPlugin } from './emoji'

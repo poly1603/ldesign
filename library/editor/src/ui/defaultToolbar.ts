@@ -70,8 +70,8 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
     active: isCommandActive('strikeThrough'),
   },
   {
-    name: 'code',
-    title: '行内代码',
+    name: 'inlineCode',
+    title: '行内代码 (Ctrl+`)',
     icon: 'code',
     command: () => {
       const selection = window.getSelection()
@@ -89,11 +89,31 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
           parent.parentNode?.replaceChild(textNode, parent)
         } else {
           // 添加代码标记
-          document.execCommand('insertHTML', false, `<code>${text}</code>`)
+          document.execCommand('insertHTML', false, `<code style="padding: 2px 4px; margin: 0 2px; background-color: rgba(135, 131, 120, 0.15); border-radius: 3px; font-size: 85%; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;">${text}</code>`)
         }
       }
       return true
     },
+    active: () => {
+      const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) return false
+      const parent = selection.getRangeAt(0).commonAncestorContainer.parentElement
+      return parent?.tagName === 'CODE'
+    },
+  },
+  {
+    name: 'superscript',
+    title: '上标',
+    icon: 'superscript',
+    command: execCommand('superscript'),
+    active: isCommandActive('superscript'),
+  },
+  {
+    name: 'subscript',
+    title: '下标',
+    icon: 'subscript',
+    command: execCommand('subscript'),
+    active: isCommandActive('subscript'),
   },
   
   // 标题（下拉）
@@ -172,6 +192,12 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
   },
   
   // 插入
+  {
+    name: 'emoji',
+    title: '插入表情',
+    icon: 'emoji',
+    command: 'insertEmoji', // 使用命令名称，由EmojiPlugin处理
+  },
   {
     name: 'link',
     title: '插入链接',
@@ -431,13 +457,13 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
  */
 export const TOOLBAR_GROUPS = {
   history: ['undo', 'redo'],
-  format: ['bold', 'italic', 'underline', 'strike', 'code'],
+  format: ['bold', 'italic', 'underline', 'strike', 'inlineCode', 'superscript', 'subscript'],
   heading: ['heading'],
   block: ['blockquote', 'codeblock'],
   list: ['bulletList', 'orderedList', 'taskList'],
   indent: ['outdent', 'indent'],
   align: ['align'],
-  insert: ['link', 'unlink', 'image', 'video', 'audio', 'file', 'table', 'horizontalRule'],
+  insert: ['emoji', 'link', 'unlink', 'image', 'video', 'audio', 'file', 'table', 'horizontalRule'],
   font: ['fontSize', 'fontFamily'],
   color: ['textColor', 'backgroundColor'],
   tools: ['removeFormat', 'fullscreen', 'search', 'wordCount'],

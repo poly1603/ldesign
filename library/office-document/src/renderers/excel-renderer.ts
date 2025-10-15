@@ -43,19 +43,17 @@ export class ExcelRenderer implements IDocumentRenderer {
    container.appendChild(wrapper);
 
    // Convert workbook to x-data-spreadsheet format
-   const xsData = this.convertWorkbookToXS(this.workbook);
-
-   // Initialize x-data-spreadsheet with correct data format
-   const spreadsheetData = xsData && xsData.length > 0 ? xsData : [{ name: 'Sheet1', rows: {}, cols: {} }];
+   const xsData = this.convertWorkbookToSimpleFormat(this.workbook);
    
+   // Initialize x-data-spreadsheet
    this.spreadsheet = new Spreadsheet(wrapper, {
     mode: options.excel?.enableEditing ? 'edit' : 'read',
     showToolbar: options.excel?.showFormulaBar || false,
     showGrid: options.excel?.showGridLines !== false,
     showContextmenu: options.excel?.enableEditing || false,
     view: {
-     height: () => wrapper.clientHeight || 600,
-     width: () => wrapper.clientWidth || 800
+     height: () => wrapper.clientHeight,
+     width: () => wrapper.clientWidth
     },
     row: {
      len: 100,
@@ -69,16 +67,9 @@ export class ExcelRenderer implements IDocumentRenderer {
     }
    });
 
-   // Load data - x-data-spreadsheet expects array of sheet objects
-   if (spreadsheetData && spreadsheetData.length > 0) {
-    try {
-     // loadData expects the data in a specific format
-     this.spreadsheet.loadData(spreadsheetData);
-    } catch (loadError) {
-     console.error('Error loading data into spreadsheet:', loadError);
-     // Try with minimal data structure
-     this.spreadsheet.loadData([{ name: 'Sheet1', rows: {}, cols: {} }]);
-    }
+   // Load data
+   if (xsData && xsData.length > 0) {
+    this.spreadsheet.loadData(xsData);
    }
 
    // Call onLoad callback
@@ -91,31 +82,245 @@ export class ExcelRenderer implements IDocumentRenderer {
  }
 
  /**
-  * Convert ExcelJS workbook to x-data-spreadsheet format
+  * Convert workbook to simple format for x-data-spreadsheet
+  */
+ private convertWorkbookToSimpleFormat(workbook: ExcelJS.Workbook): any[] {
+  const sheets: any[] = [];
+  
+  workbook.worksheets.forEach((worksheet) => {
+   // Create basic sheet structure
+   const sheetData: any = {
+    name: worksheet.name || 'Sheet',
+    rows: {},
+    cols: {},
+    merges: [],
+    styles: []
+   };
+   
+   // Process each row
+   worksheet.eachRow((row, rowNumber) => {
+    const rowIndex = rowNumber - 1;
+    const rowData: any = {
+     cells: {}
+    };
+    
+    // Process each cell in the row
+    row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+     const colIndex = colNumber - 1;
+     
+     // Create cell data object
+     const cellData: any = {};
+     
+     // Get cell value as text
+     if (cell.value !== null && cell.value !== undefined) {
+      if (cell.type === ExcelJS.ValueType.Date) {
+       cellData.text = (cell.value as Date).toLocaleDateString();
+      } else if (cell.type === ExcelJS.ValueType.Formula) {
+       cellData.text = String((cell as any).result || '');
+      } else {
+       cellData.text = String(cell.value);
+      }
+     } else {
+      cellData.text = '';
+     }
+     
+     // Only add cell if it has content
+     if (cellData.text) {
+      rowData.cells[colIndex] = cellData;
+     }
+    });
+    
+    // Only add row if it has cells
+    if (Object.keys(rowData.cells).length > 0) {
+     sheetData.rows[rowIndex] = rowData;
+    }
+   });
+   
+   sheets.push(sheetData);
+  });
+  
+  return sheets;
+ }
+
+ /**
+  * Render a specific sheet as HTML table (backup method)
+  */
+ private renderSheet(sheetIndex: number): void {
+  if (!this.workbook || !this.container) return;
+  
+  const worksheet = this.workbook.worksheets[sheetIndex];
+  if (!worksheet) return;
+  
+  this.currentSheetIndex = sheetIndex;
+  
+  // Update tabs
+  const tabs = this.container.querySelectorAll('.sheet-tab');
+  tabs.forEach((tab, index) => {
+   tab.classList.toggle('active', index === sheetIndex);
+   (tab as HTMLElement).style.background = index === sheetIndex ? '#fff' : '#f9f9f9';
+  });
+  
+  // Get content container
+  const contentContainer = this.container.querySelector('#excel-content') as HTMLElement;
+  if (!contentContainer) return;
+  
+  // Clear content
+  contentContainer.innerHTML = '';
+  
+  // Create table
+  const table = document.createElement('table');
+  table.className = 'excel-table';
+  table.style.cssText = `
+   border-collapse: collapse;
+   width: 100%;
+   font-size: 13px;
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  `;
+  
+  // Create header row with column letters
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  headerRow.appendChild(document.createElement('th')); // Empty corner cell
+  
+  const maxCol = worksheet.columnCount || 10;
+  for (let col = 1; col <= maxCol; col++) {
+   const th = document.createElement('th');
+   th.textContent = this.getColumnLetter(col);
+   th.style.cssText = `
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 8px;
+    font-weight: bold;
+    text-align: center;
+    min-width: 80px;
+   `;
+   headerRow.appendChild(th);
+  }
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+  
+  // Create table body with data
+  const tbody = document.createElement('tbody');
+  
+  // Process each row
+  worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+   const tr = document.createElement('tr');
+   
+   // Add row number
+   const rowHeader = document.createElement('th');
+   rowHeader.textContent = String(rowNumber);
+   rowHeader.style.cssText = `
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 8px;
+    font-weight: bold;
+    text-align: center;
+    width: 50px;
+   `;
+   tr.appendChild(rowHeader);
+   
+   // Add cells
+   for (let col = 1; col <= maxCol; col++) {
+    const cell = row.getCell(col);
+    const td = document.createElement('td');
+    
+    // Get cell value
+    let cellValue = '';
+    if (cell.value !== null && cell.value !== undefined) {
+     if (cell.type === ExcelJS.ValueType.Date) {
+      cellValue = (cell.value as Date).toLocaleDateString();
+     } else if (cell.type === ExcelJS.ValueType.Formula) {
+      cellValue = String((cell as any).result || '');
+     } else {
+      cellValue = String(cell.value);
+     }
+    }
+    
+    td.textContent = cellValue;
+    td.style.cssText = `
+     border: 1px solid #ddd;
+     padding: 8px;
+     text-align: ${typeof cell.value === 'number' ? 'right' : 'left'};
+    `;
+    
+    // Apply cell styles
+    if (cell.font) {
+     if (cell.font.bold) td.style.fontWeight = 'bold';
+     if (cell.font.italic) td.style.fontStyle = 'italic';
+     if (cell.font.size) td.style.fontSize = `${cell.font.size}pt`;
+     if (cell.font.color) {
+      const color = cell.font.color.argb;
+      if (color) td.style.color = `#${color.substring(2)}`;
+     }
+    }
+    
+    if (cell.fill && cell.fill.type === 'pattern') {
+     const fill = cell.fill as ExcelJS.FillPattern;
+     if (fill.fgColor?.argb) {
+      td.style.background = `#${fill.fgColor.argb.substring(2)}`;
+     }
+    }
+    
+    tr.appendChild(td);
+   }
+   
+   tbody.appendChild(tr);
+  });
+  
+  table.appendChild(tbody);
+  contentContainer.appendChild(table);
+ }
+
+ /**
+  * Get column letter from column number (1 = A, 2 = B, etc.)
+  */
+ private getColumnLetter(col: number): string {
+  let letter = '';
+  while (col > 0) {
+   col--;
+   letter = String.fromCharCode(65 + (col % 26)) + letter;
+   col = Math.floor(col / 26);
+  }
+  return letter;
+ }
+
+ /**
+  * Convert ExcelJS workbook to x-data-spreadsheet format (deprecated)
   */
  private convertWorkbookToXS(workbook: ExcelJS.Workbook): any {
   const sheets: any[] = [];
   
-  workbook.worksheets.forEach((worksheet) => {
+  console.log('Converting workbook with', workbook.worksheets.length, 'sheets');
+  
+  workbook.worksheets.forEach((worksheet, sheetIndex) => {
    const rows: any = {};
    const cols: any = {};
    const styles: any[] = []; // Store styles
 
+   console.log(`Processing sheet ${sheetIndex}: ${worksheet.name}`);
+   console.log(`Sheet dimensions: ${worksheet.rowCount} rows, ${worksheet.columnCount} cols`);
+   console.log(`Actual cell count: ${worksheet.actualRowCount}, ${worksheet.actualColumnCount}`);
+   
    // Get dimensions
    const rowCount = worksheet.rowCount || 0;
    const columnCount = worksheet.columnCount || 0;
 
-   // Convert cells
-   worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+   // Convert cells - use includeEmpty: true to capture all cells
+   let totalCells = 0;
+   let processedCells = 0;
+   
+   worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
     const rowData: any = { cells: {} };
     const R = rowNumber - 1; // Convert to 0-based index
     
-    row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+    row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+     totalCells++;
      const C = colNumber - 1; // Convert to 0-based index
      const cellData: any = {};
      
      // Set text/value based on cell type
      if (cell.value !== null && cell.value !== undefined) {
+      processedCells++;
       if (cell.type === ExcelJS.ValueType.Number) {
        cellData.text = String(cell.value);
       } else if (cell.type === ExcelJS.ValueType.Date) {
@@ -186,9 +391,12 @@ export class ExcelRenderer implements IDocumentRenderer {
       }
      }
      
-     if (cellData.text !== undefined || Object.keys(cellData).length > 0) {
-      // Ensure text exists even if empty
-      if (!cellData.text) cellData.text = '';
+     // Add cell if it has text or any content
+     if (cellData.text !== undefined && cellData.text !== '') {
+      rowData.cells[C] = cellData;
+     } else if (Object.keys(cellData).length > 1) {
+      // Has style but no text
+      cellData.text = '';
       rowData.cells[C] = cellData;
      }
     });
@@ -198,12 +406,36 @@ export class ExcelRenderer implements IDocumentRenderer {
      rowData.height = Math.round(row.height);
     }
     
-    // Only add rows that have cells
-    if (Object.keys(rowData.cells).length > 0) {
-     rows[R] = rowData;
-    }
+   // Add rows even if they might have cells
+   if (Object.keys(rowData.cells).length > 0) {
+    rows[R] = rowData;
+   }
    });
 
+   console.log(`Sheet ${sheetIndex}: Processed ${processedCells} cells out of ${totalCells} total`);
+   console.log(`Sheet ${sheetIndex}: Created ${Object.keys(rows).length} rows`);
+   
+   // If no rows were created but worksheet has data, add at least one cell
+   if (Object.keys(rows).length === 0 && worksheet.actualRowCount > 0) {
+    console.log('No rows created, attempting to read worksheet data directly...');
+    // Try a simpler approach - just get the first few rows
+    for (let r = 0; r < Math.min(10, worksheet.actualRowCount); r++) {
+     const row = worksheet.getRow(r + 1);
+     if (row && row.values && row.values.length > 0) {
+      const rowData: any = { cells: {} };
+      row.values.forEach((value, index) => {
+       if (value !== null && value !== undefined) {
+        rowData.cells[index - 1] = { text: String(value) };
+       }
+      });
+      if (Object.keys(rowData.cells).length > 0) {
+       rows[r] = rowData;
+      }
+     }
+    }
+    console.log(`After direct read: ${Object.keys(rows).length} rows`);
+   }
+   
    // Set column widths
    worksheet.columns?.forEach((column, index) => {
     if (column && column.width) {
@@ -263,7 +495,8 @@ export class ExcelRenderer implements IDocumentRenderer {
  switchSheet(sheetIndex: number): void {
   if (this.spreadsheet && this.workbook) {
    if (sheetIndex >= 0 && sheetIndex < this.workbook.worksheets.length) {
-    this.spreadsheet.changeSheet(sheetIndex);
+    // x-data-spreadsheet uses sheet index directly
+    this.spreadsheet.loadSheetData(sheetIndex);
    }
   }
  }

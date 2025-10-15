@@ -2,7 +2,7 @@
  * 桌面端默认登录模板配置
  */
 
-import type { TemplateMetadata } from '../../../../types'
+import type { TemplateConfig } from '../../../../types'
 
 export default {
   name: 'default',
@@ -14,4 +14,4 @@ export default {
   isDefault: true,
   preview: '/previews/login-desktop-default.png',
   lastModified: Date.now(),
-} as Omit<TemplateMetadata, 'category' | 'device'>
+} as TemplateConfig

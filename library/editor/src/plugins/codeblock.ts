@@ -292,6 +292,357 @@ function createCodeEditorDialog(onInsert: (code: string, language: string) => vo
 }
 
 /**
+ * 应用语法高亮
+ */
+function applySyntaxHighlighting(codeElement: HTMLElement, language: string) {
+  const code = codeElement.textContent || ''
+  
+  // 基础的语法高亮规则
+  const highlighters: Record<string, (code: string) => string> = {
+    javascript: highlightJavaScript,
+    typescript: highlightJavaScript, // TypeScript uses similar highlighting
+    python: highlightPython,
+    html: highlightHTML,
+    css: highlightCSS,
+    json: highlightJSON,
+    sql: highlightSQL,
+    java: highlightJava,
+    cpp: highlightCpp,
+    csharp: highlightCSharp,
+  }
+
+  const highlighter = highlighters[language]
+  if (highlighter) {
+    codeElement.innerHTML = highlighter(code)
+  }
+}
+
+// JavaScript/TypeScript 高亮
+function highlightJavaScript(code: string): string {
+  // 保存字符串和注释，避免内部内容被高亮
+  const strings: string[] = []
+  const comments: string[] = []
+  let stringIndex = 0
+  let commentIndex = 0
+
+  // 提取字符串
+  code = code.replace(/(["'`])(?:(?=(\\?))\2[\s\S])*?\1/g, (match) => {
+    strings.push(match)
+    return `__STRING_${stringIndex++}__`
+  })
+
+  // 提取注释
+  code = code.replace(/(\/\/.*$|\/\*[\s\S]*?\*\/)/gm, (match) => {
+    comments.push(match)
+    return `__COMMENT_${commentIndex++}__`
+  })
+
+  // 关键字
+  const keywords = /\b(async|await|break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|finally|for|function|if|import|in|instanceof|let|new|of|return|super|switch|this|throw|try|typeof|var|void|while|with|yield|enum|implements|interface|package|private|protected|public|static|from|as)\b/g
+  code = code.replace(keywords, '<span style="color: #c678dd; font-weight: 600;">$1</span>')
+
+  // 内置对象和方法
+  const builtins = /\b(console|window|document|Math|Array|Object|String|Number|Boolean|Date|RegExp|Error|JSON|Promise|Map|Set|Symbol|parseInt|parseFloat|isNaN|isFinite)\b/g
+  code = code.replace(builtins, '<span style="color: #e06c75;">$1</span>')
+
+  // 函数名
+  code = code.replace(/(\w+)(?=\s*\()/g, '<span style="color: #61afef;">$1</span>')
+
+  // 数字
+  code = code.replace(/\b(\d+(\.\d+)?([eE][+-]?\d+)?)\b/g, '<span style="color: #d19a66;">$1</span>')
+
+  // 操作符
+  code = code.replace(/([+\-*/%=<>!&|^~?:]+)/g, '<span style="color: #56b6c2;">$1</span>')
+
+  // 还原注释
+  for (let i = 0; i < comments.length; i++) {
+    code = code.replace(`__COMMENT_${i}__`, `<span style="color: #5c6370; font-style: italic;">${escapeHtml(comments[i])}</span>`)
+  }
+
+  // 还原字符串
+  for (let i = 0; i < strings.length; i++) {
+    code = code.replace(`__STRING_${i}__`, `<span style="color: #98c379;">${escapeHtml(strings[i])}</span>`)
+  }
+
+  return code
+}
+
+// Python 高亮
+function highlightPython(code: string): string {
+  // 保存字符串和注释
+  const strings: string[] = []
+  const comments: string[] = []
+  let stringIndex = 0
+  let commentIndex = 0
+
+  // 提取字符串
+  code = code.replace(/(["'])(?:(?=(\\?))\2[\s\S])*?\1/g, (match) => {
+    strings.push(match)
+    return `__STRING_${stringIndex++}__`
+  })
+
+  // 提取注释
+  code = code.replace(/(#.*$)/gm, (match) => {
+    comments.push(match)
+    return `__COMMENT_${commentIndex++}__`
+  })
+
+  // 关键字
+  const keywords = /\b(and|as|assert|break|class|continue|def|del|elif|else|except|False|finally|for|from|global|if|import|in|is|lambda|None|nonlocal|not|or|pass|raise|return|True|try|while|with|yield)\b/g
+  code = code.replace(keywords, '<span style="color: #c678dd; font-weight: 600;">$1</span>')
+
+  // 内置函数
+  const builtins = /\b(print|len|range|int|float|str|list|dict|set|tuple|bool|input|open|file|abs|all|any|bin|chr|dir|eval|exec|filter|format|help|hex|id|map|max|min|oct|ord|pow|round|sorted|sum|type|zip)\b/g
+  code = code.replace(builtins, '<span style="color: #e06c75;">$1</span>')
+
+  // 函数名
+  code = code.replace(/def\s+(\w+)/g, 'def <span style="color: #61afef;">$1</span>')
+  code = code.replace(/(\w+)(?=\s*\()/g, '<span style="color: #61afef;">$1</span>')
+
+  // 数字
+  code = code.replace(/\b(\d+(\.\d+)?([eE][+-]?\d+)?)\b/g, '<span style="color: #d19a66;">$1</span>')
+
+  // 还原注释
+  for (let i = 0; i < comments.length; i++) {
+    code = code.replace(`__COMMENT_${i}__`, `<span style="color: #5c6370; font-style: italic;">${escapeHtml(comments[i])}</span>`)
+  }
+
+  // 还原字符串
+  for (let i = 0; i < strings.length; i++) {
+    code = code.replace(`__STRING_${i}__`, `<span style="color: #98c379;">${escapeHtml(strings[i])}</span>`)
+  }
+
+  return code
+}
+
+// HTML 高亮
+function highlightHTML(code: string): string {
+  // HTML标签
+  code = code.replace(/(&lt;\/?)(\w+)(.*?)(&gt;)/g, (match, open, tag, attrs, close) => {
+    let highlighted = `<span style="color: #56b6c2;">${open}</span>`
+    highlighted += `<span style="color: #e06c75;">${tag}</span>`
+    
+    // 高亮属性
+    if (attrs) {
+      attrs = attrs.replace(/(\w+)(=)(["'])(.*?)\3/g, 
+        '<span style="color: #d19a66;">$1</span><span style="color: #56b6c2;">$2</span><span style="color: #98c379;">$3$4$3</span>'
+      )
+      highlighted += attrs
+    }
+    
+    highlighted += `<span style="color: #56b6c2;">${close}</span>`
+    return highlighted
+  })
+
+  // HTML注释
+  code = code.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span style="color: #5c6370; font-style: italic;">$1</span>')
+
+  return code
+}
+
+// CSS 高亮
+function highlightCSS(code: string): string {
+  // CSS选择器
+  code = code.replace(/([.#]?[\w-]+)(?=\s*\{)/g, '<span style="color: #e06c75;">$1</span>')
+  
+  // CSS属性
+  code = code.replace(/([\w-]+)(?=\s*:)/g, '<span style="color: #61afef;">$1</span>')
+  
+  // CSS值
+  code = code.replace(/:\s*([^;]+)/g, ': <span style="color: #98c379;">$1</span>')
+  
+  // 注释
+  code = code.replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color: #5c6370; font-style: italic;">$1</span>')
+
+  return code
+}
+
+// JSON 高亮
+function highlightJSON(code: string): string {
+  // 属性名
+  code = code.replace(/"([^"]+)"(?=\s*:)/g, '<span style="color: #e06c75;">"$1"</span>')
+  
+  // 字符串值
+  code = code.replace(/:\s*"([^"]*)"/g, ': <span style="color: #98c379;">"$1"</span>')
+  
+  // 数字
+  code = code.replace(/\b(\d+(\.\d+)?([eE][+-]?\d+)?)\b/g, '<span style="color: #d19a66;">$1</span>')
+  
+  // 布尔值和null
+  code = code.replace(/\b(true|false|null)\b/g, '<span style="color: #56b6c2;">$1</span>')
+
+  return code
+}
+
+// SQL 高亮
+function highlightSQL(code: string): string {
+  // SQL关键字
+  const keywords = /\b(SELECT|FROM|WHERE|JOIN|LEFT|RIGHT|INNER|OUTER|ON|AS|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|TABLE|DROP|ALTER|ADD|COLUMN|PRIMARY|KEY|FOREIGN|REFERENCES|INDEX|UNIQUE|NOT|NULL|DEFAULT|AUTO_INCREMENT|ORDER|BY|GROUP|HAVING|LIMIT|OFFSET|UNION|ALL|DISTINCT|COUNT|SUM|AVG|MIN|MAX|CASE|WHEN|THEN|ELSE|END|AND|OR|IN|EXISTS|BETWEEN|LIKE|IS)\b/gi
+  code = code.replace(keywords, '<span style="color: #c678dd; font-weight: 600; text-transform: uppercase;">$1</span>')
+
+  // 字符串
+  code = code.replace(/(["'])(?:(?=(\\?))\2[\s\S])*?\1/g, '<span style="color: #98c379;">$&</span>')
+
+  // 数字
+  code = code.replace(/\b(\d+(\.\d+)?)\b/g, '<span style="color: #d19a66;">$1</span>')
+
+  // 注释
+  code = code.replace(/(--.*$)/gm, '<span style="color: #5c6370; font-style: italic;">$1</span>')
+
+  return code
+}
+
+// Java 高亮
+function highlightJava(code: string): string {
+  // 保存字符串和注释
+  const strings: string[] = []
+  const comments: string[] = []
+  let stringIndex = 0
+  let commentIndex = 0
+
+  // 提取字符串
+  code = code.replace(/(["'])(?:(?=(\\?))\2[\s\S])*?\1/g, (match) => {
+    strings.push(match)
+    return `__STRING_${stringIndex++}__`
+  })
+
+  // 提取注释
+  code = code.replace(/(\/\/.*$|\/\*[\s\S]*?\*\/)/gm, (match) => {
+    comments.push(match)
+    return `__COMMENT_${commentIndex++}__`
+  })
+
+  // 关键字
+  const keywords = /\b(abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|extends|final|finally|float|for|if|goto|implements|import|instanceof|int|interface|long|native|new|package|private|protected|public|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|transient|try|void|volatile|while)\b/g
+  code = code.replace(keywords, '<span style="color: #c678dd; font-weight: 600;">$1</span>')
+
+  // 类型
+  code = code.replace(/\b(String|Integer|Double|Float|Boolean|Character|Byte|Short|Long|Object|Class|System|Math|Thread|Exception|RuntimeException)\b/g, '<span style="color: #e06c75;">$1</span>')
+
+  // 函数名
+  code = code.replace(/(\w+)(?=\s*\()/g, '<span style="color: #61afef;">$1</span>')
+
+  // 数字
+  code = code.replace(/\b(\d+(\.\d+)?[fFlLdD]?)\b/g, '<span style="color: #d19a66;">$1</span>')
+
+  // 还原注释
+  for (let i = 0; i < comments.length; i++) {
+    code = code.replace(`__COMMENT_${i}__`, `<span style="color: #5c6370; font-style: italic;">${escapeHtml(comments[i])}</span>`)
+  }
+
+  // 还原字符串
+  for (let i = 0; i < strings.length; i++) {
+    code = code.replace(`__STRING_${i}__`, `<span style="color: #98c379;">${escapeHtml(strings[i])}</span>`)
+  }
+
+  return code
+}
+
+// C++ 高亮
+function highlightCpp(code: string): string {
+  // 保存字符串和注释
+  const strings: string[] = []
+  const comments: string[] = []
+  let stringIndex = 0
+  let commentIndex = 0
+
+  // 提取字符串
+  code = code.replace(/(["'])(?:(?=(\\?))\2[\s\S])*?\1/g, (match) => {
+    strings.push(match)
+    return `__STRING_${stringIndex++}__`
+  })
+
+  // 提取注释
+  code = code.replace(/(\/\/.*$|\/\*[\s\S]*?\*\/)/gm, (match) => {
+    comments.push(match)
+    return `__COMMENT_${commentIndex++}__`
+  })
+
+  // 关键字
+  const keywords = /\b(alignas|alignof|and|and_eq|asm|auto|bitand|bitor|bool|break|case|catch|char|char16_t|char32_t|class|compl|const|constexpr|const_cast|continue|decltype|default|delete|do|double|dynamic_cast|else|enum|explicit|export|extern|false|float|for|friend|goto|if|inline|int|long|mutable|namespace|new|noexcept|not|not_eq|nullptr|operator|or|or_eq|private|protected|public|register|reinterpret_cast|return|short|signed|sizeof|static|static_assert|static_cast|struct|switch|template|this|thread_local|throw|true|try|typedef|typeid|typename|union|unsigned|using|virtual|void|volatile|wchar_t|while|xor|xor_eq)\b/g
+  code = code.replace(keywords, '<span style="color: #c678dd; font-weight: 600;">$1</span>')
+
+  // 预处理指令
+  code = code.replace(/(#\w+)/g, '<span style="color: #e06c75;">$1</span>')
+
+  // 函数名
+  code = code.replace(/(\w+)(?=\s*\()/g, '<span style="color: #61afef;">$1</span>')
+
+  // 数字
+  code = code.replace(/\b(\d+(\.\d+)?[fFlLuU]?)\b/g, '<span style="color: #d19a66;">$1</span>')
+
+  // 还原注释
+  for (let i = 0; i < comments.length; i++) {
+    code = code.replace(`__COMMENT_${i}__`, `<span style="color: #5c6370; font-style: italic;">${escapeHtml(comments[i])}</span>`)
+  }
+
+  // 还原字符串
+  for (let i = 0; i < strings.length; i++) {
+    code = code.replace(`__STRING_${i}__`, `<span style="color: #98c379;">${escapeHtml(strings[i])}</span>`)
+  }
+
+  return code
+}
+
+// C# 高亮
+function highlightCSharp(code: string): string {
+  // 保存字符串和注释
+  const strings: string[] = []
+  const comments: string[] = []
+  let stringIndex = 0
+  let commentIndex = 0
+
+  // 提取字符串
+  code = code.replace(/(["'])(?:(?=(\\?))\2[\s\S])*?\1/g, (match) => {
+    strings.push(match)
+    return `__STRING_${stringIndex++}__`
+  })
+
+  // 提取注释
+  code = code.replace(/(\/\/.*$|\/\*[\s\S]*?\*\/)/gm, (match) => {
+    comments.push(match)
+    return `__COMMENT_${commentIndex++}__`
+  })
+
+  // 关键字
+  const keywords = /\b(abstract|as|base|bool|break|byte|case|catch|char|checked|class|const|continue|decimal|default|delegate|do|double|else|enum|event|explicit|extern|false|finally|fixed|float|for|foreach|goto|if|implicit|in|int|interface|internal|is|lock|long|namespace|new|null|object|operator|out|override|params|private|protected|public|readonly|ref|return|sbyte|sealed|short|sizeof|stackalloc|static|string|struct|switch|this|throw|true|try|typeof|uint|ulong|unchecked|unsafe|ushort|using|var|virtual|void|volatile|while)\b/g
+  code = code.replace(keywords, '<span style="color: #c678dd; font-weight: 600;">$1</span>')
+
+  // 类型
+  code = code.replace(/\b(String|Int32|Int64|Double|Float|Boolean|Char|Byte|Object|Decimal|DateTime|TimeSpan|Guid|Array|List|Dictionary|Task|Action|Func)\b/g, '<span style="color: #e06c75;">$1</span>')
+
+  // 函数名
+  code = code.replace(/(\w+)(?=\s*\()/g, '<span style="color: #61afef;">$1</span>')
+
+  // 数字
+  code = code.replace(/\b(\d+(\.\d+)?[fFmMdD]?)\b/g, '<span style="color: #d19a66;">$1</span>')
+
+  // 还原注释
+  for (let i = 0; i < comments.length; i++) {
+    code = code.replace(`__COMMENT_${i}__`, `<span style="color: #5c6370; font-style: italic;">${escapeHtml(comments[i])}</span>`)
+  }
+
+  // 还原字符串
+  for (let i = 0; i < strings.length; i++) {
+    code = code.replace(`__STRING_${i}__`, `<span style="color: #98c379;">${escapeHtml(strings[i])}</span>`)
+  }
+
+  return code
+}
+
+// HTML转义函数
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }
+  return text.replace(/[&<>"']/g, m => map[m])
+}
+
+/**
  * 插入代码块
  */
 const insertCodeBlock: Command = (state, dispatch) => {
@@ -340,7 +691,111 @@ const insertCodeBlock: Command = (state, dispatch) => {
       currentSelection.addRange(range)
     }
 
-    // 创建代码块元素
+    // 创建代码块容器
+    const codeBlockContainer = document.createElement('div')
+    codeBlockContainer.className = 'code-block-container'
+    codeBlockContainer.style.cssText = `
+      position: relative;
+      margin: 16px 0;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #282c34;
+      border: 1px solid #3a3f4a;
+    `
+
+    // 创建头部（显示语言和复制按钮）
+    const header = document.createElement('div')
+    header.style.cssText = `
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      background: #21252b;
+      border-bottom: 1px solid #3a3f4a;
+      user-select: none;
+    `
+
+    // 语言标签
+    const langLabel = document.createElement('span')
+    langLabel.textContent = language && language !== 'plaintext' ? language.toUpperCase() : 'CODE'
+    langLabel.style.cssText = `
+      font-size: 12px;
+      font-weight: 600;
+      color: #7f848e;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    `
+
+    // 复制按钮
+    const copyButton = document.createElement('button')
+    copyButton.textContent = '复制'
+    copyButton.style.cssText = `
+      padding: 4px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      color: #abb2bf;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    `
+    
+    copyButton.onmouseover = () => {
+      copyButton.style.background = 'rgba(255, 255, 255, 0.2)'
+      copyButton.style.color = '#fff'
+    }
+    
+    copyButton.onmouseout = () => {
+      copyButton.style.background = 'rgba(255, 255, 255, 0.1)'
+      copyButton.style.color = '#abb2bf'
+    }
+
+    copyButton.onclick = () => {
+      const codeText = code.textContent || ''
+      navigator.clipboard.writeText(codeText).then(() => {
+        const originalText = copyButton.textContent
+        copyButton.textContent = '已复制！'
+        copyButton.style.background = '#4caf50'
+        copyButton.style.borderColor = '#4caf50'
+        copyButton.style.color = '#fff'
+        setTimeout(() => {
+          copyButton.textContent = originalText
+          copyButton.style.background = 'rgba(255, 255, 255, 0.1)'
+          copyButton.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+          copyButton.style.color = '#abb2bf'
+        }, 2000)
+      })
+    }
+
+    header.appendChild(langLabel)
+    header.appendChild(copyButton)
+
+    // 创建代码容器（包含行号和代码）
+    const codeWrapper = document.createElement('div')
+    codeWrapper.style.cssText = `
+      display: flex;
+      position: relative;
+      overflow: auto;
+      max-height: 600px;
+    `
+
+    // 行号容器
+    const lineNumbers = document.createElement('div')
+    lineNumbers.className = 'line-numbers'
+    lineNumbers.style.cssText = `
+      padding: 16px 8px;
+      background: #21252b;
+      color: #5c6370;
+      text-align: right;
+      user-select: none;
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      min-width: 40px;
+      border-right: 1px solid #3a3f4a;
+    `
+
+    // 创建 pre 和 code 元素
     const pre = document.createElement('pre')
     const code = document.createElement('code')
     
@@ -350,60 +805,55 @@ const insertCodeBlock: Command = (state, dispatch) => {
       pre.setAttribute('data-language', language)
     }
     
-    // 设置样式
-    pre.style.backgroundColor = '#2d2d2d'
-    pre.style.border = '1px solid #3a3a3a'
-    pre.style.borderRadius = '6px'
-    pre.style.padding = '16px'
-    pre.style.margin = '16px 0'
-    pre.style.fontFamily = 'Consolas, Monaco, "Courier New", monospace'
-    pre.style.fontSize = '14px'
-    pre.style.lineHeight = '1.6'
-    pre.style.overflow = 'auto'
-    pre.style.whiteSpace = 'pre'
-    pre.style.position = 'relative'
-    // 不设置 pre 为 contenteditable，只设置 code
+    // 设置 pre 样式
+    pre.style.cssText = `
+      margin: 0;
+      padding: 16px;
+      background: transparent;
+      overflow: visible;
+      flex: 1;
+    `
     
-    code.textContent = codeContent
-    code.setAttribute('contenteditable', 'true')
-    code.style.display = 'block'
-    code.style.color = '#f8f8f2'
-    code.style.background = 'transparent'
-    code.style.border = 'none'
-    code.style.outline = 'none'
-    code.style.padding = '0'
-    code.style.margin = '0'
-    code.style.fontFamily = 'inherit'
-    code.style.fontSize = 'inherit'
-    code.style.lineHeight = 'inherit'
-    code.style.whiteSpace = 'pre-wrap'
-    code.style.wordWrap = 'break-word'
-    code.style.overflowWrap = 'break-word'
+    // 设置 code 样式
+    code.style.cssText = `
+      display: block;
+      color: #abb2bf;
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre;
+      tab-size: 2;
+      outline: none;
+    `
 
-    // 如果支持语法高京，添加语言标签
+    // 设置代码内容
+    code.textContent = codeContent
+    
+    // 应用语法高亮
     if (language && language !== 'plaintext') {
-      const langLabel = document.createElement('span')
-      langLabel.textContent = language.toUpperCase()
-      langLabel.style.cssText = `
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        padding: 4px 10px;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 600;
-        color: #a0a0a0;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        user-select: none;
-        backdrop-filter: blur(4px);
-      `
-      pre.appendChild(langLabel)
+      applySyntaxHighlighting(code, language)
     }
 
+    // 更新行号
+    function updateLineNumbers() {
+      const lines = (code.textContent || '').split('\n')
+      const lineNumbersHtml = lines.map((_, i) => `<div style="line-height: 1.6;">${i + 1}</div>`).join('')
+      lineNumbers.innerHTML = lineNumbersHtml
+    }
+
+    // 初始化行号
+    updateLineNumbers()
+
+    // 使代码可编辑
+    code.setAttribute('contenteditable', 'true')
+    code.spellcheck = false
+
+    // 组装代码块
     pre.appendChild(code)
+    codeWrapper.appendChild(lineNumbers)
+    codeWrapper.appendChild(pre)
+    codeBlockContainer.appendChild(header)
+    codeBlockContainer.appendChild(codeWrapper)
     
     // 处理代码块中的键盘事件
     code.addEventListener('keydown', (e) => {
@@ -421,6 +871,8 @@ const insertCodeBlock: Command = (state, dispatch) => {
           selection.removeAllRanges()
           selection.addRange(range)
         }
+        // 更新行号
+        setTimeout(updateLineNumbers, 0)
       }
       // 处理 Tab 键，插入制表符
       else if (e.key === 'Tab') {
@@ -438,18 +890,46 @@ const insertCodeBlock: Command = (state, dispatch) => {
         }
       }
     })
+
+    // 监听内容变化以更新行号和语法高亮
+    code.addEventListener('input', () => {
+      updateLineNumbers()
+      // 保存光标位置
+      const selection = window.getSelection()
+      const range = selection?.getRangeAt(0)
+      const offset = range?.startOffset || 0
+      
+      // 重新应用语法高亮
+      if (language && language !== 'plaintext') {
+        const plainText = code.textContent || ''
+        applySyntaxHighlighting(code, language)
+        
+        // 恢复光标位置（简化版本）
+        try {
+          const newRange = document.createRange()
+          if (code.firstChild) {
+            newRange.setStart(code.firstChild, Math.min(offset, code.textContent?.length || 0))
+            newRange.collapse(true)
+            selection?.removeAllRanges()
+            selection?.addRange(newRange)
+          }
+        } catch (e) {
+          // 忽略光标恢复错误
+        }
+      }
+    })
     
     // 删除选中的内容并插入代码块
     range.deleteContents()
-    range.insertNode(pre)
+    range.insertNode(codeBlockContainer)
 
     // 插入一个段落在代码块后面，以便可以继续编辑
     const p = document.createElement('p')
     p.innerHTML = '<br>'
-    if (pre.nextSibling) {
-      pre.parentNode?.insertBefore(p, pre.nextSibling)
+    if (codeBlockContainer.nextSibling) {
+      codeBlockContainer.parentNode?.insertBefore(p, codeBlockContainer.nextSibling)
     } else {
-      pre.parentNode?.appendChild(p)
+      codeBlockContainer.parentNode?.appendChild(p)
     }
 
     // 将光标移到段落中

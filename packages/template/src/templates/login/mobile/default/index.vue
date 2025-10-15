@@ -1,208 +1,149 @@
-<script setup lang="ts">
-import type { LoginTemplateProps } from '../../types'
-import { reactive, ref } from 'vue'
-
-const props = withDefaults(defineProps<LoginTemplateProps>(), {
-  title: '欢迎登录',
-  subtitle: '',
-  logo: '',
-  showRegister: true,
-  showForgotPassword: true,
-})
-
-const formData = reactive({
-  username: '',
-  password: '',
-  remember: false,
-})
-
-const loading = ref(false)
-
-async function handleSubmit() {
-  if (!props.onLogin)
-return
-
-  loading.value = true
-  try {
-    await props.onLogin(formData)
-  }
- catch (error) {
-    console.error('Login failed:', error)
-  }
- finally {
-    loading.value = false
-  }
-}
-
-function handleRegister() {
-  props.onRegister?.()
-}
-
-function handleForgotPassword() {
-  props.onForgotPassword?.()
-}
-</script>
-
 <template>
-  <div class="mobile-login-container">
-    <!-- 模板切换器插槽 -->
-    <div v-if="$slots.switcher" class="template-switcher-container">
-      <slot name="switcher" />
-    </div>
-    <div class="mobile-login-header">
-      <img v-if="logo" :src="logo" alt="Logo" class="mobile-logo">
-      <h1 class="mobile-title">
-        {{ title }}
-      </h1>
-      <p v-if="subtitle" class="mobile-subtitle">
-        {{ subtitle }}
-      </p>
+  <div class="login-mobile-default">
+    <div class="login-header">
+      <h1>{{ title }}</h1>
     </div>
 
-    <form class="mobile-form" @submit.prevent="handleSubmit">
-      <div class="mobile-input-group">
+    <form class="login-form" @submit.prevent="handleSubmit">
+      <div class="form-group">
         <input
-          v-model="formData.username"
+          v-model="form.username"
           type="text"
-          placeholder="手机号 / 邮箱"
+          placeholder="手机号/用户名"
           required
-        >
+        />
       </div>
 
-      <div class="mobile-input-group">
+      <div class="form-group">
         <input
-          v-model="formData.password"
+          v-model="form.password"
           type="password"
           placeholder="密码"
           required
-        >
+        />
       </div>
 
-      <button type="submit" class="mobile-login-btn" :disabled="loading">
-        {{ loading ? '登录中...' : '登录' }}
+      <button type="submit" class="btn-login">
+        登录
       </button>
-
-      <div v-if="showForgotPassword" class="mobile-forgot">
-        <a href="#" @click.prevent="handleForgotPassword">忘记密码？</a>
-      </div>
     </form>
 
-    <div v-if="showRegister" class="mobile-register">
-      <span>还没有账号？</span>
-      <a href="#" @click.prevent="handleRegister">立即注册</a>
+    <div class="login-footer">
+      <a href="#" @click.prevent="handleRegister">注册账号</a>
+      <span class="divider">|</span>
+      <a href="#" @click.prevent="handleForgot">忘记密码</a>
     </div>
   </div>
 </template>
 
+<script setup lang="ts">
+import { reactive } from 'vue'
+
+interface Props {
+  title?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  title: '登录',
+})
+
+const emit = defineEmits<{
+  submit: [data: { username: string; password: string }]
+  register: []
+  forgot: []
+}>()
+
+const form = reactive({
+  username: '',
+  password: '',
+})
+
+const handleSubmit = () => {
+  emit('submit', { ...form })
+}
+
+const handleRegister = () => {
+  emit('register')
+}
+
+const handleForgot = () => {
+  emit('forgot')
+}
+</script>
+
 <style scoped>
-.template-switcher-container {
-  position: fixed;
-  top: 12px;
-  right: 12px;
-  z-index: 1000;
-}
-
-.mobile-login-container {
+.login-mobile-default {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.mobile-login-header {
+.login-header {
   text-align: center;
-  padding: 60px 0 40px;
+  margin-bottom: 60px;
+  padding-top: 40px;
+}
+
+.login-header h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 600;
   color: white;
 }
 
-.mobile-logo {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 20px;
-  border-radius: 20px;
+.login-form {
+  margin-bottom: 30px;
 }
 
-.mobile-title {
-  font-size: 32px;
-  font-weight: 700;
-  margin: 0 0 8px 0;
+.form-group {
+  margin-bottom: 16px;
 }
 
-.mobile-subtitle {
-  font-size: 16px;
-  opacity: 0.9;
-  margin: 0;
-}
-
-.mobile-form {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.mobile-input-group {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.mobile-input-group input {
+.form-group input {
   width: 100%;
-  padding: 18px 20px;
-  border: none;
+  padding: 16px;
   font-size: 16px;
+  color: #333;
+  background: white;
+  border: none;
+  border-radius: 8px;
   box-sizing: border-box;
 }
 
-.mobile-input-group input:focus {
-  outline: none;
+.form-group input::placeholder {
+  color: #999;
 }
 
-.mobile-login-btn {
-  padding: 18px;
-  background: white;
-  color: #667eea;
-  border: none;
-  border-radius: 12px;
+.btn-login {
+  width: 100%;
+  padding: 16px;
+  margin-top: 24px;
   font-size: 18px;
-  font-weight: 600;
-  margin-top: 8px;
+  font-weight: 500;
+  color: #667eea;
+  background: white;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
   transition: transform 0.2s;
 }
 
-.mobile-login-btn:active:not(:disabled) {
+.btn-login:active {
   transform: scale(0.98);
 }
 
-.mobile-login-btn:disabled {
-  opacity: 0.6;
-}
-
-.mobile-forgot {
+.login-footer {
   text-align: center;
-  margin-top: 8px;
+  font-size: 14px;
+  color: white;
 }
 
-.mobile-forgot a {
+.login-footer a {
   color: white;
   text-decoration: none;
-  font-size: 14px;
 }
 
-.mobile-register {
-  text-align: center;
-  padding: 20px 0;
-  color: white;
-  font-size: 14px;
-}
-
-.mobile-register a {
-  color: white;
-  text-decoration: underline;
-  font-weight: 600;
-  margin-left: 8px;
+.divider {
+  margin: 0 12px;
 }
 </style>

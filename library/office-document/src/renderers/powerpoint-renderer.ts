@@ -162,6 +162,7 @@ export class PowerPointRenderer implements IDocumentRenderer {
      let fontSize = 18;
      let isBold = false;
      let color = '#000000';
+     let hasColor = false;
      
      runs.forEach(run => {
       const text = run.querySelector('t')?.textContent || '';
@@ -179,12 +180,45 @@ export class PowerPointRenderer implements IDocumentRenderer {
         isBold = true;
        }
        
-       // Color
+       // Color - check multiple possible locations
        const solidFill = rPr.querySelector('solidFill');
-       const srgbClr = solidFill?.querySelector('srgbClr');
-       if (srgbClr) {
-        const val = srgbClr.getAttribute('val');
-        if (val) color = `#${val}`;
+       if (solidFill) {
+        // Check srgbClr (direct RGB)
+        const srgbClr = solidFill.querySelector('srgbClr');
+        if (srgbClr) {
+         const val = srgbClr.getAttribute('val');
+         if (val) {
+          color = `#${val}`;
+          hasColor = true;
+         }
+        }
+        
+        // Check schemeClr (theme color)
+        if (!hasColor) {
+         const schemeClr = solidFill.querySelector('schemeClr');
+         if (schemeClr) {
+          const scheme = schemeClr.getAttribute('val');
+          // Map common theme colors
+          const themeColorMap: any = {
+           'accent1': '#4472C4',
+           'accent2': '#ED7D31',
+           'accent3': '#A5A5A5',
+           'accent4': '#FFC000',
+           'accent5': '#5B9BD5',
+           'accent6': '#70AD47',
+           'tx1': '#000000',
+           'tx2': '#000000',
+           'bg1': '#FFFFFF',
+           'bg2': '#FFFFFF',
+           'lt1': '#FFFFFF',
+           'dk1': '#000000'
+          };
+          if (scheme && themeColorMap[scheme]) {
+           color = themeColorMap[scheme];
+           hasColor = true;
+          }
+         }
+        }
        }
       }
       
@@ -192,12 +226,15 @@ export class PowerPointRenderer implements IDocumentRenderer {
      });
      
      if (paragraphText.trim()) {
+      // If no explicit color was found, use default based on position
+      const finalColor = hasColor ? color : '#000000';
+      
       contentElements.push({
        text: paragraphText.trim(),
        style: {
         fontSize,
         fontWeight: isBold ? 'bold' : 'normal',
-        color
+        color: finalColor
        },
        order: shapeIndex
       });

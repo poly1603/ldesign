@@ -1,132 +1,40 @@
 /**
- * @ldesign/template - 统一入口
- *
- * 功能强大、性能卓越的 Vue3 模板管理和渲染系统
- *
- * @author ldesign
- * @version 1.0.0
+ * @ldesign/template - 多模板管理及动态渲染系统
+ * 
+ * 核心特性：
+ * - 自动扫描模板：使用 import.meta.glob 自动扫描所有模板
+ * - 懒加载：按需加载模板组件，优化性能
+ * - 类型安全：完整的 TypeScript 类型支持
+ * - Vue 集成：提供 Vue 组合式函数和组件
  */
 
-// ======== 核心层 ========
-export {
-  // 缓存管理
-  CacheManager,
-  // 设备检测
-  DeviceDetector,
-  // 事件系统
-  EventEmitter,
-
-  getCache,
-  getDeviceDetector,
-  getGlobalEmitter,
-
-  getLoader,
-  getRegistry,
-  isDesktop,
-
-  isMobile,
-  isTablet,
-  resetCache,
-
-  resetDeviceDetector,
-  resetGlobalEmitter,
-  resetLoader,
-  resetRegistry,
-  // 模板加载
-  TemplateLoader,
-  // 注册中心
-  TemplateRegistry,
-} from './core'
-
-export type { LoadOptions } from './core'
-
-// ======== 插件系统 ========
-export { createLoggerPlugin, createPreloadPlugin } from './plugins'
-
-// ======== 运行时层 ========
-export {
-  createTemplateManager,
-  getLifecycle,
-
-  getMonitor,
-  // 生命周期
-  LifecycleManager,
-  // 性能监控
-  PerformanceMonitor,
-
-  resetLifecycle,
-  resetMonitor,
-  // 模板管理器
-  TemplateManager,
-} from './runtime'
-
-// ======== 类型定义 ========
+// 类型导出
 export type * from './types'
 
-// ======== 工具函数 ========
+// 核心模块
 export {
-  // 模板ID工具
-  buildTemplateId,
-  compareVersion,
+  TemplateScanner,
+  TemplateLoader,
+  TemplateManager,
+  getScanner,
+  getLoader,
+  getManager,
+  scanTemplates,
+  loadTemplate,
+  preloadTemplate,
+  createTemplateManager,
+} from './core'
 
-  debounce,
-  deepClone,
-  deepMerge,
-  DEFAULT_ANIMATION_DURATION,
-  // 常量
-  DEFAULT_BREAKPOINTS,
-  DEFAULT_CACHE_CONFIG,
-  DEFAULT_LOGGER_CONFIG,
-  DEFAULT_PRELOAD_CONFIG,
-  // 常用工具
-  delay,
-  ERROR_MESSAGES,
-  formatBytes,
-  generateId,
-
-  isBrowser,
-  isDev,
-  isPromise,
-  parseTemplateId,
-  PERFORMANCE_THRESHOLDS,
-  PLUGIN_VERSION,
-  safeExecute,
-  throttle,
-  VERSION,
-} from './utils'
-
-// ======== 模板扫描器 ========
-export { simpleTemplateScanner, SimpleTemplateScanner } from './utils/simpleScanner'
-
-// ======== Vue集成层 ========
+// Vue 组合式函数
 export {
-  // Plugin
-  createTemplatePlugin,
-  TEMPLATE_MANAGER_KEY,
-  TemplatePlugin,
-  // Components
-  TemplateRenderer,
-  TemplateSelector,
-  EnhancedTemplateSwitcher,
-
-  // Composables
-  useDevice,
   useTemplate,
-
   useTemplateList,
+  useDefaultTemplate,
   useTemplateManager,
-  useTemplateScanner,
-} from './vue'
+} from './composables'
 
-export type {
-  TemplatePluginOptions,
-  UseTemplateListOptions,
-  UseTemplateOptions,
-  UseTemplateScannerOptions,
-} from './vue'
+// Vue 组件
+export { TemplateRenderer } from './components'
 
-// ======== 默认导出 ========
-export { default } from './vue/plugin'
-
-// ======== 版本信息 ========
-export const version = '1.0.0'
+// 默认导出
+export { getManager as default } from './core'

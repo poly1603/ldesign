@@ -96,7 +96,9 @@ export class Editor {
       AllPlugins.ItalicPlugin,
       AllPlugins.UnderlinePlugin,
       AllPlugins.StrikePlugin,
-      AllPlugins.CodePlugin,
+      AllPlugins.InlineCodePlugin,  // 行内代码
+      AllPlugins.SuperscriptPlugin,  // 上标
+      AllPlugins.SubscriptPlugin,    // 下标
       AllPlugins.ClearFormatPlugin,
       
       // 标题和块级元素
@@ -121,8 +123,6 @@ export class Editor {
       AllPlugins.BackgroundColorPlugin,
       AllPlugins.FontSizePlugin,
       AllPlugins.FontFamilyPlugin,
-      AllPlugins.SuperscriptPlugin,
-      AllPlugins.SubscriptPlugin,
       AllPlugins.IndentPlugin,
       AllPlugins.LineHeightPlugin,
       AllPlugins.TextTransformPlugin,
@@ -133,6 +133,7 @@ export class Editor {
       AllPlugins.FindReplacePlugin,
       AllPlugins.WordCountPlugin,
       AllPlugins.ExportMarkdownPlugin,
+      AllPlugins.EmojiPlugin,        // 表情插件
       AllPlugins.MediaDialogPlugin,  // 媒体插入对话框（图片、视频、音频）
       AllPlugins.ContextMenuPlugin,
       

@@ -1,125 +1,96 @@
-<script setup lang="ts">
-import type { LoginTemplateProps } from '../../types'
-import { reactive, ref } from 'vue'
-
-const props = withDefaults(defineProps<LoginTemplateProps>(), {
-  title: '欢迎登录',
-  subtitle: '',
-  logo: '',
-  showRemember: true,
-  showRegister: true,
-  showForgotPassword: true,
-})
-
-const formData = reactive({
-  username: '',
-  password: '',
-  remember: false,
-})
-
-const loading = ref(false)
-
-async function handleSubmit() {
-  if (!props.onLogin)
-    return
-
-  loading.value = true
-  try {
-    await props.onLogin(formData)
-  }
-  catch (error) {
-    console.error('Login failed:', error)
-  }
-  finally {
-    loading.value = false
-  }
-}
-
-function handleRegister() {
-  props.onRegister?.()
-}
-
-function handleForgotPassword() {
-  props.onForgotPassword?.()
-}
-</script>
-
 <template>
-  <div class="login-container">
-    <!-- 模板切换器插槽 -->
-    <div v-if="$slots.switcher" class="template-switcher-container">
-      <slot name="switcher" />
-    </div>
-
-    <div class="login-card">
+  <div class="login-desktop-default">
+    <div class="login-container">
       <div class="login-header">
-        <img v-if="logo" :src="logo" alt="Logo" class="login-logo">
-        <h1 class="login-title">
-          {{ title }}
-        </h1>
-        <p v-if="subtitle" class="login-subtitle">
-          {{ subtitle }}
-        </p>
+        <h1>{{ title }}</h1>
+        <p class="subtitle">{{ subtitle }}</p>
       </div>
 
       <form class="login-form" @submit.prevent="handleSubmit">
         <div class="form-group">
-          <label for="username">用户名 / 邮箱</label>
-          <input id="username" v-model="formData.username" type="text" placeholder="请输入用户名或邮箱" required>
+          <label for="username">用户名</label>
+          <input
+            id="username"
+            v-model="form.username"
+            type="text"
+            placeholder="请输入用户名"
+            required
+          />
         </div>
 
         <div class="form-group">
           <label for="password">密码</label>
-          <input id="password" v-model="formData.password" type="password" placeholder="请输入密码" required>
+          <input
+            id="password"
+            v-model="form.password"
+            type="password"
+            placeholder="请输入密码"
+            required
+          />
         </div>
 
-        <div v-if="showRemember || showForgotPassword" class="form-options">
-          <label v-if="showRemember" class="checkbox-label">
-            <input v-model="formData.remember" type="checkbox">
-            <span>记住我</span>
-          </label>
-          <a v-if="showForgotPassword" href="#" class="forgot-link" @click.prevent="handleForgotPassword">
-            忘记密码？
-          </a>
-        </div>
-
-        <button type="submit" class="login-button" :disabled="loading">
-          {{ loading ? '登录中...' : '登录' }}
-        </button>
-
-        <div v-if="showRegister" class="register-link">
-          还没有账号？
-          <a href="#" @click.prevent="handleRegister">立即注册</a>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">
+            登录
+          </button>
         </div>
       </form>
+
+      <div class="login-footer">
+        <p>还没有账号？ <a href="#" @click.prevent="handleRegister">立即注册</a></p>
+      </div>
     </div>
   </div>
 </template>
 
-<style scoped>
-.template-switcher-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
+<script setup lang="ts">
+import { reactive } from 'vue'
+
+interface Props {
+  title?: string
+  subtitle?: string
 }
 
-.login-container {
-  min-height: 100vh;
+const props = withDefaults(defineProps<Props>(), {
+  title: '欢迎登录',
+  subtitle: 'LDesign 模板系统',
+})
+
+const emit = defineEmits<{
+  submit: [data: { username: string; password: string }]
+  register: []
+}>()
+
+const form = reactive({
+  username: '',
+  password: '',
+})
+
+const handleSubmit = () => {
+  emit('submit', { ...form })
+}
+
+const handleRegister = () => {
+  emit('register')
+}
+</script>
+
+<style scoped>
+.login-desktop-default {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
 }
 
-.login-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  padding: 40px;
+.login-container {
   width: 100%;
-  max-width: 420px;
+  max-width: 400px;
+  padding: 40px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .login-header {
@@ -127,49 +98,43 @@ function handleForgotPassword() {
   margin-bottom: 32px;
 }
 
-.login-logo {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 16px;
-}
-
-.login-title {
+.login-header h1 {
+  margin: 0 0 8px;
   font-size: 28px;
   font-weight: 600;
   color: #333;
-  margin: 0 0 8px 0;
 }
 
-.login-subtitle {
+.subtitle {
+  margin: 0;
   font-size: 14px;
   color: #666;
-  margin: 0;
 }
 
 .login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  margin-bottom: 24px;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
+  display: block;
+  margin-bottom: 8px;
   font-size: 14px;
   font-weight: 500;
   color: #333;
 }
 
 .form-group input {
-  padding: 12px 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  width: 100%;
+  padding: 12px;
   font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   transition: border-color 0.3s;
+  box-sizing: border-box;
 }
 
 .form-group input:focus {
@@ -177,69 +142,39 @@ function handleForgotPassword() {
   border-color: #667eea;
 }
 
-.form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
+.form-actions {
+  margin-top: 24px;
 }
 
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  color: #666;
-}
-
-.checkbox-label input {
-  cursor: pointer;
-}
-
-.forgot-link {
-  color: #667eea;
-  text-decoration: none;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-}
-
-.login-button {
-  padding: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
+.btn-primary {
+  width: 100%;
+  padding: 12px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
+  color: white;
+  background: #667eea;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: background 0.3s;
 }
 
-.login-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+.btn-primary:hover {
+  background: #5568d3;
 }
 
-.login-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.register-link {
+.login-footer {
   text-align: center;
   font-size: 14px;
   color: #666;
 }
 
-.register-link a {
+.login-footer a {
   color: #667eea;
   text-decoration: none;
-  font-weight: 500;
 }
 
-.register-link a:hover {
+.login-footer a:hover {
   text-decoration: underline;
 }
 </style>

@@ -1,250 +1,219 @@
 /**
- * 模板加载器
- *
- * 负责加载模板组件，支持缓存和重试机制
+ * 模板加载器 - 动态加载模板组件
  */
 
 import type { Component } from 'vue'
-import type { TemplateId, TemplateLoadResult } from '../types'
-import type { CacheManager } from './cache'
-import type { TemplateRegistry } from './registry'
-import { ERROR_MESSAGES } from '../utils/constants'
-import { getGlobalEmitter } from './events'
-
-/**
- * 加载选项
- */
-export interface LoadOptions {
-  /** 超时时间(ms) */
-  timeout?: number
-  /** 最大重试次数 */
-  maxRetries?: number
-  /** 是否使用缓存 */
-  useCache?: boolean
-  /** 降级模板ID */
-  fallback?: TemplateId
-}
+import type { TemplateFilter, TemplateLoadOptions, TemplateMetadata } from '../types'
+import { getScanner } from './scanner'
 
 /**
  * 模板加载器类
  */
 export class TemplateLoader {
-  private registry: TemplateRegistry
-  private cache: CacheManager
-  private emitter = getGlobalEmitter()
-  private loadingPromises = new Map<TemplateId, Promise<Component>>()
-
-  constructor(registry: TemplateRegistry, cache: CacheManager) {
-    this.registry = registry
-    this.cache = cache
-  }
+  private loadedComponents: Map<string, Component> = new Map()
+  private loadingPromises: Map<string, Promise<Component>> = new Map()
 
   /**
-   * 加载模板
+   * 加载模板组件
    */
-  async load(id: TemplateId, options: LoadOptions = {}): Promise<TemplateLoadResult> {
-    const {
-      timeout = 10000,
-      maxRetries = 2,
-      useCache = true,
-      fallback,
-    } = options
+  async load(
+    category: string,
+    device: string,
+    name: string,
+    options?: TemplateLoadOptions
+  ): Promise<Component> {
+    const key = `${category}/${device}/${name}`
 
-    // 发射加载开始事件
-    await this.emitter.emit('template:loading', { id })
+    // 检查缓存
+    if (this.loadedComponents.has(key)) {
+      const component = this.loadedComponents.get(key)!
+      options?.onLoad?.(component)
+      return component
+    }
 
-    const startTime = Date.now()
+    // 检查是否正在加载
+    if (this.loadingPromises.has(key)) {
+      return this.loadingPromises.get(key)!
+    }
+
+    // 从注册表获取模板
+    const scanner = getScanner()
+    const template = scanner.getTemplate(category, device, name)
+
+    if (!template) {
+      const error = new Error(`模板未找到: ${key}`)
+      options?.onError?.(error)
+      throw error
+    }
+
+    // 创建加载 Promise
+    const loadPromise = this._loadWithOptions(template.loader, key, options)
+    this.loadingPromises.set(key, loadPromise)
 
     try {
-      // 尝试从缓存获取
-      if (useCache) {
-        const cached = this.cache.get(id)
-        if (cached) {
-          const loadTime = Date.now() - startTime
-          const registration = this.registry.get(id)
-
-          return {
-            id,
-            component: cached,
-            metadata: registration?.metadata!,
-            cached: true,
-            loadTime,
-          }
-        }
-      }
-
-      // 获取注册信息
-      const registration = this.registry.get(id)
-      if (!registration) {
-        throw new Error(`${ERROR_MESSAGES.TEMPLATE_NOT_FOUND}: ${id}`)
-      }
-
-      // 如果已有组件，直接返回
-      if (registration.component) {
-        if (useCache) {
-          this.cache.set(id, registration.component)
-        }
-
-        const loadTime = Date.now() - startTime
-        await this.emitter.emit('template:loaded', { id, loadTime })
-
-        return {
-          id,
-          component: registration.component,
-          metadata: registration.metadata,
-          cached: false,
-          loadTime,
-        }
-      }
-
-      // 懒加载组件
-      if (registration.loader) {
-        const component = await this.loadWithRetry(
-          id,
-          registration.loader,
-          maxRetries,
-          timeout,
-        )
-
-        if (useCache) {
-          this.cache.set(id, component)
-        }
-
-        const loadTime = Date.now() - startTime
-        await this.emitter.emit('template:loaded', { id, loadTime })
-
-        return {
-          id,
-          component,
-          metadata: registration.metadata,
-          cached: false,
-          loadTime,
-        }
-      }
-
-      throw new Error(`${ERROR_MESSAGES.TEMPLATE_LOAD_FAILED}: No component or loader`)
-    }
- catch (error) {
-      // 发射错误事件
-      await this.emitter.emit('template:error', { id, error })
-
-      // 尝试降级
-      if (fallback && fallback !== id) {
-        console.warn(`[Loader] Loading fallback template: ${fallback}`)
-        return this.load(fallback, { ...options, fallback: undefined })
-      }
-
+      const component = await loadPromise
+      this.loadedComponents.set(key, component)
+      this.loadingPromises.delete(key)
+      options?.onLoad?.(component)
+      return component
+    } catch (error) {
+      this.loadingPromises.delete(key)
+      options?.onError?.(error as Error)
       throw error
     }
   }
 
   /**
-   * 带重试的加载
+   * 带选项的加载
    */
-  private async loadWithRetry(
-    id: TemplateId,
-    loader: () => Promise<{ default: Component } | Component>,
-    maxRetries: number,
-    timeout: number,
+  private async _loadWithOptions(
+    loader: () => Promise<Component>,
+    key: string,
+    options?: TemplateLoadOptions
   ): Promise<Component> {
-    // 如果正在加载，等待现有的Promise
-    if (this.loadingPromises.has(id)) {
-      return this.loadingPromises.get(id)!
+    // 处理超时
+    if (options?.timeout) {
+      return Promise.race([
+        loader(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`加载超时: ${key}`)), options.timeout)
+        ),
+      ])
     }
 
-    let lastError: Error | null = null
-
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        const loadPromise = this.loadWithTimeout(loader, timeout).then((module) => {
-          // 处理不同的模块格式
-          console.log('[Loader] Module loaded:', module)
-          if (module && typeof module === 'object') {
-            // Vue SFC 通常导出为 default
-            const comp = module.default || module
-            console.log('[Loader] Extracted component:', comp)
-            return comp
-          }
-          return module
-        })
-        this.loadingPromises.set(id, loadPromise)
-
-        const component = await loadPromise
-
-        this.loadingPromises.delete(id)
-        return component
-      }
- catch (error) {
-        lastError = error as Error
-        console.warn(`[Loader] Load attempt ${attempt + 1} failed for ${id}:`, error)
-
-        if (attempt < maxRetries) {
-          // 等待一段时间后重试
-          await new Promise(resolve => setTimeout(resolve, 2 ** attempt * 100))
-        }
-      }
-    }
-
-    this.loadingPromises.delete(id)
-    throw lastError || new Error(ERROR_MESSAGES.TEMPLATE_LOAD_FAILED)
-  }
-
-  /**
-   * 带超时的加载
-   */
-  private loadWithTimeout(
-    loader: () => Promise<{ default: Component } | Component>,
-    timeout: number,
-  ): Promise<any> {
-    return Promise.race([
-      loader(),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Load timeout')), timeout),
-      ),
-    ])
-  }
-
-  /**
-   * 批量加载模板
-   */
-  async loadBatch(
-    ids: TemplateId[],
-    options: LoadOptions = {},
-  ): Promise<TemplateLoadResult[]> {
-    return Promise.all(ids.map(id => this.load(id, options)))
+    return loader()
   }
 
   /**
    * 预加载模板
    */
-  async preload(ids: TemplateId[], options: LoadOptions = {}): Promise<void> {
+  async preload(category: string, device: string, name: string): Promise<void> {
     try {
-      await this.loadBatch(ids, options)
+      await this.load(category, device, name, { preload: true })
+    } catch (error) {
+      console.warn(`[TemplateLoader] 预加载失败: ${category}/${device}/${name}`, error)
     }
- catch (error) {
-      console.error('[Loader] Preload failed:', error)
+  }
+
+  /**
+   * 批量预加载模板
+   */
+  async preloadBatch(templates: Array<{ category: string; device: string; name: string }>): Promise<void> {
+    await Promise.allSettled(
+      templates.map(t => this.preload(t.category, t.device, t.name))
+    )
+  }
+
+  /**
+   * 根据过滤条件预加载模板
+   */
+  async preloadByFilter(filter: TemplateFilter): Promise<void> {
+    const scanner = getScanner()
+    const allMetadata = scanner.getAllMetadata()
+    
+    const filtered = this.filterTemplates(allMetadata, filter)
+    await this.preloadBatch(filtered)
+  }
+
+  /**
+   * 过滤模板
+   */
+  private filterTemplates(templates: TemplateMetadata[], filter: TemplateFilter): TemplateMetadata[] {
+    return templates.filter(t => {
+      // 过滤分类
+      if (filter.category) {
+        const categories = Array.isArray(filter.category) ? filter.category : [filter.category]
+        if (!categories.includes(t.category)) return false
+      }
+
+      // 过滤设备
+      if (filter.device) {
+        const devices = Array.isArray(filter.device) ? filter.device : [filter.device]
+        if (!devices.includes(t.device)) return false
+      }
+
+      // 过滤名称
+      if (filter.name) {
+        const names = Array.isArray(filter.name) ? filter.name : [filter.name]
+        if (!names.includes(t.name)) return false
+      }
+
+      // 过滤标签
+      if (filter.tags) {
+        const tags = Array.isArray(filter.tags) ? filter.tags : [filter.tags]
+        if (!t.tags || !tags.some(tag => t.tags!.includes(tag))) return false
+      }
+
+      // 只返回默认模板
+      if (filter.defaultOnly && !t.isDefault) return false
+
+      return true
+    })
+  }
+
+  /**
+   * 清除缓存
+   */
+  clearCache(category?: string, device?: string, name?: string): void {
+    if (category && device && name) {
+      const key = `${category}/${device}/${name}`
+      this.loadedComponents.delete(key)
+    } else {
+      this.loadedComponents.clear()
     }
+  }
+
+  /**
+   * 获取已加载的组件数量
+   */
+  getLoadedCount(): number {
+    return this.loadedComponents.size
+  }
+
+  /**
+   * 获取正在加载的组件数量
+   */
+  getLoadingCount(): number {
+    return this.loadingPromises.size
   }
 }
 
-// 单例实例
-let instance: TemplateLoader | null = null
+/**
+ * 全局加载器实例
+ */
+let globalLoader: TemplateLoader | null = null
 
 /**
- * 获取加载器实例
+ * 获取全局加载器实例
  */
 export function getLoader(): TemplateLoader {
-  if (!instance) {
-    const { getCache } = require('./cache')
-    const { getRegistry } = require('./registry')
-    instance = new TemplateLoader(getRegistry(), getCache())
+  if (!globalLoader) {
+    globalLoader = new TemplateLoader()
   }
-  return instance
+  return globalLoader
 }
 
 /**
- * 重置加载器
+ * 加载模板（便捷方法）
  */
-export function resetLoader(): void {
-  instance = null
+export async function loadTemplate(
+  category: string,
+  device: string,
+  name: string,
+  options?: TemplateLoadOptions
+): Promise<Component> {
+  const loader = getLoader()
+  return loader.load(category, device, name, options)
+}
+
+/**
+ * 预加载模板（便捷方法）
+ */
+export async function preloadTemplate(
+  category: string,
+  device: string,
+  name: string
+): Promise<void> {
+  const loader = getLoader()
+  return loader.preload(category, device, name)
 }

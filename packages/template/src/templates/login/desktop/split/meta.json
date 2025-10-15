@@ -1,8 +1,0 @@
-{
-  "displayName": "分栏式登录页",
-  "description": "左右分栏布局的登录页面，适合展示品牌形象",
-  "version": "1.0.0",
-  "author": "LDesign Team",
-  "tags": ["login", "desktop", "split", "modern", "brand"],
-  "isDefault": false
-}

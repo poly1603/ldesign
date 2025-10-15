@@ -467,6 +467,8 @@ export * from './types';
 export { WordRenderer } from './renderers/word-renderer';
 export { ExcelRenderer } from './renderers/excel-renderer';
 export { PowerPointRenderer } from './renderers/powerpoint-renderer';
+export { EnhancedPowerPointRenderer } from './renderers/powerpoint-renderer-enhanced';
+export { EnhancedExcelRenderer } from './renderers/excel-renderer-enhanced';
 
 // Default export
 export default OfficeViewer;
