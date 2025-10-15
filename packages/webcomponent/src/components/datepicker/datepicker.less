@@ -133,76 +133,76 @@
 
 /* 年份面板 - 简洁设计 */
 .ldp-year { 
-  width: 350px;
-  padding: 16px;
+  width: 320px;
+  padding: 12px;
   background: #ffffff;
 }
 
 .ldp-year-grid { 
   display: grid; 
   grid-template-columns: repeat(3, 1fr); 
-  gap: 10px;
-  padding: 10px 0;
+  gap: 8px;
+  padding: 8px 0;
 }
 
 .ldp-year-item { 
-  height: 48px; 
+  height: 40px; 
   border: none;
   background: transparent;
-  color: #1a1a1a;
-  border-radius: 8px; 
+  color: #1f2937;
+  border-radius: 6px; 
   cursor: pointer;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: normal;
   transition: all 0.15s;
   
   &:hover:not(.disabled) { 
-    background: #f5f5f5;
+    background: #f3f4f6;
   }
   
   &.current { 
-    color: #2b7ff6;
+    color: #3b82f6;
     font-weight: 500;
   }
   
   &.selected { 
-    background: #2b7ff6;
+    background: #3b82f6;
     color: #ffffff;
     font-weight: 500;
     
     &:hover {
-      background: #1e6fd9;
+      background: #2563eb;
     }
   }
   
   &.disabled { 
-    color: #cccccc;
+    color: #d1d5db;
     cursor: not-allowed;
   }
 }
 
 /* 月份面板 - 简洁设计 */
 .ldp-month { 
-  width: 350px;
-  padding: 16px;
+  width: 320px;
+  padding: 12px;
   background: #ffffff;
 }
 
 .ldp-month-grid { 
   display: grid; 
   grid-template-columns: repeat(3, 1fr); 
-  gap: 10px;
-  padding: 10px 0;
+  gap: 8px;
+  padding: 8px 0;
 }
 
 .ldp-month-item { 
-  height: 54px; 
+  height: 48px; 
   border: none;
   background: transparent;
-  color: #1a1a1a;
-  border-radius: 8px; 
+  color: #1f2937;
+  border-radius: 6px; 
   cursor: pointer;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: normal;
   transition: all 0.15s;
   display: flex;
@@ -210,76 +210,76 @@
   justify-content: center;
   
   &:hover:not(.disabled) { 
-    background: #f5f5f5;
+    background: #f3f4f6;
   }
   
   &.current { 
-    color: #2b7ff6;
+    color: #3b82f6;
     font-weight: 500;
   }
   
   &.selected { 
-    background: #2b7ff6;
+    background: #3b82f6;
     color: #ffffff;
     font-weight: 500;
     
     &:hover {
-      background: #1e6fd9;
+      background: #2563eb;
     }
   }
   
   &.disabled { 
-    color: #cccccc;
+    color: #d1d5db;
     cursor: not-allowed;
   }
 }
 
 /* 季度面板 */
 .ldp-quarter { 
-  width: 350px;
-  padding: 16px;
+  width: 320px;
+  padding: 12px;
   background: #ffffff;
 }
 
 .ldp-quarter-grid { 
   display: grid; 
   grid-template-columns: repeat(2, 1fr); 
-  gap: 10px; 
-  padding: 10px 0;
+  gap: 8px; 
+  padding: 8px 0;
 }
 
 .ldp-quarter-item { 
-  padding: 16px 0;
+  padding: 14px 0;
   border: none; 
   background: transparent; 
-  color: #1a1a1a; 
-  border-radius: 8px; 
+  color: #1f2937; 
+  border-radius: 6px; 
   cursor: pointer;
   text-align: center;
   transition: all 0.15s;
   
   &:hover:not(.disabled) { 
-    background: #f5f5f5; 
+    background: #f3f4f6; 
   }
   
   &.current { 
-    color: #2b7ff6;
+    color: #3b82f6;
     font-weight: 500;
   }
   
   &.selected { 
-    background: #2b7ff6; 
+    background: #3b82f6; 
     color: #ffffff;
     font-weight: 500;
     
     &:hover {
-      background: #1e6fd9;
+      background: #2563eb;
     }
   }
 }
 
 .ldp-quarter-label { 
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
 }
 
@@ -313,25 +313,26 @@
   white-space: nowrap;
 }
 .ldp-weeknum-header {
-  width: 28px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #909399;
-  font-size: 11px;
-  font-weight: 400;
-  white-space: nowrap; /* 确保“周”不换行 */
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 .ldp-weeknum { 
-  width: 28px; 
-  height: 28px; 
+  width: 32px; 
+  height: 36px; 
   display: flex; 
   align-items: center; 
   justify-content: center; 
-  color: #c0c4cc; 
-  font-size: 10px;
+  color: #9ca3af; 
+  font-size: 12px;
   flex-shrink: 0;
+  font-weight: 500;
 }
 
 .ldp-days { 
@@ -436,12 +437,12 @@
   background: #f5f7fa;
 }
 .ldp-week-row.selected-week {
-  background: #409eff;
+  background: #3b82f6;
 }
 /* 范围端点周：与 selected-week 同样的视觉权重 */
 .ldp-week-row.range-start-week,
 .ldp-week-row.range-end-week {
-  background: #409eff;
+  background: #3b82f6;
 }
 .ldp-week-row.selected-week .ldp-day,
 .ldp-week-row.range-start-week .ldp-day,
@@ -452,7 +453,7 @@
 /* 非端点的悬停效果 */
 .ldp-week-row:not(.selected-week):not(.range-start-week):not(.range-end-week):hover .ldp-day:not(.disabled) {
   background: transparent;
-  color: #409eff;
+  color: #3b82f6;
 }
 /* 端点在悬停时仍保持白字蓝底 */
 .ldp-week-row.selected-week:hover,
@@ -487,18 +488,18 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
-  color: #333333;
+  color: #111827;
   transition: all 0.15s;
   white-space: nowrap;
   
   &:hover {
-    background: #f5f5f5;
+    background: #f3f4f6;
   }
   
   &--open {
-    background: #f5f5f5;
+    background: #f3f4f6;
   }
 }
 
@@ -639,46 +640,47 @@
 /* 底部（今天） */
 .ldp-footer { 
   border-top: 1px solid #f0f0f0; 
-  padding: 12px; 
+  padding: 8px 12px; 
   text-align: center; 
+  background: #fafafa;
 }
 
 .ldp-today { 
   border: none; 
   background: transparent; 
   cursor: pointer; 
-  color: #1890ff; 
-  font-size: 14px; 
-  padding: 6px 16px; 
+  color: #3b82f6; 
+  font-size: 13px; 
+  padding: 4px 12px; 
   border-radius: 4px;
-  transition: all 0.2s;
-  font-weight: normal;
+  transition: all 0.15s;
+  font-weight: 500;
   
   &:hover { 
-    background: #e6f7ff; 
+    background: rgba(59, 130, 246, 0.08); 
   }
 }
 .ldp-year-quick-item {
   display: block;
   width: 100%;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: none;
   background: transparent;
   text-align: left;
   cursor: pointer;
-  font-size: 14px;
-  color: #333333;
+  font-size: 13px;
+  color: #374151;
   border-radius: 4px;
   transition: all 0.15s;
   
   &:hover {
-    background: #f5f5f5;
+    background: #f3f4f6;
   }
   
   &.selected {
-    color: #2b7ff6;
+    color: #3b82f6;
     font-weight: 500;
-    background: #e6f2ff;
+    background: #eff6ff;
   }
 }
 .ldp-header--with-year {
@@ -715,14 +717,14 @@
   cursor: pointer;
 }
 .ldp-btn:hover { background: #f5f7fa; }
-.ldp-btn--primary { border-color: #409eff; background: #409eff; color: #fff; }
-.ldp-btn--primary:hover { background: #66b1ff; border-color: #66b1ff; }
+.ldp-btn--primary { border-color: #3b82f6; background: #3b82f6; color: #fff; }
+.ldp-btn--primary:hover { background: #2563eb; border-color: #2563eb; }
 
 /* 范围选择可视化 */
 /* 日期端点与中间态（不作用于其他月单元格） */
 .ldp-day.range-start:not(.disabled):not(.other),
 .ldp-day.range-end:not(.disabled):not(.other) {
-  background: #409eff;
+  background: #3b82f6;
   color: #fff;
   font-weight: 500;
 }
@@ -736,8 +738,8 @@
 }
 /* 日期单元格处于范围内（不作用于其他月单元格） */
 .ldp-day.in-range:not(.disabled):not(.selected):not(.other) {
-  background: #ecf5ff;
-  color: #409eff;
+  background: #eff6ff;
+  color: #3b82f6;
 }
 /* 周行处于范围内（保持端点周为深蓝） */
 .ldp-week-row.in-range:not(.selected-week):not(.range-start-week):not(.range-end-week) {
@@ -745,33 +747,33 @@
 }
 /* 月份范围样式 */
 .ldp-month-item.in-range:not(.disabled):not(.selected) {
-  background: #ecf5ff;
-  color: #409eff;
+  background: #eff6ff;
+  color: #3b82f6;
 }
 .ldp-month-item.range-start:not(.disabled),
 .ldp-month-item.range-end:not(.disabled) {
-  background: #409eff;
+  background: #3b82f6;
   color: #fff;
   font-weight: 500;
 }
 /* 年份范围样式 */
 .ldp-year-item.in-range:not(.disabled):not(.selected) {
-  background: #ecf5ff;
-  color: #409eff;
+  background: #eff6ff;
+  color: #3b82f6;
 }
 .ldp-year-item.range-start:not(.disabled),
 .ldp-year-item.range-end:not(.disabled) {
-  background: #409eff;
+  background: #3b82f6;
   color: #fff;
   font-weight: 500;
 }
 /* 季度范围样式 */
 .ldp-quarter-item.in-range:not(.disabled):not(.selected) {
-  background: #ecf5ff;
-  color: #409eff;
+  background: #eff6ff;
+  color: #3b82f6;
 }
 .ldp-quarter-item.range-start:not(.disabled),
 .ldp-quarter-item.range-end:not(.disabled) {
-  background: #409eff;
+  background: #3b82f6;
   color: #fff;
 }

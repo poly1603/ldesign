@@ -9,6 +9,7 @@ import './style.css'
 import '@/styles/editor.css'
 import '@/styles/reset.css'
 import '@/styles/table.css'
+import '@/styles/codeblock.css'
 
 // 导入编辑器核心类
 import { Editor } from '@/core/Editor'

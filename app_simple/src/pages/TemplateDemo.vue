@@ -56,15 +56,6 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { TemplateRenderer, EnhancedTemplateSwitcher, useTemplateManager } from '@ldesign/template'
 import type { SwitcherConfig } from '@ldesign/template'
 
-// 导入所有模板样式
-import '@ldesign/template/es/index.css'
-import '@ldesign/template/es/templates/login/desktop/default/index.vue.css'
-import '@ldesign/template/es/templates/login/desktop/split/index.vue.css'
-import '@ldesign/template/es/templates/login/mobile/default/index.vue.css'
-import '@ldesign/template/es/templates/login/mobile/card/index.vue.css'
-import '@ldesign/template/es/templates/login/tablet/simple/index.vue.css'
-import '@ldesign/template/es/templates/login/tablet/landscape/index.vue.css'
-
 // 设备配置
 const devices = [
   { name: 'desktop', label: '桌面端', width: 1920, height: 1080 },

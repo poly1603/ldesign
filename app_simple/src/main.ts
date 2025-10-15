@@ -10,8 +10,7 @@ import { createRouter } from './router'
 import { engineConfig } from './config/app.config'
 import { auth } from './composables/useAuth'
 import { createColorPlugin } from '@ldesign/color'
-import { createTemplateManager } from '@ldesign/template'
-import { registerBuiltinTemplates } from './templates/register'
+import { createTemplatePlugin } from '@ldesign/template'
 
 /**
  * 启动应用
@@ -35,35 +34,10 @@ async function bootstrap() {
       showMissingKeys: import.meta.env.DEV
     })
 
-    // 创建模板管理器
-    const templateManager = createTemplateManager({
-      cache: {
-        enabled: true,
-        maxSize: 50,
-        ttl: 3600000
-      },
-      device: {
-        detectOnMount: true,
-        detectOnResize: true
-      }
+    // 创建模板插件 - 简单一行搮定
+    const templatePlugin = createTemplatePlugin({
+      debug: import.meta.env.DEV, // 开发环境显示调试信息
     })
-    
-    // 注册内置模板 - 在创建应用引擎之前注册
-    console.log('🎯 注册内置模板...')
-    registerBuiltinTemplates(templateManager)
-    console.log('✅ 模板注册完成')
-    
-    // 调试：查看注册的模板
-    console.log('📋 已注册的模板：')
-    const allTemplates = templateManager.query({})
-    console.log('模板总数：', allTemplates.length)
-    allTemplates.forEach((t) => {
-      console.log(`  - ${t.id}: ${t.metadata.displayName} (device: ${t.metadata.device}, category: ${t.metadata.category})`)
-    })
-    
-    // 查看login分类的模板
-    const loginTemplates = templateManager.query({ category: 'login' })
-    console.log('Login模板数量：', loginTemplates.length)
 
     // 创建 Color 插件（主题系统）
     const colorPlugin = createColorPlugin({
@@ -136,15 +110,8 @@ async function bootstrap() {
       
     // Vue应用配置
     setupApp: async (app) => {
-      // 手动注册 Template 管理器和组件
-      const { TEMPLATE_MANAGER_KEY, TemplateRenderer, TemplateSelector, EnhancedTemplateSwitcher } = await import('@ldesign/template')
-      // 使用两种方式注入，确保兼容性
-      app.provide(TEMPLATE_MANAGER_KEY, templateManager)
-      app.provide('templateManager', templateManager) // 字符串键用于 useTemplateManager
-      app.config.globalProperties.$templateManager = templateManager
-      app.component('TemplateRenderer', TemplateRenderer)
-      app.component('TemplateSelector', TemplateSelector)
-      app.component('EnhancedTemplateSwitcher', EnhancedTemplateSwitcher)
+      // 安装模板插件 - 一行代码完成所有配置
+      app.use(templatePlugin)
       
       // 安装 Color 主题插件（提供全局主题管理和持久化）
       app.use(colorPlugin)

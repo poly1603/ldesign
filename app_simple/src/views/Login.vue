@@ -26,17 +26,6 @@ import { useI18n } from '@/i18n'
 import { auth } from '@/composables/useAuth'
 import { EnhancedTemplateSwitcher, TemplateRenderer } from '@ldesign/template'
 
-// 导入模板样式
-import '@ldesign/template/es/index.css'
-import '@ldesign/template/es/templates/login/desktop/default/index.vue.css'
-import '@ldesign/template/es/templates/login/desktop/split/index.vue.css'
-import '@ldesign/template/es/templates/login/mobile/default/index.vue.css'
-import '@ldesign/template/es/templates/login/mobile/card/index.vue.css'
-import '@ldesign/template/es/templates/login/tablet/simple/index.vue.css'
-import '@ldesign/template/es/templates/login/tablet/landscape/index.vue.css'
-import '@ldesign/template/es/vue/components/EnhancedTemplateSwitcher.vue.css'
-import '@ldesign/template/es/vue/components/TemplateRenderer.vue.css'
-
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
