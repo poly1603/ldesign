@@ -1,5 +1,10 @@
 <template>
   <div class="login-mobile-container" :class="{ 'compact': compact }">
+    <!-- 模板切换器插槽 -->
+    <div v-if="$slots.switcher" class="template-switcher-container">
+      <slot name="switcher"></slot>
+    </div>
+    
     <!-- 顶部装饰背景 -->
     <div v-if="showTopBackground" class="top-background"></div>
 
@@ -104,6 +109,13 @@ const handleForgotPassword = () => {
 </script>
 
 <style scoped>
+.template-switcher-container {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+}
+
 .login-mobile-container {
   min-height: 100vh;
   display: flex;

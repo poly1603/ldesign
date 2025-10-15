@@ -4,6 +4,7 @@
  */
 
 import type { EncryptResult, DecryptResult } from '../types'
+import { getErrorMessage, createCryptoJSConfig } from '../utils/crypto-helpers'
 
 /**
  * Worker 消息类型
@@ -40,29 +41,26 @@ function performEncryption(
       case 'AES': {
         // 动态导入避免循环依赖
         const CryptoJS = require('crypto-js')
-        
+
         const keySize = options?.keySize || 256
         const mode = options?.mode || 'CBC'
-        const padding = options?.padding || 'Pkcs7'
-        
-        // 生成密钥
-        const derivedKey = CryptoJS.PBKDF2(key, 'salt', {
+
+        // 生成密钥：使用密钥的SHA-256哈希作为确定性盐值（更安全）
+        const salt = CryptoJS.SHA256(key)
+        const derivedKey = CryptoJS.PBKDF2(key, salt, {
           keySize: keySize / 32,
-          iterations: 1000,
+          iterations: 100000, // OWASP 2023推荐
         })
-        
-        // 加密配置
-        const config: any = {
-          mode: (CryptoJS.mode as any)[mode],
-          padding: (CryptoJS.pad as any)[padding],
-        }
-        
-        if (mode !== 'ECB' && options?.iv) {
-          config.iv = CryptoJS.enc.Utf8.parse(options.iv)
-        }
-        
+
+        // 加密配置（类型安全）
+        const config = createCryptoJSConfig({
+          mode,
+          padding: options?.padding || 'Pkcs7',
+          iv: options?.iv,
+        })
+
         const encrypted = CryptoJS.AES.encrypt(data, derivedKey, config)
-        
+
         return {
           success: true,
           data: encrypted.toString(),
@@ -75,13 +73,14 @@ function performEncryption(
       case 'DES': {
         const CryptoJS = require('crypto-js')
         const mode = options?.mode || 'CBC'
-        
-        const config: any = {
-          mode: (CryptoJS.mode as any)[mode],
-        }
-        
+
+        const config = createCryptoJSConfig({
+          mode,
+          iv: options?.iv,
+        })
+
         const encrypted = CryptoJS.DES.encrypt(data, key, config)
-        
+
         return {
           success: true,
           data: encrypted.toString(),
@@ -89,18 +88,19 @@ function performEncryption(
           mode,
         }
       }
-      
+
       case '3DES':
       case 'TRIPLEDES': {
         const CryptoJS = require('crypto-js')
         const mode = options?.mode || 'CBC'
-        
-        const config: any = {
-          mode: (CryptoJS.mode as any)[mode],
-        }
-        
+
+        const config = createCryptoJSConfig({
+          mode,
+          iv: options?.iv,
+        })
+
         const encrypted = CryptoJS.TripleDES.encrypt(data, key, config)
-        
+
         return {
           success: true,
           data: encrypted.toString(),
@@ -132,12 +132,12 @@ function performEncryption(
         }
     }
   }
-  catch (error: any) {
+  catch (error: unknown) {
     return {
       success: false,
       data: '',
       algorithm,
-      error: error.message || 'Encryption failed',
+      error: getErrorMessage(error) || 'Encryption failed',
     }
   }
 }
@@ -155,30 +155,27 @@ function performDecryption(
     switch (algorithm.toUpperCase()) {
       case 'AES': {
         const CryptoJS = require('crypto-js')
-        
+
         const keySize = options?.keySize || 256
         const mode = options?.mode || 'CBC'
-        const padding = options?.padding || 'Pkcs7'
-        
-        // 生成密钥
-        const derivedKey = CryptoJS.PBKDF2(key, 'salt', {
+
+        // 生成密钥：使用密钥的SHA-256哈希作为确定性盐值（更安全）
+        const salt = CryptoJS.SHA256(key)
+        const derivedKey = CryptoJS.PBKDF2(key, salt, {
           keySize: keySize / 32,
-          iterations: 1000,
+          iterations: 100000, // OWASP 2023推荐
         })
-        
-        // 解密配置
-        const config: any = {
-          mode: (CryptoJS.mode as any)[mode],
-          padding: (CryptoJS.pad as any)[padding],
-        }
-        
-        if (mode !== 'ECB' && options?.iv) {
-          config.iv = CryptoJS.enc.Utf8.parse(options.iv)
-        }
-        
+
+        // 解密配置（类型安全）
+        const config = createCryptoJSConfig({
+          mode,
+          padding: options?.padding || 'Pkcs7',
+          iv: options?.iv,
+        })
+
         const decrypted = CryptoJS.AES.decrypt(data, derivedKey, config)
         const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8)
-        
+
         if (!decryptedStr) {
           return {
             success: false,
@@ -188,7 +185,7 @@ function performDecryption(
             error: 'Decryption failed - invalid key or corrupted data',
           }
         }
-        
+
         return {
           success: true,
           data: decryptedStr,
@@ -196,18 +193,19 @@ function performDecryption(
           mode,
         }
       }
-      
+
       case 'DES': {
         const CryptoJS = require('crypto-js')
         const mode = options?.mode || 'CBC'
-        
-        const config: any = {
-          mode: (CryptoJS.mode as any)[mode],
-        }
-        
+
+        const config = createCryptoJSConfig({
+          mode,
+          iv: options?.iv,
+        })
+
         const decrypted = CryptoJS.DES.decrypt(data, key, config)
         const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8)
-        
+
         if (!decryptedStr) {
           return {
             success: false,
@@ -217,7 +215,7 @@ function performDecryption(
             error: 'Decryption failed',
           }
         }
-        
+
         return {
           success: true,
           data: decryptedStr,
@@ -225,19 +223,20 @@ function performDecryption(
           mode,
         }
       }
-      
+
       case '3DES':
       case 'TRIPLEDES': {
         const CryptoJS = require('crypto-js')
         const mode = options?.mode || 'CBC'
-        
-        const config: any = {
-          mode: (CryptoJS.mode as any)[mode],
-        }
-        
+
+        const config = createCryptoJSConfig({
+          mode,
+          iv: options?.iv,
+        })
+
         const decrypted = CryptoJS.TripleDES.decrypt(data, key, config)
         const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8)
-        
+
         if (!decryptedStr) {
           return {
             success: false,
@@ -247,7 +246,7 @@ function performDecryption(
             error: 'Decryption failed',
           }
         }
-        
+
         return {
           success: true,
           data: decryptedStr,
@@ -280,12 +279,12 @@ function performDecryption(
         }
     }
   }
-  catch (error: any) {
+  catch (error: unknown) {
     return {
       success: false,
       data: '',
       algorithm,
-      error: error.message || 'Decryption failed',
+      error: getErrorMessage(error) || 'Decryption failed',
     }
   }
 }
@@ -317,14 +316,14 @@ function handleMessage(message: WorkerMessage): WorkerResponse {
       }
     }
   }
-  catch (error: any) {
+  catch (error: unknown) {
     return {
       id,
       result: {
         success: false,
         data: '',
         algorithm,
-        error: error.message || 'Worker operation failed',
+        error: getErrorMessage(error) || 'Worker operation failed',
       },
     }
   }

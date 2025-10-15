@@ -10,15 +10,17 @@ export default {
    file: 'dist/index.js',
    format: 'cjs',
    sourcemap: true,
-   exports: 'named'
+   exports: 'named',
+   inlineDynamicImports: true
   },
   {
    file: 'dist/index.esm.js',
    format: 'esm',
-   sourcemap: true
+   sourcemap: true,
+   inlineDynamicImports: true
   }
  ],
- external: ['mammoth', 'xlsx', 'pptxgenjs', 'vue', 'react'],
+ external: ['mammoth', 'xlsx', 'pptxgenjs', 'jszip', 'vue', 'react'],
  plugins: [
   resolve({
    browser: true

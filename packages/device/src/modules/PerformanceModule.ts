@@ -19,6 +19,8 @@ export interface DevicePerformanceInfo {
     memory: number
     /** 网络评分 */
     network: number
+    /** 存储性能评分 */
+    storage: number
   }
   /** 硬件信息 */
   hardware: {
@@ -60,11 +62,19 @@ export interface PerformanceModuleEvents extends Record<string, unknown> {
  * 设备性能评估模块
  *
  * 提供设备性能评分和分级功能，包括：
- * - CPU 性能测试
- * - GPU 性能测试
- * - 内存容量评估
- * - 网络性能评估
- * - 综合性能评分
+ * - CPU 性能测试（数学密集型计算基准测试）
+ * - GPU 性能测试（WebGL + Canvas 2D 渲染测试）
+ * - 内存性能测试（容量评估 + 大数组排序测试）
+ * - 网络性能评估（基于 Network Information API）
+ * - 存储性能测试（localStorage 读写性能测试）
+ * - 综合性能评分（五项指标加权平均）
+ *
+ * 评分权重：
+ * - CPU: 30%
+ * - GPU: 25%
+ * - Memory: 20%
+ * - Storage: 15%
+ * - Network: 10%
  *
  * @example
  * ```typescript
@@ -74,6 +84,8 @@ export interface PerformanceModuleEvents extends Record<string, unknown> {
  *
  * console.log(`设备性能评分: ${perfInfo.score}`)
  * console.log(`性能等级: ${perfInfo.tier}`)
+ * console.log(`CPU 评分: ${perfInfo.metrics.cpu}`)
+ * console.log(`存储评分: ${perfInfo.metrics.storage}`)
  *
  * // 根据性能等级调整应用配置
  * if (perfInfo.tier === 'low') {
@@ -81,6 +93,9 @@ export interface PerformanceModuleEvents extends Record<string, unknown> {
  * } else if (perfInfo.tier === 'ultra') {
  *   // 启用高级特效
  * }
+ *
+ * // 查看性能建议
+ * perfInfo.recommendations.forEach(rec => console.log(rec))
  * ```
  */
 export class PerformanceModule
@@ -172,11 +187,12 @@ export class PerformanceModule
     const hardware = this.detectHardware()
 
     // 并行运行各项测试
-    const [cpuScore, gpuScore, memoryScore, networkScore] = await Promise.all([
-      this.testCPUPerformance(timeout),
+    const [cpuScore, gpuScore, memoryScore, networkScore, storageScore] = await Promise.all([
+      this.testCPUPerformance(timeout, hardware.cpuCores),
       includeGPU ? this.testGPUPerformance(timeout) : Promise.resolve(50),
-      this.evaluateMemory(hardware.deviceMemory),
+      this.testMemoryPerformance(hardware.deviceMemory),
       includeNetwork ? this.testNetworkPerformance(timeout) : Promise.resolve(50),
+      this.testStoragePerformance(timeout),
     ])
 
     const metrics = {
@@ -184,21 +200,24 @@ export class PerformanceModule
       gpu: gpuScore,
       memory: memoryScore,
       network: networkScore,
+      storage: storageScore,
     }
 
     // 计算综合评分（加权平均）
     const weights = {
-      cpu: 0.4,
-      gpu: 0.3,
+      cpu: 0.3,
+      gpu: 0.25,
       memory: 0.2,
       network: 0.1,
+      storage: 0.15,
     }
 
     const score = Math.round(
       cpuScore * weights.cpu
       + gpuScore * weights.gpu
       + memoryScore * weights.memory
-      + networkScore * weights.network,
+      + networkScore * weights.network
+      + storageScore * weights.storage,
     )
 
     const tier = this.calculateTier(score)
@@ -227,54 +246,59 @@ export class PerformanceModule
 
   /**
    * 测试 CPU 性能
+   * 使用数学密集型计算进行基准测试
    */
-  private async testCPUPerformance(timeout: number): Promise<number> {
+  private async testCPUPerformance(_timeout: number, cores: number): Promise<number> {
     return new Promise((resolve) => {
       const startTime = performance.now()
-      let iterations = 0
-      const maxIterations = 1000000
+      const iterations = 100000
 
-      const test = () => {
-        // 执行计算密集型任务
-        for (let i = 0; i < 10000 && iterations < maxIterations; i++) {
-          Math.sqrt(Math.random() * 1000)
-          iterations++
-        }
-
-        const elapsed = performance.now() - startTime
-
-        if (elapsed >= timeout || iterations >= maxIterations) {
-          // 根据完成的迭代次数计算评分
-          const score = Math.min(100, (iterations / maxIterations) * 100)
-          resolve(score)
-        }
-        else {
-          requestIdleCallback ? requestIdleCallback(test) : setTimeout(test, 0)
-        }
+      // 执行数学密集型计算
+      let result = 0
+      for (let i = 0; i < iterations; i++) {
+        result += Math.sqrt(i) * Math.sin(i) * Math.cos(i)
       }
 
-      test()
+      const duration = performance.now() - startTime
+
+      // 根据执行时间计算基准分数
+      // 假设高端设备约50ms，低端设备约500ms
+      const benchmarkScore = Math.max(0, Math.min(100, (500 - duration) / 4.5))
+
+      // 结合 CPU 核心数进行综合评分
+      // 核心数权重40%，基准测试60%
+      const coreScore = Math.min(100, (cores / 8) * 100)
+      const finalScore = Math.round(coreScore * 0.4 + benchmarkScore * 0.6)
+
+      resolve(finalScore)
     })
   }
 
   /**
    * 测试 GPU 性能
+   * 结合 WebGL 渲染测试和 Canvas 2D 测试
    */
   private async testGPUPerformance(timeout: number): Promise<number> {
     try {
+      // 首先测试 Canvas 2D 渲染性能
+      const canvas2DScore = await this.testCanvas2DPerformance()
+
+      // 然后测试 WebGL 性能
       const canvas = document.createElement('canvas')
       canvas.width = 256
       canvas.height = 256
 
       const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
-      if (!gl)
-        return 30 // 不支持 WebGL，给低分
+      if (!gl) {
+        // 不支持 WebGL，只使用 Canvas 2D 分数
+        return Math.round(canvas2DScore * 0.8) // 降低权重
+      }
 
       const startTime = performance.now()
       let frames = 0
       const maxFrames = 100
 
-      return new Promise((resolve) => {
+      const webglScore = await new Promise<number>((resolve) => {
         const render = () => {
           if (!gl) {
             resolve(30)
@@ -301,6 +325,12 @@ export class PerformanceModule
 
         render()
       })
+
+      // WebGL 支持额外奖励
+      const webglBonus = 10
+
+      // 综合 Canvas 2D (40%) 和 WebGL (60%) 分数
+      return Math.min(100, Math.round(canvas2DScore * 0.4 + webglScore * 0.6 + webglBonus))
     }
     catch {
       return 30
@@ -308,19 +338,87 @@ export class PerformanceModule
   }
 
   /**
-   * 评估内存
+   * 测试 Canvas 2D 渲染性能
    */
-  private async evaluateMemory(deviceMemory: number): Promise<number> {
-    // 根据设备内存大小评分
-    if (deviceMemory >= 8)
-      return 100
-    if (deviceMemory >= 6)
-      return 85
-    if (deviceMemory >= 4)
-      return 70
-    if (deviceMemory >= 2)
+  private async testCanvas2DPerformance(): Promise<number> {
+    try {
+      const canvas = document.createElement('canvas')
+      canvas.width = 800
+      canvas.height = 600
+      const ctx = canvas.getContext('2d')
+
+      if (!ctx)
+        return 50
+
+      const startTime = performance.now()
+
+      // 执行 Canvas 2D 绘制测试
+      for (let i = 0; i < 1000; i++) {
+        ctx.fillStyle = `rgb(${i % 255}, ${(i * 2) % 255}, ${(i * 3) % 255})`
+        ctx.fillRect(
+          Math.random() * 800,
+          Math.random() * 600,
+          Math.random() * 50,
+          Math.random() * 50,
+        )
+      }
+
+      const duration = performance.now() - startTime
+
+      // 假设高端设备约20ms，低端设备约200ms
+      return Math.max(0, Math.min(100, (200 - duration) / 1.8))
+    }
+    catch {
       return 50
-    return 30
+    }
+  }
+
+  /**
+   * 测试内存性能
+   * 结合设备内存容量和实际性能测试
+   */
+  private async testMemoryPerformance(deviceMemory: number): Promise<number> {
+    try {
+      // 内存基准测试：大数组排序
+      const arraySize = 1000000
+      const startTime = performance.now()
+
+      // 创建大数组
+      const arr = new Array(arraySize)
+      for (let i = 0; i < arraySize; i++) {
+        arr[i] = Math.random()
+      }
+
+      // 执行排序测试
+      arr.sort((a, b) => a - b)
+
+      const duration = performance.now() - startTime
+
+      // 清理内存
+      arr.length = 0
+
+      // 根据执行时间计算基准分数
+      // 假设高端设备约100ms，低端设备约1000ms
+      const benchmarkScore = Math.max(0, Math.min(100, (1000 - duration) / 9))
+
+      // 根据设备内存容量计算分数
+      const memoryCapacityScore = Math.min(100, (deviceMemory / 16) * 100)
+
+      // 内存容量权重50%，基准测试50%
+      return Math.round(memoryCapacityScore * 0.5 + benchmarkScore * 0.5)
+    }
+    catch {
+      // 测试失败，仅根据内存容量评分
+      if (deviceMemory >= 8)
+        return 100
+      if (deviceMemory >= 6)
+        return 85
+      if (deviceMemory >= 4)
+        return 70
+      if (deviceMemory >= 2)
+        return 50
+      return 30
+    }
   }
 
   /**
@@ -332,27 +430,72 @@ export class PerformanceModule
       const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
 
       if (!connection)
-        return 50
+        return 70 // 默认中等分数
 
-      const effectiveType = connection.effectiveType
+      const effectiveType = connection.effectiveType || '4g'
       const downlink = connection.downlink || 0
 
       // 根据网络类型评分
       const typeScores: Record<string, number> = {
-        '4g': 100,
+        'slow-2g': 20,
+        '2g': 40,
         '3g': 60,
-        '2g': 30,
-        'slow-2g': 10,
+        '4g': 85,
+        '5g': 100,
       }
 
-      const typeScore = typeScores[effectiveType] || 50
+      const typeScore = typeScores[effectiveType] || 70
 
-      // 根据下载速度评分
-      const speedScore = Math.min(100, (downlink / 10) * 100)
+      // 根据下载速度评分（如果有的话）
+      if (downlink > 0) {
+        const speedScore = Math.min(100, (downlink / 10) * 100)
+        return Math.round((typeScore + speedScore) / 2)
+      }
 
-      return Math.round((typeScore + speedScore) / 2)
+      return typeScore
     }
     catch {
+      return 70
+    }
+  }
+
+  /**
+   * 测试存储性能
+   * 测试 localStorage 读写性能
+   */
+  private async testStoragePerformance(_timeout: number): Promise<number> {
+    try {
+      const testKey = '__perf_test_storage__'
+      const testData = 'x'.repeat(10000) // 10KB 数据
+
+      const startTime = performance.now()
+
+      // 执行 localStorage 读写测试
+      for (let i = 0; i < 10; i++) {
+        localStorage.setItem(testKey, testData)
+        localStorage.getItem(testKey)
+      }
+
+      // 清理测试数据
+      localStorage.removeItem(testKey)
+
+      const duration = performance.now() - startTime
+
+      // 根据执行时间计算基准分数
+      // 假设高端设备约5ms，低端设备约50ms
+      const benchmarkScore = Math.max(0, Math.min(100, (50 - duration) / 0.45))
+
+      // 检查存储 API 支持
+      let apiBonus = 0
+      if ('indexedDB' in window)
+        apiBonus += 5
+      if ('caches' in window)
+        apiBonus += 5
+
+      return Math.min(100, Math.round(benchmarkScore + apiBonus))
+    }
+    catch {
+      // 测试失败，返回中等分数
       return 50
     }
   }
@@ -361,17 +504,18 @@ export class PerformanceModule
    * 计算性能等级
    */
   private calculateTier(score: number): 'low' | 'medium' | 'high' | 'ultra' {
-    if (score >= 85)
+    if (score >= 80)
       return 'ultra'
-    if (score >= 70)
+    if (score >= 60)
       return 'high'
-    if (score >= 50)
+    if (score >= 40)
       return 'medium'
     return 'low'
   }
 
   /**
    * 生成性能建议
+   * 提供更详细和实用的优化建议
    */
   private generateRecommendations(
     metrics: DevicePerformanceInfo['metrics'],
@@ -379,30 +523,69 @@ export class PerformanceModule
   ): string[] {
     const recommendations: string[] = []
 
+    // 根据性能等级提供整体建议
     if (tier === 'low') {
-      recommendations.push('建议降低图形质量以提升性能')
-      recommendations.push('建议关闭动画效果')
-      recommendations.push('建议减少同时运行的任务')
+      recommendations.push('设备性能较低，建议降低整体图形质量和关闭非必要动画效果')
+      recommendations.push('建议减少同时运行的任务和后台进程')
     }
 
+    // CPU 性能建议
     if (metrics.cpu < 50) {
-      recommendations.push('CPU 性能较低，建议避免复杂计算')
+      recommendations.push('降低JavaScript计算复杂度，使用Web Workers处理密集型计算任务')
+      recommendations.push('避免在主线程中执行复杂的数据处理操作')
+    }
+    else if (metrics.cpu < 70) {
+      recommendations.push('注意优化JavaScript执行效率，避免不必要的复杂计算')
     }
 
+    // GPU 性能建议
     if (metrics.gpu < 50) {
-      recommendations.push('GPU 性能较低，建议降低渲染质量')
+      recommendations.push('减少DOM操作和重绘次数，使用CSS动画代替JavaScript动画')
+      recommendations.push('降低Canvas渲染质量，减少同时渲染的图形元素数量')
+    }
+    else if (metrics.gpu < 70) {
+      recommendations.push('优化图形渲染性能，注意控制动画帧率')
     }
 
+    // 内存性能建议
     if (metrics.memory < 50) {
-      recommendations.push('内存容量较小，建议优化内存使用')
+      recommendations.push('减少内存占用，及时清理不用的对象和大数组')
+      recommendations.push('避免内存泄漏，注意解除事件监听和定时器')
+    }
+    else if (metrics.memory < 70) {
+      recommendations.push('注意内存使用效率，避免创建过多的临时对象')
     }
 
+    // 网络性能建议
     if (metrics.network < 50) {
-      recommendations.push('网络速度较慢，建议启用数据压缩')
+      recommendations.push('优化资源加载策略，启用Gzip压缩和浏览器缓存')
+      recommendations.push('减少网络请求次数，考虑使用CDN加速静态资源')
+      recommendations.push('启用懒加载和预加载策略，优化首屏加载时间')
+    }
+    else if (metrics.network < 70) {
+      recommendations.push('网络性能一般，建议优化资源加载和使用缓存策略')
     }
 
+    // 存储性能建议
+    if (metrics.storage < 50) {
+      recommendations.push('减少localStorage的使用频率，考虑使用IndexedDB存储大量数据')
+      recommendations.push('优化数据存储策略，避免频繁的读写操作')
+    }
+    else if (metrics.storage < 70) {
+      recommendations.push('注意存储性能，避免过度使用localStorage')
+    }
+
+    // 高性能设备建议
     if (tier === 'ultra') {
-      recommendations.push('设备性能优秀，可以启用所有高级特性')
+      recommendations.push('设备性能优秀，可以启用所有高级特性和高质量图形效果')
+    }
+    else if (tier === 'high') {
+      recommendations.push('设备性能良好，可以启用大部分高级特性')
+    }
+
+    // 如果没有特别的性能问题
+    if (recommendations.length === 0) {
+      recommendations.push('设备性能表现良好，可以正常使用各项功能')
     }
 
     return recommendations

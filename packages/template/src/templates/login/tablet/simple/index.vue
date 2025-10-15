@@ -1,5 +1,10 @@
 <template>
   <div class="login-tablet-container" :class="`layout-${layout}`">
+    <!-- 模板切换器插槽 -->
+    <div v-if="$slots.switcher" class="template-switcher-container">
+      <slot name="switcher"></slot>
+    </div>
+    
     <div class="login-content">
       <div class="login-header">
         <img v-if="logo" :src="logo" alt="Logo" class="login-logo">
@@ -99,6 +104,13 @@ const handleForgotPassword = () => {
 </script>
 
 <style scoped>
+.template-switcher-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+}
+
 .login-tablet-container {
   min-height: 100vh;
   display: flex;

@@ -142,7 +142,7 @@ export class TemplateLoader {
    */
   private async loadWithRetry(
     id: TemplateId,
-    loader: () => Promise<{ default: Component }>,
+    loader: () => Promise<{ default: Component } | Component>,
     maxRetries: number,
     timeout: number
   ): Promise<Component> {
@@ -155,11 +155,20 @@ export class TemplateLoader {
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        const loadPromise = this.loadWithTimeout(loader, timeout)
+        const loadPromise = this.loadWithTimeout(loader, timeout).then(module => {
+          // 处理不同的模块格式
+          console.log('[Loader] Module loaded:', module)
+          if (module && typeof module === 'object') {
+            // Vue SFC 通常导出为 default
+            const comp = module.default || module
+            console.log('[Loader] Extracted component:', comp)
+            return comp
+          }
+          return module
+        })
         this.loadingPromises.set(id, loadPromise)
 
-        const module = await loadPromise
-        const component = module.default
+        const component = await loadPromise
 
         this.loadingPromises.delete(id)
         return component
@@ -182,9 +191,9 @@ export class TemplateLoader {
    * 带超时的加载
    */
   private loadWithTimeout(
-    loader: () => Promise<{ default: Component }>,
+    loader: () => Promise<{ default: Component } | Component>,
     timeout: number
-  ): Promise<{ default: Component }> {
+  ): Promise<any> {
     return Promise.race([
       loader(),
       new Promise<never>((_, reject) =>

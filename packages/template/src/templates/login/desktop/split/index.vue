@@ -1,5 +1,10 @@
 <template>
   <div class="login-split-container">
+    <!-- 模板切换器插槽 -->
+    <div v-if="$slots.switcher" class="template-switcher-container">
+      <slot name="switcher"></slot>
+    </div>
+    
     <!-- 左侧装饰区域 -->
     <div class="login-sidebar" :style="sidebarStyle">
       <div class="sidebar-content">
@@ -120,6 +125,13 @@ const handleForgotPassword = () => {
 </script>
 
 <style scoped>
+.template-switcher-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
 .login-split-container {
   display: flex;
   min-height: 100vh;

@@ -306,7 +306,7 @@ export default {
     title: 'Theme',
     selectThemeColor: 'Select Theme Color',
     customColor: 'Custom Color',
-    custom: 'Custom',
+    custom: 'Current',
     mode: 'Theme Mode',
     light: 'Light',
     dark: 'Dark',

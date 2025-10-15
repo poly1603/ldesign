@@ -139,6 +139,9 @@ export function useHttp() {
 /**
  * 创建资源 Hook
  * 用于 RESTful API 操作
+ *
+ * 注意: 这是一个轻量级的资源hook,用于依赖注入场景
+ * 如需更完整的功能(loading状态、error处理等),请使用 useResource from './useResource'
  */
 export function useResource<T = any>(baseUrl: string) {
   const {

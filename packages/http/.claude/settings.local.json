@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(pnpm run build)",
-      "Bash(pnpm run type-check)"
+      "Bash(pnpm run type-check)",
+      "Bash(rm:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

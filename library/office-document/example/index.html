@@ -14,209 +14,72 @@
   body {
    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
    background: #f5f5f5;
-   padding: 20px;
+   padding: 0;
+   margin: 0;
+   height: 100vh;
+   display: flex;
+   flex-direction: column;
   }
 
   .container {
-   max-width: 1200px;
-   margin: 0 auto;
-  }
-
-  h1 {
-   margin-bottom: 20px;
-   color: #333;
+   flex: 1;
+   display: flex;
+   flex-direction: column;
+   max-width: 100%;
+   height: 100%;
   }
 
   .controls {
    background: white;
-   padding: 20px;
-   border-radius: 8px;
-   margin-bottom: 20px;
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+   padding: 15px 20px;
+   border-bottom: 1px solid #e0e0e0;
+   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
 
   .control-group {
-   margin-bottom: 15px;
-  }
-
-  .control-group:last-child {
-   margin-bottom: 0;
+   margin: 0;
   }
 
   label {
-   display: block;
-   margin-bottom: 5px;
-   font-weight: 600;
+   display: inline-block;
+   margin-right: 10px;
+   font-weight: 500;
    color: #555;
+   font-size: 14px;
   }
 
   input[type="file"] {
-   display: block;
-   width: 100%;
-   padding: 10px;
-   border: 2px dashed #ddd;
+   display: inline-block;
+   padding: 8px 12px;
+   border: 1px solid #ddd;
    border-radius: 4px;
    cursor: pointer;
+   font-size: 14px;
+   background: white;
   }
 
   input[type="file"]:hover {
    border-color: #2196f3;
   }
 
-  select {
-   width: 100%;
-   padding: 10px;
-   border: 1px solid #ddd;
-   border-radius: 4px;
-   font-size: 14px;
-  }
-
-  .button-group {
-   display: flex;
-   gap: 10px;
-   flex-wrap: wrap;
-  }
-
-  button {
-   padding: 10px 20px;
-   border: none;
-   border-radius: 4px;
-   font-size: 14px;
-   cursor: pointer;
-   transition: background 0.2s;
-  }
-
-  button.primary {
-   background: #2196f3;
-   color: white;
-  }
-
-  button.primary:hover {
-   background: #1976d2;
-  }
-
-  button.secondary {
-   background: #e0e0e0;
-   color: #333;
-  }
-
-  button.secondary:hover {
-   background: #d0d0d0;
-  }
-
   #viewer {
+   flex: 1;
    background: white;
-   border-radius: 8px;
-   overflow: hidden;
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-   min-height: 600px;
+   overflow: auto;
   }
 
-  .info {
-   background: #e3f2fd;
-   padding: 15px;
-   border-radius: 4px;
-   margin-top: 20px;
-   color: #1565c0;
-   font-size: 14px;
-  }
-
-  .examples {
-   background: white;
-   padding: 20px;
-   border-radius: 8px;
-   margin-bottom: 20px;
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .examples h2 {
-   margin-bottom: 15px;
-   font-size: 18px;
-   color: #333;
-  }
-
-  .example-links {
-   display: flex;
-   gap: 10px;
-   flex-wrap: wrap;
-  }
-
-  .example-links a {
-   padding: 8px 16px;
-   background: #f5f5f5;
-   color: #2196f3;
-   text-decoration: none;
-   border-radius: 4px;
-   font-size: 14px;
-   transition: background 0.2s;
-  }
-
-  .example-links a:hover {
-   background: #e0e0e0;
-  }
  </style>
 </head>
 <body>
  <div class="container">
-  <h1>Office Viewer Example</h1>
-
-  <div class="examples">
-   <h2>📚 Try with Sample Files</h2>
-   <div class="example-links">
-    <a href="#" data-file="word">📄 Load Sample Word (.docx)</a>
-    <a href="#" data-file="excel">📊 Load Sample Excel (.xlsx)</a>
-    <a href="#" data-file="powerpoint">📽️ Load Sample PowerPoint (.pptx)</a>
-   </div>
-   <p style="margin-top: 10px; color: #666; font-size: 13px;">
-    Click on any sample file above to see the viewer in action, or upload your own document below.
-   </p>
-  </div>
-
   <div class="controls">
    <div class="control-group">
-    <label for="fileInput">Upload your Office document:</label>
-    <input type="file" id="fileInput" accept=".docx,.doc,.xlsx,.xls,.pptx,.ppt">
-   </div>
-
-   <div class="control-group">
-    <label for="documentType">Document Type (auto-detect if not specified):</label>
-    <select id="documentType">
-     <option value="">Auto Detect</option>
-     <option value="word">Word</option>
-     <option value="excel">Excel</option>
-     <option value="powerpoint">PowerPoint</option>
-    </select>
-   </div>
-
-   <div class="control-group">
-    <label for="theme">Theme:</label>
-    <select id="theme">
-     <option value="light">Light</option>
-     <option value="dark">Dark</option>
-    </select>
-   </div>
-
-   <div class="button-group">
-    <button class="primary" id="loadBtn">Load Document</button>
-    <button class="secondary" id="reloadBtn">Reload</button>
-    <button class="secondary" id="metadataBtn">Get Metadata</button>
-    <button class="secondary" id="destroyBtn">Destroy Viewer</button>
+    <label for="fileInput">Select Office Document (.docx, .xlsx, .pptx):</label>
+    <input type="file" id="fileInput" accept=".docx,.xlsx,.pptx">
    </div>
   </div>
 
   <div id="viewer"></div>
-
-  <div class="info">
-   <strong>Usage Example:</strong><br>
-   <code>
-    const viewer = new OfficeViewer({<br>
-    &nbsp;&nbsp;container: '#viewer',<br>
-    &nbsp;&nbsp;source: 'document.docx',<br>
-    &nbsp;&nbsp;enableZoom: true,<br>
-    &nbsp;&nbsp;showToolbar: true<br>
-    });
-   </code>
-  </div>
  </div>
 
  <script type="module" src="./src/main.ts"></script>

@@ -19,7 +19,7 @@ export function useTemplate(options: UseTemplateOptions) {
   const {
     category,
     device: fixedDevice,
-    name: initialName,
+    name: templateName,
     autoDeviceSwitch = true,
     enableCache = true,
   } = options
@@ -51,16 +51,23 @@ export function useTemplate(options: UseTemplateOptions) {
   const loadTemplate = async (name?: string) => {
     loading.value = true
     error.value = null
+    component.value = null // 清空当前组件
 
     try {
       const result = await manager.load(category, device.value, name, {
         cache: enableCache,
       })
-      component.value = markRaw(result.component)
-      metadata.value = result.metadata
+      // 确保组件存在且有效
+      if (result.component) {
+        component.value = markRaw(result.component)
+        metadata.value = result.metadata
+      } else {
+        throw new Error('Component load failed')
+      }
     } catch (err) {
       error.value = err as Error
       console.error('[useTemplate] Failed to load template:', err)
+      component.value = null
     } finally {
       loading.value = false
     }
@@ -75,7 +82,7 @@ export function useTemplate(options: UseTemplateOptions) {
   const refresh = async () => {
     await loadTemplates()
     if (!component.value && templates.value.length > 0) {
-      await loadTemplate(initialName)
+      await loadTemplate(templateName)
     }
   }
 
@@ -83,14 +90,14 @@ export function useTemplate(options: UseTemplateOptions) {
   watch(device, async (newDevice) => {
     console.log('[useTemplate] Device changed to:', newDevice)
     await loadTemplates()
-    // 设备变化时加载新设备的默认模板，而不是指定名称的模板
-    await loadTemplate(undefined)
+    // 设备变化时加载默认模板
+    await loadTemplate(templateName)
   })
 
   // 初始化
   onMounted(async () => {
     await loadTemplates()
-    await loadTemplate(initialName)
+    await loadTemplate(templateName)
   })
 
   return {

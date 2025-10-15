@@ -1,6 +1,6 @@
 /**
  * Chunk Processor - 分块加密/解密处理器
- * 
+ *
  * 核心功能：
  * - 将数据分块处理，避免一次性加载大文件到内存
  * - 支持所有加密算法的流式处理
@@ -10,6 +10,7 @@
 import CryptoJS from 'crypto-js'
 import type { EncryptionAlgorithm } from '../types'
 import type { IStreamEncryptor, IStreamDecryptor } from './types'
+import { createCryptoJSConfig } from '../utils/crypto-helpers'
 
 /**
  * 分块加密处理器
@@ -22,7 +23,7 @@ export class ChunkEncryptor implements IStreamEncryptor {
   private bytesProcessed = 0
   private chunksProcessed = 0
   private errors = 0
-  private derivedKey: any = null
+  private derivedKey: any = null // CryptoJS.lib.WordArray
 
   constructor(
     algorithm: EncryptionAlgorithm,
@@ -42,9 +43,11 @@ export class ChunkEncryptor implements IStreamEncryptor {
   private initializeKey(): void {
     if (this.algorithm === 'AES') {
       const keySize = this.options.keySize || 256
-      this.derivedKey = CryptoJS.PBKDF2(this.key, 'salt', {
+      // 使用密钥的SHA-256哈希作为确定性盐值（更安全）
+      const salt = CryptoJS.SHA256(this.key)
+      this.derivedKey = CryptoJS.PBKDF2(this.key, salt, {
         keySize: keySize / 32,
-        iterations: 1000,
+        iterations: 100000, // OWASP 2023推荐
       })
     }
   }
@@ -107,37 +110,31 @@ export class ChunkEncryptor implements IStreamEncryptor {
 
     switch (this.algorithm) {
       case 'AES': {
-        const mode = this.options.mode || 'CBC'
-        const padding = this.options.padding || 'Pkcs7'
+        const config = createCryptoJSConfig({
+          mode: this.options.mode || 'CBC',
+          padding: this.options.padding || 'Pkcs7',
+          iv: this.options.iv,
+        })
 
-        const config: any = {
-          mode: (CryptoJS.mode as any)[mode],
-          padding: (CryptoJS.pad as any)[padding],
-        }
-
-        if (mode !== 'ECB' && this.options.iv) {
-          config.iv = CryptoJS.enc.Utf8.parse(this.options.iv)
-        }
-
-        const encrypted = CryptoJS.AES.encrypt(text, this.derivedKey, config)
+        const encrypted = CryptoJS.AES.encrypt(text, this.derivedKey!, config)
         return encrypted.toString()
       }
 
       case 'DES': {
-        const mode = this.options.mode || 'CBC'
-        const config: any = {
-          mode: (CryptoJS.mode as any)[mode],
-        }
+        const config = createCryptoJSConfig({
+          mode: this.options.mode || 'CBC',
+          iv: this.options.iv,
+        })
         const encrypted = CryptoJS.DES.encrypt(text, this.key, config)
         return encrypted.toString()
       }
 
       case '3DES':
       case 'TRIPLEDES': {
-        const mode = this.options.mode || 'CBC'
-        const config: any = {
-          mode: (CryptoJS.mode as any)[mode],
-        }
+        const config = createCryptoJSConfig({
+          mode: this.options.mode || 'CBC',
+          iv: this.options.iv,
+        })
         const encrypted = CryptoJS.TripleDES.encrypt(text, this.key, config)
         return encrypted.toString()
       }
@@ -190,7 +187,7 @@ export class ChunkDecryptor implements IStreamDecryptor {
   private bytesProcessed = 0
   private chunksProcessed = 0
   private errors = 0
-  private derivedKey: any = null
+  private derivedKey: any = null // CryptoJS.lib.WordArray
 
   constructor(
     algorithm: EncryptionAlgorithm,
@@ -210,9 +207,11 @@ export class ChunkDecryptor implements IStreamDecryptor {
   private initializeKey(): void {
     if (this.algorithm === 'AES') {
       const keySize = this.options.keySize || 256
-      this.derivedKey = CryptoJS.PBKDF2(this.key, 'salt', {
+      // 使用密钥的SHA-256哈希作为确定性盐值（更安全）
+      const salt = CryptoJS.SHA256(this.key)
+      this.derivedKey = CryptoJS.PBKDF2(this.key, salt, {
         keySize: keySize / 32,
-        iterations: 1000,
+        iterations: 100000, // OWASP 2023推荐
       })
     }
   }
@@ -276,19 +275,13 @@ export class ChunkDecryptor implements IStreamDecryptor {
   private async decryptData(encryptedText: string): Promise<string> {
     switch (this.algorithm) {
       case 'AES': {
-        const mode = this.options.mode || 'CBC'
-        const padding = this.options.padding || 'Pkcs7'
+        const config = createCryptoJSConfig({
+          mode: this.options.mode || 'CBC',
+          padding: this.options.padding || 'Pkcs7',
+          iv: this.options.iv,
+        })
 
-        const config: any = {
-          mode: (CryptoJS.mode as any)[mode],
-          padding: (CryptoJS.pad as any)[padding],
-        }
-
-        if (mode !== 'ECB' && this.options.iv) {
-          config.iv = CryptoJS.enc.Utf8.parse(this.options.iv)
-        }
-
-        const decrypted = CryptoJS.AES.decrypt(encryptedText, this.derivedKey, config)
+        const decrypted = CryptoJS.AES.decrypt(encryptedText, this.derivedKey!, config)
         const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8)
 
         if (!decryptedStr) {
@@ -299,10 +292,10 @@ export class ChunkDecryptor implements IStreamDecryptor {
       }
 
       case 'DES': {
-        const mode = this.options.mode || 'CBC'
-        const config: any = {
-          mode: (CryptoJS.mode as any)[mode],
-        }
+        const config = createCryptoJSConfig({
+          mode: this.options.mode || 'CBC',
+          iv: this.options.iv,
+        })
         const decrypted = CryptoJS.DES.decrypt(encryptedText, this.key, config)
         const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8)
 
@@ -315,10 +308,10 @@ export class ChunkDecryptor implements IStreamDecryptor {
 
       case '3DES':
       case 'TRIPLEDES': {
-        const mode = this.options.mode || 'CBC'
-        const config: any = {
-          mode: (CryptoJS.mode as any)[mode],
-        }
+        const config = createCryptoJSConfig({
+          mode: this.options.mode || 'CBC',
+          iv: this.options.iv,
+        })
         const decrypted = CryptoJS.TripleDES.decrypt(encryptedText, this.key, config)
         const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8)
 

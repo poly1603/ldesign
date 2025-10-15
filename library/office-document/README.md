@@ -319,27 +319,82 @@ export default OfficeViewerComponent;
 
 ```bash
 # 安装依赖
-npm install
+pnpm install  # 在项目根目录运行
 
-# 开发模式
+# 开发模式（监听文件变化并自动构建）
 npm run dev
 
-# 构建
+# 构建生产版本
 npm run build
+```
 
-# 运行示例
+### 运行示例
+
+```bash
+# 1. 进入示例目录
 cd example
+
+# 2. 安装示例项目的依赖
 npm install
+
+# 3. 添加示例文件（可选）
+# 在 example/samples/ 目录下放置以下文件：
+# - sample.docx  (Word 文档)
+# - sample.xlsx  (Excel 表格)
+# - sample.pptx  (PowerPoint 演示文稿)
+# 
+# 或者，直接使用页面上的文件上传功能上传您自己的文档
+
+# 4. 启动开发服务器
 npm run dev
 ```
+
+**注意**：示例项目需要示例文件才能使用"加载示例文件"功能。请参考 `example/samples/README.md` 了解如何添加示例文件。
 
 ## 📝 技术栈
 
 - **Word 渲染**：[mammoth.js](https://github.com/mwilliamson/mammoth.js) - 将 DOCX 转换为 HTML
 - **Excel 渲染**：[SheetJS](https://sheetjs.com/) - 解析和渲染 Excel 文件
-- **PowerPoint 渲染**：自定义实现，支持 JSZip 解析 PPTX 结构
+- **PowerPoint 渲染**：自定义实现，使用 JSZip 解析 PPTX 结构
+- **JSZip**：解析 ZIP 格式文件（.docx, .xlsx, .pptx 都是 ZIP 格式）
 - **TypeScript**：完整的类型支持
 - **Rollup**：模块打包
+
+## 🔧 故障排除
+
+### 错误："Failed to resolve import 'jszip'"
+
+**解决方案**：
+1. 确保已安装 `jszip` 依赖：
+   ```bash
+   pnpm install
+   ```
+2. `jszip` 已添加到 `package.json` 的 `dependencies` 中
+
+### 错误："Can't find end of central directory"
+
+这个错误通常表示：
+1. **示例文件不存在**：请在 `example/samples/` 目录下添加正确的 Office 文档
+2. **文件损坏**：尝试使用其他 Office 文档
+3. **文件格式不正确**：确保文件是正确的 .docx/.xlsx/.pptx 格式，而不是旧版的 .doc/.xls/.ppt
+
+**推荐操作**：
+- 直接使用页面上的文件上传功能测试您自己的文档
+- 参考 `example/samples/README.md` 创建示例文件
+
+### Rollup 构建错误
+
+如果遇到构建错误，尝试：
+```bash
+# 清理构建缓存
+rm -rf dist
+
+# 重新安装依赖
+pnpm install
+
+# 重新构建
+npm run build
+```
 
 ## 🌟 特性路线图
 

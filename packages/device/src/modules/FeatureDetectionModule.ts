@@ -11,14 +11,27 @@ export interface FeatureDetectionInfo {
     sessionStorage: boolean
     indexedDB: boolean
     cookies: boolean
+    cacheAPI: boolean
+    fileSystemAccess: boolean
   }
   /** 媒体支持 */
   media: {
     webp: boolean
     avif: boolean
+    jxl: boolean
+    heic: boolean
     webm: boolean
     mp4: boolean
     hls: boolean
+  }
+  /** CSS 特性支持 */
+  css: {
+    grid: boolean
+    flexbox: boolean
+    cssVariables: boolean
+    containerQueries: boolean
+    hasSelector: boolean
+    subgrid: boolean
   }
   /** API 支持 */
   apis: {
@@ -28,8 +41,20 @@ export interface FeatureDetectionInfo {
     webSocket: boolean
     webGL: boolean
     webGL2: boolean
+    webGPU: boolean
     webAssembly: boolean
     webXR: boolean
+    webAudio: boolean
+    intersectionObserver: boolean
+    resizeObserver: boolean
+    mutationObserver: boolean
+  }
+  /** PWA 能力 */
+  pwa: {
+    pushNotifications: boolean
+    backgroundSync: boolean
+    periodicBackgroundSync: boolean
+    installable: boolean
   }
   /** 传感器支持 */
   sensors: {
@@ -186,7 +211,9 @@ export class FeatureDetectionModule
     return {
       storage: this.detectStorage(),
       media: await this.detectMediaSupport(),
+      css: this.detectCSSFeatures(),
       apis: this.detectAPIs(),
+      pwa: this.detectPWACapabilities(),
       sensors: this.detectSensors(),
       preferences: this.detectPreferences(),
       capabilities: this.detectCapabilities(),
@@ -203,6 +230,8 @@ export class FeatureDetectionModule
       sessionStorage: this.checkSessionStorage(),
       indexedDB: this.checkIndexedDB(),
       cookies: this.checkCookies(),
+      cacheAPI: 'caches' in window,
+      fileSystemAccess: 'showOpenFilePicker' in window,
     }
   }
 
@@ -213,6 +242,8 @@ export class FeatureDetectionModule
     return {
       webp: await this.checkImageFormat('webp'),
       avif: await this.checkImageFormat('avif'),
+      jxl: false, // JPEG XL 还没有广泛支持
+      heic: false, // HEIC 主要在 iOS Safari 中支持
       webm: this.checkVideoFormat('video/webm'),
       mp4: this.checkVideoFormat('video/mp4'),
       hls: this.checkHLSSupport(),
@@ -230,8 +261,13 @@ export class FeatureDetectionModule
       webSocket: 'WebSocket' in window,
       webGL: this.checkWebGL(),
       webGL2: this.checkWebGL2(),
+      webGPU: 'gpu' in navigator,
       webAssembly: typeof WebAssembly !== 'undefined',
       webXR: 'xr' in navigator,
+      webAudio: 'AudioContext' in window || 'webkitAudioContext' in window,
+      intersectionObserver: 'IntersectionObserver' in window,
+      resizeObserver: 'ResizeObserver' in window,
+      mutationObserver: 'MutationObserver' in window,
     }
   }
 
@@ -244,6 +280,48 @@ export class FeatureDetectionModule
       gyroscope: 'Gyroscope' in window,
       magnetometer: 'Magnetometer' in window,
       ambientLight: 'AmbientLightSensor' in window,
+    }
+  }
+
+  /**
+   * 检测 CSS 特性支持
+   */
+  private detectCSSFeatures() {
+    if (typeof window === 'undefined' || !CSS || !CSS.supports) {
+      return {
+        grid: false,
+        flexbox: false,
+        cssVariables: false,
+        containerQueries: false,
+        hasSelector: false,
+        subgrid: false,
+      }
+    }
+
+    return {
+      grid: CSS.supports('display', 'grid'),
+      flexbox: CSS.supports('display', 'flex'),
+      cssVariables: CSS.supports('--test', 'value'),
+      containerQueries: CSS.supports('container-type', 'inline-size'),
+      hasSelector: CSS.supports('selector(:has(div))'),
+      subgrid: CSS.supports('grid-template-rows', 'subgrid'),
+    }
+  }
+
+  /**
+   * 检测 PWA 能力
+   */
+  private detectPWACapabilities() {
+    const pushNotifications = 'PushManager' in window
+    const backgroundSync = 'sync' in (ServiceWorkerRegistration.prototype || {})
+    const periodicBackgroundSync = 'periodicSync' in (ServiceWorkerRegistration.prototype || {})
+    const installable = 'onbeforeinstallprompt' in window
+
+    return {
+      pushNotifications,
+      backgroundSync,
+      periodicBackgroundSync,
+      installable,
     }
   }
 

@@ -1,0 +1,70 @@
+/**
+ * 自定义样式
+ */
+
+:root {
+ --vp-c-brand: #3b82f6;
+ --vp-c-brand-light: #60a5fa;
+ --vp-c-brand-lighter: #93c5fd;
+ --vp-c-brand-dark: #2563eb;
+ --vp-c-brand-darker: #1d4ed8;
+}
+
+.dark {
+ --vp-c-brand: #60a5fa;
+ --vp-c-brand-light: #93c5fd;
+ --vp-c-brand-lighter: #bfdbfe;
+ --vp-c-brand-dark: #3b82f6;
+ --vp-c-brand-darker: #2563eb;
+}
+
+/**
+ * 代码块样式
+ */
+.vp-code-group .tabs {
+ padding-top: 12px;
+}
+
+/**
+ * 徽章样式
+ */
+.custom-badge {
+ display: inline-block;
+ padding: 2px 8px;
+ border-radius: 4px;
+ font-size: 12px;
+ font-weight: 600;
+ margin-left: 8px;
+}
+
+.custom-badge.new {
+ background: #10b981;
+ color: white;
+}
+
+.custom-badge.beta {
+ background: #f59e0b;
+ color: white;
+}
+
+/**
+ * 特性卡片
+ */
+.feature-card {
+ border: 1px solid var(--vp-c-divider);
+ border-radius: 8px;
+ padding: 24px;
+ margin: 16px 0;
+ transition: all 0.2s;
+}
+
+.feature-card:hover {
+ border-color: var(--vp-c-brand);
+ transform: translateY(-2px);
+ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card h3 {
+ margin-top: 0;
+ color: var(--vp-c-brand);
+}

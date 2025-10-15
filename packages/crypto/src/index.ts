@@ -124,6 +124,23 @@ export {
 
   // 性能优化
   PerformanceOptimizer,
+
+  // 链式调用 API
+  CryptoChain,
+  chain,
+  encryptToBase64,
+  decryptFromBase64,
+  encryptJSON,
+  decryptJSON,
+  hashPassword,
+
+  // 认证加密
+  AuthenticatedEncryption,
+  authenticatedEncryption,
+  encryptWithAuth,
+  decryptWithAuth,
+  encryptJSONWithAuth,
+  decryptJSONWithAuth,
 } from './core'
 
 // === 管理器相关类型 ===
@@ -134,6 +151,10 @@ export type {
   CryptoConfig,
   PerformanceMetrics,
   PerformanceOptimizerConfig,
+  // 认证加密类型
+  AuthenticatedEncryptResult,
+  AuthenticatedDecryptResult,
+  AuthenticatedEncryptionOptions,
 } from './core'
 
 // === Engine 插件模块（已移至独立入口，避免将可选依赖纳入基础构建）===
@@ -153,6 +174,7 @@ export type {
   EncodingType,
   // 核心类型
   EncryptionAlgorithm,
+  EncryptionOptions,
   EncryptResult,
   // 哈希相关类型
   HashAlgorithm,
@@ -222,6 +244,15 @@ export {
   type KeyDerivationOptions,
   type KeyDerivationResult,
 } from './utils/key-derivation'
+
+// === 密钥轮换 ===
+export {
+  KeyRotation,
+  createKeyRotation,
+  type KeyInfo,
+  type EncryptedDataMetadata,
+  type ReencryptionResult,
+} from './utils/key-rotation'
 
 // === 安全存储 ===
 export {

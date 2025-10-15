@@ -1,14 +1,21 @@
 /**
  * Custom Error Classes
- * 
+ *
  * 提供专门的错误类型，用于更精确的错误处理和调试
- * 
+ *
  * 特性：
  * - 继承自原生 Error
  * - 包含详细的错误信息
  * - 支持错误码
  * - 便于错误分类和处理
  */
+
+/**
+ * 错误详情类型
+ * 用于提供额外的错误上下文信息
+ * 使用 Record<string, unknown> 而非 any 以提升类型安全性
+ */
+export type ErrorDetails = Record<string, unknown> | undefined
 
 /**
  * 错误代码枚举
@@ -65,14 +72,14 @@ export enum CryptoErrorCode {
 export class CryptoError extends Error {
   public readonly code: CryptoErrorCode
   public readonly algorithm?: string
-  public readonly details?: any
+  public readonly details?: ErrorDetails
   public readonly timestamp: number
 
   constructor(
     message: string,
     code: CryptoErrorCode = CryptoErrorCode.UNKNOWN_ERROR,
     algorithm?: string,
-    details?: any,
+    details?: ErrorDetails,
   ) {
     super(message)
     this.name = 'CryptoError'
@@ -116,7 +123,7 @@ export class CryptoError extends Error {
  * 加密错误
  */
 export class EncryptionError extends CryptoError {
-  constructor(message: string, code: CryptoErrorCode = CryptoErrorCode.ENCRYPTION_FAILED, algorithm?: string, details?: any) {
+  constructor(message: string, code: CryptoErrorCode = CryptoErrorCode.ENCRYPTION_FAILED, algorithm?: string, details?: ErrorDetails) {
     super(message, code, algorithm, details)
     this.name = 'EncryptionError'
     Object.setPrototypeOf(this, EncryptionError.prototype)
@@ -127,7 +134,7 @@ export class EncryptionError extends CryptoError {
  * 解密错误
  */
 export class DecryptionError extends CryptoError {
-  constructor(message: string, code: CryptoErrorCode = CryptoErrorCode.DECRYPTION_FAILED, algorithm?: string, details?: any) {
+  constructor(message: string, code: CryptoErrorCode = CryptoErrorCode.DECRYPTION_FAILED, algorithm?: string, details?: ErrorDetails) {
     super(message, code, algorithm, details)
     this.name = 'DecryptionError'
     Object.setPrototypeOf(this, DecryptionError.prototype)
@@ -138,7 +145,7 @@ export class DecryptionError extends CryptoError {
  * 哈希错误
  */
 export class HashError extends CryptoError {
-  constructor(message: string, code: CryptoErrorCode = CryptoErrorCode.HASH_FAILED, algorithm?: string, details?: any) {
+  constructor(message: string, code: CryptoErrorCode = CryptoErrorCode.HASH_FAILED, algorithm?: string, details?: ErrorDetails) {
     super(message, code, algorithm, details)
     this.name = 'HashError'
     Object.setPrototypeOf(this, HashError.prototype)
@@ -149,7 +156,7 @@ export class HashError extends CryptoError {
  * 密钥管理错误
  */
 export class KeyManagementError extends CryptoError {
-  constructor(message: string, code: CryptoErrorCode = CryptoErrorCode.KEY_GENERATION_FAILED, algorithm?: string, details?: any) {
+  constructor(message: string, code: CryptoErrorCode = CryptoErrorCode.KEY_GENERATION_FAILED, algorithm?: string, details?: ErrorDetails) {
     super(message, code, algorithm, details)
     this.name = 'KeyManagementError'
     Object.setPrototypeOf(this, KeyManagementError.prototype)
@@ -160,7 +167,7 @@ export class KeyManagementError extends CryptoError {
  * 编码错误
  */
 export class EncodingError extends CryptoError {
-  constructor(message: string, code: CryptoErrorCode = CryptoErrorCode.ENCODING_FAILED, algorithm?: string, details?: any) {
+  constructor(message: string, code: CryptoErrorCode = CryptoErrorCode.ENCODING_FAILED, algorithm?: string, details?: ErrorDetails) {
     super(message, code, algorithm, details)
     this.name = 'EncodingError'
     Object.setPrototypeOf(this, EncodingError.prototype)
@@ -173,7 +180,7 @@ export class EncodingError extends CryptoError {
 export class RateLimitError extends CryptoError {
   public readonly retryAfter?: number
 
-  constructor(message: string, retryAfter?: number, details?: any) {
+  constructor(message: string, retryAfter?: number, details?: ErrorDetails) {
     super(message, CryptoErrorCode.RATE_LIMIT_EXCEEDED, undefined, details)
     this.name = 'RateLimitError'
     this.retryAfter = retryAfter
@@ -195,7 +202,7 @@ export class RateLimitError extends CryptoError {
 export class ValidationError extends CryptoError {
   public readonly field?: string
 
-  constructor(message: string, field?: string, details?: any) {
+  constructor(message: string, field?: string, details?: ErrorDetails) {
     super(message, CryptoErrorCode.INVALID_INPUT, undefined, details)
     this.name = 'ValidationError'
     this.field = field
@@ -215,7 +222,7 @@ export class ValidationError extends CryptoError {
  * 存储错误
  */
 export class StorageError extends CryptoError {
-  constructor(message: string, code: CryptoErrorCode = CryptoErrorCode.STORAGE_FAILED, details?: any) {
+  constructor(message: string, code: CryptoErrorCode = CryptoErrorCode.STORAGE_FAILED, details?: ErrorDetails) {
     super(message, code, undefined, details)
     this.name = 'StorageError'
     Object.setPrototypeOf(this, StorageError.prototype)
@@ -234,7 +241,7 @@ export class CryptoErrorFactory {
     options?: {
       code?: CryptoErrorCode
       algorithm?: string
-      details?: any
+      details?: ErrorDetails
     },
   ): EncryptionError {
     return new EncryptionError(
@@ -253,7 +260,7 @@ export class CryptoErrorFactory {
     options?: {
       code?: CryptoErrorCode
       algorithm?: string
-      details?: any
+      details?: ErrorDetails
     },
   ): DecryptionError {
     return new DecryptionError(
@@ -272,7 +279,7 @@ export class CryptoErrorFactory {
     options?: {
       code?: CryptoErrorCode
       algorithm?: string
-      details?: any
+      details?: ErrorDetails
     },
   ): HashError {
     return new HashError(
@@ -291,7 +298,7 @@ export class CryptoErrorFactory {
     options?: {
       code?: CryptoErrorCode
       algorithm?: string
-      details?: any
+      details?: ErrorDetails
     },
   ): KeyManagementError {
     return new KeyManagementError(
@@ -310,7 +317,7 @@ export class CryptoErrorFactory {
     options?: {
       code?: CryptoErrorCode
       algorithm?: string
-      details?: any
+      details?: ErrorDetails
     },
   ): EncodingError {
     return new EncodingError(
@@ -327,7 +334,7 @@ export class CryptoErrorFactory {
   static createRateLimitError(
     message: string,
     retryAfter?: number,
-    details?: any,
+    details?: ErrorDetails,
   ): RateLimitError {
     return new RateLimitError(message, retryAfter, details)
   }
@@ -338,7 +345,7 @@ export class CryptoErrorFactory {
   static createValidationError(
     message: string,
     field?: string,
-    details?: any,
+    details?: ErrorDetails,
   ): ValidationError {
     return new ValidationError(message, field, details)
   }
@@ -349,7 +356,7 @@ export class CryptoErrorFactory {
   static createStorageError(
     message: string,
     code?: CryptoErrorCode,
-    details?: any,
+    details?: ErrorDetails,
   ): StorageError {
     return new StorageError(
       message,
@@ -378,28 +385,28 @@ export class ErrorHandler {
   /**
    * 判断是否为加密错误
    */
-  static isCryptoError(error: any): error is CryptoError {
+  static isCryptoError(error: unknown): error is CryptoError {
     return error instanceof CryptoError
   }
 
   /**
    * 判断是否为加密操作错误
    */
-  static isEncryptionError(error: any): error is EncryptionError {
+  static isEncryptionError(error: unknown): error is EncryptionError {
     return error instanceof EncryptionError
   }
 
   /**
    * 判断是否为解密错误
    */
-  static isDecryptionError(error: any): error is DecryptionError {
+  static isDecryptionError(error: unknown): error is DecryptionError {
     return error instanceof DecryptionError
   }
 
   /**
    * 判断是否为限流错误
    */
-  static isRateLimitError(error: any): error is RateLimitError {
+  static isRateLimitError(error: unknown): error is RateLimitError {
     return error instanceof RateLimitError
   }
 

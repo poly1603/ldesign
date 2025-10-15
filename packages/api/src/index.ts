@@ -67,6 +67,8 @@ export { createLoggingPlugin } from './plugins/logging'
 export type { LoggingPluginOptions } from './plugins/logging'
 export { createMockPlugin, MockHelpers } from './plugins/mock'
 export type { MockPluginOptions, MockResponse, MockRule } from './plugins/mock'
+export { createCancellationPlugin, getCancellationAPI } from './plugins/cancellation'
+export type { CancellationPluginAPI, CancellationPluginOptions } from './plugins/cancellation'
 export { createOfflineCachePlugin } from './plugins/offlineCache'
 export {
   createPerformancePlugin,
@@ -194,6 +196,42 @@ export type {
   DuplicateDetectorConfig,
   DuplicateStats,
 } from './utils/DuplicateDetector'
+
+// 新增工具类 - 缓存预热器
+export {
+  CacheWarmer,
+  createCacheWarmer,
+  quickWarmup,
+} from './utils/CacheWarmer'
+export type {
+  CacheWarmerConfig,
+  WarmupResult,
+  WarmupStats,
+  WarmupTask,
+} from './utils/CacheWarmer'
+
+// 新增工具类 - 数据转换器
+export {
+  BuiltinTransformers,
+  createDataTransformer,
+  DataTransformer,
+  deepClone,
+  flatten,
+  getGlobalTransformer,
+  parseDates,
+  parseNumbers,
+  removeEmpty,
+  setGlobalTransformer,
+  stringifyDates,
+  toCamelCase,
+  toSnakeCase,
+  transform,
+  transformChain,
+} from './utils/DataTransformer'
+export type {
+  TransformerConfig,
+  TransformerFn,
+} from './utils/DataTransformer'
 
 // 错误码系统
 export {

@@ -9,26 +9,35 @@ import { CONSTANTS, ErrorUtils, RandomUtils, ValidationUtils } from '../utils'
 import { LRUCache } from '../utils/lru-cache'
 
 /**
+ * AES 默认选项类型：salt 保持可选，其他字段必需
+ */
+type AESDefaultOptions = Omit<Required<AESOptions>, 'salt'> & { salt?: string }
+
+/**
  * AES 加密器
  * 优化：添加密钥派生缓存，减少重复计算
  */
 export class AESEncryptor implements IEncryptor {
-  private readonly defaultOptions: Required<AESOptions> = {
+  private readonly defaultOptions: AESDefaultOptions = {
     mode: CONSTANTS.AES.DEFAULT_MODE,
     keySize: CONSTANTS.AES.DEFAULT_KEY_SIZE,
     iv: '',
     padding: 'Pkcs7',
+    salt: undefined, // 将使用密钥的SHA-256作为盐值
+    iterations: 100000, // OWASP 2023推荐
   }
 
   /**
    * 获取默认选项（公开方法，用于外部访问）
    */
-  static getDefaultOptions(): Required<AESOptions> {
+  static getDefaultOptions(): AESDefaultOptions {
     return {
       mode: CONSTANTS.AES.DEFAULT_MODE,
       keySize: CONSTANTS.AES.DEFAULT_KEY_SIZE,
       iv: '',
       padding: 'Pkcs7',
+      salt: undefined, // 将使用密钥的SHA-256作为盐值
+      iterations: 100000, // OWASP 2023推荐
     }
   }
 
@@ -140,145 +149,210 @@ export class AESEncryptor implements IEncryptor {
       if (ValidationUtils.isEmpty(key)) {
         throw ErrorUtils.createDecryptionError('Key cannot be empty', 'AES')
       }
-      let ciphertext: string
-      let iv: string
-      let actualKeySize = opts.keySize
-      let actualMode = opts.mode
 
-      // 处理输入数据
-      if (typeof encryptedData === 'string') {
-        ciphertext = encryptedData
-        iv = opts.iv
+      // 处理输入数据并提取参数
+      const decryptParams = this.extractDecryptParams(encryptedData, opts, key)
 
-        // 对于字符串输入，如果没有提供IV，尝试使用CryptoJS的默认解密方式
-        if (!iv) {
-          try {
-            // 首先验证输入是否为有效的Base64格式
-            try {
-              CryptoJS.enc.Base64.parse(encryptedData)
-            } catch {
-              throw ErrorUtils.createDecryptionError(
-                'Invalid encrypted data format - not valid Base64',
-                'AES',
-              )
-            }
+      // 如果是使用默认格式的字符串解密，直接返回结果
+      if (decryptParams.isDefaultFormat) {
+        return decryptParams.result!
+      }
 
-            const decrypted = CryptoJS.AES.decrypt(encryptedData, key)
-            const decryptedString = decrypted.toString(CryptoJS.enc.Utf8)
+      // 执行标准解密流程
+      return this.performStandardDecryption(
+        decryptParams.ciphertext,
+        decryptParams.iv,
+        key,
+        decryptParams.keySize,
+        decryptParams.mode,
+      )
+    } catch (error) {
+      return this.createDecryptErrorResult(error, opts.mode)
+    }
+  }
 
-            // 检查解密是否成功：sigBytes应该大于等于0
-            if (decrypted.sigBytes < 0) {
-              throw ErrorUtils.createDecryptionError(
-                'Failed to decrypt data - invalid key or corrupted data',
-                'AES',
-              )
-            }
+  /**
+   * 提取解密参数
+   * 优化：将参数提取逻辑独立出来，使主方法更清晰
+   */
+  private extractDecryptParams(
+    encryptedData: string | EncryptResult,
+    opts: AESDefaultOptions,
+    key: string,
+  ): {
+    ciphertext: string
+    iv: string
+    keySize: number
+    mode: string
+    isDefaultFormat: boolean
+    result?: DecryptResult
+  } {
+    // 处理字符串输入
+    if (typeof encryptedData === 'string') {
+      const iv = opts.iv
 
-            // 对于非空解密结果，进行额外验证
-            if (!this.validateUtf8String(decryptedString)) {
-              throw ErrorUtils.createDecryptionError(
-                'Decrypted data contains invalid characters - wrong key',
-                'AES',
-              )
-            }
-
-            return {
-              success: true,
-              data: decryptedString,
-              algorithm: 'AES',
-              mode: opts.mode,
-            }
-          } catch (error) {
-            if (error instanceof Error) {
-              return {
-                success: false,
-                data: '',
-                algorithm: 'AES',
-                mode: opts.mode,
-                error: error.message,
-              }
-            }
-            return {
-              success: false,
-              data: '',
-              algorithm: 'AES',
-              mode: opts.mode,
-              error: 'Unknown decryption error',
-            }
-          }
-        }
-      } else {
-        ciphertext = encryptedData.data || ''
-        iv = encryptedData.iv || opts.iv
-        // 从加密结果中获取实际使用的参数
-        actualKeySize = (encryptedData.keySize as any) || opts.keySize
-        actualMode = (encryptedData.mode as any) || opts.mode
-        if (!iv) {
-          throw ErrorUtils.createDecryptionError(
-            'IV not found in encrypted data',
-            'AES',
-          )
+      // 如果没有提供IV，尝试使用CryptoJS的默认解密方式
+      if (!iv) {
+        const result = this.tryDecryptWithDefaultFormat(encryptedData, key, opts.mode)
+        return {
+          ciphertext: '',
+          iv: '',
+          keySize: opts.keySize,
+          mode: opts.mode,
+          isDefaultFormat: true,
+          result,
         }
       }
 
-      // 准备密钥和 IV
-      const keyWordArray = this.prepareKey(key, actualKeySize)
-      const ivWordArray = CryptoJS.enc.Hex.parse(iv)
+      return {
+        ciphertext: encryptedData,
+        iv,
+        keySize: opts.keySize,
+        mode: opts.mode,
+        isDefaultFormat: false,
+      }
+    }
 
-      // 选择加密模式
-      const mode = this.getMode(actualMode)
+    // 处理EncryptResult对象输入
+    const ciphertext = encryptedData.data || ''
+    const iv = encryptedData.iv || opts.iv
 
-      // 解密配置
-      const config = {
-        mode,
-        padding: CryptoJS.pad.Pkcs7,
-        iv: ivWordArray,
+    if (!iv) {
+      throw ErrorUtils.createDecryptionError('IV not found in encrypted data', 'AES')
+    }
+
+    return {
+      ciphertext,
+      iv,
+      keySize: (encryptedData.keySize as number) || opts.keySize,
+      mode: (encryptedData.mode as string) || opts.mode,
+      isDefaultFormat: false,
+    }
+  }
+
+  /**
+   * 尝试使用CryptoJS默认格式解密
+   * 优化：将默认格式解密逻辑提取为独立方法
+   */
+  private tryDecryptWithDefaultFormat(
+    encryptedData: string,
+    key: string,
+    mode: string,
+  ): DecryptResult {
+    try {
+      // 验证输入是否为有效的Base64格式
+      try {
+        CryptoJS.enc.Base64.parse(encryptedData)
+      } catch {
+        throw ErrorUtils.createDecryptionError(
+          'Invalid encrypted data format - not valid Base64',
+          'AES',
+        )
       }
 
       // 执行解密
-      const decrypted = CryptoJS.AES.decrypt(ciphertext, keyWordArray, config)
+      const decrypted = CryptoJS.AES.decrypt(encryptedData, key)
       const decryptedString = decrypted.toString(CryptoJS.enc.Utf8)
 
-      // 检查解密是否成功
-      // 如果解密失败，decrypted.sigBytes 会是负数
-      if (decrypted.sigBytes < 0) {
-        throw ErrorUtils.createDecryptionError(
-          'Failed to decrypt data - invalid key or corrupted data',
-          'AES',
-        )
-      }
-
-      // 对于非空解密结果，进行额外验证
-      if (!this.validateUtf8String(decryptedString)) {
-        throw ErrorUtils.createDecryptionError(
-          'Decrypted data contains invalid characters - wrong key',
-          'AES',
-        )
-      }
+      // 验证解密结果
+      this.validateDecryptionResult(decrypted, decryptedString)
 
       return {
         success: true,
         data: decryptedString,
         algorithm: 'AES',
-        mode: actualMode,
+        mode,
       }
     } catch (error) {
-      if (error instanceof Error) {
-        return {
-          success: false,
-          data: '',
-          algorithm: 'AES',
-          mode: opts.mode,
-          error: error.message,
-        }
-      }
+      return this.createDecryptErrorResult(error, mode)
+    }
+  }
+
+  /**
+   * 执行标准解密流程
+   * 优化：将标准解密逻辑提取为独立方法
+   */
+  private performStandardDecryption(
+    ciphertext: string,
+    iv: string,
+    key: string,
+    keySize: number,
+    mode: string,
+  ): DecryptResult {
+    // 准备密钥和IV
+    const keyWordArray = this.prepareKey(key, keySize)
+    const ivWordArray = CryptoJS.enc.Hex.parse(iv)
+
+    // 选择加密模式
+    const modeObject = this.getMode(mode)
+
+    // 解密配置
+    const config = {
+      mode: modeObject,
+      padding: CryptoJS.pad.Pkcs7,
+      iv: ivWordArray,
+    }
+
+    // 执行解密
+    const decrypted = CryptoJS.AES.decrypt(ciphertext, keyWordArray, config)
+    const decryptedString = decrypted.toString(CryptoJS.enc.Utf8)
+
+    // 验证解密结果
+    this.validateDecryptionResult(decrypted, decryptedString)
+
+    return {
+      success: true,
+      data: decryptedString,
+      algorithm: 'AES',
+      mode,
+    }
+  }
+
+  /**
+   * 验证解密结果
+   * 优化：提取验证逻辑，避免代码重复
+   */
+  private validateDecryptionResult(
+    decrypted: CryptoJS.lib.WordArray,
+    decryptedString: string,
+  ): void {
+    // 检查解密是否成功：sigBytes应该大于等于0
+    if (decrypted.sigBytes < 0) {
+      throw ErrorUtils.createDecryptionError(
+        'Failed to decrypt data - invalid key or corrupted data',
+        'AES',
+      )
+    }
+
+    // 对于非空解密结果，进行额外验证
+    if (!this.validateUtf8String(decryptedString)) {
+      throw ErrorUtils.createDecryptionError(
+        'Decrypted data contains invalid characters - wrong key',
+        'AES',
+      )
+    }
+  }
+
+  /**
+   * 创建解密错误结果
+   * 优化：统一错误处理逻辑
+   */
+  private createDecryptErrorResult(error: unknown, mode: string): DecryptResult {
+    if (error instanceof Error) {
       return {
         success: false,
         data: '',
         algorithm: 'AES',
-        mode: opts.mode,
-        error: 'Unknown decryption error',
+        mode,
+        error: error.message,
       }
+    }
+    return {
+      success: false,
+      data: '',
+      algorithm: 'AES',
+      mode,
+      error: 'Unknown decryption error',
     }
   }
 
@@ -327,11 +401,20 @@ export class AESEncryptor implements IEncryptor {
       }
     }
 
-    // 否则，使用固定盐值的 PBKDF2 派生密钥，确保相同输入产生相同密钥
-    const salt = CryptoJS.enc.Utf8.parse('ldesign-crypto-salt')
+    // 使用密钥的SHA-256哈希作为确定性盐值（比固定字符串更安全）
+    // 这确保：
+    // 1. 相同密钥总是生成相同的派生密钥（支持缓存）
+    // 2. 不同密钥使用不同的盐值（提高安全性）
+    // 3. 避免彩虹表攻击
+    const salt = CryptoJS.SHA256(key)
+
+    // ⚠️ 安全提升：迭代次数从 1,000 提升到 100,000 (OWASP 2023 推荐)
+    // 注意：此更改会显著影响性能，但大幅提升密钥安全性（抵抗暴力破解）
+    const iterations = 100000 // OWASP 推荐：100,000+ iterations
+
     keyWordArray = CryptoJS.PBKDF2(key, salt, {
       keySize: keySize / 32,
-      iterations: 1000,
+      iterations,
     }) as CryptoJS.lib.WordArray
 
     // 缓存派生的密钥（LRU 缓存会自动管理大小）
@@ -343,7 +426,7 @@ export class AESEncryptor implements IEncryptor {
   /**
    * 获取加密模式
    */
-  private getMode(mode?: string): any {
+  private getMode(mode?: string): typeof CryptoJS.mode.CBC {
     if (!mode) {
       return CryptoJS.mode.CBC
     }

@@ -94,3 +94,30 @@ export type {
   PerformanceMetrics,
   PerformanceOptimizerConfig,
 } from './performance'
+
+// === 链式调用 API ===
+export {
+  CryptoChain,
+  chain,
+  encryptToBase64,
+  decryptFromBase64,
+  encryptJSON,
+  decryptJSON,
+  hashPassword,
+} from './chain'
+
+// === 认证加密 ===
+export {
+  AuthenticatedEncryption,
+  authenticatedEncryption,
+  encryptWithAuth,
+  decryptWithAuth,
+  encryptJSONWithAuth,
+  decryptJSONWithAuth,
+} from './authenticated-encryption'
+
+export type {
+  AuthenticatedEncryptResult,
+  AuthenticatedDecryptResult,
+  AuthenticatedEncryptionOptions,
+} from './authenticated-encryption'

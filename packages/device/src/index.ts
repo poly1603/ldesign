@@ -85,6 +85,5 @@ export {
   throttle,
 } from './utils'
 
-// Vue集成 - 暂时禁用以修复构建问题
-// TODO: 修复 Vue 组件构建后重新启用
-// export * from './vue'
+// Vue集成
+export * from './vue'

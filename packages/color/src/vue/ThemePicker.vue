@@ -95,7 +95,7 @@
                 v-for="preset in filteredPresets"
                 :key="`${preset.name}-${preset.color}`"
                 class="ld-theme-picker__preset"
-                :class="{ 'is-active': (preset.name === themeName) || (!themeName && preset.custom), 'is-custom': preset.custom }"
+                :class="{ 'is-active': (preset.name === activeThemeName) || (!activeThemeName && preset.custom), 'is-custom': preset.custom }"
               >
                 <span 
                   class="ld-theme-picker__preset-color"
@@ -103,14 +103,14 @@
                   :title="preset.label"
                   @click="selectPreset(preset)"
                 >
-                  <svg v-if="(preset.name === themeName) || (!themeName && preset.custom)" class="ld-theme-picker__check" width="16" height="16" viewBox="0 0 16 16">
+                  <svg v-if="(preset.name === activeThemeName) || (!activeThemeName && preset.custom)" class="ld-theme-picker__check" width="16" height="16" viewBox="0 0 16 16">
                     <path d="M3 8L6 11L13 4" stroke="white" stroke-width="2" fill="none"/>
                   </svg>
                 </span>
                 <span 
                   class="ld-theme-picker__preset-label"
                   @click="selectPreset(preset)"
-                >{{ preset.custom ? '自定义' : t(`theme.presets.${preset.name}`, preset.label) }}</span>
+                >{{ t(`theme.presets.${preset.name}`, preset.label) }}</span>
                 <!-- 删除按钮（仅自定义主题） -->
                 <button
                   v-if="preset.custom && showRemoveButton"
@@ -131,9 +131,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick, getCurrentInstance } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick, getCurrentInstance, inject } from 'vue'
 import { useTheme } from './useTheme'
+import { ColorPluginSymbol } from '../plugin'
 import type { PresetTheme } from '../themes/presets'
+import type { ColorPlugin } from '../plugin'
 
 interface Props {
   modelValue?: string
@@ -177,10 +179,15 @@ const customColor = ref('#1890ff')
 const newThemeName = ref('')
 const newThemeColor = ref('#1890ff')
 const dropdownStyle = ref({})
+// Local selected theme name for immediate UI update
+const selectedThemeName = ref<string>('')
+
+// Try to get plugin instance from injection
+const pluginInstance = inject<ColorPlugin | undefined>(ColorPluginSymbol, undefined)
 
 const { 
   currentTheme,
-  presets,
+  presets: defaultPresets,
   primaryColor,
   themeName,
   applyTheme,
@@ -191,14 +198,38 @@ const {
   storageKey: props.storageKey
 })
 
-// 当前颜色
-const currentColor = computed(() => {
+// Use plugin's presets if available (includes custom themes), otherwise fallback to default
+const presets = computed(() => {
+  if (pluginInstance) {
+    return pluginInstance.getSortedPresets()
+  }
+  return defaultPresets.value
+})
+
+// 当前主题色
+const currentThemeColor = computed(() => {
   return props.modelValue || primaryColor.value || '#1890ff'
+})
+
+// 图标颜色（根据背景亮度自适应）
+const currentColor = computed(() => {
+  // 获取主题色的 RGB 值
+  const color = currentThemeColor.value
+  const r = parseInt(color.slice(1, 3), 16)
+  const g = parseInt(color.slice(3, 5), 16)
+  const b = parseInt(color.slice(5, 7), 16)
+  
+  // 计算亮度
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000
+  
+  // 如果主题色偏暗，使用主题色；如果偏亮，使用深色
+  return brightness > 128 ? '#595959' : color
 })
 
 // 当前标签
 const currentLabel = computed(() => {
-  const preset = presets.value.find(p => p.name === themeName.value)
+  const name = selectedThemeName.value || themeName.value
+  const preset = presets.value.find(p => p.name === name)
   if (preset) {
     // Use i18n for preset labels
     const i18nKey = `theme.presets.${preset.name}`
@@ -207,12 +238,21 @@ const currentLabel = computed(() => {
   return t('theme.title', '主题色')
 })
 
+// Active theme name (use local selected first, fallback to themeName)
+const activeThemeName = computed(() => selectedThemeName.value || themeName.value)
+
 // Build visible presets (prepend current custom color if not in presets)
 const visiblePresets = computed(() => {
   const list: PresetTheme[] = [...presets.value]
-  const inPresets = list.some(p => p.color.toLowerCase() === (currentColor.value || '').toLowerCase())
-  if (!inPresets) {
-    list.unshift({ name: 'custom', label: '自定义', color: currentColor.value, custom: true })
+  const inPresets = list.some(p => p.color.toLowerCase() === (currentThemeColor.value || '').toLowerCase())
+  if (!inPresets && currentThemeColor.value) {
+    // Show current custom color as a temporary preset
+    list.unshift({ 
+      name: 'custom-current', 
+      label: t('theme.custom', '当前颜色'), 
+      color: currentThemeColor.value, 
+      custom: true 
+    })
   }
   return list
 })
@@ -289,34 +329,54 @@ const updateDropdownPosition = () => {
 }
 
 // 选择预设
-const selectPreset = (preset: PresetTheme) => {
-  applyPresetTheme(preset.name)
-  emit('update:modelValue', preset.color)
-  emit('change', preset.color, preset)
+const selectPreset = async (preset: PresetTheme) => {
+  try {
+    // Immediately update UI with local state
+    selectedThemeName.value = preset.name
+    
+    // Use plugin's method if available, otherwise use local method
+    if (pluginInstance) {
+      await pluginInstance.applyPresetTheme(preset.name)
+    } else {
+      await applyPresetTheme(preset.name)
+    }
+    emit('update:modelValue', preset.color)
+    emit('change', preset.color, preset)
+  } catch (error) {
+    console.error('[ThemePicker] Failed to apply preset theme:', error)
+    // Revert on error
+    selectedThemeName.value = themeName.value
+  }
   isOpen.value = false
 }
 
 // 处理自定义颜色
-const handleCustomColor = () => {
+const handleCustomColor = async () => {
   if (customColor.value) {
-    applyTheme(customColor.value)
-    emit('update:modelValue', customColor.value)
-    emit('change', customColor.value)
+    try {
+      // Use plugin's method if available, otherwise use local method
+      if (pluginInstance) {
+        await pluginInstance.applyTheme(customColor.value)
+      } else {
+        await applyTheme(customColor.value)
+      }
+      emit('update:modelValue', customColor.value)
+      emit('change', customColor.value)
+    } catch (error) {
+      console.error('[ThemePicker] Failed to apply custom color:', error)
+    }
     isOpen.value = false
   }
 }
 
 // 添加自定义主题
-const handleAddCustomTheme = () => {
+const handleAddCustomTheme = async () => {
   if (!newThemeName.value || !newThemeColor.value) return
 
   const themeName = newThemeName.value
   const themeColor = newThemeColor.value
 
   try {
-    // Try to get plugin instance
-    const pluginInstance = instance?.appContext.config.globalProperties.$color
-
     if (pluginInstance && typeof pluginInstance.addCustomTheme === 'function') {
       pluginInstance.addCustomTheme({
         name: themeName,
@@ -325,15 +385,12 @@ const handleAddCustomTheme = () => {
         custom: true
       })
 
-      // Refresh presets
-      presets.value = pluginInstance.getSortedPresets()
-
       // Reset inputs
       newThemeName.value = ''
       newThemeColor.value = '#1890ff'
 
       // Apply the new theme
-      selectPreset({ name: themeName, label: themeName, color: themeColor, custom: true })
+      await selectPreset({ name: themeName, label: themeName, color: themeColor, custom: true })
     } else {
       console.warn('[ThemePicker] Color plugin not found. Cannot add custom theme.')
     }
@@ -344,24 +401,22 @@ const handleAddCustomTheme = () => {
 }
 
 // 删除自定义主题
-const handleRemoveCustomTheme = (name: string) => {
+const handleRemoveCustomTheme = async (name: string) => {
   if (!confirm(t('theme.confirmRemove', `Remove theme "${name}"?`))) {
     return
   }
 
   try {
-    // Try to get plugin instance
-    const pluginInstance = instance?.appContext.config.globalProperties.$color
-
     if (pluginInstance && typeof pluginInstance.removeCustomTheme === 'function') {
       pluginInstance.removeCustomTheme(name)
 
-      // Refresh presets
-      presets.value = pluginInstance.getSortedPresets()
-
       // If current theme was removed, switch to default
       if (themeName.value === name) {
-        applyPresetTheme('blue')
+        if (pluginInstance.applyPresetTheme) {
+          await pluginInstance.applyPresetTheme('blue')
+        } else {
+          await applyPresetTheme('blue')
+        }
       }
     } else {
       console.warn('[ThemePicker] Color plugin not found. Cannot remove custom theme.')
@@ -390,6 +445,9 @@ onMounted(() => {
   // 恢复主题
   restoreTheme()
   
+  // Initialize selected theme name
+  selectedThemeName.value = themeName.value
+  
   // 监听事件
   document.addEventListener('click', handleClickOutside)
   window.addEventListener('resize', handleResize)
@@ -406,6 +464,13 @@ onUnmounted(() => {
 watch(() => props.modelValue, (newValue) => {
   if (newValue && newValue !== primaryColor.value) {
     applyTheme(newValue)
+  }
+})
+
+// Sync selectedThemeName with themeName when it changes externally
+watch(themeName, (newName) => {
+  if (newName && newName !== selectedThemeName.value) {
+    selectedThemeName.value = newName
   }
 })
 </script>

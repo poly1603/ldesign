@@ -69,6 +69,8 @@ export interface PerformanceOptimizerConfig {
   enableWorker?: boolean
   /** Worker 线程池大小 */
   workerPoolSize?: number
+  /** 批量操作最大并发数 */
+  maxConcurrency?: number
 }
 
 /**
@@ -91,6 +93,7 @@ export class PerformanceOptimizer {
   private cleanupTimer?: NodeJS.Timeout | number
   private enableWorker: boolean
   private workerPool: any // WorkerPool | null
+  private maxConcurrency: number
 
   constructor(config: PerformanceOptimizerConfig = {}) {
     const {
@@ -102,6 +105,7 @@ export class PerformanceOptimizer {
       memoryThreshold = 50 * 1024 * 1024, // 默认 50MB
       enableWorker = false,
       workerPoolSize,
+      maxConcurrency = 10, // 默认最大 10 个并发
     } = config
 
     this.enableCache = enableCache
@@ -110,6 +114,7 @@ export class PerformanceOptimizer {
     this.memoryThreshold = memoryThreshold
     this.enableWorker = enableWorker
     this.workerPool = null
+    this.maxConcurrency = maxConcurrency
 
     // 使用 LRU 缓存
     this.resultCache = new LRUCache({
@@ -165,8 +170,8 @@ export class PerformanceOptimizer {
       }
     }
 
-    // 主线程并行处理
-    const promises = operations.map(async (operation) => {
+    // 主线程并发控制处理
+    const tasks = operations.map(operation => async () => {
       const cacheKey = this.generateCacheKey('encrypt', operation)
       let result = this.getFromCache(cacheKey) as EncryptResult | undefined
 
@@ -181,7 +186,7 @@ export class PerformanceOptimizer {
       }
     })
 
-    return Promise.all(promises)
+    return this.runWithConcurrencyControl(tasks)
   }
 
   /**
@@ -214,8 +219,8 @@ export class PerformanceOptimizer {
       }
     }
 
-    // 主线程并行处理
-    const promises = operations.map(async (operation) => {
+    // 主线程并发控制处理
+    const tasks = operations.map(operation => async () => {
       const cacheKey = this.generateCacheKey('decrypt', operation)
       let result = this.getFromCache(cacheKey) as DecryptResult | undefined
 
@@ -230,7 +235,44 @@ export class PerformanceOptimizer {
       }
     })
 
-    return Promise.all(promises)
+    return this.runWithConcurrencyControl(tasks)
+  }
+
+  /**
+   * 并发控制执行任务
+   * 优化：限制同时执行的任务数量，避免资源耗尽
+   * @param tasks 任务数组
+   * @returns Promise 结果数组
+   */
+  private async runWithConcurrencyControl<T>(tasks: (() => Promise<T>)[]): Promise<T[]> {
+    const results: T[] = new Array(tasks.length)
+    const executing: Set<Promise<void>> = new Set()
+
+    for (let index = 0; index < tasks.length; index++) {
+      const task = tasks[index]
+
+      // 创建任务执行 Promise
+      const promise = Promise.resolve().then(async () => {
+        results[index] = await task()
+      })
+
+      // 任务完成后从执行集合中移除
+      const cleanup = promise.finally(() => {
+        executing.delete(cleanup)
+      })
+
+      executing.add(cleanup)
+
+      // 当达到最大并发数时，等待任意一个任务完成
+      if (executing.size >= this.maxConcurrency) {
+        await Promise.race(executing)
+      }
+    }
+
+    // 等待所有剩余任务完成
+    await Promise.all(executing)
+
+    return results
   }
 
   /**

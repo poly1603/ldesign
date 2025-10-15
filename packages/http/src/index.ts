@@ -105,7 +105,6 @@ export {
   contentTypeInterceptor,
   createAuthInterceptor,
   createBaseURLInterceptor,
-  createDataTransformInterceptor,
   createResponseTimeInterceptor,
   createRetryInterceptor,
   errorHandlingInterceptor,
@@ -338,6 +337,14 @@ export type {
   BatchStats,
 } from './utils/batch'
 
+// 请求去重导出
+export {
+  RequestDeduplicator,
+  createDeduplicationInterceptor,
+  generateRequestKey,
+  globalDeduplicator,
+} from './utils/request-dedup'
+
 // 离线队列导出
 export {
   createOfflineQueueManager,
@@ -391,6 +398,96 @@ export type {
   RequestLog,
   ResponseLog,
 } from './utils/debugger'
+
+// 开发工具导出
+export {
+  createDevTools,
+  globalDevTools,
+  HttpDevTools,
+} from './devtools'
+
+export type {
+  DevToolsConfig,
+  RequestRecord,
+} from './devtools'
+
+// 日志管理器导出
+export {
+  createLogger,
+  devLogger,
+  logger,
+  Logger,
+  LogLevel,
+} from './utils/logger'
+
+export type {
+  LoggerConfig,
+} from './utils/logger'
+
+// 智能重试导出
+export {
+  createSmartRetryInterceptor,
+  createSmartRetryManager,
+  globalSmartRetryManager,
+  RetryStrategy,
+  SmartRetryManager,
+} from './utils/smart-retry'
+
+export type {
+  RetryDecision,
+  SmartRetryConfig,
+} from './utils/smart-retry'
+
+// 数据转换导出
+export {
+  createDataTransformer,
+  createDataTransformInterceptor,
+  DataTransformer,
+  globalDataTransformer,
+  nullToUndefined,
+  transformBigInts,
+  transformDates,
+} from './utils/data-transformer'
+
+export type {
+  TransformerConfig,
+} from './utils/data-transformer'
+
+// 请求追踪导出
+export {
+  consoleExporter,
+  createRequestTracer,
+  createTraceInterceptor,
+  globalTracer,
+  RequestTracer,
+  Span,
+  SpanStatus,
+  SpanType,
+  Trace,
+} from './utils/trace'
+
+export type {
+  TraceConfig,
+  TraceContext,
+  TraceSpan,
+  TraceTag,
+} from './utils/trace'
+
+// 网络状态导出
+export {
+  ConnectionType,
+  createNetworkInterceptor,
+  createNetworkMonitor,
+  globalNetworkMonitor,
+  NetworkMonitor,
+  NetworkStatus,
+  waitForOnline,
+} from './utils/network-status'
+
+export type {
+  NetworkInfo,
+  NetworkMonitorConfig,
+} from './utils/network-status'
 
 // Vue 相关导出
 export * from './vue'

@@ -1,5 +1,9 @@
 <template>
-  <div class="mobile-login">
+  <div class="mobile-login-container">
+    <!-- 模板切换器插槽 -->
+    <div v-if="$slots.switcher" class="template-switcher-container">
+      <slot name="switcher"></slot>
+    </div>
     <div class="mobile-login-header">
       <img v-if="logo" :src="logo" alt="Logo" class="mobile-logo">
       <h1 class="mobile-title">{{ title }}</h1>
@@ -84,7 +88,14 @@ const handleForgotPassword = () => {
 </script>
 
 <style scoped>
-.mobile-login {
+.template-switcher-container {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+}
+
+.mobile-login-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;

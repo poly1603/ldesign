@@ -34,7 +34,7 @@ export interface SimpleHttpReturn<T> {
   /** 是否有错误 */
   hasError: Ref<boolean>
   /** 执行请求 */
-  execute: () => Promise<T | null>
+  execute: (data?: any) => Promise<T | null>
   /** 重置状态 */
   reset: () => void
   /** 清除错误 */
@@ -54,20 +54,18 @@ function createSimpleClient(config?: HttpClientConfig) {
 }
 
 /**
- * 简化的HTTP GET请求hook
+ * 通用HTTP请求hook工厂
  *
- * @example
- * ```ts
- * const { data, loading, error, execute } = useGet('/api/users')
- * ```
+ * 这个内部函数用于创建所有HTTP方法的hooks,消除重复代码
  */
-export function useGet<T = any>(
+function createHttpHook<T = any, D = any>(
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
   options: SimpleHttpOptions = {},
 ): SimpleHttpReturn<T> {
   const client = createSimpleClient()
-  const data = ref<T | null>(null)
+  const responseData = ref<T | null>(null)
   const loading = ref(false)
   const error = ref<Error | null>(null)
   const finished = ref(false)
@@ -76,7 +74,7 @@ export function useGet<T = any>(
 
   let abortController: AbortController | null = null
 
-  const execute = async (): Promise<T | null> => {
+  const execute = async (requestData?: D): Promise<T | null> => {
     try {
       loading.value = true
       error.value = null
@@ -93,8 +91,26 @@ export function useGet<T = any>(
         signal: abortController.signal,
       }
 
-      const response = await client.get<T>(unref(url), requestConfig)
-      data.value = response.data
+      let response
+      switch (method) {
+        case 'GET':
+          response = await client.get<T>(unref(url), requestConfig)
+          break
+        case 'POST':
+          response = await client.post<T>(unref(url), requestData, requestConfig)
+          break
+        case 'PUT':
+          response = await client.put<T>(unref(url), requestData, requestConfig)
+          break
+        case 'PATCH':
+          response = await client.patch<T>(unref(url), requestData, requestConfig)
+          break
+        case 'DELETE':
+          response = await client.delete<T>(unref(url), requestConfig)
+          break
+      }
+
+      responseData.value = response.data
 
       options.onSuccess?.(response.data)
       return response.data
@@ -115,7 +131,7 @@ export function useGet<T = any>(
   }
 
   const reset = () => {
-    data.value = null
+    responseData.value = null
     loading.value = false
     error.value = null
     finished.value = false
@@ -125,9 +141,9 @@ export function useGet<T = any>(
     error.value = null
   }
 
-  // 监听URL变化自动执行
-  if (options.immediate !== false) {
-    watch(() => unref(url), execute, { immediate: true })
+  // GET请求支持监听URL变化自动执行
+  if (method === 'GET' && options.immediate !== false) {
+    watch(() => unref(url), () => execute(), { immediate: true })
   }
 
   // 组件卸载时取消请求
@@ -140,7 +156,7 @@ export function useGet<T = any>(
   }
 
   return {
-    data: data as Ref<T | null>,
+    data: responseData as Ref<T | null>,
     loading,
     error,
     finished,
@@ -149,6 +165,22 @@ export function useGet<T = any>(
     reset,
     clearError,
   }
+}
+
+/**
+ * 简化的HTTP GET请求hook
+ *
+ * @example
+ * ```ts
+ * const { data, loading, error, execute } = useGet('/api/users')
+ * ```
+ */
+export function useGet<T = any>(
+  url: MaybeRef<string>,
+  config?: MaybeRef<RequestConfig>,
+  options: SimpleHttpOptions = {},
+): SimpleHttpReturn<T> {
+  return createHttpHook<T>('GET', url, config, options)
 }
 
 /**
@@ -164,85 +196,8 @@ export function usePost<T = any, D = any>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
   options: SimpleHttpOptions = {},
-): SimpleHttpReturn<T> & { execute: (data?: D) => Promise<T | null> } {
-  const client = createSimpleClient()
-  const responseData = ref<T | null>(null)
-  const loading = ref(false)
-  const error = ref<Error | null>(null)
-  const finished = ref(false)
-
-  const hasError = computed(() => error.value !== null)
-
-  let abortController: AbortController | null = null
-
-  const execute = async (postData?: D): Promise<T | null> => {
-    try {
-      loading.value = true
-      error.value = null
-      finished.value = false
-
-      // 取消之前的请求
-      if (abortController) {
-        abortController.abort()
-      }
-      abortController = new AbortController()
-
-      const requestConfig = {
-        ...unref(config),
-        signal: abortController.signal,
-      }
-
-      const response = await client.post<T>(unref(url), postData, requestConfig)
-      responseData.value = response.data
-
-      options.onSuccess?.(response.data)
-      return response.data
-    }
-    catch (err) {
-      const errorObj = err as Error
-      if (errorObj.name !== 'AbortError') {
-        error.value = errorObj
-        options.onError?.(errorObj)
-      }
-      return null
-    }
-    finally {
-      loading.value = false
-      finished.value = true
-      options.onFinally?.()
-    }
-  }
-
-  const reset = () => {
-    responseData.value = null
-    loading.value = false
-    error.value = null
-    finished.value = false
-  }
-
-  const clearError = () => {
-    error.value = null
-  }
-
-  // 组件卸载时取消请求
-  if (options.cancelOnUnmount !== false && getCurrentInstance()) {
-    onUnmounted(() => {
-      if (abortController) {
-        abortController.abort()
-      }
-    })
-  }
-
-  return {
-    data: responseData as Ref<T | null>,
-    loading,
-    error,
-    finished,
-    hasError,
-    execute,
-    reset,
-    clearError,
-  }
+): SimpleHttpReturn<T> {
+  return createHttpHook<T, D>('POST', url, config, options)
 }
 
 /**
@@ -252,83 +207,8 @@ export function usePut<T = any, D = any>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
   options: SimpleHttpOptions = {},
-): SimpleHttpReturn<T> & { execute: (data?: D) => Promise<T | null> } {
-  const client = createSimpleClient()
-  const responseData = ref<T | null>(null)
-  const loading = ref(false)
-  const error = ref<Error | null>(null)
-  const finished = ref(false)
-
-  const hasError = computed(() => error.value !== null)
-
-  let abortController: AbortController | null = null
-
-  const execute = async (putData?: D): Promise<T | null> => {
-    try {
-      loading.value = true
-      error.value = null
-      finished.value = false
-
-      if (abortController) {
-        abortController.abort()
-      }
-      abortController = new AbortController()
-
-      const requestConfig = {
-        ...unref(config),
-        signal: abortController.signal,
-      }
-
-      const response = await client.put<T>(unref(url), putData, requestConfig)
-      responseData.value = response.data
-
-      options.onSuccess?.(response.data)
-      return response.data
-    }
-    catch (err) {
-      const errorObj = err as Error
-      if (errorObj.name !== 'AbortError') {
-        error.value = errorObj
-        options.onError?.(errorObj)
-      }
-      return null
-    }
-    finally {
-      loading.value = false
-      finished.value = true
-      options.onFinally?.()
-    }
-  }
-
-  const reset = () => {
-    responseData.value = null
-    loading.value = false
-    error.value = null
-    finished.value = false
-  }
-
-  const clearError = () => {
-    error.value = null
-  }
-
-  if (options.cancelOnUnmount !== false && getCurrentInstance()) {
-    onUnmounted(() => {
-      if (abortController) {
-        abortController.abort()
-      }
-    })
-  }
-
-  return {
-    data: responseData as Ref<T | null>,
-    loading,
-    error,
-    finished,
-    hasError,
-    execute,
-    reset,
-    clearError,
-  }
+): SimpleHttpReturn<T> {
+  return createHttpHook<T, D>('PUT', url, config, options)
 }
 
 /**
@@ -339,82 +219,7 @@ export function useDelete<T = any>(
   config?: MaybeRef<RequestConfig>,
   options: SimpleHttpOptions = {},
 ): SimpleHttpReturn<T> {
-  const client = createSimpleClient()
-  const data = ref<T | null>(null)
-  const loading = ref(false)
-  const error = ref<Error | null>(null)
-  const finished = ref(false)
-
-  const hasError = computed(() => error.value !== null)
-
-  let abortController: AbortController | null = null
-
-  const execute = async (): Promise<T | null> => {
-    try {
-      loading.value = true
-      error.value = null
-      finished.value = false
-
-      if (abortController) {
-        abortController.abort()
-      }
-      abortController = new AbortController()
-
-      const requestConfig = {
-        ...unref(config),
-        signal: abortController.signal,
-      }
-
-      const response = await client.delete<T>(unref(url), requestConfig)
-      data.value = response.data
-
-      options.onSuccess?.(response.data)
-      return response.data
-    }
-    catch (err) {
-      const errorObj = err as Error
-      if (errorObj.name !== 'AbortError') {
-        error.value = errorObj
-        options.onError?.(errorObj)
-      }
-      return null
-    }
-    finally {
-      loading.value = false
-      finished.value = true
-      options.onFinally?.()
-    }
-  }
-
-  const reset = () => {
-    data.value = null
-    loading.value = false
-    error.value = null
-    finished.value = false
-  }
-
-  const clearError = () => {
-    error.value = null
-  }
-
-  if (options.cancelOnUnmount !== false && getCurrentInstance()) {
-    onUnmounted(() => {
-      if (abortController) {
-        abortController.abort()
-      }
-    })
-  }
-
-  return {
-    data: data as Ref<T | null>,
-    loading,
-    error,
-    finished,
-    hasError,
-    execute,
-    reset,
-    clearError,
-  }
+  return createHttpHook<T>('DELETE', url, config, options)
 }
 
 /**
@@ -424,81 +229,6 @@ export function usePatch<T = any, D = any>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
   options: SimpleHttpOptions = {},
-): SimpleHttpReturn<T> & { execute: (data?: D) => Promise<T | null> } {
-  const client = createSimpleClient()
-  const responseData = ref<T | null>(null)
-  const loading = ref(false)
-  const error = ref<Error | null>(null)
-  const finished = ref(false)
-
-  const hasError = computed(() => error.value !== null)
-
-  let abortController: AbortController | null = null
-
-  const execute = async (patchData?: D): Promise<T | null> => {
-    try {
-      loading.value = true
-      error.value = null
-      finished.value = false
-
-      if (abortController) {
-        abortController.abort()
-      }
-      abortController = new AbortController()
-
-      const requestConfig = {
-        ...unref(config),
-        signal: abortController.signal,
-      }
-
-      const response = await client.patch<T>(unref(url), patchData, requestConfig)
-      responseData.value = response.data
-
-      options.onSuccess?.(response.data)
-      return response.data
-    }
-    catch (err) {
-      const errorObj = err as Error
-      if (errorObj.name !== 'AbortError') {
-        error.value = errorObj
-        options.onError?.(errorObj)
-      }
-      return null
-    }
-    finally {
-      loading.value = false
-      finished.value = true
-      options.onFinally?.()
-    }
-  }
-
-  const reset = () => {
-    responseData.value = null
-    loading.value = false
-    error.value = null
-    finished.value = false
-  }
-
-  const clearError = () => {
-    error.value = null
-  }
-
-  if (options.cancelOnUnmount !== false && getCurrentInstance()) {
-    onUnmounted(() => {
-      if (abortController) {
-        abortController.abort()
-      }
-    })
-  }
-
-  return {
-    data: responseData as Ref<T | null>,
-    loading,
-    error,
-    finished,
-    hasError,
-    execute,
-    reset,
-    clearError,
-  }
+): SimpleHttpReturn<T> {
+  return createHttpHook<T, D>('PATCH', url, config, options)
 }

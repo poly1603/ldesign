@@ -1,6 +1,7 @@
 import type {
   ApiEndpoint,
   HttpClient,
+  HttpError,
   HttpMethod,
   RequestConfig,
   ResponseData,
@@ -105,6 +106,28 @@ implements TypedHttpClient<TBaseResponse> {
 
   cancelQueue(reason?: string): void {
     return this.client.cancelQueue(reason)
+  }
+
+  addRequestInterceptor(
+    fulfilled: (config: RequestConfig) => RequestConfig | Promise<RequestConfig>,
+    rejected?: (error: HttpError) => HttpError | Promise<HttpError>,
+  ): number {
+    return this.client.addRequestInterceptor(fulfilled, rejected)
+  }
+
+  addResponseInterceptor<T = any>(
+    fulfilled: (response: ResponseData<T>) => ResponseData<T> | Promise<ResponseData<T>>,
+    rejected?: (error: HttpError) => HttpError | Promise<HttpError>,
+  ): number {
+    return this.client.addResponseInterceptor(fulfilled, rejected)
+  }
+
+  removeRequestInterceptor(id: number): void {
+    return this.client.removeRequestInterceptor(id)
+  }
+
+  removeResponseInterceptor(id: number): void {
+    return this.client.removeResponseInterceptor(id)
   }
 
   /**

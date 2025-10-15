@@ -273,6 +273,24 @@ export interface HttpClient {
 
   /** 下载文件 */
   download: (url: string, config?: any) => Promise<any>
+
+  /** 添加请求拦截器 */
+  addRequestInterceptor: (
+    fulfilled: (config: RequestConfig) => RequestConfig | Promise<RequestConfig>,
+    rejected?: (error: HttpError) => HttpError | Promise<HttpError>
+  ) => number
+
+  /** 添加响应拦截器 */
+  addResponseInterceptor: <T = any>(
+    fulfilled: (response: ResponseData<T>) => ResponseData<T> | Promise<ResponseData<T>>,
+    rejected?: (error: HttpError) => HttpError | Promise<HttpError>
+  ) => number
+
+  /** 移除请求拦截器 */
+  removeRequestInterceptor: (id: number) => void
+
+  /** 移除响应拦截器 */
+  removeResponseInterceptor: (id: number) => void
 }
 
 /**

@@ -24,6 +24,19 @@ function isNodeEnvironment(): boolean {
 }
 
 /**
+ * 安全地提取错误消息
+ */
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message
+  }
+  if (typeof error === 'string') {
+    return error
+  }
+  return String(error)
+}
+
+/**
  * 加密文件
  * 
  * @param options 文件加密选项
@@ -117,7 +130,7 @@ export async function encryptFile(
 
           readStream.resume()
         }
-        catch (error: any) {
+        catch (error: unknown) {
           reject(error)
         }
       })
@@ -175,8 +188,9 @@ export async function encryptFile(
       },
     }
   }
-  catch (error: any) {
+  catch (error: unknown) {
     const duration = Date.now() - startTime
+    const errorMessage = getErrorMessage(error)
 
     // 错误进度回调
     if (onProgress) {
@@ -184,7 +198,7 @@ export async function encryptFile(
         processedBytes: bytesProcessed,
         elapsedTime: duration,
         status: 'error',
-        error: error.message,
+        error: errorMessage,
       })
     }
 
@@ -194,7 +208,7 @@ export async function encryptFile(
       bytesProcessed,
       duration,
       averageSpeed: bytesProcessed / (duration / 1000),
-      error: error.message,
+      error: errorMessage,
     }
   }
 }
@@ -293,7 +307,7 @@ export async function decryptFile(
 
           readStream.resume()
         }
-        catch (error: any) {
+        catch (error: unknown) {
           reject(error)
         }
       })
@@ -351,8 +365,9 @@ export async function decryptFile(
       },
     }
   }
-  catch (error: any) {
+  catch (error: unknown) {
     const duration = Date.now() - startTime
+    const errorMessage = getErrorMessage(error)
 
     // 错误进度回调
     if (onProgress) {
@@ -360,7 +375,7 @@ export async function decryptFile(
         processedBytes: bytesProcessed,
         elapsedTime: duration,
         status: 'error',
-        error: error.message,
+        error: errorMessage,
       })
     }
 
@@ -370,7 +385,7 @@ export async function decryptFile(
       bytesProcessed,
       duration,
       averageSpeed: bytesProcessed / (duration / 1000),
-      error: error.message,
+      error: errorMessage,
     }
   }
 }

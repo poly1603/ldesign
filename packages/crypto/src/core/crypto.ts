@@ -5,6 +5,7 @@ import type {
   DESOptions,
   EncodingType,
   EncryptionAlgorithm,
+  EncryptionOptions,
   EncryptResult,
   HashAlgorithm,
   HashOptions,
@@ -138,7 +139,7 @@ export class Encrypt {
     data: string,
     key: string,
     algorithm: EncryptionAlgorithm,
-    options?: any,
+    options?: EncryptionOptions,
   ): EncryptResult {
     switch (algorithm.toUpperCase()) {
       case 'AES':
@@ -313,7 +314,7 @@ export class Decrypt {
     encryptedData: string | EncryptResult,
     key: string,
     algorithm?: EncryptionAlgorithm,
-    options?: any,
+    options?: EncryptionOptions,
   ): DecryptResult {
     // 如果传入的是 EncryptResult 对象，尝试从中获取算法信息
     let targetAlgorithm = algorithm

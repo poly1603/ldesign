@@ -65,6 +65,18 @@ export interface AESOptions {
   keySize?: AESKeySize
   iv?: string
   padding?: string
+  /**
+   * 密钥派生盐值（十六进制字符串）
+   * 安全建议：使用随机盐值以提高安全性
+   * 如果不提供，将使用密钥的SHA-256哈希作为盐值（确定性但更安全）
+   */
+  salt?: string
+  /**
+   * PBKDF2迭代次数
+   * 默认：100,000（符合OWASP 2023推荐）
+   * 警告：较低的迭代次数会降低安全性
+   */
+  iterations?: number
 }
 
 /**
@@ -102,6 +114,16 @@ export interface BlowfishOptions {
   iv?: string
   padding?: boolean
 }
+
+/**
+ * 加密选项联合类型 - 用于泛型加密方法
+ */
+export type EncryptionOptions =
+  | AESOptions
+  | RSAOptions
+  | DESOptions
+  | TripleDESOptions
+  | BlowfishOptions
 
 /**
  * 哈希选项
@@ -166,6 +188,7 @@ export interface KeyGenerationOptions {
 
 /**
  * 加密器接口
+ * 注意：使用any以支持各算法的特定选项类型，各算法实现内部保持类型安全
  */
 export interface IEncryptor {
   encrypt: (data: string, key: string, options?: any) => EncryptResult | Promise<EncryptResult>

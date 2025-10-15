@@ -502,15 +502,11 @@ const insertTable: Command = (state, dispatch) => {
         }
         .grid-table {
           display: grid;
-          grid-template-columns: repeat(8, 1fr);
-          grid-template-rows: repeat(8, 1fr);
           gap: 3px;
           background: #f9fafb;
           padding: 6px;
           border: 1px solid #e5e7eb;
           border-radius: 6px;
-          width: 200px;
-          height: 180px;
         }
         .grid-cell {
           background: white;
@@ -520,6 +516,7 @@ const insertTable: Command = (state, dispatch) => {
           transition: all 0.15s ease;
           min-width: 0;
           min-height: 0;
+          aspect-ratio: 1;
         }
         .grid-cell:hover {
           background: #dbeafe;
@@ -574,12 +571,43 @@ const insertTable: Command = (state, dispatch) => {
     const gridTable = dialog.querySelector('#grid-table') as HTMLElement
     const gridInfo = dialog.querySelector('#grid-info') as HTMLElement
     
-    // 创建 8x8 的网格（更紧凑）
-    for (let i = 0; i < 64; i++) {
+    // 动态计算网格列数和行数
+    const cellSize = 24 // 单元格最小尺寸
+    const gap = 3 // 单元格间距
+    const padding = 6 // 网格容器内边距
+    const border = 2 // 边框
+    const maxRows = 8 // 最大行数
+    
+    // 获取对话框的实际宽度
+    const dialogWidth = dialog.offsetWidth
+    const dialogPadding = 12 * 2 // dialog 的 padding
+    
+    // 计算网格容器的可用宽度
+    const availableWidth = dialogWidth - dialogPadding - padding * 2 - border
+    
+    // 计算可以容纳多少列（至少6列，最多15列）
+    const cols = Math.max(6, Math.min(15, Math.floor((availableWidth + gap) / (cellSize + gap))))
+    const rows = maxRows
+    
+    console.log('📋 [Table] Grid size:', cols, 'x', rows, 'available width:', availableWidth)
+    
+    // 设置网格布局
+    gridTable.style.gridTemplateColumns = `repeat(${cols}, 1fr)`
+    gridTable.style.gridTemplateRows = `repeat(${rows}, 1fr)`
+    
+    // 计算网格容器的实际宽度和高度
+    const gridWidth = cols * cellSize + (cols - 1) * gap + padding * 2
+    const gridHeight = rows * cellSize + (rows - 1) * gap + padding * 2
+    gridTable.style.width = `${gridWidth}px`
+    gridTable.style.height = `${gridHeight}px`
+    
+    // 创建网格单元格
+    const totalCells = cols * rows
+    for (let i = 0; i < totalCells; i++) {
       const cell = document.createElement('div')
       cell.className = 'grid-cell'
-      cell.dataset.row = String(Math.floor(i / 8) + 1)
-      cell.dataset.col = String((i % 8) + 1)
+      cell.dataset.row = String(Math.floor(i / cols) + 1)
+      cell.dataset.col = String((i % cols) + 1)
       gridTable.appendChild(cell)
     }
     

@@ -301,7 +301,7 @@ export default {
     title: '主题设置',
     selectThemeColor: '选择主题色',
     customColor: '自定义颜色',
-    custom: '自定义',
+    custom: '当前颜色',
     mode: '主题模式',
     light: '浅色',
     dark: '深色',

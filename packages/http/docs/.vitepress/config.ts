@@ -1,133 +1,179 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: '@ldesign/http',
-  description:
-    '一个功能强大的通用 HTTP 请求库，支持多种适配器、拦截器、缓存、重试等高级功能，完美集成 Vue 3',
+ title: '@ldesign/http',
+ description: '强大的 TypeScript HTTP 客户端库，支持多适配器、智能重试、链路追踪、Vue 集成',
+ base: '/http/',
 
-  base: '/http/',
+ themeConfig: {
+  logo: '/logo.svg',
 
-  // 忽略死链接检查
-  ignoreDeadLinks: true,
+  nav: [
+   { text: '指南', link: '/guide/' },
+   { text: '功能', link: '/features/' },
+   { text: 'Vue 集成', link: '/vue/' },
+   { text: 'API', link: '/api/' },
+   { text: '示例', link: '/examples/' },
+  ],
 
-  themeConfig: {
-    nav: [
-      { text: '首页', link: '/' },
-      { text: '指南', link: '/guide/getting-started' },
-      { text: 'API 参考', link: '/api/http-client' },
-      { text: '示例', link: '/examples/basic' },
-    ],
-
-    sidebar: {
-      '/guide/': [
-        {
-          text: '开始使用',
-          items: [
-            { text: '快速开始', link: '/guide/getting-started' },
-            { text: '安装', link: '/guide/installation' },
-            { text: '基础用法', link: '/guide/basic-usage' },
-          ],
-        },
-        {
-          text: '核心概念',
-          items: [
-            { text: 'HTTP 客户端', link: '/guide/http-client' },
-            { text: '适配器', link: '/guide/adapters' },
-            { text: '拦截器', link: '/guide/interceptors' },
-            { text: '错误处理', link: '/guide/error-handling' },
-          ],
-        },
-        {
-          text: '高级功能',
-          items: [
-            { text: '缓存', link: '/guide/caching' },
-            { text: '重试机制', link: '/guide/retry' },
-            { text: '请求取消', link: '/guide/cancellation' },
-            { text: '并发控制', link: '/guide/concurrency' },
-          ],
-        },
-        {
-          text: 'Vue 集成',
-          items: [
-            { text: 'Vue 插件', link: '/guide/vue-plugin' },
-            { text: 'Composition API', link: '/guide/vue-hooks' },
-            { text: '响应式状态', link: '/guide/vue-reactivity' },
-          ],
-        },
-      ],
-      '/api/': [
-        {
-          text: 'API 参考',
-          items: [
-            { text: 'HttpClient', link: '/api/http-client' },
-            { text: '适配器', link: '/api/adapters' },
-            { text: '拦截器', link: '/api/interceptors' },
-            { text: '工具函数', link: '/api/utils' },
-          ],
-        },
-        {
-          text: 'Vue API',
-          items: [
-            { text: 'useRequest', link: '/api/use-request' },
-            { text: 'useQuery', link: '/api/use-query' },
-            { text: 'useMutation', link: '/api/use-mutation' },
-            { text: 'useHttp', link: '/api/use-http' },
-          ],
-        },
-        {
-          text: '类型定义',
-          items: [
-            { text: '核心类型', link: '/api/types' },
-            { text: 'Vue 类型', link: '/api/vue-types' },
-          ],
-        },
-      ],
-      '/examples/': [
-        {
-          text: '基础示例',
-          items: [
-            { text: '基本请求', link: '/examples/basic' },
-            { text: '拦截器使用', link: '/examples/interceptors' },
-            { text: '错误处理', link: '/examples/error-handling' },
-          ],
-        },
-        {
-          text: '高级示例',
-          items: [
-            { text: '缓存策略', link: '/examples/caching' },
-            { text: '重试配置', link: '/examples/retry' },
-            { text: '并发控制', link: '/examples/concurrency' },
-          ],
-        },
-        {
-          text: 'Vue 示例',
-          items: [
-            { text: 'Vue 基础用法', link: '/examples/vue-basic' },
-            { text: 'Vue Hooks', link: '/examples/vue-hooks' },
-            { text: '表单提交', link: '/examples/vue-forms' },
-            { text: '数据列表', link: '/examples/vue-lists' },
-          ],
-        },
-      ],
+  sidebar: {
+   '/guide/': [
+    {
+     text: '开始',
+     items: [
+      { text: '简介', link: '/guide/' },
+      { text: '安装', link: '/guide/installation' },
+      { text: '快速开始', link: '/guide/quick-start' },
+      { text: '基础使用', link: '/guide/basic-usage' },
+     ],
     },
-
-    socialLinks: [{ icon: 'github', link: 'https://github.com/ldesign/http' }],
-
-    footer: {
-      message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2024 ldesign',
+    {
+     text: '核心概念',
+     items: [
+      { text: '适配器系统', link: '/guide/adapters' },
+      { text: '拦截器', link: '/guide/interceptors' },
+      { text: '请求配置', link: '/guide/config' },
+      { text: '错误处理', link: '/guide/error-handling' },
+     ],
     },
-
-    search: {
-      provider: 'local',
+    {
+     text: '高级主题',
+     items: [
+      { text: '类型安全', link: '/guide/type-safety' },
+      { text: '性能优化', link: '/guide/performance' },
+      { text: '最佳实践', link: '/guide/best-practices' },
+     ],
     },
+   ],
+
+   '/features/': [
+    {
+     text: '核心功能',
+     items: [
+      { text: '功能概览', link: '/features/' },
+      { text: '缓存系统', link: '/features/cache' },
+      { text: '重试机制', link: '/features/retry' },
+      { text: '智能重试', link: '/features/smart-retry' },
+      { text: '请求去重', link: '/features/deduplication' },
+      { text: '并发控制', link: '/features/concurrency' },
+     ],
+    },
+    {
+     text: '新增功能',
+     items: [
+      { text: '数据转换', link: '/features/data-transform' },
+      { text: '链路追踪', link: '/features/trace' },
+      { text: '网络状态', link: '/features/network-status' },
+     ],
+    },
+    {
+     text: '高级功能',
+     items: [
+      { text: 'GraphQL', link: '/features/graphql' },
+      { text: 'WebSocket', link: '/features/websocket' },
+      { text: 'SSE', link: '/features/sse' },
+      { text: '文件上传下载', link: '/features/upload-download' },
+      { text: '离线队列', link: '/features/offline' },
+      { text: 'Mock 数据', link: '/features/mock' },
+     ],
+    },
+   ],
+
+   '/vue/': [
+    {
+     text: 'Vue 集成',
+     items: [
+      { text: '概述', link: '/vue/' },
+      { text: '安装配置', link: '/vue/installation' },
+     ],
+    },
+    {
+     text: '基础 Composables',
+     items: [
+      { text: 'useGet', link: '/vue/use-get' },
+      { text: 'usePost', link: '/vue/use-post' },
+      { text: 'useHttp', link: '/vue/use-http' },
+     ],
+    },
+    {
+     text: '资源管理',
+     items: [
+      { text: 'useResource', link: '/vue/use-resource' },
+      { text: 'usePagination', link: '/vue/use-pagination' },
+      { text: 'useForm', link: '/vue/use-form' },
+     ],
+    },
+    {
+     text: '高级 Composables',
+     items: [
+      { text: 'usePolling', link: '/vue/use-polling' },
+      { text: 'useNetworkStatus', link: '/vue/use-network-status' },
+      { text: 'useOptimisticUpdate', link: '/vue/use-optimistic-update' },
+      { text: 'useRequestQueue', link: '/vue/use-request-queue' },
+      { text: 'useThrottledRequest', link: '/vue/use-throttled-request' },
+     ],
+    },
+   ],
+
+   '/api/': [
+    {
+     text: 'API 参考',
+     items: [
+      { text: '概述', link: '/api/' },
+      { text: 'HttpClient', link: '/api/http-client' },
+      { text: 'TypedClient', link: '/api/typed-client' },
+     ],
+    },
+    {
+     text: '工具类',
+     items: [
+      { text: '数据转换器', link: '/api/data-transformer' },
+      { text: '请求追踪器', link: '/api/tracer' },
+      { text: '网络监控器', link: '/api/network-monitor' },
+      { text: '重试管理器', link: '/api/retry-manager' },
+     ],
+    },
+    {
+     text: '类型定义',
+     items: [
+      { text: '核心类型', link: '/api/types' },
+      { text: 'Vue 类型', link: '/api/vue-types' },
+     ],
+    },
+   ],
+
+   '/examples/': [
+    {
+     text: '示例',
+     items: [
+      { text: '基础示例', link: '/examples/' },
+      { text: 'Vue 示例', link: '/examples/vue' },
+      { text: '高级示例', link: '/examples/advanced' },
+      { text: '完整应用', link: '/examples/full-app' },
+     ],
+    },
+   ],
   },
 
-  markdown: {
-    theme: {
-      light: 'github-light',
-      dark: 'github-dark',
-    },
-    lineNumbers: true,
+  socialLinks: [
+   { icon: 'github', link: 'https://github.com/ldesign-lab/ldesign' },
+  ],
+
+  search: {
+   provider: 'local',
   },
+
+  footer: {
+   message: '基于 MIT 许可发布',
+   copyright: 'Copyright © 2024 LDesign Lab',
+  },
+ },
+
+ markdown: {
+  theme: {
+   light: 'github-light',
+   dark: 'github-dark',
+  },
+  lineNumbers: true,
+ },
 })

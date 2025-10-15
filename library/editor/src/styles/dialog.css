@@ -129,11 +129,13 @@
 .editor-table-selector {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  gap: 4px;
-  padding: 12px;
+  gap: 3px;
+  padding: 8px;
   background: #f9fafb;
   border-radius: 6px;
   margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .editor-table-cell {

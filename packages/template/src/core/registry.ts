@@ -64,10 +64,15 @@ export class TemplateRegistry {
     }
 
     // 判断是组件还是加载器
-    if (typeof componentOrLoader === 'function') {
-      registration.loader = componentOrLoader
+    // 通常情况下，动态导入函数是一个没有参数的函数
+    // Vue 组件可能是对象或函数
+    const isAsyncLoader = typeof componentOrLoader === 'function' && 
+                         componentOrLoader.toString().includes('import(')
+    
+    if (isAsyncLoader) {
+      registration.loader = componentOrLoader as () => Promise<{ default: Component }>
     } else {
-      registration.component = componentOrLoader
+      registration.component = componentOrLoader as Component
     }
 
     // 添加到主索引

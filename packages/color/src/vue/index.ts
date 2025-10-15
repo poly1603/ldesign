@@ -10,3 +10,7 @@ export type { UseThemeOptions } from './useTheme';
 // Export ThemePicker component
 export { default as ThemePicker } from './ThemePicker.vue';
 export { default as VueThemePicker } from './ThemePicker.vue';
+
+// Export plugin related exports
+export { ColorPluginSymbol, createColorPlugin } from '../plugin';
+export type { ColorPlugin, ColorPluginOptions } from '../plugin';

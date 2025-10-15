@@ -43,6 +43,16 @@
       "import": "./es/adapters/*.js",
       "require": "./lib/adapters/*.cjs"
     },
+    "./devtools": {
+      "types": "./es/devtools/index.d.ts",
+      "import": "./es/devtools/index.js",
+      "require": "./lib/devtools/index.cjs"
+    },
+    "./devtools/*": {
+      "types": "./es/devtools/*.d.ts",
+      "import": "./es/devtools/*.js",
+      "require": "./lib/devtools/*.cjs"
+    },
     "./engine": {
       "types": "./es/engine/index.d.ts",
       "import": "./es/engine/index.js",

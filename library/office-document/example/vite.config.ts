@@ -13,6 +13,6 @@ export default defineConfig({
   }
  },
  optimizeDeps: {
-  include: ['mammoth', 'xlsx', 'pptxgenjs']
+  include: ['mammoth', 'xlsx', 'pptxgenjs', 'jszip']
  }
 });
