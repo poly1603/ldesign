@@ -1,379 +1,372 @@
-# @ldesign/office-document
+# @ldesign/office-viewer
 
-🚀 A high-performance, framework-agnostic plugin for rendering Word, Excel, and PowerPoint files in web browsers.
+一个功能强大、框架无关的 Office 文档阅读器，支持在浏览器中查看 Word、Excel 和 PowerPoint 文件。
 
-## ✨ Features
+## ✨ 特性
 
-- 📄 **Multi-format Support**: Render Word (.docx, .doc), Excel (.xlsx, .xls), and PowerPoint (.pptx, .ppt) files
-- 🎯 **Framework Agnostic**: Works with any JavaScript framework or vanilla JS
-- ⚡ **High Performance**: Optimized rendering with virtual scrolling and lazy loading
-- 🎨 **Rich Customization**: Extensive configuration options and theming support
-- 🔧 **TypeScript Support**: Full TypeScript definitions included
-- 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
-- 🛠️ **Developer Friendly**: Simple API with comprehensive documentation
+- 📄 **支持多种文档格式**：Word (.docx)、Excel (.xlsx)、PowerPoint (.pptx)
+- 🎨 **框架无关**：可在原生 JS、Vue、React 等任何框架中使用
+- 🚀 **使用简单**：通过 `new OfficeViewer()` 即可创建实例
+- 💪 **功能强大**：
+ - 缩放控制
+ - 下载文档
+ - 打印文档
+ - 全屏模式
+ - 工具栏自定义
+ - 主题切换（明亮/暗黑）
+ - Excel 多表格切换
+ - PowerPoint 幻灯片导航
+- ⚡ **性能优越**：优化的渲染引擎，快速加载和显示
+- 🎯 **TypeScript 支持**：完整的类型定义
+- 📱 **响应式设计**：适配各种屏幕尺寸
 
-## 📦 Installation
+## 📦 安装
 
 ```bash
-npm install @ldesign/office-document
+npm install @ldesign/office-viewer
 ```
 
-or
+或使用 yarn：
 
 ```bash
-yarn add @ldesign/office-document
+yarn add @ldesign/office-viewer
 ```
 
-## 🚀 Quick Start
+## 🚀 快速开始
 
-### Basic Usage
+### 基础用法
 
 ```typescript
-import { OfficeDocument } from '@ldesign/office-document';
+import { OfficeViewer } from '@ldesign/office-viewer';
 
-// Create a new instance
-const doc = new OfficeDocument({
-  container: '#viewer', // or HTMLElement
-  toolbar: true,
-  zoom: true,
-  search: true
-});
-
-// Load a document from file
-const fileInput = document.querySelector('#fileInput');
-fileInput.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  await doc.load({ file });
-});
-
-// Load a document from URL
-await doc.load({
-  url: 'https://example.com/document.docx',
-  headers: {
-    'Authorization': 'Bearer token'
-  }
+// 创建查看器实例
+const viewer = new OfficeViewer({
+ container: '#viewer', // 容器元素或选择器
+ source: 'document.docx', // 文档源（URL、File、ArrayBuffer 或 Blob）
+ enableZoom: true,
+ enableDownload: true,
+ showToolbar: true
 });
 ```
 
-### Framework-specific Examples
+### 从文件上传加载
 
-#### React
+```typescript
+const fileInput = document.querySelector('#fileInput');
 
-```tsx
-import React, { useRef, useEffect } from 'react';
-import { OfficeDocument } from '@ldesign/office-document';
+fileInput.addEventListener('change', (e) => {
+ const file = e.target.files[0];
 
-function DocumentViewer({ file }) {
-  const containerRef = useRef(null);
-  const docRef = useRef(null);
+ const viewer = new OfficeViewer({
+  container: '#viewer',
+  source: file,
+  onLoad: () => {
+   console.log('文档加载成功');
+  },
+  onError: (error) => {
+   console.error('加载失败:', error);
+  }
+ });
+});
+```
 
-  useEffect(() => {
-    if (containerRef.current && file) {
-      docRef.current = new OfficeDocument({
-        container: containerRef.current,
-        toolbar: true,
-        onLoad: (info) => {
-          console.log('Document loaded:', info);
-        }
-      });
+### Excel 特定配置
 
-      docRef.current.load({ file });
-    }
+```typescript
+const viewer = new OfficeViewer({
+ container: '#viewer',
+ source: 'spreadsheet.xlsx',
+ type: 'excel',
+ excel: {
+  defaultSheet: 0, // 默认显示第一个表格
+  showSheetTabs: true, // 显示表格标签
+  showFormulaBar: true, // 显示公式栏
+  showGridLines: true, // 显示网格线
+  enableEditing: false // 禁用编辑
+ }
+});
+```
 
-    return () => {
-      if (docRef.current) {
-        docRef.current.destroy();
-      }
-    };
-  }, [file]);
+### PowerPoint 特定配置
 
-  return <div ref={containerRef} style={{ height: '600px' }} />;
+```typescript
+const viewer = new OfficeViewer({
+ container: '#viewer',
+ source: 'presentation.pptx',
+ type: 'powerpoint',
+ powerpoint: {
+  autoPlay: true, // 自动播放
+  autoPlayInterval: 3000, // 自动播放间隔（毫秒）
+  showNavigation: true, // 显示导航按钮
+  showThumbnails: true // 显示缩略图
+ }
+});
+```
+
+## 📖 API 文档
+
+### 构造函数选项
+
+```typescript
+interface ViewerOptions {
+ // 必需
+ container: HTMLElement | string; // 容器元素或选择器
+ source: string | File | ArrayBuffer | Blob; // 文档源
+
+ // 可选
+ type?: 'word' | 'excel' | 'powerpoint'; // 文档类型（自动检测）
+ width?: string | number; // 宽度（默认：'100%'）
+ height?: string | number; // 高度（默认：'600px'）
+ enableZoom?: boolean; // 启用缩放（默认：true）
+ enableDownload?: boolean; // 启用下载（默认：true）
+ enablePrint?: boolean; // 启用打印（默认：true）
+ enableFullscreen?: boolean; // 启用全屏（默认：true）
+ showToolbar?: boolean; // 显示工具栏（默认：true）
+ theme?: 'light' | 'dark'; // 主题（默认：'light'）
+ className?: string; // 自定义 CSS 类名
+
+ // 回调函数
+ onLoad?: () => void; // 加载成功回调
+ onError?: (error: Error) => void; // 错误回调
+ onProgress?: (progress: number) => void; // 加载进度回调
+
+ // Excel 选项
+ excel?: {
+  defaultSheet?: number;
+  showSheetTabs?: boolean;
+  showFormulaBar?: boolean;
+  showGridLines?: boolean;
+  enableEditing?: boolean;
+ };
+
+ // PowerPoint 选项
+ powerpoint?: {
+  autoPlay?: boolean;
+  autoPlayInterval?: number;
+  showNavigation?: boolean;
+  showThumbnails?: boolean;
+ };
+
+ // Word 选项
+ word?: {
+  showOutline?: boolean;
+  pageView?: 'single' | 'continuous';
+ };
 }
 ```
 
-#### Vue 3
+### 实例方法
+
+```typescript
+class OfficeViewer {
+ // 加载新文档
+ load(source: string | File | ArrayBuffer | Blob, type?: DocumentType): Promise<void>;
+
+ // 重新加载当前文档
+ reload(): Promise<void>;
+
+ // 获取文档元数据
+ getMetadata(): Promise<DocumentMetadata>;
+
+ // 缩放控制
+ zoomIn(): void;
+ zoomOut(): void;
+ setZoom(level: number): void;
+ getZoom(): number;
+
+ // 下载文档
+ download(filename?: string): void;
+
+ // 打印文档
+ print(): void;
+
+ // 全屏控制
+ fullscreen(): void;
+ exitFullscreen(): void;
+
+ // 页面导航（Word/PowerPoint）
+ goToPage(page: number): void;
+
+ // 表格切换（Excel）
+ switchSheet(sheetIndex: number): void;
+
+ // 事件监听
+ on(event: ViewerEventType, handler: EventHandler): void;
+ off(event: ViewerEventType, handler: EventHandler): void;
+
+ // 销毁查看器
+ destroy(): void;
+}
+```
+
+### 事件
+
+```typescript
+// 监听文档加载完成
+viewer.on('load', () => {
+ console.log('文档已加载');
+});
+
+// 监听错误
+viewer.on('error', (error) => {
+ console.error('错误:', error);
+});
+
+// 监听缩放变化
+viewer.on('zoom', (level) => {
+ console.log('缩放级别:', level);
+});
+
+// 监听页面切换
+viewer.on('page-change', (page) => {
+ console.log('当前页:', page);
+});
+
+// 监听表格切换
+viewer.on('sheet-change', (sheet) => {
+ console.log('当前表格:', sheet);
+});
+```
+
+## 🎨 在不同框架中使用
+
+### 原生 JavaScript
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+ <title>Office Viewer</title>
+</head>
+<body>
+ <div id="viewer"></div>
+
+ <script type="module">
+  import { OfficeViewer } from '@ldesign/office-viewer';
+
+  const viewer = new OfficeViewer({
+   container: '#viewer',
+   source: 'document.docx'
+  });
+ </script>
+</body>
+</html>
+```
+
+### Vue 3
 
 ```vue
 <template>
-  <div ref="viewer" class="document-viewer"></div>
+ <div ref="viewerContainer"></div>
 </template>
 
-<script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { OfficeDocument } from '@ldesign/office-document';
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue';
+import { OfficeViewer } from '@ldesign/office-viewer';
 
-const props = defineProps(['file']);
-const viewer = ref(null);
-let docInstance = null;
+const viewerContainer = ref<HTMLDivElement>();
+let viewer: OfficeViewer | null = null;
 
 onMounted(() => {
-  docInstance = new OfficeDocument({
-    container: viewer.value,
-    toolbar: true
+ if (viewerContainer.value) {
+  viewer = new OfficeViewer({
+   container: viewerContainer.value,
+   source: 'document.docx',
+   enableZoom: true,
+   showToolbar: true
   });
-});
-
-watch(() => props.file, async (newFile) => {
-  if (newFile && docInstance) {
-    await docInstance.load({ file: newFile });
-  }
+ }
 });
 
 onUnmounted(() => {
-  if (docInstance) {
-    docInstance.destroy();
-  }
+ viewer?.destroy();
 });
 </script>
-
-<style>
-.document-viewer {
-  height: 600px;
-}
-</style>
 ```
 
-## 📋 API Reference
+### React
 
-### Constructor Options
+```tsx
+import { useEffect, useRef } from 'react';
+import { OfficeViewer } from '@ldesign/office-viewer';
 
-```typescript
-interface RenderOptions {
-  container: HTMLElement | string;  // Container element or selector
-  width?: string | number;          // Viewer width
-  height?: string | number;         // Viewer height
-  toolbar?: boolean;                // Show toolbar
-  toolbarOptions?: ToolbarOptions;  // Toolbar configuration
-  theme?: ThemeOptions;             // Theme configuration
-  zoom?: boolean;                   // Enable zoom
-  search?: boolean;                 // Enable search
-  print?: boolean;                  // Enable print
-  download?: boolean;               // Enable download
-  virtualScrolling?: boolean;       // Enable virtual scrolling
-  lazyLoad?: boolean;              // Enable lazy loading
-  useWebWorker?: boolean;          // Use Web Worker for rendering
-  onError?: (error: Error) => void;
-  onLoad?: (doc: DocumentInfo) => void;
-  onPageChange?: (page: number) => void;
-  onZoomChange?: (zoom: number) => void;
-}
-```
+function OfficeViewerComponent() {
+ const containerRef = useRef<HTMLDivElement>(null);
+ const viewerRef = useRef<OfficeViewer | null>(null);
 
-### Load Options
-
-```typescript
-interface LoadOptions {
-  file?: File | Blob;              // File object
-  url?: string;                    // URL to load from
-  arrayBuffer?: ArrayBuffer;       // Direct ArrayBuffer
-  base64?: string;                // Base64 encoded string
-  headers?: Record<string, string>; // HTTP headers for URL loading
-  credentials?: RequestCredentials; // Fetch credentials
-}
-```
-
-### Methods
-
-```typescript
-class OfficeDocument {
-  // Load and render a document
-  async load(options: LoadOptions): Promise<RenderResult>;
-  
-  // Destroy the viewer and cleanup
-  destroy(): void;
-  
-  // Get current render result
-  getRenderResult(): RenderResult | null;
-}
-```
-
-### Static Methods
-
-```typescript
-// Render specific document types
-OfficeDocument.renderWord(loadOptions, renderOptions): Promise<RenderResult>;
-OfficeDocument.renderExcel(loadOptions, renderOptions): Promise<RenderResult>;
-OfficeDocument.renderPowerPoint(loadOptions, renderOptions): Promise<RenderResult>;
-```
-
-### Render Result
-
-```typescript
-interface RenderResult {
-  destroy: () => void;
-  refresh: () => void;
-  goToPage: (page: number) => void;
-  setZoom: (zoom: number) => void;
-  getCurrentPage: () => number;
-  getTotalPages: () => number;
-  search?: (query: string) => void;
-  clearSearch?: () => void;
-  print?: () => void;
-  download?: () => void;
-  enterFullscreen?: () => void;
-  exitFullscreen?: () => void;
-}
-```
-
-## 🎨 Theming
-
-Customize the appearance with theme options:
-
-```typescript
-const doc = new OfficeDocument({
-  container: '#viewer',
-  theme: {
-    primary: '#4CAF50',
-    background: '#ffffff',
-    text: '#333333',
-    border: '#dddddd',
-    toolbar: {
-      background: '#f5f5f5',
-      text: '#333333',
-      hover: '#e0e0e0'
-    }
+ useEffect(() => {
+  if (containerRef.current) {
+   viewerRef.current = new OfficeViewer({
+    container: containerRef.current,
+    source: 'document.docx',
+    enableZoom: true,
+    showToolbar: true
+   });
   }
-});
+
+  return () => {
+   viewerRef.current?.destroy();
+  };
+ }, []);
+
+ return <div ref={containerRef} />;
+}
+
+export default OfficeViewerComponent;
 ```
 
-## ⚙️ Advanced Configuration
-
-### Word Documents
-
-```typescript
-const doc = new OfficeDocument({
-  container: '#viewer',
-  // Word-specific options
-  preserveStyles: true,
-  showComments: true,
-  showTrackedChanges: false
-});
-```
-
-### Excel Spreadsheets
-
-```typescript
-const doc = new OfficeDocument({
-  container: '#viewer',
-  // Excel-specific options
-  activeSheet: 0,
-  showGridLines: true,
-  showHeaders: true,
-  editable: true,
-  enableFiltering: true,
-  enableSorting: true
-});
-```
-
-### PowerPoint Presentations
-
-```typescript
-const doc = new OfficeDocument({
-  container: '#viewer',
-  // PowerPoint-specific options
-  slideshow: true,
-  autoPlay: true,
-  slideDuration: 5,
-  showNotes: true,
-  thumbnailNav: true
-});
-```
-
-## 🔧 Performance Optimization
-
-### Virtual Scrolling
-
-Enable virtual scrolling for large documents:
-
-```typescript
-const doc = new OfficeDocument({
-  container: '#viewer',
-  virtualScrolling: true,
-  pageSize: 10 // Number of pages to render at once
-});
-```
-
-### Web Worker
-
-Use Web Worker for heavy rendering tasks:
-
-```typescript
-const doc = new OfficeDocument({
-  container: '#viewer',
-  useWebWorker: true // Automatically falls back if not supported
-});
-```
-
-### Lazy Loading
-
-Enable lazy loading for images and resources:
-
-```typescript
-const doc = new OfficeDocument({
-  container: '#viewer',
-  lazyLoad: true,
-  cache: true // Cache rendered pages
-});
-```
-
-## 🧪 Development
-
-### Setup
+## 🔧 开发
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/office-document.git
-
-# Install dependencies
+# 安装依赖
 npm install
 
-# Build the library
+# 开发模式
+npm run dev
+
+# 构建
 npm run build
 
-# Run the example
+# 运行示例
 cd example
 npm install
 npm run dev
 ```
 
-### Scripts
+## 📝 技术栈
 
-```bash
-npm run dev    # Development mode with watch
-npm run build  # Build for production
-npm run test   # Run tests
-npm run lint   # Lint code
-```
+- **Word 渲染**：[mammoth.js](https://github.com/mwilliamson/mammoth.js) - 将 DOCX 转换为 HTML
+- **Excel 渲染**：[SheetJS](https://sheetjs.com/) - 解析和渲染 Excel 文件
+- **PowerPoint 渲染**：自定义实现，支持 JSZip 解析 PPTX 结构
+- **TypeScript**：完整的类型支持
+- **Rollup**：模块打包
 
-## 📄 Browser Support
+## 🌟 特性路线图
 
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
+- [x] 基础 Word 文档查看
+- [x] 基础 Excel 表格查看
+- [x] 基础 PowerPoint 幻灯片查看
+- [x] 缩放、下载、打印功能
+- [x] 主题切换
+- [x] 事件系统
+- [ ] 完整的 PowerPoint 渲染（动画、转场效果）
+- [ ] PDF 导出
+- [ ] 文档批注支持
+- [ ] 协同编辑
+- [ ] Vue/React 组件封装
 
-## 📜 License
+## 📄 许可证
 
-MIT License - see [LICENSE](LICENSE) file for details
+MIT License © ldesign
 
-## 🤝 Contributing
+## 🤝 贡献
 
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details.
+欢迎提交 Issue 和 Pull Request！
 
-## 🐛 Bug Reports
+## 📮 联系
 
-Please use the [GitHub Issues](https://github.com/your-org/office-document/issues) to report bugs.
-
-## 🙏 Acknowledgments
-
-- [mammoth.js](https://github.com/mwilliamson/mammoth.js) for Word document conversion
-- [SheetJS](https://sheetjs.com/) for Excel file handling
-- [PptxGenJS](https://gitbrent.github.io/PptxGenJS/) for PowerPoint support
-
-## 📮 Contact
-
-For questions and support, please contact: support@ldesign.com
+如有问题或建议，请提交 Issue 或联系维护者。
 
 ---
 
-Made with ❤️ by the LDesign Team
+**由 ldesign 用心打造** ❤️

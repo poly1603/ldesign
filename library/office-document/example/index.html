@@ -1,86 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Office Document Renderer - Example</title>
-  <link rel="stylesheet" href="/src/style.css">
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Office Viewer Example</title>
+ <style>
+  * {
+   margin: 0;
+   padding: 0;
+   box-sizing: border-box;
+  }
+
+  body {
+   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+   background: #f5f5f5;
+   padding: 20px;
+  }
+
+  .container {
+   max-width: 1200px;
+   margin: 0 auto;
+  }
+
+  h1 {
+   margin-bottom: 20px;
+   color: #333;
+  }
+
+  .controls {
+   background: white;
+   padding: 20px;
+   border-radius: 8px;
+   margin-bottom: 20px;
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .control-group {
+   margin-bottom: 15px;
+  }
+
+  .control-group:last-child {
+   margin-bottom: 0;
+  }
+
+  label {
+   display: block;
+   margin-bottom: 5px;
+   font-weight: 600;
+   color: #555;
+  }
+
+  input[type="file"] {
+   display: block;
+   width: 100%;
+   padding: 10px;
+   border: 2px dashed #ddd;
+   border-radius: 4px;
+   cursor: pointer;
+  }
+
+  input[type="file"]:hover {
+   border-color: #2196f3;
+  }
+
+  select {
+   width: 100%;
+   padding: 10px;
+   border: 1px solid #ddd;
+   border-radius: 4px;
+   font-size: 14px;
+  }
+
+  .button-group {
+   display: flex;
+   gap: 10px;
+   flex-wrap: wrap;
+  }
+
+  button {
+   padding: 10px 20px;
+   border: none;
+   border-radius: 4px;
+   font-size: 14px;
+   cursor: pointer;
+   transition: background 0.2s;
+  }
+
+  button.primary {
+   background: #2196f3;
+   color: white;
+  }
+
+  button.primary:hover {
+   background: #1976d2;
+  }
+
+  button.secondary {
+   background: #e0e0e0;
+   color: #333;
+  }
+
+  button.secondary:hover {
+   background: #d0d0d0;
+  }
+
+  #viewer {
+   background: white;
+   border-radius: 8px;
+   overflow: hidden;
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+   min-height: 600px;
+  }
+
+  .info {
+   background: #e3f2fd;
+   padding: 15px;
+   border-radius: 4px;
+   margin-top: 20px;
+   color: #1565c0;
+   font-size: 14px;
+  }
+
+  .examples {
+   background: white;
+   padding: 20px;
+   border-radius: 8px;
+   margin-bottom: 20px;
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .examples h2 {
+   margin-bottom: 15px;
+   font-size: 18px;
+   color: #333;
+  }
+
+  .example-links {
+   display: flex;
+   gap: 10px;
+   flex-wrap: wrap;
+  }
+
+  .example-links a {
+   padding: 8px 16px;
+   background: #f5f5f5;
+   color: #2196f3;
+   text-decoration: none;
+   border-radius: 4px;
+   font-size: 14px;
+   transition: background 0.2s;
+  }
+
+  .example-links a:hover {
+   background: #e0e0e0;
+  }
+ </style>
 </head>
 <body>
-  <div id="app">
-    <header>
-      <h1>Office Document Renderer Demo</h1>
-      <p>High-performance rendering for Word, Excel, and PowerPoint files</p>
-    </header>
+ <div class="container">
+  <h1>Office Viewer Example</h1>
 
-    <main>
-      <div class="controls">
-        <div class="upload-section">
-          <h2>Upload Document</h2>
-          <input type="file" id="fileInput" accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx">
-          <button id="loadFileBtn" disabled>Load Document</button>
-        </div>
-
-        <div class="url-section">
-          <h2>Load from URL</h2>
-          <input type="url" id="urlInput" placeholder="Enter document URL">
-          <button id="loadUrlBtn">Load from URL</button>
-        </div>
-
-        <div class="samples-section">
-          <h2>Sample Documents</h2>
-          <div class="sample-buttons">
-            <button class="sample-btn" data-type="word">Sample Word</button>
-            <button class="sample-btn" data-type="excel">Sample Excel</button>
-            <button class="sample-btn" data-type="powerpoint">Sample PowerPoint</button>
-          </div>
-        </div>
-
-        <div class="options-section">
-          <h2>Render Options</h2>
-          <label>
-            <input type="checkbox" id="toolbarOption" checked> Show Toolbar
-          </label>
-          <label>
-            <input type="checkbox" id="paginationOption" checked> Enable Pagination
-          </label>
-          <label>
-            <input type="checkbox" id="searchOption" checked> Enable Search
-          </label>
-          <label>
-            <input type="checkbox" id="virtualScrollOption"> Virtual Scrolling
-          </label>
-          <label>
-            Theme:
-            <select id="themeSelect">
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-              <option value="custom">Custom</option>
-            </select>
-          </label>
-        </div>
-      </div>
-
-      <div class="viewer-container">
-        <div id="documentViewer">
-          <div class="placeholder">
-            <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p>Upload or select a document to preview</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="info-panel">
-        <h3>Document Info</h3>
-        <div id="documentInfo">
-          <p>No document loaded</p>
-        </div>
-      </div>
-    </main>
+  <div class="examples">
+   <h2>📚 Try with Sample Files</h2>
+   <div class="example-links">
+    <a href="#" data-file="word">📄 Load Sample Word (.docx)</a>
+    <a href="#" data-file="excel">📊 Load Sample Excel (.xlsx)</a>
+    <a href="#" data-file="powerpoint">📽️ Load Sample PowerPoint (.pptx)</a>
+   </div>
+   <p style="margin-top: 10px; color: #666; font-size: 13px;">
+    Click on any sample file above to see the viewer in action, or upload your own document below.
+   </p>
   </div>
 
-  <script type="module" src="/src/main.ts"></script>
+  <div class="controls">
+   <div class="control-group">
+    <label for="fileInput">Upload your Office document:</label>
+    <input type="file" id="fileInput" accept=".docx,.doc,.xlsx,.xls,.pptx,.ppt">
+   </div>
+
+   <div class="control-group">
+    <label for="documentType">Document Type (auto-detect if not specified):</label>
+    <select id="documentType">
+     <option value="">Auto Detect</option>
+     <option value="word">Word</option>
+     <option value="excel">Excel</option>
+     <option value="powerpoint">PowerPoint</option>
+    </select>
+   </div>
+
+   <div class="control-group">
+    <label for="theme">Theme:</label>
+    <select id="theme">
+     <option value="light">Light</option>
+     <option value="dark">Dark</option>
+    </select>
+   </div>
+
+   <div class="button-group">
+    <button class="primary" id="loadBtn">Load Document</button>
+    <button class="secondary" id="reloadBtn">Reload</button>
+    <button class="secondary" id="metadataBtn">Get Metadata</button>
+    <button class="secondary" id="destroyBtn">Destroy Viewer</button>
+   </div>
+  </div>
+
+  <div id="viewer"></div>
+
+  <div class="info">
+   <strong>Usage Example:</strong><br>
+   <code>
+    const viewer = new OfficeViewer({<br>
+    &nbsp;&nbsp;container: '#viewer',<br>
+    &nbsp;&nbsp;source: 'document.docx',<br>
+    &nbsp;&nbsp;enableZoom: true,<br>
+    &nbsp;&nbsp;showToolbar: true<br>
+    });
+   </code>
+  </div>
+ </div>
+
+ <script type="module" src="./src/main.ts"></script>
 </body>
 </html>

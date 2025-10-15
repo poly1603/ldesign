@@ -1,495 +1,524 @@
-/**
- * Office Document Renderer - Default Styles
- * Include this file for default styling, or create your own custom styles
- */
+/* Office Viewer Styles */
 
-/* Base viewer styles */
-.od-word-viewer,
-.od-excel-viewer,
-.od-ppt-viewer {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  box-sizing: border-box;
+/* ================== Base Styles ================== */
+.office-viewer {
+ position: relative;
+ display: flex;
+ flex-direction: column;
+ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+ box-sizing: border-box;
+ overflow: hidden;
+ border: 1px solid #e0e0e0;
+ border-radius: 4px;
+ background: #ffffff;
 }
 
-.od-word-viewer *,
-.od-excel-viewer *,
-.od-ppt-viewer * {
-  box-sizing: border-box;
+.office-viewer *,
+.office-viewer *::before,
+.office-viewer *::after {
+ box-sizing: border-box;
 }
 
-/* Toolbar styles */
-.od-word-toolbar,
-.od-excel-toolbar,
-.od-ppt-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px;
-  border-bottom: 1px solid #e0e0e0;
-  background-color: #f5f5f5;
+/* ================== Theme Styles ================== */
+.office-viewer.theme-light {
+ background: #ffffff;
+ color: #333333;
 }
 
-.od-toolbar-button {
-  padding: 6px 12px;
-  border: 1px solid #d0d0d0;
-  background-color: #ffffff;
-  color: #333333;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  min-width: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.office-viewer.theme-dark {
+ background: #1e1e1e;
+ color: #e0e0e0;
+ border-color: #3a3a3a;
 }
 
-.od-toolbar-button:hover {
-  background-color: #f0f0f0;
-  border-color: #b0b0b0;
+.office-viewer.theme-dark .office-viewer-toolbar {
+ background: #2d2d2d;
+ border-color: #3a3a3a;
 }
 
-.od-toolbar-button:active {
-  background-color: #e0e0e0;
+.office-viewer.theme-dark .toolbar-btn {
+ color: #e0e0e0;
 }
 
-.od-toolbar-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.office-viewer.theme-dark .toolbar-btn:hover {
+ background: #3a3a3a;
 }
 
-/* Word document styles */
-.od-word-content {
-  padding: 20px;
-  background-color: #ffffff;
-  overflow: auto;
+/* ================== Wrapper ================== */
+.office-viewer-wrapper {
+ display: flex;
+ flex-direction: column;
+ width: 100%;
+ height: 100%;
+ overflow: hidden;
 }
 
-.od-word-content h1,
-.od-word-content h2,
-.od-word-content h3,
-.od-word-content h4,
-.od-word-content h5,
-.od-word-content h6 {
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-  font-weight: 600;
+/* ================== Toolbar ================== */
+.office-viewer-toolbar {
+ display: flex;
+ align-items: center;
+ gap: 8px;
+ padding: 8px 12px;
+ background: #f5f5f5;
+ border-bottom: 1px solid #e0e0e0;
+ flex-shrink: 0;
 }
 
-.od-word-content p {
-  margin-bottom: 1em;
-  line-height: 1.6;
+.toolbar-btn {
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ width: 36px;
+ height: 36px;
+ padding: 0;
+ border: none;
+ background: transparent;
+ border-radius: 4px;
+ cursor: pointer;
+ transition: background 0.2s;
+ color: #333;
 }
 
-.od-word-content table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1em 0;
+.toolbar-btn:hover {
+ background: #e0e0e0;
 }
 
-.od-word-content table td,
-.od-word-content table th {
-  border: 1px solid #dddddd;
-  padding: 8px;
+.toolbar-btn:active {
+ background: #d0d0d0;
 }
 
-.od-word-content table th {
-  background-color: #f0f0f0;
-  font-weight: 600;
+.toolbar-btn svg {
+ width: 20px;
+ height: 20px;
+ stroke-width: 2;
 }
 
-.od-word-content img {
-  max-width: 100%;
-  height: auto;
+/* ================== Content Container ================== */
+.office-viewer-content-container {
+ flex: 1;
+ overflow: auto;
+ position: relative;
+ background: #fafafa;
 }
 
-.od-highlight {
-  background-color: #ffeb3b;
-  padding: 2px 4px;
-  border-radius: 2px;
+/* ================== Loading ================== */
+.office-viewer-loading {
+ position: absolute;
+ top: 0;
+ left: 0;
+ right: 0;
+ bottom: 0;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ background: rgba(255, 255, 255, 0.95);
+ z-index: 1000;
 }
 
-/* Excel styles */
-.od-excel-content {
-  flex: 1;
-  overflow: auto;
-  padding: 10px;
-}
-
-.od-excel-table-container {
-  min-width: 100%;
-}
-
-.od-excel-table-container table {
-  border-collapse: collapse;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  font-size: 13px;
-}
-
-.od-excel-table-container td,
-.od-excel-table-container th {
-  border: 1px solid #d0d0d0;
-  padding: 6px 10px;
-  white-space: nowrap;
-}
-
-.od-excel-table-container th {
-  background-color: #f0f0f0;
-  font-weight: 600;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.od-excel-table-container tr:hover {
-  background-color: #f5f5f5;
-}
-
-.od-excel-table-container td[contenteditable="true"] {
-  outline: none;
-  cursor: text;
-}
-
-.od-excel-table-container td[contenteditable="true"]:focus {
-  outline: 2px solid #4caf50;
-  outline-offset: -2px;
-}
-
-.od-sheet-tabs {
-  display: flex;
-  gap: 4px;
-  padding: 8px;
-  background-color: #e8e8e8;
-  border-bottom: 1px solid #d0d0d0;
-  overflow-x: auto;
-}
-
-.od-sheet-tab {
-  padding: 6px 16px;
-  border: none;
-  background-color: #d8d8d8;
-  color: #333333;
-  border-radius: 4px 4px 0 0;
-  cursor: pointer;
-  font-size: 13px;
-  white-space: nowrap;
-  transition: background-color 0.2s;
-}
-
-.od-sheet-tab:hover {
-  background-color: #c8c8c8;
-}
-
-.od-sheet-tab.active {
-  background-color: #ffffff;
-  font-weight: 600;
-}
-
-.od-formula-bar {
-  flex: 1;
-  padding: 6px 10px;
-  border: 1px solid #d0d0d0;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-}
-
-.od-filter-button {
-  margin-left: 4px;
-  padding: 0 4px;
-  background: none;
-  border: none;
-  color: #666666;
-  cursor: pointer;
-  font-size: 10px;
-}
-
-.od-filter-button:hover {
-  color: #333333;
-}
-
-/* PowerPoint styles */
-.od-ppt-viewer {
-  background-color: #1a1a1a;
-}
-
-.od-ppt-main {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.od-ppt-content {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.od-slide {
-  background-color: #ffffff;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-}
-
-.od-slide h1 {
-  font-size: 48px;
-  margin: 0 0 20px 0;
-  color: #1a1a1a;
-}
-
-.od-slide h2 {
-  font-size: 36px;
-  margin: 0 0 16px 0;
-  color: #333333;
-}
-
-.od-slide p {
-  font-size: 20px;
-  line-height: 1.6;
-  color: #555555;
-}
-
-.od-slide ul {
-  font-size: 20px;
-  line-height: 1.8;
-  color: #555555;
-}
-
-.od-ppt-thumbnails {
-  width: 150px;
-  background-color: #0d0d0d;
-  padding: 10px;
-  overflow-y: auto;
-  border-right: 1px solid #333333;
-}
-
-.od-thumbnail {
-  padding: 10px;
-  background-color: #2a2a2a;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-  margin-bottom: 10px;
-}
-
-.od-thumbnail:hover {
-  background-color: #3a3a3a;
-}
-
-.od-thumbnail.active {
-  background-color: #333333;
-  border-color: #4caf50;
-}
-
-.od-ppt-notes {
-  background-color: #f5f5f5;
-  padding: 15px;
-  border-top: 1px solid #d0d0d0;
-  overflow-y: auto;
-}
-
-.od-ppt-notes h4 {
-  margin: 0 0 10px 0;
-  font-size: 14px;
-  color: #333333;
-}
-
-.od-notes-content {
-  font-size: 13px;
-  color: #666666;
-  line-height: 1.6;
-}
-
-.od-ppt-navigation {
-  padding: 15px;
-  background-color: #f0f0f0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  border-top: 1px solid #d0d0d0;
-}
-
-.od-nav-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
-  color: white;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
-}
-
-.od-nav-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-}
-
-.od-nav-button:active {
-  transform: translateY(0);
-}
-
-.od-nav-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.od-slide-indicator {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333333;
-}
-
-.od-slide-counter {
-  margin-left: auto;
-  font-size: 13px;
-  color: #cccccc;
-}
-
-/* Page navigation */
-.od-page-navigation {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-left: auto;
-}
-
-.od-page-btn {
-  padding: 4px 12px;
-  min-width: 32px;
-}
-
-.od-page-info {
-  font-size: 13px;
-  color: #666666;
-  white-space: nowrap;
-}
-
-/* Animations */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Loading spinner */
-.od-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-}
-
-.od-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #4caf50;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.loading-spinner {
+ width: 48px;
+ height: 48px;
+ border: 4px solid #e0e0e0;
+ border-top-color: #2196f3;
+ border-radius: 50%;
+ animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+ to { transform: rotate(360deg); }
 }
 
-/* Responsive design */
+.loading-message {
+ margin-top: 16px;
+ font-size: 14px;
+ color: #666;
+}
+
+/* ================== Error ================== */
+.office-viewer-error {
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ padding: 40px 20px;
+ text-align: center;
+ height: 100%;
+}
+
+.error-icon {
+ font-size: 48px;
+ margin-bottom: 16px;
+}
+
+.error-message h3 {
+ margin: 0 0 8px;
+ font-size: 18px;
+ color: #d32f2f;
+}
+
+.error-message p {
+ margin: 0;
+ font-size: 14px;
+ color: #666;
+}
+
+/* ================== Word Viewer ================== */
+.word-viewer-wrapper {
+ padding: 20px;
+ background: #fafafa;
+ min-height: 100%;
+}
+
+.word-viewer-content {
+ max-width: 800px;
+ margin: 0 auto;
+ padding: 40px;
+ background: white;
+ box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+ line-height: 1.6;
+}
+
+.word-viewer-content h1 {
+ font-size: 32px;
+ margin: 0 0 16px;
+ font-weight: 600;
+}
+
+.word-viewer-content h2 {
+ font-size: 24px;
+ margin: 24px 0 12px;
+ font-weight: 600;
+}
+
+.word-viewer-content h3 {
+ font-size: 20px;
+ margin: 20px 0 10px;
+ font-weight: 600;
+}
+
+.word-viewer-content p {
+ margin: 0 0 12px;
+}
+
+.word-viewer-content img {
+ max-width: 100%;
+ height: auto;
+ display: block;
+ margin: 16px 0;
+}
+
+.word-viewer-content table {
+ width: 100%;
+ border-collapse: collapse;
+ margin: 16px 0;
+}
+
+.word-viewer-content table th,
+.word-viewer-content table td {
+ border: 1px solid #e0e0e0;
+ padding: 8px;
+}
+
+.word-viewer-content table th {
+ background: #f5f5f5;
+ font-weight: 600;
+}
+
+/* ================== Excel Viewer ================== */
+.excel-viewer-wrapper {
+ display: flex;
+ flex-direction: column;
+ height: 100%;
+ background: #ffffff;
+}
+
+.excel-formula-bar {
+ display: flex;
+ align-items: center;
+ padding: 8px 12px;
+ border-bottom: 1px solid #e0e0e0;
+ background: #f9f9f9;
+}
+
+.formula-label {
+ font-weight: 600;
+ margin-right: 8px;
+ color: #666;
+ font-family: monospace;
+}
+
+.formula-input {
+ flex: 1;
+ padding: 6px 12px;
+ border: 1px solid #e0e0e0;
+ border-radius: 4px;
+ font-size: 14px;
+ font-family: monospace;
+}
+
+.excel-sheet-tabs {
+ display: flex;
+ gap: 4px;
+ padding: 8px 12px;
+ border-bottom: 1px solid #e0e0e0;
+ background: #f5f5f5;
+ overflow-x: auto;
+}
+
+.sheet-tab {
+ padding: 8px 16px;
+ border: none;
+ background: transparent;
+ border-radius: 4px 4px 0 0;
+ cursor: pointer;
+ font-size: 14px;
+ white-space: nowrap;
+ transition: background 0.2s;
+}
+
+.sheet-tab:hover {
+ background: #e0e0e0;
+}
+
+.sheet-tab.active {
+ background: #ffffff;
+ font-weight: 600;
+ border: 1px solid #e0e0e0;
+ border-bottom: 1px solid #ffffff;
+ position: relative;
+ bottom: -1px;
+}
+
+.excel-viewer-content {
+ flex: 1;
+ overflow: auto;
+ padding: 12px;
+}
+
+.excel-table {
+ border-collapse: collapse;
+ font-size: 14px;
+ background: white;
+}
+
+.excel-table th,
+.excel-table td {
+ padding: 8px 12px;
+ text-align: left;
+ min-width: 80px;
+}
+
+.excel-table.show-grid-lines th,
+.excel-table.show-grid-lines td {
+ border: 1px solid #e0e0e0;
+}
+
+.excel-table th {
+ background: #f5f5f5;
+ font-weight: 600;
+ position: sticky;
+ top: 0;
+ z-index: 1;
+}
+
+.excel-table td.selected {
+ background: #e3f2fd !important;
+ outline: 2px solid #2196f3;
+}
+
+/* ================== PowerPoint Viewer ================== */
+.powerpoint-viewer-wrapper {
+ display: flex;
+ height: 100%;
+ background: #2d2d2d;
+}
+
+.powerpoint-main-content {
+ flex: 1;
+ display: flex;
+ flex-direction: column;
+ position: relative;
+ background: #2d2d2d;
+}
+
+.powerpoint-navigation {
+ position: absolute;
+ top: 50%;
+ left: 0;
+ right: 0;
+ transform: translateY(-50%);
+ display: flex;
+ justify-content: space-between;
+ padding: 0 20px;
+ pointer-events: none;
+ z-index: 10;
+}
+
+.powerpoint-navigation .nav-btn {
+ width: 48px;
+ height: 48px;
+ border-radius: 50%;
+ background: rgba(255, 255, 255, 0.9);
+ border: none;
+ cursor: pointer;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ pointer-events: auto;
+ transition: background 0.2s, transform 0.2s;
+}
+
+.powerpoint-navigation .nav-btn:hover {
+ background: rgba(255, 255, 255, 1);
+ transform: scale(1.1);
+}
+
+.powerpoint-slide-container {
+ flex: 1;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ padding: 40px;
+}
+
+.slide-content {
+ background: white;
+ padding: 60px;
+ border-radius: 8px;
+ box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+ max-width: 960px;
+ width: 100%;
+ aspect-ratio: 16 / 9;
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+}
+
+.slide-content h2 {
+ margin: 0 0 20px;
+ font-size: 36px;
+ color: #333;
+}
+
+.slide-content p {
+ margin: 0;
+ font-size: 18px;
+ line-height: 1.6;
+ color: #666;
+}
+
+.powerpoint-slide-counter {
+ position: absolute;
+ bottom: 20px;
+ right: 20px;
+ padding: 8px 16px;
+ background: rgba(0, 0, 0, 0.6);
+ color: white;
+ border-radius: 20px;
+ font-size: 14px;
+}
+
+.powerpoint-thumbnails {
+ width: 200px;
+ background: #1e1e1e;
+ border-left: 1px solid #3a3a3a;
+ overflow-y: auto;
+ padding: 12px;
+}
+
+.thumbnail {
+ margin-bottom: 12px;
+ padding: 8px;
+ background: #2d2d2d;
+ border-radius: 4px;
+ cursor: pointer;
+ transition: background 0.2s;
+ border: 2px solid transparent;
+}
+
+.thumbnail:hover {
+ background: #3a3a3a;
+}
+
+.thumbnail.active {
+ border-color: #2196f3;
+ background: #3a3a3a;
+}
+
+.thumbnail-number {
+ font-size: 12px;
+ color: #999;
+ margin-bottom: 4px;
+}
+
+.thumbnail-preview {
+ background: white;
+ padding: 20px 10px;
+ border-radius: 2px;
+ font-size: 10px;
+ color: #333;
+ text-align: center;
+ aspect-ratio: 16 / 9;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+}
+
+/* ================== PPTX Message ================== */
+.pptx-message {
+ text-align: center;
+}
+
+.pptx-message h2 {
+ color: #333;
+ margin-bottom: 16px;
+}
+
+.pptx-message p {
+ color: #666;
+ margin-bottom: 8px;
+}
+
+/* ================== Responsive ================== */
 @media (max-width: 768px) {
-  .od-word-toolbar,
-  .od-excel-toolbar,
-  .od-ppt-toolbar {
-    flex-wrap: wrap;
-    padding: 8px;
-  }
+ .word-viewer-content {
+  padding: 20px;
+ }
 
-  .od-toolbar-button {
-    padding: 4px 8px;
-    font-size: 12px;
-  }
+ .powerpoint-slide-container {
+  padding: 20px;
+ }
 
-  .od-ppt-thumbnails {
-    width: 100px;
-  }
+ .slide-content {
+  padding: 30px;
+ }
 
-  .od-slide h1 {
-    font-size: 32px;
-  }
+ .slide-content h2 {
+  font-size: 24px;
+ }
 
-  .od-slide h2 {
-    font-size: 24px;
-  }
+ .slide-content p {
+  font-size: 16px;
+ }
 
-  .od-slide p,
-  .od-slide ul {
-    font-size: 16px;
-  }
+ .powerpoint-thumbnails {
+  display: none;
+ }
+
+ .excel-table th,
+ .excel-table td {
+  padding: 6px 8px;
+  min-width: 60px;
+  font-size: 12px;
+ }
 }
 
-/* Print styles */
-@media print {
-  .od-word-toolbar,
-  .od-excel-toolbar,
-  .od-ppt-toolbar,
-  .od-ppt-navigation,
-  .od-sheet-tabs,
-  .od-ppt-thumbnails {
-    display: none !important;
-  }
-
-  .od-word-content,
-  .od-excel-content,
-  .od-slide {
-    background-color: white !important;
-    box-shadow: none !important;
-  }
+/* ================== Fullscreen ================== */
+.office-viewer-wrapper:fullscreen {
+ background: white;
 }
 
-/* Scrollbar styles */
-.od-word-content::-webkit-scrollbar,
-.od-excel-content::-webkit-scrollbar,
-.od-ppt-thumbnails::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.od-word-content::-webkit-scrollbar-track,
-.od-excel-content::-webkit-scrollbar-track,
-.od-ppt-thumbnails::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.od-word-content::-webkit-scrollbar-thumb,
-.od-excel-content::-webkit-scrollbar-thumb,
-.od-ppt-thumbnails::-webkit-scrollbar-thumb {
-  background: #888888;
-  border-radius: 4px;
-}
-
-.od-word-content::-webkit-scrollbar-thumb:hover,
-.od-excel-content::-webkit-scrollbar-thumb:hover,
-.od-ppt-thumbnails::-webkit-scrollbar-thumb:hover {
-  background: #555555;
+.office-viewer-wrapper:fullscreen .office-viewer-content-container {
+ background: white;
 }

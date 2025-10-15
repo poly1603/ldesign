@@ -45,14 +45,18 @@ class MemoryCacheStorage implements CacheStorage {
 }
 
 /**
- * localStorage 缓存存储
+ * 通用Web存储缓存（localStorage/sessionStorage）
+ * 消除重复代码，统一处理
  */
-class LocalStorageCacheStorage implements CacheStorage {
-  constructor(private prefix: string = 'ldesign_api_cache_') {}
+class WebStorageCacheStorage implements CacheStorage {
+  constructor(
+    private storage: Storage,
+    private prefix: string = 'ldesign_api_cache_',
+  ) {}
 
   get(key: string): string | null {
     try {
-      return localStorage.getItem(this.prefix + key)
+      return this.storage.getItem(this.prefix + key)
     }
     catch {
       return null
@@ -61,7 +65,7 @@ class LocalStorageCacheStorage implements CacheStorage {
 
   set(key: string, value: string): void {
     try {
-      localStorage.setItem(this.prefix + key, value)
+      this.storage.setItem(this.prefix + key, value)
     }
     catch {
       // 忽略存储错误
@@ -70,7 +74,7 @@ class LocalStorageCacheStorage implements CacheStorage {
 
   remove(key: string): void {
     try {
-      localStorage.removeItem(this.prefix + key)
+      this.storage.removeItem(this.prefix + key)
     }
     catch {
       // 忽略删除错误
@@ -90,68 +94,8 @@ class LocalStorageCacheStorage implements CacheStorage {
   keys(): string[] {
     try {
       const keys: string[] = []
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i)
-        if (key && key.startsWith(this.prefix)) {
-          keys.push(key.substring(this.prefix.length))
-        }
-      }
-      return keys
-    }
-    catch {
-      return []
-    }
-  }
-}
-
-/**
- * sessionStorage 缓存存储
- */
-class SessionStorageCacheStorage implements CacheStorage {
-  constructor(private prefix: string = 'ldesign_api_cache_') {}
-
-  get(key: string): string | null {
-    try {
-      return sessionStorage.getItem(this.prefix + key)
-    }
-    catch {
-      return null
-    }
-  }
-
-  set(key: string, value: string): void {
-    try {
-      sessionStorage.setItem(this.prefix + key, value)
-    }
-    catch {
-      // 忽略存储错误
-    }
-  }
-
-  remove(key: string): void {
-    try {
-      sessionStorage.removeItem(this.prefix + key)
-    }
-    catch {
-      // 忽略删除错误
-    }
-  }
-
-  clear(): void {
-    try {
-      const keys = this.keys()
-      keys.forEach(key => this.remove(key))
-    }
-    catch {
-      // 忽略清除错误
-    }
-  }
-
-  keys(): string[] {
-    try {
-      const keys: string[] = []
-      for (let i = 0; i < sessionStorage.length; i++) {
-        const key = sessionStorage.key(i)
+      for (let i = 0; i < this.storage.length; i++) {
+        const key = this.storage.key(i)
         if (key && key.startsWith(this.prefix)) {
           keys.push(key.substring(this.prefix.length))
         }
@@ -196,10 +140,10 @@ export class CacheManager {
     const prefix = this.config.prefix || 'ldesign_api_cache_'
     switch (this.config.storage) {
       case 'localStorage':
-        this.storage = new LocalStorageCacheStorage(prefix)
+        this.storage = new WebStorageCacheStorage(localStorage, prefix)
         break
       case 'sessionStorage':
-        this.storage = new SessionStorageCacheStorage(prefix)
+        this.storage = new WebStorageCacheStorage(sessionStorage, prefix)
         break
       case 'lru':
         // 使用高性能LRU缓存

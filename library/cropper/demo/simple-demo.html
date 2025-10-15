@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cropper 简单示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 4px;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 8px 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    input[type="file"] {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .cropper-container {
+      max-width: 100%;
+      height: 500px;
+      background: #fafafa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 4px;
+    }
+
+    .result h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .result canvas {
+      max-width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .info {
+      margin-top: 10px;
+      padding: 10px;
+      background: #e3f2fd;
+      border-left: 3px solid #2196f3;
+      font-size: 14px;
+      color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📷 Cropper 简单使用示例</h1>
+    
+    <div class="info">
+      这是一个简洁的Cropper使用示例。只需引入编译后的库文件，然后 new Cropper() 即可使用。
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <input type="file" id="fileInput" accept="image/*">
+      </div>
+      
+      <div class="control-group">
+        <button onclick="cropper.rotate(45)">↻ 旋转45°</button>
+        <button onclick="cropper.rotate(-45)">↺ 旋转-45°</button>
+        <button onclick="cropper.flipH()">↔ 水平翻转</button>
+        <button onclick="cropper.flipV()">↕ 垂直翻转</button>
+      </div>
+
+      <div class="control-group">
+        <button onclick="cropper.zoom(0.1)">🔍 放大</button>
+        <button onclick="cropper.zoom(-0.1)">🔍 缩小</button>
+        <button onclick="cropper.reset()">🔄 重置</button>
+      </div>
+
+      <div class="control-group">
+        <button onclick="setAspectRatio(16/9)">16:9</button>
+        <button onclick="setAspectRatio(4/3)">4:3</button>
+        <button onclick="setAspectRatio(1)">1:1</button>
+        <button onclick="setAspectRatio(3/4)">3:4</button>
+        <button onclick="setAspectRatio(9/16)">9:16</button>
+        <button onclick="setAspectRatio(null)">自由</button>
+      </div>
+
+      <div class="control-group">
+        <button onclick="getCroppedImage()">✂️ 裁剪并显示</button>
+        <button onclick="downloadCroppedImage()">💾 下载裁剪图片</button>
+      </div>
+    </div>
+
+    <div class="cropper-container">
+      <img id="cropperImage" src="https://picsum.photos/1200/800" alt="示例图片">
+    </div>
+
+    <div class="result" id="resultContainer" style="display: none;">
+      <h3>裁剪结果：</h3>
+      <canvas id="resultCanvas"></canvas>
+    </div>
+  </div>
+
+  <!-- 引入编译后的Cropper库 -->
+  <script type="module">
+    // TODO: 这里应该引入编译后的 cropper.js
+    // import Cropper from '../dist/cropper.js';
+    
+    // 临时方案：从开发服务器引入
+    import { Cropper } from '../src/index.ts';
+
+    // 初始化Cropper（就这么简单！）
+    const image = document.getElementById('cropperImage');
+    window.cropper = new Cropper(image, {
+      aspectRatio: 16 / 9,        // 初始比例
+      viewMode: 1,                 // 限制裁剪框在canvas内
+      dragMode: 'move',            // 拖动模式
+      autoCrop: true,              // 自动裁剪
+      autoCropArea: 0.8,           // 自动裁剪区域比例
+      responsive: true,            // 响应式
+      restore: true,               // 恢复裁剪
+      guides: true,                // 显示网格线
+      center: true,                // 显示中心指示器
+      highlight: true,             // 高亮裁剪区域
+      cropBoxMovable: true,        // 裁剪框可移动
+      cropBoxResizable: true,      // 裁剪框可调整大小
+      toggleDragModeOnDblclick: true, // 双击切换拖动模式
+      
+      // 事件监听
+      ready() {
+        console.log('Cropper 已就绪');
+      },
+      cropstart(event) {
+        console.log('开始裁剪', event.detail.action);
+      },
+      cropmove(event) {
+        // console.log('裁剪移动', event.detail.action);
+      },
+      cropend(event) {
+        console.log('裁剪结束', event.detail.action);
+      },
+      crop(event) {
+        const data = event.detail;
+        console.log('裁剪数据:', {
+          x: Math.round(data.x),
+          y: Math.round(data.y),
+          width: Math.round(data.width),
+          height: Math.round(data.height),
+          rotate: data.rotate,
+          scaleX: data.scaleX,
+          scaleY: data.scaleY
+        });
+      },
+      zoom(event) {
+        console.log('缩放比例:', event.detail.ratio);
+      }
+    });
+
+    // 文件上传
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          cropper.replace(event.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // 设置纵横比
+    window.setAspectRatio = (ratio) => {
+      cropper.setAspectRatio(ratio);
+    };
+
+    // 获取裁剪图片
+    window.getCroppedImage = () => {
+      const canvas = cropper.getCroppedCanvas({
+        maxWidth: 2000,
+        maxHeight: 2000,
+        fillColor: '#fff',
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+      });
+
+      const resultContainer = document.getElementById('resultContainer');
+      const resultCanvas = document.getElementById('resultCanvas');
+      
+      resultCanvas.width = canvas.width;
+      resultCanvas.height = canvas.height;
+      const ctx = resultCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, 0);
+      
+      resultContainer.style.display = 'block';
+      resultContainer.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // 下载裁剪图片
+    window.downloadCroppedImage = () => {
+      const canvas = cropper.getCroppedCanvas({
+        maxWidth: 4096,
+        maxHeight: 4096,
+        fillColor: '#fff',
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+      });
+
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `cropped-${Date.now()}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    };
+
+    // 暴露到全局，方便调试
+    window.cropper = cropper;
+  </script>
+</body>
+</html>

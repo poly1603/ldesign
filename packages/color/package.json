@@ -24,6 +24,17 @@
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
+    },
+    "./vue": {
+      "types": "./src/vue/index.ts",
+      "import": "./src/vue/index.ts"
+    },
+    "./vue/ThemePicker": {
+      "import": "./src/vue/ThemePicker.vue"
+    },
+    "./react": {
+      "types": "./src/react/index.ts",
+      "import": "./src/react/index.ts"
     }
   },
   "main": "./lib/index.cjs",
@@ -52,8 +63,22 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/react": "^18.0.0",
     "rimraf": "^5.0.0",
     "tsx": "^4.20.6",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "@vitejs/plugin-vue": "^4.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "vue": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
   }
 }

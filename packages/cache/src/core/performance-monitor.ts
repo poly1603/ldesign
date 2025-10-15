@@ -68,9 +68,25 @@ export interface PerformanceMonitorOptions {
 }
 
 /**
- * 性能监控器
- * 
- * 收集和分析缓存操作的性能指标
+ * 缓存性能监控器 (Performance Monitor)
+ *
+ * 专门用于收集和分析缓存操作的性能指标
+ *
+ * **与 PerformanceProfiler 的区别：**
+ * - PerformanceMonitor（本模块）：专门用于缓存操作的性能监控，集成到 CacheManager
+ * - PerformanceProfiler（utils/performance-profiler.ts）：通用性能分析工具
+ *
+ * **使用场景：**
+ * - 自动监控所有缓存操作（get、set、remove等）
+ * - 分析不同存储引擎的性能表现
+ * - 追踪缓存命中率和操作成功率
+ * - 识别慢缓存操作
+ *
+ * **主要功能：**
+ * - 按引擎和操作类型统计性能
+ * - 慢操作自动检测和报警
+ * - 支持采样率控制
+ * - 事件驱动的性能监控
  */
 export class PerformanceMonitor {
   private metrics: PerformanceMetrics[] = []

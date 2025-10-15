@@ -5,7 +5,20 @@ import { SVGRenderer } from './renderers/svg';
 // Export types
 export * from './types';
 
+// Export utilities
+export { QRContentHelper } from './utils/content-templates';
+export { QRCodePresets, getPreset, getPresetNames, searchPresetsByTag, getAllTags } from './presets';
+export { QRCodeValidator, QRCodeOptimizer } from './utils/validator';
+export { QRCodeCacheManager, enableCache, clearCache, getCacheStats, cache } from './utils/cache';
+export { QRCodeWorkerPool, batchDownload } from './utils/worker';
+export { applyAnimation, injectAnimationStyles } from './utils/animation';
+
+// Export scanner
+export { QRCodeScanner } from './scanner';
+export type { QRCodeScanResult, QRCodeScannerOptions } from './scanner';
+
 // Adapters are available at './adapters/react' and './adapters/vue'
+// Scanner adapters are available at './scanner/react' and './scanner/vue'
 
 /**
  * QR Code class

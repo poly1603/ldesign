@@ -1,193 +1,209 @@
 /**
- * Office Document Types and Interfaces
+ * Office document types
  */
+export type DocumentType = 'word' | 'excel' | 'powerpoint';
 
-export type DocumentType = 'word' | 'excel' | 'powerpoint' | 'pdf';
+/**
+ * Supported file extensions
+ */
+export type FileExtension = '.docx' | '.doc' | '.xlsx' | '.xls' | '.pptx' | '.ppt';
 
-export interface RenderOptions {
-  /** Container element or selector */
-  container: HTMLElement | string;
-  /** Width of the viewer */
-  width?: string | number;
-  /** Height of the viewer */
-  height?: string | number;
-  /** Enable toolbar */
-  toolbar?: boolean;
-  /** Toolbar options */
-  toolbarOptions?: ToolbarOptions;
-  /** Enable pagination for large documents */
-  pagination?: boolean;
-  /** Number of pages to load at once */
-  pageSize?: number;
-  /** Theme configuration */
-  theme?: ThemeOptions;
-  /** Enable zoom functionality */
-  zoom?: boolean;
-  /** Initial zoom level */
-  initialZoom?: number;
-  /** Enable search functionality */
-  search?: boolean;
-  /** Enable print functionality */
-  print?: boolean;
-  /** Enable download functionality */
-  download?: boolean;
-  /** Custom CSS class */
-  className?: string;
-  /** Render mode */
-  renderMode?: 'canvas' | 'html' | 'svg';
-  /** Use Web Worker for rendering */
-  useWebWorker?: boolean;
-  /** Enable virtual scrolling for performance */
-  virtualScrolling?: boolean;
-  /** Lazy load images and resources */
-  lazyLoad?: boolean;
-  /** Cache rendered pages */
-  cache?: boolean;
-  /** Error callback */
-  onError?: (error: Error) => void;
-  /** Load callback */
-  onLoad?: (doc: DocumentInfo) => void;
-  /** Page change callback */
-  onPageChange?: (page: number) => void;
-  /** Zoom change callback */
-  onZoomChange?: (zoom: number) => void;
-}
+/**
+ * Viewer configuration options
+ */
+export interface ViewerOptions {
+ /** Container element or selector */
+ container: HTMLElement | string;
 
-export interface ToolbarOptions {
-  items?: ToolbarItem[];
-  position?: 'top' | 'bottom';
-  style?: 'default' | 'minimal' | 'custom';
-  customButtons?: CustomButton[];
-}
+ /** Document source (URL, File, ArrayBuffer, or Blob) */
+ source: string | File | ArrayBuffer | Blob;
 
-export type ToolbarItem = 
-  | 'zoom-in'
-  | 'zoom-out'
-  | 'zoom-fit'
-  | 'print'
-  | 'download'
-  | 'search'
-  | 'fullscreen'
-  | 'page-nav'
-  | 'rotate';
+ /** Document type (auto-detected if not specified) */
+ type?: DocumentType;
 
-export interface CustomButton {
-  id: string;
-  icon?: string;
-  text?: string;
-  tooltip?: string;
-  onClick: () => void;
-}
+ /** Custom width */
+ width?: string | number;
 
-export interface ThemeOptions {
-  primary?: string;
-  background?: string;
-  text?: string;
-  border?: string;
-  toolbar?: {
-    background?: string;
-    text?: string;
-    hover?: string;
-  };
-}
+ /** Custom height */
+ height?: string | number;
 
-export interface DocumentInfo {
-  type: DocumentType;
-  name: string;
-  size: number;
-  pageCount?: number;
-  metadata?: Record<string, any>;
-}
+ /** Enable zoom controls */
+ enableZoom?: boolean;
 
-export interface LoadOptions {
-  /** File source */
-  file?: File | Blob;
-  /** URL to load file from */
-  url?: string;
-  /** Array buffer data */
-  arrayBuffer?: ArrayBuffer;
-  /** Base64 encoded string */
-  base64?: string;
-  /** Request headers for URL loading */
-  headers?: Record<string, string>;
-  /** Request credentials */
-  credentials?: RequestCredentials;
-}
+ /** Enable download button */
+ enableDownload?: boolean;
 
-export interface WordRenderOptions extends RenderOptions {
-  /** Show comments */
-  showComments?: boolean;
-  /** Show tracked changes */
-  showTrackedChanges?: boolean;
-  /** Preserve styles */
-  preserveStyles?: boolean;
-}
+ /** Enable print button */
+ enablePrint?: boolean;
 
-export interface ExcelRenderOptions extends RenderOptions {
-  /** Active sheet index */
-  activeSheet?: number;
-  /** Show grid lines */
+ /** Enable fullscreen button */
+ enableFullscreen?: boolean;
+
+ /** Show toolbar */
+ showToolbar?: boolean;
+
+ /** Custom CSS class */
+ className?: string;
+
+ /** Theme (light or dark) */
+ theme?: 'light' | 'dark';
+
+ /** Callback when document loads successfully */
+ onLoad?: () => void;
+
+ /** Callback when error occurs */
+ onError?: (error: Error) => void;
+
+ /** Callback for loading progress */
+ onProgress?: (progress: number) => void;
+
+ /** Excel-specific options */
+ excel?: {
+  /** Default sheet index to display */
+  defaultSheet?: number;
+  /** Enable sheet tabs */
+  showSheetTabs?: boolean;
+  /** Enable formula bar */
+  showFormulaBar?: boolean;
+  /** Enable grid lines */
   showGridLines?: boolean;
-  /** Show row/column headers */
-  showHeaders?: boolean;
   /** Enable cell editing */
-  editable?: boolean;
-  /** Show formulas */
-  showFormulas?: boolean;
-  /** Enable filtering */
-  enableFiltering?: boolean;
-  /** Enable sorting */
-  enableSorting?: boolean;
-}
+  enableEditing?: boolean;
+ };
 
-export interface PowerPointRenderOptions extends RenderOptions {
-  /** Enable slideshow mode */
-  slideshow?: boolean;
-  /** Auto play slides */
+ /** PowerPoint-specific options */
+ powerpoint?: {
+  /** Auto-play slides */
   autoPlay?: boolean;
-  /** Slide duration in seconds */
-  slideDuration?: number;
-  /** Show slide notes */
-  showNotes?: boolean;
-  /** Enable animations */
-  animations?: boolean;
-  /** Thumbnail navigation */
-  thumbnailNav?: boolean;
+  /** Auto-play interval (ms) */
+  autoPlayInterval?: number;
+  /** Show slide navigation */
+  showNavigation?: boolean;
+  /** Show slide thumbnails */
+  showThumbnails?: boolean;
+ };
+
+ /** Word-specific options */
+ word?: {
+  /** Enable outline view */
+  showOutline?: boolean;
+  /** Page view mode */
+  pageView?: 'single' | 'continuous';
+ };
 }
 
-export interface RenderResult {
-  /** Destroy the viewer */
-  destroy: () => void;
-  /** Refresh the viewer */
-  refresh: () => void;
-  /** Navigate to specific page */
-  goToPage: (page: number) => void;
-  /** Set zoom level */
-  setZoom: (zoom: number) => void;
-  /** Get current page */
-  getCurrentPage: () => number;
-  /** Get total pages */
-  getTotalPages: () => number;
-  /** Search in document */
-  search?: (query: string) => void;
-  /** Clear search */
-  clearSearch?: () => void;
-  /** Print document */
-  print?: () => void;
-  /** Download document */
-  download?: () => void;
-  /** Enter fullscreen */
-  enterFullscreen?: () => void;
-  /** Exit fullscreen */
-  exitFullscreen?: () => void;
+/**
+ * Document metadata
+ */
+export interface DocumentMetadata {
+ title?: string;
+ author?: string;
+ subject?: string;
+ creator?: string;
+ created?: Date;
+ modified?: Date;
+ pageCount?: number;
+ wordCount?: number;
+ [key: string]: any;
 }
 
-export interface RendererPlugin {
-  name: string;
-  supports: DocumentType[];
-  render: (
-    data: any,
-    container: HTMLElement,
-    options: RenderOptions
-  ) => Promise<RenderResult>;
+/**
+ * Renderer interface that all document renderers must implement
+ */
+export interface IDocumentRenderer {
+ /** Render the document */
+ render(container: HTMLElement, data: ArrayBuffer, options: ViewerOptions): Promise<void>;
+
+ /** Get document metadata */
+ getMetadata(data: ArrayBuffer): Promise<DocumentMetadata>;
+
+ /** Destroy the renderer and clean up resources */
+ destroy(): void;
+
+ /** Export document to different formats */
+ export?(format: 'pdf' | 'html' | 'text'): Promise<Blob>;
+}
+
+/**
+ * Event types
+ */
+export type ViewerEventType =
+ | 'load'
+ | 'error'
+ | 'progress'
+ | 'zoom'
+ | 'page-change'
+ | 'sheet-change'
+ | 'slide-change'
+ | 'destroy';
+
+/**
+ * Event handler
+ */
+export type EventHandler = (data?: any) => void;
+
+/**
+ * Viewer instance interface
+ */
+export interface IOfficeViewer {
+ /** Load a new document */
+ load(source: string | File | ArrayBuffer | Blob, type?: DocumentType): Promise<void>;
+
+ /** Reload current document */
+ reload(): Promise<void>;
+
+ /** Get current document metadata */
+ getMetadata(): Promise<DocumentMetadata>;
+
+ /** Zoom in */
+ zoomIn(): void;
+
+ /** Zoom out */
+ zoomOut(): void;
+
+ /** Set zoom level */
+ setZoom(level: number): void;
+
+ /** Get current zoom level */
+ getZoom(): number;
+
+ /** Download the document */
+ download(filename?: string): void;
+
+ /** Print the document */
+ print(): void;
+
+ /** Enter fullscreen mode */
+ fullscreen(): void;
+
+ /** Exit fullscreen mode */
+ exitFullscreen(): void;
+
+ /** Navigate to page (Word/PowerPoint) */
+ goToPage?(page: number): void;
+
+ /** Switch to sheet (Excel) */
+ switchSheet?(sheetIndex: number): void;
+
+ /** Listen to events */
+ on(event: ViewerEventType, handler: EventHandler): void;
+
+ /** Remove event listener */
+ off(event: ViewerEventType, handler: EventHandler): void;
+
+ /** Destroy the viewer */
+ destroy(): void;
+}
+
+/**
+ * Render state
+ */
+export interface RenderState {
+ currentPage: number;
+ currentSheet: number;
+ currentSlide: number;
+ zoomLevel: number;
+ isFullscreen: boolean;
+ isLoading: boolean;
+ error: Error | null;
 }

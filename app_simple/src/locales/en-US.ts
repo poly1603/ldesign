@@ -281,8 +281,8 @@ export default {
     url: 'Please enter a valid URL',
     phone: 'Please enter a valid phone number'
   },
-
-  // Date Time
+  
+  // Date and Time
   datetime: {
     today: 'Today',
     yesterday: 'Yesterday',
@@ -298,6 +298,48 @@ export default {
     nextYear: 'Next Year',
     selectDate: 'Select Date',
     selectTime: 'Select Time',
-    selectDateTime: 'Select Date & Time'
+    selectDateTime: 'Select Date Time'
+  },
+
+  // Theme Settings
+  theme: {
+    title: 'Theme',
+    selectThemeColor: 'Select Theme Color',
+    customColor: 'Custom Color',
+    custom: 'Custom',
+    mode: 'Theme Mode',
+    light: 'Light',
+    dark: 'Dark',
+    apply: 'Apply',
+    add: 'Add',
+    remove: 'Remove',
+    searchPlaceholder: 'Search colors...',
+    presetThemes: 'Preset Themes',
+    addCustomTheme: 'Add Custom Theme',
+    themeName: 'Theme name',
+    confirmRemove: 'Remove this theme?',
+    presets: {
+      blue: 'Daybreak Blue',
+      purple: 'Purple',
+      cyan: 'Cyan',
+      green: 'Polar Green',
+      magenta: 'Magenta',
+      red: 'Dust Red',
+      orange: 'Sunset Orange',
+      yellow: 'Sunrise Yellow',
+      volcano: 'Volcano',
+      geekblue: 'Geek Blue',
+      lime: 'Lime',
+      gold: 'Gold',
+      gray: 'Neutral Gray',
+      'dark-blue': 'Dark Blue',
+      'dark-green': 'Dark Green',
+      // Custom themes
+      sunset: 'Sunset Orange',
+      forest: 'Forest Green',
+      midnight: 'Midnight Blue',
+      lavender: 'Lavender Dream',
+      coral: 'Coral Reef'
+    }
   }
 };

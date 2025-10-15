@@ -10,6 +10,7 @@ export default defineConfig({
       '@ldesign/engine': resolve(__dirname, '../packages/engine/src'),
       '@ldesign/router': resolve(__dirname, '../packages/router/src'),
       '@ldesign/i18n': resolve(__dirname, '../packages/i18n/src'),
+      '@ldesign/color': resolve(__dirname, '../packages/color/src'),
     }
   },
   server: {

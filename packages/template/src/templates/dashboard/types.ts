@@ -1,91 +1,85 @@
 /**
- * Dashboard模板统一类型定义
+ * 仪表板模板类型定义
  */
 
-/**
- * Dashboard模板Props接口
- */
+/** 统计数据项 */
+export interface DashboardStat {
+  label: string
+  value: string | number
+  icon?: string
+  trend?: 'up' | 'down' | 'neutral'
+  change?: string
+}
+
+/** 菜单项 */
+export interface DashboardMenuItem {
+  label: string
+  icon?: string
+  href?: string
+  onClick?: () => void
+  active?: boolean
+}
+
+/** 基础仪表板模板属性 */
 export interface DashboardTemplateProps {
-  /** 应用标题 */
-  title?: string
-  /** Logo图片URL */
-  logoUrl?: string
-  
-  /** 主要颜色 */
-  primaryColor?: string
-  /** 次要颜色 */
-  secondaryColor?: string
-  
+  /** 用户名 */
+  userName?: string
   /** 是否显示侧边栏 */
   showSidebar?: boolean
-  /** 是否可折叠侧边栏 */
-  collapsibleSidebar?: boolean
-  /** 侧边栏默认是否折叠 */
-  sidebarCollapsed?: boolean
-  
-  /** 是否显示面包屑 */
-  showBreadcrumb?: boolean
-  /** 是否显示用户信息 */
-  showUserInfo?: boolean
-  /** 是否显示通知 */
-  showNotifications?: boolean
-  
-  /** 是否启用动画效果 */
-  enableAnimations?: boolean
-  
-  /** 用户信息 */
-  userInfo?: {
-    name?: string
-    avatar?: string
-    role?: string
-  }
+  /** 是否暗黑模式 */
+  darkMode?: boolean
+  /** 统计数据 */
+  stats?: DashboardStat[]
+  /** 菜单项 */
+  menuItems?: DashboardMenuItem[]
+  /** 退出回调 */
+  onLogout?: () => void
 }
 
-/**
- * Dashboard模板默认Props值
- */
-export const defaultDashboardProps: Required<DashboardTemplateProps> = {
-  title: '管理后台',
-  logoUrl: '',
-  primaryColor: 'var(--ldesign-brand-color)',
-  secondaryColor: 'var(--ldesign-brand-color-6)',
-  showSidebar: true,
-  collapsibleSidebar: true,
-  sidebarCollapsed: false,
-  showBreadcrumb: true,
-  showUserInfo: true,
-  showNotifications: true,
-  enableAnimations: true,
-  userInfo: {
-    name: '用户',
-    avatar: '',
-    role: '管理员',
-  },
-}
-
-/**
- * Dashboard布局配置
- */
-export interface DashboardLayoutConfig {
-  /** 头部高度 */
-  headerHeight: string
+/** 桌面端带侧边栏仪表板模板属性 */
+export interface DashboardDesktopSidebarProps extends DashboardTemplateProps {
   /** 侧边栏宽度 */
-  sidebarWidth: string
-  /** 侧边栏折叠宽度 */
-  sidebarCollapsedWidth: string
-  /** 底部高度 */
-  footerHeight: string
-  /** 内容区域内边距 */
-  contentPadding: string
+  sidebarWidth?: 'narrow' | 'normal' | 'wide'
+  /** 侧边栏是否可折叠 */
+  collapsible?: boolean
+  /** 侧边栏默认是否折叠 */
+  defaultCollapsed?: boolean
 }
 
-/**
- * 默认布局配置
- */
-export const defaultLayoutConfig: DashboardLayoutConfig = {
-  headerHeight: '64px',
-  sidebarWidth: '240px',
-  sidebarCollapsedWidth: '64px',
-  footerHeight: '48px',
-  contentPadding: 'var(--ls-padding-lg)',
+/** 移动端仪表板模板属性 */
+export interface DashboardMobileProps extends DashboardTemplateProps {
+  /** 是否显示底部导航 */
+  showBottomNav?: boolean
+  /** 底部导航项 */
+  bottomNavItems?: DashboardMenuItem[]
+}
+
+/** 移动端标签式仪表板模板属性 */
+export interface DashboardMobileTabsProps extends DashboardMobileProps {
+  /** 标签项 */
+  tabs?: Array<{
+    label: string
+    value: string
+    icon?: string
+  }>
+  /** 当前活跃标签 */
+  activeTab?: string
+  /** 标签切换回调 */
+  onTabChange?: (value: string) => void
+}
+
+/** 平板端仪表板模板属性 */
+export interface DashboardTabletProps extends DashboardTemplateProps {
+  /** 布局模式 */
+  layout?: 'portrait' | 'landscape'
+  /** 是否使用紧凑布局 */
+  compact?: boolean
+}
+
+/** 平板端网格布局仪表板模板属性 */
+export interface DashboardTabletGridProps extends DashboardTabletProps {
+  /** 网格列数 */
+  columns?: 2 | 3 | 4
+  /** 卡片间距 */
+  gap?: 'small' | 'medium' | 'large'
 }

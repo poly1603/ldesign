@@ -294,5 +294,47 @@ export default {
     selectDate: '选择日期',
     selectTime: '选择时间',
     selectDateTime: '选择日期时间'
+  },
+
+  // 主题设置
+  theme: {
+    title: '主题设置',
+    selectThemeColor: '选择主题色',
+    customColor: '自定义颜色',
+    custom: '自定义',
+    mode: '主题模式',
+    light: '浅色',
+    dark: '深色',
+    apply: '应用',
+    add: '添加',
+    remove: '删除',
+    searchPlaceholder: '搜索颜色...',
+    presetThemes: '预设主题',
+    addCustomTheme: '添加自定义主题',
+    themeName: '主题名称',
+    confirmRemove: '确定要删除该主题吗？',
+    presets: {
+      blue: '拂晓蓝',
+      purple: '酱紫',
+      cyan: '明青',
+      green: '极光绿',
+      magenta: '法式洋红',
+      red: '薄暮红',
+      orange: '日暮橙',
+      yellow: '日出黄',
+      volcano: '火山橙',
+      geekblue: '极客蓝',
+      lime: '青柠绿',
+      gold: '金盏花',
+      gray: '中性灰',
+      'dark-blue': '深海蓝',
+      'dark-green': '森林绿',
+      // 自定义主题
+      sunset: '日落橙',
+      forest: '森林绿',
+      midnight: '午夜蓝',
+      lavender: '薰衣草梦',
+      coral: '珊瑚礁'
+    }
   }
 };

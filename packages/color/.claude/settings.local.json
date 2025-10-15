@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/WorkBench/ldesign/app_simple/**)",
+      "Read(//d/WorkBench/ldesign/app_simple/src/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

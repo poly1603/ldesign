@@ -43,6 +43,24 @@ export {
   isValidColorFormat
 } from './utils/validators';
 
+// Export palette generators
+export * from './core/tailwindPalette';
+
+// Theme management
+export * from './themes/presets';
+export { ThemeManager, defaultThemeManager } from './themes/themeManager';
+
+// Plugin system
+export { createColorPlugin, ColorPluginSymbol } from './plugin';
+export type { ColorPlugin, ColorPluginOptions } from './plugin';
+export { useColorPlugin } from './plugin/useColorPlugin';
+
+// Vue 3 support
+// Note: Vue components should be imported from '@ldesign/color/vue'
+
+// React support
+// Note: React components should be imported from '@ldesign/color/react'
+
 // Version
 export const VERSION = '1.0.0';
 

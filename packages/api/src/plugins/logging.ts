@@ -5,26 +5,50 @@
  * - 可注入 X-Request-Id
  */
 import type { ApiPlugin } from '../types'
+import { generateShortId } from '../utils/IdGenerator'
 
 export interface LoggingPluginOptions {
   enabled?: boolean
   requestIdHeader?: string
   requestIdFactory?: () => string
-  logLevel?: 'info' | 'debug'
+  logLevel?: 'info' | 'debug' | 'warn' | 'error'
+  /** 是否包含时间戳 */
+  includeTimestamp?: boolean
+  /** 是否包含请求数据 */
+  includeRequestData?: boolean
+  /** 是否包含响应数据 */
+  includeResponseData?: boolean
 }
 
 export function createLoggingPlugin(options: LoggingPluginOptions = {}): ApiPlugin {
   const enabled = options.enabled ?? true
   const requestIdHeader = options.requestIdHeader ?? 'X-Request-Id'
-  const requestIdFactory = options.requestIdFactory ?? (() => Math.random().toString(36).slice(2))
+  const requestIdFactory = options.requestIdFactory ?? (() => generateShortId(12))
   const level = options.logLevel ?? 'info'
+  const includeTimestamp = options.includeTimestamp ?? true
+  const includeRequestData = options.includeRequestData ?? true
+  const includeResponseData = options.includeResponseData ?? false
 
-  const log = (...args: unknown[]) => {
+  const log = (logLevel: string, ...args: unknown[]) => {
     if (!enabled)
       return
-    if (level === 'debug')
-      console.debug('[API]', ...args)
-    else console.info('[API]', ...args)
+
+    const timestamp = includeTimestamp ? new Date().toISOString() : null
+    const prefix = timestamp ? `[API ${timestamp}]` : '[API]'
+
+    switch (logLevel) {
+      case 'debug':
+        console.debug(prefix, ...args)
+        break
+      case 'warn':
+        console.warn(prefix, ...args)
+        break
+      case 'error':
+        console.error(prefix, ...args)
+        break
+      default:
+        console.info(prefix, ...args)
+    }
   }
 
   return {
@@ -41,7 +65,14 @@ export function createLoggingPlugin(options: LoggingPluginOptions = {}): ApiPlug
         cfg.headers = { ...(cfg.headers || {}), [requestIdHeader]: id }
         ;(cfg as any).__start = Date.now()
         ;(cfg as any).__rid = id
-        log('→', ctx.methodName, cfg.method, cfg.url, { params: cfg.params, data: cfg.data, id })
+
+        const logData: any = { id }
+        if (includeRequestData) {
+          logData.params = cfg.params
+          logData.data = cfg.data
+        }
+
+        log(level, '→', ctx.methodName, cfg.method, cfg.url, logData)
         return cfg
       }
 
@@ -49,7 +80,13 @@ export function createLoggingPlugin(options: LoggingPluginOptions = {}): ApiPlug
         const start = (res?.config as any)?.__start
         const id = (res?.config as any)?.__rid
         const cost = start ? (Date.now() - start) : undefined
-        log('←', ctx.methodName, res?.status, { id, cost })
+
+        const logData: any = { id, cost }
+        if (includeResponseData) {
+          logData.data = res?.data
+        }
+
+        log(level, '←', ctx.methodName, res?.status, logData)
         return res
       }
 
@@ -57,7 +94,12 @@ export function createLoggingPlugin(options: LoggingPluginOptions = {}): ApiPlug
         const start = (err?.config as any)?.__start
         const id = (err?.config as any)?.__rid
         const cost = start ? (Date.now() - start) : undefined
-        log('×', ctx.methodName, err?.response?.status ?? 'ERR', { id, cost, error: String(err) })
+        log('error', '×', ctx.methodName, err?.response?.status ?? 'ERR', {
+          id,
+          cost,
+          error: String(err),
+          message: err?.message,
+        })
       }
 
       engine.config.middlewares.request.push(reqMw as any)

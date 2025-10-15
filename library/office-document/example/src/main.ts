@@ -1,346 +1,181 @@
-import { OfficeDocument } from '@ldesign/office-document';
-import type { RenderOptions, RenderResult, DocumentInfo } from '@ldesign/office-document';
-import './style.css';
+import { OfficeViewer } from '../../src/index';
+import type { DocumentType } from '../../src/types';
 
-let currentDocument: OfficeDocument | null = null;
-let currentResult: RenderResult | null = null;
+let viewer: OfficeViewer | null = null;
 
-// Get DOM elements
+// Sample files mapping
+const SAMPLE_FILES: Record<string, string> = {
+ word: './samples/sample.docx',
+ excel: './samples/sample.xlsx',
+ powerpoint: './samples/sample.pptx'
+};
+
+// Get elements
 const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-const loadFileBtn = document.getElementById('loadFileBtn') as HTMLButtonElement;
-const urlInput = document.getElementById('urlInput') as HTMLInputElement;
-const loadUrlBtn = document.getElementById('loadUrlBtn') as HTMLButtonElement;
-const documentViewer = document.getElementById('documentViewer') as HTMLElement;
-const documentInfo = document.getElementById('documentInfo') as HTMLElement;
+const documentTypeSelect = document.getElementById('documentType') as HTMLSelectElement;
+const themeSelect = document.getElementById('theme') as HTMLSelectElement;
+const loadBtn = document.getElementById('loadBtn') as HTMLButtonElement;
+const reloadBtn = document.getElementById('reloadBtn') as HTMLButtonElement;
+const metadataBtn = document.getElementById('metadataBtn') as HTMLButtonElement;
+const destroyBtn = document.getElementById('destroyBtn') as HTMLButtonElement;
+const exampleLinks = document.querySelectorAll('[data-file]');
 
-// Options
-const toolbarOption = document.getElementById('toolbarOption') as HTMLInputElement;
-const paginationOption = document.getElementById('paginationOption') as HTMLInputElement;
-const searchOption = document.getElementById('searchOption') as HTMLInputElement;
-const virtualScrollOption = document.getElementById('virtualScrollOption') as HTMLInputElement;
-const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement;
+// Load document function
+async function loadDocument(source: File | string, type?: DocumentType) {
+ const theme = themeSelect.value as 'light' | 'dark';
 
-// File input handler
-fileInput.addEventListener('change', (e) => {
-  const file = (e.target as HTMLInputElement).files?.[0];
-  loadFileBtn.disabled = !file;
-});
+ // Destroy existing viewer
+ if (viewer) {
+  viewer.destroy();
+ }
 
-// Load file button handler
-loadFileBtn.addEventListener('click', async () => {
-  const file = fileInput.files?.[0];
-  if (!file) return;
-
-  await loadDocument({ file });
-});
-
-// Load URL button handler
-loadUrlBtn.addEventListener('click', async () => {
-  const url = urlInput.value.trim();
-  if (!url) {
-    alert('Please enter a valid URL');
-    return;
-  }
-
-  await loadDocument({ url });
-});
-
-// Sample document buttons
-document.querySelectorAll('.sample-btn').forEach(btn => {
-  btn.addEventListener('click', async (e) => {
-    const type = (e.target as HTMLElement).getAttribute('data-type');
-    await loadSampleDocument(type!);
-  });
-});
-
-// Get render options from UI
-function getRenderOptions(): RenderOptions {
-  const theme = getTheme(themeSelect.value);
-  
-  return {
-    container: documentViewer,
-    toolbar: toolbarOption.checked,
-    pagination: paginationOption.checked,
-    search: searchOption.checked,
-    virtualScrolling: virtualScrollOption.checked,
-    width: '100%',
-    height: '600px',
-    theme,
-    toolbarOptions: {
-      items: ['zoom-in', 'zoom-out', 'zoom-fit', 'print', 'download', 'search', 'fullscreen', 'page-nav'],
-      position: 'top'
-    },
-    onLoad: (doc: DocumentInfo) => {
-      displayDocumentInfo(doc);
-    },
-    onError: (error: Error) => {
-      console.error('Document render error:', error);
-      alert(`Error loading document: ${error.message}`);
-    },
-    onPageChange: (page: number) => {
-      console.log('Page changed to:', page);
-    },
-    onZoomChange: (zoom: number) => {
-      console.log('Zoom changed to:', zoom + '%');
-    }
-  };
-}
-
-// Get theme configuration
-function getTheme(themeName: string) {
-  switch (themeName) {
-    case 'dark':
-      return {
-        primary: '#4CAF50',
-        background: '#1e1e1e',
-        text: '#ffffff',
-        border: '#444444',
-        toolbar: {
-          background: '#2d2d2d',
-          text: '#ffffff',
-          hover: '#3d3d3d'
-        }
-      };
-    case 'custom':
-      return {
-        primary: '#FF6B6B',
-        background: '#F7F7F7',
-        text: '#2C3E50',
-        border: '#BDC3C7',
-        toolbar: {
-          background: '#ECF0F1',
-          text: '#34495E',
-          hover: '#D5DBDB'
-        }
-      };
-    default: // light
-      return {
-        primary: '#1976D2',
-        background: '#ffffff',
-        text: '#333333',
-        border: '#dddddd',
-        toolbar: {
-          background: '#f5f5f5',
-          text: '#333333',
-          hover: '#e0e0e0'
-        }
-      };
-  }
-}
-
-// Load document
-async function loadDocument(loadOptions: any) {
-  try {
-    // Show loading state
-    documentViewer.innerHTML = '<div class="loading">Loading document...</div>';
-
-    // Destroy previous document if exists
-    if (currentResult) {
-      currentResult.destroy();
-      currentResult = null;
-    }
-
-    // Create new document instance
-    currentDocument = new OfficeDocument(getRenderOptions());
-    
-    // Load and render
-    currentResult = await currentDocument.load(loadOptions);
-    
+ try {
+  // Create new viewer
+  viewer = new OfficeViewer({
+   container: '#viewer',
+   source,
+   type,
+   theme,
+   enableZoom: true,
+   enableDownload: true,
+   enablePrint: true,
+   enableFullscreen: true,
+   showToolbar: true,
+   onLoad: () => {
     console.log('Document loaded successfully');
-  } catch (error) {
-    console.error('Failed to load document:', error);
-    documentViewer.innerHTML = `
-      <div class="error">
-        <h3>Error Loading Document</h3>
-        <p>${(error as Error).message}</p>
-      </div>
-    `;
-  }
+   },
+   onError: (error) => {
+    console.error('Error loading document:', error);
+    alert(`Error loading document: ${error.message}`);
+   },
+   onProgress: (progress) => {
+    console.log(`Loading progress: ${progress}%`);
+   },
+   excel: {
+    showSheetTabs: true,
+    showFormulaBar: true,
+    showGridLines: true,
+    enableEditing: false
+   },
+   powerpoint: {
+    autoPlay: false,
+    autoPlayInterval: 3000,
+    showNavigation: true,
+    showThumbnails: true
+   },
+   word: {
+    showOutline: false,
+    pageView: 'continuous'
+   }
+  });
+
+  // Listen to events
+  viewer.on('load', () => {
+   console.log('Viewer loaded event');
+  });
+
+  viewer.on('zoom', (level) => {
+   console.log('Zoom level changed:', level);
+  });
+
+  viewer.on('error', (error) => {
+   console.error('Viewer error event:', error);
+  });
+ } catch (error) {
+  console.error('Failed to create viewer:', error);
+  alert(`Failed to create viewer: ${error}`);
+ }
 }
 
-// Load sample document
-async function loadSampleDocument(type: string) {
-  // Create sample data based on type
-  let sampleData: ArrayBuffer;
-  
-  switch (type) {
-    case 'word':
-      // Create a simple Word document sample
-      const wordContent = `
-        <html>
-          <body>
-            <h1>Sample Word Document</h1>
-            <p>This is a sample paragraph in the Word document.</p>
-            <h2>Features</h2>
-            <ul>
-              <li>Headings and paragraphs</li>
-              <li>Lists and tables</li>
-              <li>Images and formatting</li>
-            </ul>
-            <h2>Table Example</h2>
-            <table border="1">
-              <tr><th>Header 1</th><th>Header 2</th></tr>
-              <tr><td>Cell 1</td><td>Cell 2</td></tr>
-              <tr><td>Cell 3</td><td>Cell 4</td></tr>
-            </table>
-          </body>
-        </html>
-      `;
-      sampleData = new TextEncoder().encode(wordContent).buffer;
-      
-      // For demo purposes, show HTML content directly
-      documentViewer.innerHTML = `
-        <div class="od-word-viewer">
-          ${getRenderOptions().toolbar ? createSampleToolbar() : ''}
-          <div class="od-word-content" style="padding: 20px; background: white;">
-            ${wordContent}
-          </div>
-        </div>
-      `;
-      
-      displayDocumentInfo({
-        type: 'word',
-        name: 'sample.docx',
-        size: sampleData.byteLength,
-        pageCount: 1
-      });
-      break;
+// Load button handler
+loadBtn.addEventListener('click', async () => {
+ const file = fileInput.files?.[0];
+ if (!file) {
+  alert('Please select a file first');
+  return;
+ }
 
-    case 'excel':
-      // Create a simple Excel table sample
-      const excelContent = `
-        <div class="od-excel-viewer">
-          ${getRenderOptions().toolbar ? createSampleToolbar() : ''}
-          <div class="od-sheet-tabs">
-            <button class="od-sheet-tab" style="background: white;">Sheet1</button>
-            <button class="od-sheet-tab">Sheet2</button>
-          </div>
-          <div class="od-excel-content" style="padding: 10px; background: white; overflow: auto;">
-            <table style="border-collapse: collapse; width: 100%;">
-              <thead>
-                <tr>
-                  <th style="border: 1px solid #ddd; padding: 8px; background: #f0f0f0;">A</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; background: #f0f0f0;">B</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; background: #f0f0f0;">C</th>
-                  <th style="border: 1px solid #ddd; padding: 8px; background: #f0f0f0;">D</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="border: 1px solid #ddd; padding: 8px;">Product</td>
-                  <td style="border: 1px solid #ddd; padding: 8px;">Quantity</td>
-                  <td style="border: 1px solid #ddd; padding: 8px;">Price</td>
-                  <td style="border: 1px solid #ddd; padding: 8px;">Total</td>
-                </tr>
-                <tr>
-                  <td style="border: 1px solid #ddd; padding: 8px;">Item 1</td>
-                  <td style="border: 1px solid #ddd; padding: 8px;">10</td>
-                  <td style="border: 1px solid #ddd; padding: 8px;">$5.00</td>
-                  <td style="border: 1px solid #ddd; padding: 8px;">$50.00</td>
-                </tr>
-                <tr>
-                  <td style="border: 1px solid #ddd; padding: 8px;">Item 2</td>
-                  <td style="border: 1px solid #ddd; padding: 8px;">5</td>
-                  <td style="border: 1px solid #ddd; padding: 8px;">$10.00</td>
-                  <td style="border: 1px solid #ddd; padding: 8px;">$50.00</td>
-                </tr>
-                <tr>
-                  <td style="border: 1px solid #ddd; padding: 8px;">Item 3</td>
-                  <td style="border: 1px solid #ddd; padding: 8px;">8</td>
-                  <td style="border: 1px solid #ddd; padding: 8px;">$7.50</td>
-                  <td style="border: 1px solid #ddd; padding: 8px;">$60.00</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `;
-      
-      documentViewer.innerHTML = excelContent;
-      
-      displayDocumentInfo({
-        type: 'excel',
-        name: 'sample.xlsx',
-        size: 1024,
-        metadata: {
-          sheetCount: 2,
-          sheets: ['Sheet1', 'Sheet2']
-        }
-      });
-      break;
+ const type = documentTypeSelect.value as DocumentType | '';
+ await loadDocument(file, type || undefined);
+});
 
-    case 'powerpoint':
-      // PowerPoint sample
-      documentViewer.innerHTML = `
-        <div class="od-ppt-viewer">
-          ${getRenderOptions().toolbar ? createSampleToolbar() : ''}
-          <div style="padding: 20px; background: white; text-align: center;">
-            <h1 style="font-size: 48px; margin: 50px 0;">Sample Presentation</h1>
-            <p style="font-size: 24px;">Slide 1 of 3</p>
-            <div style="margin-top: 50px;">
-              <button onclick="alert('Previous slide')">◀ Previous</button>
-              <button onclick="alert('Next slide')">Next ▶</button>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      displayDocumentInfo({
-        type: 'powerpoint',
-        name: 'sample.pptx',
-        size: 2048,
-        pageCount: 3
-      });
-      break;
-  }
-}
+// Reload button handler
+reloadBtn.addEventListener('click', async () => {
+ if (!viewer) {
+  alert('No viewer instance found');
+  return;
+ }
 
-// Create sample toolbar
-function createSampleToolbar(): string {
-  return `
-    <div style="padding: 10px; border-bottom: 1px solid #ddd; background: #f5f5f5; display: flex; gap: 10px;">
-      <button onclick="alert('Zoom In')">🔍+</button>
-      <button onclick="alert('Zoom Out')">🔍-</button>
-      <button onclick="alert('Print')">🖨️</button>
-      <button onclick="alert('Download')">💾</button>
-      <button onclick="alert('Search')">🔍</button>
-      <button onclick="alert('Fullscreen')">⛶</button>
-    </div>
-  `;
-}
+ try {
+  await viewer.reload();
+  console.log('Document reloaded successfully');
+ } catch (error) {
+  console.error('Failed to reload document:', error);
+  alert(`Failed to reload: ${error}`);
+ }
+});
 
-// Display document info
-function displayDocumentInfo(doc: DocumentInfo) {
-  let infoHtml = `
-    <p><strong>Type:</strong> ${doc.type.toUpperCase()}</p>
-    <p><strong>Name:</strong> ${doc.name}</p>
-    <p><strong>Size:</strong> ${formatFileSize(doc.size)}</p>
-  `;
+// Metadata button handler
+metadataBtn.addEventListener('click', async () => {
+ if (!viewer) {
+  alert('No viewer instance found');
+  return;
+ }
 
-  if (doc.pageCount) {
-    infoHtml += `<p><strong>Pages:</strong> ${doc.pageCount}</p>`;
+ try {
+  const metadata = await viewer.getMetadata();
+  console.log('Document metadata:', metadata);
+  alert(`Document Metadata:\n${JSON.stringify(metadata, null, 2)}`);
+ } catch (error) {
+  console.error('Failed to get metadata:', error);
+  alert(`Failed to get metadata: ${error}`);
+ }
+});
+
+// Destroy button handler
+destroyBtn.addEventListener('click', () => {
+ if (!viewer) {
+  alert('No viewer instance found');
+  return;
+ }
+
+ viewer.destroy();
+ viewer = null;
+ console.log('Viewer destroyed');
+ alert('Viewer destroyed successfully');
+});
+
+// Example links handler
+exampleLinks.forEach(link => {
+ link.addEventListener('click', async (e) => {
+  e.preventDefault();
+  const fileType = (e.target as HTMLElement).dataset.file as string;
+
+  if (!fileType || !SAMPLE_FILES[fileType]) {
+   alert('Sample file not found');
+   return;
   }
 
-  if (doc.metadata) {
-    if (doc.metadata.sheetCount) {
-      infoHtml += `<p><strong>Sheets:</strong> ${doc.metadata.sheetCount}</p>`;
-    }
-    if (doc.metadata.sheets) {
-      infoHtml += `<p><strong>Sheet Names:</strong> ${doc.metadata.sheets.join(', ')}</p>`;
-    }
-  }
+  // Load sample file
+  await loadDocument(SAMPLE_FILES[fileType], fileType as DocumentType);
+ });
+});
 
-  documentInfo.innerHTML = infoHtml;
-}
+// Auto-load demo when file is selected
+fileInput.addEventListener('change', () => {
+ if (fileInput.files?.[0]) {
+  console.log('File selected:', fileInput.files[0].name);
+ }
+});
 
-// Format file size
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
+// Theme change handler
+themeSelect.addEventListener('change', () => {
+ if (viewer && fileInput.files?.[0]) {
+  // Reload with new theme
+  loadBtn.click();
+ }
+});
 
-// Initialize
-console.log('Office Document Renderer Example - Ready');
+// Show initial message
+console.log('Office Viewer Example loaded');
+console.log('Upload a document to get started!');

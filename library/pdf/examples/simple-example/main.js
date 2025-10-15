@@ -1,6 +1,9 @@
 // Import PDF plugin from src directory using Vite alias
 import { PDFViewer, SimpleToolbar } from '@pdf-plugin';
 
+// ✅ 导入优化后的样式
+import '@pdf-plugin/styles/pdf-viewer.css';
+
 // Sample PDF URL
 const SAMPLE_PDF = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
 
@@ -41,15 +44,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       viewerContainer.appendChild(viewerDiv);
       
-      // Create PDF viewer
+      // Create PDF viewer with enhanced features
       viewer = new PDFViewer({
         container: canvasDiv,
         pdfUrl: url,
         initialScale: 1.5,
-        fitMode: 'width',
+        fitMode: 'auto',
         enableSearch: true,
         enableDownload: true,
-        enablePrint: true
+        enablePrint: true,
+        enableSidebar: true,     // ✅ 启用侧边栏
+        enableThumbnails: true,    // ✅ 启用缩略图
+        sidebarConfig: {       // ✅ 缩略图配置
+          defaultPanel: 'thumbnails',
+          width: 280
+        },
+        pageMode: 'single'
       });
       
       // Create toolbar

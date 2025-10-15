@@ -7,6 +7,8 @@ export class SidebarManager {
   private thumbnailsContainer: HTMLElement | null = null;
   private outlineContainer: HTMLElement | null = null;
   private currentPanel: string = 'thumbnails';
+  private intersectionObserver: IntersectionObserver | null = null;
+  private renderedThumbnails: Set<number> = new Set();
 
   constructor(viewer: PDFViewer, config: SidebarConfig | boolean = true) {
     this.viewer = viewer;
@@ -134,45 +136,136 @@ export class SidebarManager {
   }
 
   /**
-   * Generate thumbnails for all pages
+   * Generate thumbnails for all pages with lazy loading
    */
   async generateThumbnails(): Promise<void> {
     if (!this.thumbnailsContainer || !this.viewer.document) {
       return;
     }
-    
+
     this.thumbnailsContainer.innerHTML = '';
-    
+    this.renderedThumbnails.clear();
+
+    // Setup intersection observer for lazy loading
+    this.setupIntersectionObserver();
+
     const totalPages = this.viewer.getTotalPages();
-    
+
     for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
       const thumbnailItem = document.createElement('div');
       thumbnailItem.className = 'pdf-thumbnail-item';
       thumbnailItem.dataset.pageNumber = pageNum.toString();
-      
+
+      // Add loading placeholder
+      const placeholder = document.createElement('div');
+      placeholder.className = 'pdf-thumbnail-placeholder';
+      placeholder.style.cssText = `
+        width: 180px;
+        height: 240px;
+        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        font-size: 14px;
+        font-weight: 500;
+      `;
+      placeholder.textContent = 'Loading...';
+
       const thumbnailCanvas = document.createElement('canvas');
       thumbnailCanvas.className = 'pdf-thumbnail-canvas';
-      
+      thumbnailCanvas.style.display = 'none'; // Initially hidden
+
       const thumbnailLabel = document.createElement('div');
       thumbnailLabel.className = 'pdf-thumbnail-label';
       thumbnailLabel.textContent = pageNum.toString();
-      
+
+      thumbnailItem.appendChild(placeholder);
       thumbnailItem.appendChild(thumbnailCanvas);
       thumbnailItem.appendChild(thumbnailLabel);
-      
+
       // Click handler
       thumbnailItem.addEventListener('click', () => {
         this.viewer.goToPage(pageNum);
       });
-      
+
       this.thumbnailsContainer.appendChild(thumbnailItem);
-      
-      // Render thumbnail asynchronously
-      this.renderThumbnail(pageNum, thumbnailCanvas);
     }
-    
+
     // Highlight current page
     this.highlightCurrentThumbnail(this.viewer.getCurrentPage());
+  }
+
+  /**
+   * Setup intersection observer for lazy loading thumbnails
+   */
+  private setupIntersectionObserver(): void {
+    // Clean up existing observer
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect();
+    }
+
+    const options = {
+      root: this.thumbnailsContainer,
+      rootMargin: '100px', // Start loading 100px before visible
+      threshold: 0.01
+    };
+
+    this.intersectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const thumbnailItem = entry.target as HTMLElement;
+          const pageNumber = parseInt(thumbnailItem.dataset.pageNumber || '0', 10);
+
+          if (pageNumber && !this.renderedThumbnails.has(pageNumber)) {
+            this.renderedThumbnails.add(pageNumber);
+            this.loadThumbnail(thumbnailItem, pageNumber);
+          }
+        }
+      });
+    }, options);
+
+    // Observe all thumbnail items
+    const items = this.thumbnailsContainer?.querySelectorAll('.pdf-thumbnail-item');
+    items?.forEach(item => {
+      this.intersectionObserver?.observe(item);
+    });
+  }
+
+  /**
+   * Load a specific thumbnail
+   */
+  private async loadThumbnail(thumbnailItem: HTMLElement, pageNumber: number): Promise<void> {
+    const placeholder = thumbnailItem.querySelector('.pdf-thumbnail-placeholder') as HTMLElement;
+    const canvas = thumbnailItem.querySelector('.pdf-thumbnail-canvas') as HTMLCanvasElement;
+
+    if (!canvas) return;
+
+    try {
+      // Render the thumbnail
+      await this.renderThumbnail(pageNumber, canvas);
+
+      // Hide placeholder and show canvas
+      if (placeholder) {
+        placeholder.style.display = 'none';
+      }
+      canvas.style.display = 'block';
+
+      // Add fade-in animation
+      canvas.style.opacity = '0';
+      canvas.style.transition = 'opacity 0.3s ease';
+      setTimeout(() => {
+        canvas.style.opacity = '1';
+      }, 10);
+    } catch (error) {
+      console.error(`Failed to load thumbnail ${pageNumber}:`, error);
+      if (placeholder) {
+        placeholder.textContent = 'Failed';
+        placeholder.style.background = '#fee';
+        placeholder.style.color = '#c33';
+      }
+    }
   }
 
   private async renderThumbnail(pageNumber: number, canvas: HTMLCanvasElement): Promise<void> {
@@ -180,15 +273,36 @@ export class SidebarManager {
       if (!this.viewer.document) {
         return;
       }
-      
+
       const page = await this.viewer.document.getPage(pageNumber);
-      const viewport = page.getViewport({ scale: 0.3 });
-      
+
+      // Define target display size for thumbnails
+      const TARGET_WIDTH = 180; // Max display width in pixels
+      const RENDER_SCALE = 2; // Render at 2x for better quality
+
+      // Get original page dimensions
+      const originalViewport = page.getViewport({ scale: 1 });
+      const pageAspectRatio = originalViewport.width / originalViewport.height;
+
+      // Calculate proper scale to fit within target width
+      const scale = (TARGET_WIDTH * RENDER_SCALE) / originalViewport.width;
+      const viewport = page.getViewport({ scale });
+
+      // Set canvas internal resolution (for rendering)
       canvas.width = viewport.width;
       canvas.height = viewport.height;
-      
+
+      // Set canvas display size (via inline styles)
+      canvas.style.width = `${TARGET_WIDTH}px`;
+      canvas.style.height = `${TARGET_WIDTH / pageAspectRatio}px`;
+
       const ctx = canvas.getContext('2d');
       if (ctx) {
+        // Set white background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Render PDF page
         await page.render({
           canvasContext: ctx,
           viewport: viewport
@@ -199,16 +313,24 @@ export class SidebarManager {
       // Fallback to placeholder
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        canvas.width = 100;
-        canvas.height = 140;
+        const TARGET_WIDTH = 180;
+        const TARGET_HEIGHT = 240;
+
+        canvas.width = TARGET_WIDTH;
+        canvas.height = TARGET_HEIGHT;
+        canvas.style.width = `${TARGET_WIDTH}px`;
+        canvas.style.height = `${TARGET_HEIGHT}px`;
+
         ctx.fillStyle = '#f8f9fa';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.strokeStyle = '#dee2e6';
+        ctx.lineWidth = 2;
         ctx.strokeRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#6c757d';
-        ctx.font = '16px Arial';
+        ctx.font = 'bold 24px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(pageNumber.toString(), 50, 75);
+        ctx.textBaseline = 'middle';
+        ctx.fillText(pageNumber.toString(), canvas.width / 2, canvas.height / 2);
       }
     }
   }
@@ -219,8 +341,14 @@ export class SidebarManager {
       const element = thumbnail as HTMLElement;
       if (element.dataset.pageNumber === pageNumber.toString()) {
         element.classList.add('active');
-        // Scroll into view
-        element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // Smooth scroll with better positioning
+        setTimeout(() => {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest'
+          });
+        }, 100);
       } else {
         element.classList.remove('active');
       }
@@ -287,11 +415,18 @@ export class SidebarManager {
    * Destroy the sidebar
    */
   destroy(): void {
+    // Clean up intersection observer
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect();
+      this.intersectionObserver = null;
+    }
+
     if (this.container) {
       this.container.remove();
       this.container = null;
     }
     this.thumbnailsContainer = null;
     this.outlineContainer = null;
+    this.renderedThumbnails.clear();
   }
 }

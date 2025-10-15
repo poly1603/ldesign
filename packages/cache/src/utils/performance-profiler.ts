@@ -1,7 +1,22 @@
 /**
- * 性能分析工具
- * 
- * 提供详细的性能分析和性能瓶颈识别功能
+ * 性能分析工具 (Performance Profiler)
+ *
+ * 通用的性能分析器，用于任意操作的性能监控和瓶颈识别
+ *
+ * **与 PerformanceMonitor 的区别：**
+ * - PerformanceProfiler（本模块）：通用性能分析工具，可用于任何操作的性能测量
+ * - PerformanceMonitor（core/performance-monitor.ts）：专门用于缓存操作的性能监控
+ *
+ * **使用场景：**
+ * - 需要分析非缓存操作的性能时使用 PerformanceProfiler
+ * - 需要监控缓存操作性能时使用 PerformanceMonitor
+ * - 需要识别性能瓶颈和生成详细报告时使用 PerformanceProfiler
+ *
+ * **主要功能：**
+ * - 详细的性能指标收集（P50/P95/P99 延迟）
+ * - 性能瓶颈自动识别
+ * - 格式化的性能报告生成
+ * - 支持自动定期报告
  */
 
 /**

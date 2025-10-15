@@ -1,0 +1,12 @@
+/**
+ * Vue 3 Integration
+ * 
+ * This file provides Vue-specific exports for @ldesign/color
+ */
+
+export { useTheme } from './useTheme';
+export type { UseThemeOptions } from './useTheme';
+
+// Export ThemePicker component
+export { default as ThemePicker } from './ThemePicker.vue';
+export { default as VueThemePicker } from './ThemePicker.vue';

@@ -64,6 +64,9 @@ export {
 } from './plugins/errorHandling'
 export { createGraphqlApiPlugin, gql } from './plugins/graphql'
 export { createLoggingPlugin } from './plugins/logging'
+export type { LoggingPluginOptions } from './plugins/logging'
+export { createMockPlugin, MockHelpers } from './plugins/mock'
+export type { MockPluginOptions, MockResponse, MockRule } from './plugins/mock'
 export { createOfflineCachePlugin } from './plugins/offlineCache'
 export {
   createPerformancePlugin,
@@ -73,6 +76,10 @@ export {
 } from './plugins/performance'
 export { createRateLimitPlugin } from './plugins/rateLimit'
 export { createRestApiPlugin } from './plugins/rest'
+export { createSmartRetryPlugin } from './plugins/smartRetry'
+export type { SmartRetryOptions } from './plugins/smartRetry'
+export { createAutoBatchPlugin, batchCalls } from './plugins/autoBatch'
+export type { AutoBatchConfig } from './plugins/autoBatch'
 
 export {
   createCustomSystemApiPlugin,
@@ -157,6 +164,47 @@ export type {
   HealthStatus,
 } from './utils/HealthChecker'
 
+// 新增工具类 - ID生成器
+export {
+  createIdGenerator,
+  generateBase62Id,
+  generateHexId,
+  generateNumericId,
+  generateShortId,
+  generateSnowflakeId,
+  generateTimestampId,
+  generateUUID,
+  getGlobalIdGenerator,
+  id,
+  IdGenerator,
+  resetNumericCounter,
+  setGlobalIdGenerator,
+} from './utils/IdGenerator'
+export type { IdGeneratorConfig, IdGeneratorStrategy } from './utils/IdGenerator'
+
+// 新增工具类 - 重复检测器
+export {
+  checkDuplicate,
+  createDuplicateDetector,
+  DuplicateDetector,
+  getGlobalDuplicateDetector,
+  setGlobalDuplicateDetector,
+} from './utils/DuplicateDetector'
+export type {
+  DuplicateDetectorConfig,
+  DuplicateStats,
+} from './utils/DuplicateDetector'
+
+// 错误码系统
+export {
+ ApiErrorCode,
+ ERROR_MESSAGES,
+ ERROR_SUGGESTIONS,
+ getErrorCodeByHttpStatus,
+ getErrorSeverity,
+ isAuthError,
+ isRetryableError,
+} from './utils/ErrorCodes'
 /**
  * 版本信息
  */

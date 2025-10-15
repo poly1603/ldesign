@@ -1,78 +1,75 @@
 /**
- * 插件相关类型定义
+ * 插件类型定义
  */
 
-import type { App } from 'vue'
-import type { TemplateSystemConfig, CacheConfig } from './config'
+import type { TemplateManager } from '../runtime/manager'
 
 /**
- * 插件配置选项（向后兼容的接口）
- *
- * 这个接口保持向后兼容性，同时支持新的配置系统
- * 旧的配置选项会被自动转换为新的配置格式
+ * 插件接口
  */
-export interface PluginOptions extends Partial<Omit<TemplateSystemConfig, 'cache' | 'preloadStrategy'>> {
-  /** @deprecated 使用 cache.enabled 替代 */
-  cache?: boolean | CacheConfig
-  /** @deprecated 使用 preloadStrategy.priority 替代 */
-  preloadTemplates?: string[]
-  /** @deprecated 使用 cache.maxSize 替代 */
-  cacheLimit?: number
-  /** @deprecated 使用 deviceDetection.breakpoints.mobile 替代 */
-  mobileBreakpoint?: number
-  /** @deprecated 使用 deviceDetection.breakpoints.tablet 替代 */
-  tabletBreakpoint?: number
-  /** @deprecated 使用 deviceDetection.breakpoints.desktop 替代 */
-  desktopBreakpoint?: number
-  /** @deprecated 使用 preloadStrategy 替代 */
-  preloadStrategy?: PreloadStrategy
-}
-
-// 保留旧名称以保持向后兼容
-export type TemplatePluginOptions = PluginOptions
-
-/**
- * 预加载策略（向后兼容）
- * @deprecated 使用 PreloadStrategyConfig 替代
- */
-export interface PreloadStrategy {
-  /** 是否启用预加载 */
-  enabled?: boolean
-  /** 预加载模式 */
-  mode?: 'eager' | 'lazy' | 'intersection'
-  /** 预加载数量限制 */
-  limit?: number
-  /** 预加载优先级模板列表 */
-  priority?: string[]
-}
-
-/**
- * 插件安装函数类型
- */
-export interface TemplatePluginInstall {
-  (app: App, options?: TemplatePluginOptions): void
-}
-
-/**
- * 插件实例接口
- */
-export interface TemplatePluginInstance {
-  /** 安装函数 */
-  install: TemplatePluginInstall
-  /** 插件版本 */
-  version: string
+export interface Plugin {
   /** 插件名称 */
   name: string
+  /** 插件版本 */
+  version: string
+  /** 安装插件 */
+  install: (manager: TemplateManager) => void | Promise<void>
+  /** 卸载插件 */
+  uninstall?: () => void | Promise<void>
 }
 
 /**
- * 插件状态
+ * 预加载插件配置
  */
-export interface PluginState {
-  /** 是否已安装 */
-  installed: boolean
-  /** 配置选项 */
-  options?: TemplateSystemConfig
-  /** 初始化时间 */
-  initTime?: number
+export interface PreloadPluginConfig {
+  /** 最大并发数 */
+  maxConcurrent?: number
+  /** 优先级列表 */
+  priority?: string[]
+  /** 延迟时间(ms) */
+  delay?: number
+  /** 最大重试次数 */
+  maxRetries?: number
+  /** 启用视口观察器 */
+  enableIntersectionObserver?: boolean
+}
+
+/**
+ * 动画插件配置
+ */
+export interface AnimationPluginConfig {
+  /** 动画持续时间(ms) */
+  duration?: number
+  /** 缓动函数 */
+  easing?: string
+  /** 动画类型 */
+  type?: 'fade' | 'slide' | 'scale' | 'flip'
+  /** 是否启用 */
+  enabled?: boolean
+}
+
+/**
+ * 日志插件配置
+ */
+export interface LoggerPluginConfig {
+  /** 日志级别 */
+  level?: 'debug' | 'info' | 'warn' | 'error'
+  /** 日志前缀 */
+  prefix?: string
+  /** 是否启用颜色 */
+  colors?: boolean
+  /** 是否启用时间戳 */
+  timestamp?: boolean
+  /** 自定义日志处理器 */
+  handler?: (level: string, message: string, ...args: any[]) => void
+}
+
+/**
+ * DevTools插件配置
+ */
+export interface DevToolsPluginConfig {
+  /** 是否启用 */
+  enabled?: boolean
+  /** DevTools标签名称 */
+  label?: string
 }

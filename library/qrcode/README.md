@@ -458,55 +458,187 @@ const config = qrCode.getConfig();
 qrCode.destroy();
 ```
 
-## Content Types
+## Content Types & Templates
 
-### URL
+### Using Content Templates (NEW ✨)
 
 ```typescript
+import { QRContentHelper } from '@ldesign/qrcode/templates';
+
+// WiFi Network
+const wifiContent = QRContentHelper.wifi({
+  ssid: 'MyNetwork',
+  password: 'MyPassword123',
+  encryption: 'WPA',
+  hidden: false,
+});
+
+// vCard Contact
+const vcardContent = QRContentHelper.vCard({
+  name: 'John Doe',
+  organization: 'Example Company',
+  phones: [{ type: 'mobile', number: '+1234567890' }],
+  emails: [{ type: 'work', address: 'john@example.com' }],
+  url: 'https://example.com',
+});
+
+// Calendar Event
+const eventContent = QRContentHelper.event({
+  title: 'Team Meeting',
+  start: new Date('2024-12-25T10:00:00'),
+  end: new Date('2024-12-25T11:00:00'),
+  location: 'Conference Room A',
+  description: 'Quarterly review meeting',
+});
+
+// Payment (UPI, Bitcoin, etc.)
+const paymentContent = QRContentHelper.payment({
+  type: 'upi',
+  address: 'user@bank',
+  amount: 100,
+  currency: 'USD',
+  note: 'Payment for services',
+});
+
+// Social Media
+const socialContent = QRContentHelper.socialMedia('twitter', 'username');
+
+// WhatsApp
+const whatsappContent = QRContentHelper.whatsapp('+1234567890', 'Hello!');
+
+// Generate QR code with template
+createQRCode({
+  content: wifiContent,
+  container: el,
+});
+```
+
+### Manual Content (Traditional Way)
+
+```typescript
+// URL
 createQRCode({
   content: 'https://example.com',
   container: document.getElementById('qr')!,
 });
-```
 
-### WiFi
-
-```typescript
-createQRCode({
-  content: 'WIFI:T:WPA;S:MyNetwork;P:MyPassword;;',
-  container: document.getElementById('qr')!,
-});
-```
-
-### vCard
-
-```typescript
-const vcard = `BEGIN:VCARD
-VERSION:3.0
-FN:John Doe
-ORG:Example Company
-TEL:+1234567890
-EMAIL:john@example.com
-END:VCARD`;
-
-createQRCode({
-  content: vcard,
-  container: document.getElementById('qr')!,
-  errorCorrectionLevel: 'H',
-});
-```
-
-### Email, Phone, SMS
-
-```typescript
-// Email
+// Email, Phone, SMS
 createQRCode({ content: 'mailto:contact@example.com', container: el });
-
-// Phone
 createQRCode({ content: 'tel:+1234567890', container: el });
-
-// SMS
 createQRCode({ content: 'sms:+1234567890?body=Hello', container: el });
+```
+
+## Presets (NEW ✨)
+
+Use beautiful pre-configured styles:
+
+```typescript
+import { QRCodePresets } from '@ldesign/qrcode/presets';
+
+// Use a preset
+createQRCode({
+  content: 'https://example.com',
+  container: el,
+  style: QRCodePresets.modern.style,
+});
+
+// Available presets:
+// modern, minimal, neon, ocean, sunset, forest, monochrome,
+// cyberpunk, pastel, gold, cherry, arctic, corporate, retro, galaxy
+```
+
+## QR Code Scanner (NEW ✨)
+
+Scan QR codes from camera or images:
+
+```typescript
+import { QRCodeScanner } from '@ldesign/qrcode/scanner';
+
+// Scan from camera
+const scanner = new QRCodeScanner({
+  onSuccess: (result) => {
+    console.log('Scanned:', result.data);
+  },
+  onError: (error) => {
+    console.error('Scan error:', error);
+  },
+  continuous: true,
+});
+
+await scanner.start();
+
+// Scan from image file
+const result = await scanner.scanImage(imageFile);
+console.log('Scanned:', result.data);
+
+// Stop scanning
+scanner.stop();
+```
+
+### React Scanner Hook
+
+```typescript
+import { useQRCodeScanner } from '@ldesign/qrcode/scanner/react';
+
+function ScannerComponent() {
+  const { videoRef, result, error, startScan, stopScan, isScanning } = useQRCodeScanner({
+    onScan: (result) => console.log(result.data),
+  });
+
+  return (
+    <div>
+      <video ref={videoRef} />
+      <button onClick={startScan}>Start</button>
+      <button onClick={stopScan}>Stop</button>
+      {result && <p>Result: {result.data}</p>}
+    </div>
+  );
+}
+```
+
+### Vue Scanner Composable
+
+```vue
+<template>
+  <div>
+    <video ref="videoRef" />
+    <button @click="startScan">Start</button>
+    <button @click="stopScan">Stop</button>
+    <p v-if="result">Result: {{ result.data }}</p>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useQRCodeScanner } from '@ldesign/qrcode/scanner/vue';
+
+const { videoRef, result, error, startScan, stopScan } = useQRCodeScanner({
+  onScan: (result) => console.log(result.data),
+});
+</script>
+```
+
+## Validation & Optimization (NEW ✨)
+
+```typescript
+import { QRCodeValidator, QRCodeOptimizer } from '@ldesign/qrcode';
+
+// Validate configuration
+const validation = QRCodeValidator.validateConfig({
+  content: 'https://example.com',
+  style: { size: 300, fgColor: '#000', bgColor: '#fff' },
+  logo: { src: '/logo.png' },
+});
+
+console.log(validation.warnings); // ['Consider using error correction level H with logo']
+console.log(validation.recommendations);
+
+// Optimize content
+const optimized = QRCodeOptimizer.compressContent('https://www.example.com?utm_source=test');
+console.log(optimized.optimizedContent); // Removes tracking params and unnecessary parts
+console.log(`Saved ${optimized.compressionRatio * 100}%`);
+
+// Get optimal size
+const size = QRCodeOptimizer.calculateOptimalSize(contentLength);
 ```
 
 ## Error Correction Levels
@@ -634,18 +766,27 @@ Open http://localhost:3333 to see all features in action.
 
 ## What's New in v2.0
 
+### Generation Features
 - 🎨 10+ different dot styles (square, rounded, dots, diamond, star, classy, classy-rounded, extra-rounded, hexagon, liquid, smooth-dots)
-- 🌈 Linear and radial gradients
+- 🌈 Linear and radial gradients with custom colors
 - 👁️ Custom eye (finder pattern) styles with gradients
 - 🖼️ Advanced logo features (shapes, aspect ratios, backgrounds, borders)
 - 🎭 Visual effects (shadows, strokes, background gradients and images)
-- 🔄 **NEW: Transform effects** - Perspective transformation (X/Y) and scaling
-- 🎯 **NEW: Selective rendering** - Render only specific module types
-- ✨ **NEW: Margin noise** - Decorative patterns in margin area with seeded randomness
-- 🎭 **NEW: Mask pattern selection** - Custom mask patterns (0-7 or auto)
-- 🔄 **NEW: Rotation support** - Rotate QR codes (0°, 90°, 180°, 270°)
+- 🔄 Transform effects - Perspective transformation (X/Y) and scaling
+- 🎯 Selective rendering - Render only specific module types
+- ✨ Margin noise - Decorative patterns in margin area with seeded randomness
+- 🎭 Mask pattern selection - Custom mask patterns (0-7 or auto)
+- 🔄 Rotation support - Rotate QR codes (0°, 90°, 180°, 270°)
+
+### New Features
+- 📷 **QR Code Scanner** - Scan QR codes from camera or images using native BarcodeDetector API
+- 📝 **Content Templates** - Easy helpers for WiFi, vCard, Calendar events, payments, and more
+- 🎨 **15+ Presets** - Beautiful pre-configured styles (Modern, Neon, Ocean, Cyberpunk, etc.)
+- 🎬 **Animation System** - Built-in animations (fade, scale, rotate, scan, reveal, pulse, bounce)
+- ⚡ **Performance Optimizations** - LRU cache manager and Web Worker batch generation
+- ✅ **Validation Tools** - QR code configuration validation and optimization recommendations
+- 🧪 **Unit Tests** - Comprehensive test coverage with Vitest
 - 📦 Batch download with ZIP support
-- ⚡ Performance improvements and caching
 - 📚 Comprehensive documentation
 
 ## Contributing

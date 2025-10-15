@@ -1,43 +1,131 @@
 /**
- * @ldesign/template - Vue3模板管理和渲染功能库
- *
- * 功能强大、性能卓越的 Vue3 模板管理和渲染功能库
- * 支持智能预加载、懒加载、虚拟滚动等性能优化功能
- *
+ * @ldesign/template - 统一入口
+ * 
+ * 功能强大、性能卓越的 Vue3 模板管理和渲染系统
+ * 
  * @author ldesign
- * @version 0.1.0
+ * @version 1.0.0
  */
 
-// 导出组件
-export * from './components'
+// ======== 类型定义 ========
+export type * from './types'
 
-// 导出Hook函数
-export * from './composables'
+// ======== 核心层 ========
+export {
+  // 事件系统
+  EventEmitter,
+  getGlobalEmitter,
+  resetGlobalEmitter,
 
-// 导出配置系统
-export * from './config'
+  // 注册中心
+  TemplateRegistry,
+  getRegistry,
+  resetRegistry,
 
-// 导出Vue3插件
-export { createTemplateEnginePlugin, getPluginOptions, getPluginState, getScanner, default as TemplatePlugin } from './plugin'
+  // 缓存管理
+  CacheManager,
+  getCache,
+  resetCache,
 
-// 默认导出插件
-export { default } from './plugin'
+  // 模板加载
+  TemplateLoader,
+  getLoader,
+  resetLoader,
 
-// 导出扫描器
-export * from './scanner'
+  // 设备检测
+  DeviceDetector,
+  getDeviceDetector,
+  resetDeviceDetector,
+  isMobile,
+  isTablet,
+  isDesktop,
+} from './core'
 
-// 导出核心类型
-// Note: AnimationConfig, AnimationDirection, AnimationState, AnimationType
-// are defined in both ./composables and ./types. We re-export from types
-// to avoid ambiguity since types are the source of truth.
-export * from './types'
+export type { LoadOptions } from './core'
 
-// 导出工具函数
-export * from './utils'
+// ======== 运行时层 ========
+export {
+  // 模板管理器
+  TemplateManager,
+  createTemplateManager,
 
+  // 生命周期
+  LifecycleManager,
+  getLifecycle,
+  resetLifecycle,
 
-// 导出简化版模板扫描器
-export { simpleTemplateScanner } from './utils/template-scanner-simple'
+  // 性能监控
+  PerformanceMonitor,
+  getMonitor,
+  resetMonitor,
+} from './runtime'
 
-// 版本信息
-export const version = '0.1.0'
+// ======== Vue集成层 ========
+export {
+  // Composables
+  useDevice,
+  useTemplateManager,
+  useTemplate,
+  useTemplateList,
+  useTemplateScanner,
+
+  // Components
+  TemplateRenderer,
+  TemplateSelector,
+
+  // Plugin
+  createTemplatePlugin,
+  TemplatePlugin,
+  TEMPLATE_MANAGER_KEY,
+} from './vue'
+
+export type {
+  UseTemplateOptions,
+  UseTemplateListOptions,
+  UseTemplateScannerOptions,
+  TemplatePluginOptions,
+} from './vue'
+
+// ======== 工具函数 ========
+export {
+  // 模板ID工具
+  buildTemplateId,
+  parseTemplateId,
+
+  // 常用工具
+  delay,
+  debounce,
+  throttle,
+  deepClone,
+  deepMerge,
+  isBrowser,
+  isDev,
+  isPromise,
+  safeExecute,
+  formatBytes,
+  generateId,
+  compareVersion,
+
+  // 常量
+  DEFAULT_BREAKPOINTS,
+  DEFAULT_CACHE_CONFIG,
+  DEFAULT_LOGGER_CONFIG,
+  DEFAULT_ANIMATION_DURATION,
+  DEFAULT_PRELOAD_CONFIG,
+  ERROR_MESSAGES,
+  PERFORMANCE_THRESHOLDS,
+  VERSION,
+  PLUGIN_VERSION,
+} from './utils'
+
+// ======== 模板扫描器 ========
+export { simpleTemplateScanner, SimpleTemplateScanner } from './utils/simpleScanner'
+
+// ======== 插件系统 ========
+export { createPreloadPlugin, createLoggerPlugin } from './plugins'
+
+// ======== 默认导出 ========
+export { default } from './vue/plugin'
+
+// ======== 版本信息 ========
+export const version = '1.0.0'

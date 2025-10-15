@@ -17,7 +17,9 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@ldesign/engine": ["../packages/engine/src/index.ts"]
+      "@ldesign/engine": ["../packages/engine/src/index.ts"],
+      "@ldesign/color": ["../packages/color/src/index.ts"],
+      "@ldesign/color/*": ["../packages/color/src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],

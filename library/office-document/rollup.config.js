@@ -1,75 +1,38 @@
-import { defineConfig } from 'rollup';
+import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import typescript from '@rollup/plugin-typescript';
-import terser from '@rollup/plugin-terser';
+import postcss from 'rollup-plugin-postcss';
 
-const isProduction = process.env.NODE_ENV === 'production';
-
-export default defineConfig([
-  // ESM build
+export default {
+ input: 'src/index.ts',
+ output: [
   {
-    input: 'src/index.ts',
-    output: {
-      file: 'dist/index.esm.js',
-      format: 'es',
-      sourcemap: true
-    },
-    external: ['mammoth', 'xlsx', 'pptxgenjs'],
-    plugins: [
-      resolve(),
-      commonjs(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: true,
-        declarationDir: 'dist',
-        rootDir: 'src'
-      }),
-      isProduction && terser()
-    ].filter(Boolean)
+   file: 'dist/index.js',
+   format: 'cjs',
+   sourcemap: true,
+   exports: 'named'
   },
-  // CommonJS build
   {
-    input: 'src/index.ts',
-    output: {
-      file: 'dist/index.js',
-      format: 'cjs',
-      sourcemap: true
-    },
-    external: ['mammoth', 'xlsx', 'pptxgenjs'],
-    plugins: [
-      resolve(),
-      commonjs(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: false
-      }),
-      isProduction && terser()
-    ].filter(Boolean)
-  },
-  // UMD build
-  {
-    input: 'src/index.ts',
-    output: {
-      file: 'dist/index.umd.js',
-      format: 'umd',
-      name: 'OfficeDocument',
-      sourcemap: true,
-      globals: {
-        mammoth: 'mammoth',
-        xlsx: 'XLSX',
-        pptxgenjs: 'PptxGenJS'
-      }
-    },
-    external: ['mammoth', 'xlsx', 'pptxgenjs'],
-    plugins: [
-      resolve(),
-      commonjs(),
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: false
-      }),
-      isProduction && terser()
-    ].filter(Boolean)
+   file: 'dist/index.esm.js',
+   format: 'esm',
+   sourcemap: true
   }
-]);
+ ],
+ external: ['mammoth', 'xlsx', 'pptxgenjs', 'vue', 'react'],
+ plugins: [
+  resolve({
+   browser: true
+  }),
+  commonjs(),
+  typescript({
+   tsconfig: './tsconfig.json',
+   declaration: true,
+   declarationDir: './dist'
+  }),
+  postcss({
+   extract: true,
+   minimize: true,
+   sourceMap: true
+  })
+ ]
+};

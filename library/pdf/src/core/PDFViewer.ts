@@ -346,17 +346,28 @@ export class PDFViewer extends EventEmitter {
   }
 
   /**
-   * 跳转到指定页
+   * 跳转到指定页（支持单页和连续模式）
    */
   goToPage(pageNum: number): void {
     if (!this.pdfDoc) return;
-    
+
     pageNum = Math.max(1, Math.min(pageNum, this.pdfDoc.numPages));
-    if (pageNum === this.currentPageNum) return;
-    
-    this.currentPageNum = pageNum;
-    this.queueRenderPage(this.currentPageNum);
-    this.emit('page-changed', this.currentPageNum);
+
+    if (this.pageMode === 'continuous') {
+      // 连续模式：滚动到指定页面
+      this.scrollToPage(pageNum);
+    } else {
+      // 单页模式：重新渲染指定页
+      if (pageNum === this.currentPageNum) return;
+      this.currentPageNum = pageNum;
+      this.queueRenderPage(this.currentPageNum);
+      this.emit('page-change', this.currentPageNum);
+
+      // 通知缩略图更新
+      if (this.sidebarManager) {
+        this.sidebarManager.highlightThumbnail(pageNum);
+      }
+    }
   }
 
   /**
@@ -473,34 +484,62 @@ export class PDFViewer extends EventEmitter {
   }
 
   /**
-   * 检测当前可见页面
+   * 检测当前可见页面（连续模式）
    */
   private detectCurrentPage(): void {
     if (!this.canvasContainer || this.pageMode !== 'continuous') return;
-    
+
     const containerRect = this.canvasContainer.getBoundingClientRect();
     const centerY = containerRect.top + containerRect.height / 2;
-    
-    const canvases = this.canvasContainer.querySelectorAll('.pdf-canvas');
+
+    const pageWrappers = this.canvasContainer.querySelectorAll('.pdf-page-wrapper');
     let currentPage = 1;
-    
-    for (let i = 0; i < canvases.length; i++) {
-      const canvas = canvases[i] as HTMLElement;
-      const rect = canvas.getBoundingClientRect();
-      
+
+    for (let i = 0; i < pageWrappers.length; i++) {
+      const wrapper = pageWrappers[i] as HTMLElement;
+      const rect = wrapper.getBoundingClientRect();
+
       if (rect.top <= centerY && rect.bottom >= centerY) {
         currentPage = i + 1;
         break;
       }
     }
-    
+
     if (currentPage !== this.currentPageNum) {
       this.currentPageNum = currentPage;
       this.emit('page-change', currentPage);
-      
+
       // 通知缩略图更新
       if (this.sidebarManager) {
         this.sidebarManager.highlightThumbnail(currentPage);
+      }
+    }
+  }
+
+  /**
+   * 滚动到指定页面（连续模式）
+   */
+  private scrollToPage(pageNumber: number): void {
+    if (!this.canvasContainer || this.pageMode !== 'continuous') return;
+
+    const pageWrappers = this.canvasContainer.querySelectorAll('.pdf-page-wrapper');
+    if (pageNumber < 1 || pageNumber > pageWrappers.length) return;
+
+    const targetWrapper = pageWrappers[pageNumber - 1] as HTMLElement;
+    if (targetWrapper) {
+      targetWrapper.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
+      });
+
+      // 更新当前页码
+      this.currentPageNum = pageNumber;
+      this.emit('page-change', pageNumber);
+
+      // 通知缩略图更新
+      if (this.sidebarManager) {
+        this.sidebarManager.highlightThumbnail(pageNumber);
       }
     }
   }

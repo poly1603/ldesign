@@ -9,6 +9,7 @@ import App from './App.vue'
 import { createRouter } from './router'
 import { engineConfig } from './config/app.config'
 import { auth } from './composables/useAuth'
+import { createColorPlugin } from '@ldesign/color'
 
 /**
  * 启动应用
@@ -31,6 +32,63 @@ async function bootstrap() {
       persistLanguage: true,
       showMissingKeys: import.meta.env.DEV
     })
+
+    // 创建 Color 插件（主题系统）
+    const colorPlugin = createColorPlugin({
+      prefix: 'ld',
+      storageKey: 'ldesign-theme',
+      persistence: true,
+      presets: 'all',
+      autoApply: true,
+      defaultTheme: 'blue',
+      includeSemantics: true,
+      includeGrays: true,
+      // 自定义主题配置
+      customThemes: [
+        {
+          name: 'sunset',
+          label: 'Sunset Orange',
+          color: '#ff6b35',
+          custom: true,
+          order: 100
+        },
+        {
+          name: 'forest',
+          label: 'Forest Green',
+          color: '#2d6a4f',
+          custom: true,
+          order: 101
+        },
+        {
+          name: 'midnight',
+          label: 'Midnight Blue',
+          color: '#1a1b41',
+          custom: true,
+          order: 102
+        },
+        {
+          name: 'lavender',
+          label: 'Lavender Dream',
+          color: '#9b59b6',
+          custom: true,
+          order: 103
+        },
+        {
+          name: 'coral',
+          label: 'Coral Reef',
+          color: '#ff7f50',
+          custom: true,
+          order: 104
+        }
+      ],
+      hooks: {
+        afterChange: (theme) => {
+          if (import.meta.env.DEV) {
+            console.log('[theme] changed ->', theme.themeName || theme.primaryColor)
+          }
+        }
+      }
+    })
     
     // 创建应用引擎
     const engine = await createEngineApp({
@@ -46,6 +104,9 @@ async function bootstrap() {
       
     // Vue应用配置
     setupApp: async (app) => {
+      // 安装 Color 主题插件（提供全局主题管理和持久化）
+      app.use(colorPlugin)
+
       // 手动安装 i18n Vue 插件
       if (i18nPlugin.setupVueApp) {
         i18nPlugin.setupVueApp(app);

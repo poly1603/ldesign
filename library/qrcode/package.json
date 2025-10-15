@@ -1,13 +1,16 @@
 {
   "name": "@ldesign/qrcode",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
-  "description": "A powerful and flexible QR code generator for web applications, supporting multiple frameworks",
+  "description": "A powerful and flexible QR code generator and scanner for web applications, supporting multiple frameworks",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "unpkg": "dist/index.umd.js",
   "jsdelivr": "dist/index.umd.js",
+  "bin": {
+    "qrcode": "./bin/cli.js"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.esm.js",
@@ -23,45 +26,93 @@
       "import": "./dist/react.esm.js",
       "require": "./dist/react.cjs.js",
       "types": "./dist/react.d.ts"
+    },
+    "./scanner": {
+      "import": "./dist/scanner.esm.js",
+      "require": "./dist/scanner.cjs.js",
+      "types": "./dist/scanner.d.ts"
+    },
+    "./presets": {
+      "import": "./dist/presets.esm.js",
+      "require": "./dist/presets.cjs.js",
+      "types": "./dist/presets.d.ts"
+    },
+    "./templates": {
+      "import": "./dist/templates.esm.js",
+      "require": "./dist/templates.cjs.js",
+      "types": "./dist/templates.d.ts"
     }
   },
   "files": [
     "dist",
-    "README.md"
+    "bin",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "dev": "rollup -c -w",
     "build": "rimraf dist && rollup -c",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src --ext .ts,.tsx",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "example": "cd examples/vite-demo && npm run dev",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build && npm run test",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [
     "qrcode",
     "qr-code",
     "generator",
+    "scanner",
+    "reader",
     "vue",
     "react",
+    "angular",
+    "svelte",
     "canvas",
     "svg",
-    "web"
+    "web",
+    "barcode",
+    "typescript"
   ],
   "author": "ldesign",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/qrcode"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/qrcode/issues"
+  },
+  "homepage": "https://github.com/ldesign/qrcode#readme",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
+    "@testing-library/react": "^14.1.2",
     "@types/node": "^20.11.16",
     "@types/react": "^18.2.52",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/parser": "^6.19.1",
+    "@vitest/ui": "^1.2.1",
+    "@vue/test-utils": "^2.4.3",
+    "eslint": "^8.56.0",
+    "happy-dom": "^13.3.5",
+    "husky": "^8.0.3",
+    "jsdom": "^23.2.0",
+    "prettier": "^3.2.4",
     "rimraf": "^5.0.5",
     "rollup": "^4.9.6",
     "rollup-plugin-dts": "^6.1.0",
     "tslib": "^2.6.2",
     "typescript": "^5.3.3",
+    "vitest": "^1.2.1",
     "vitepress": "^1.0.0-rc.40",
     "vue": "^3.4.15"
   },

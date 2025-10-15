@@ -1,436 +1,190 @@
-﻿<script setup lang="ts">
-import { computed } from 'vue'
-import type { LoginTemplateProps } from '../../types'
-
-/* 使用统一的Props接口
- */
-const props = withDefaults(defineProps<LoginTemplateProps>(), {
-  title: '移动端登录',
-  subtitle: '随时随地，安全登录',
-  logoUrl: '',
-  primaryColor: '#667eea',
-  secondaryColor: '#764ba2',
-  backgroundImage: '',
-  showRemember: true,
-  showRegister: true,
-  showForgot: true,
-  enableAnimations: true,
-})
-
-/* 计算属性 */
-const cssVars = computed(() => ({
-  '--primary-color': props.primaryColor,
-  '--secondary-color': props.secondaryColor,
-  '--tertiary-color': '#45b7d1',
-}))
-
-const backgroundStyle = computed(() => {
-  if (props.backgroundImage) {
-    return {
-      backgroundImage: `url(${props.backgroundImage})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-    }
-  }
-  return {}
-})
-
-/* 配置选择器事件处理方法 */
-const handleThemeChange = (theme: string) => {
-  console.log('主题切换:', theme)
-}
-
-const handleLanguageChange = (language: string) => {
-  console.log('语言切换:', language)
-}
-
-const handleDarkModeChange = (isDark: boolean) => {
-  console.log('暗黑模式切换:', isDark)
-}
-
-const handleSizeChange = (size: string) => {
-  console.log('尺寸切换:', size)
-}
-</script>
-
 <template>
-  <div class="ldesign-template-login ldesign-template-mobile" :style="cssVars">
-    <!-- 移动端优化背景-->
-    <div class="ldesign-template-mobile-background" :style="backgroundStyle">
-      <!-- 移动端专用装饰元素-->
-      <div v-if="enableAnimations" class="ldesign-template-mobile-decorations">
-        <div class="ldesign-template-decoration-bubble ldesign-template-bubble-1"></div>
-        <div class="ldesign-template-decoration-bubble ldesign-template-bubble-2"></div>
-        <div class="ldesign-template-decoration-bubble ldesign-template-bubble-3"></div>
-        <div class="ldesign-template-decoration-line ldesign-template-line-1"></div>
-        <div class="ldesign-template-decoration-line ldesign-template-line-2"></div>
-      </div>
+  <div class="mobile-login">
+    <div class="mobile-login-header">
+      <img v-if="logo" :src="logo" alt="Logo" class="mobile-logo">
+      <h1 class="mobile-title">{{ title }}</h1>
+      <p v-if="subtitle" class="mobile-subtitle">{{ subtitle }}</p>
     </div>
 
-    <div class="ldesign-template-mobile-container">
-      <!-- 头部区域 -->
-      <div class="ldesign-template-mobile-header">
-        <slot name="header">
-          <div class="ldesign-template-header-content">
-            <div v-if="logoUrl" class="ldesign-template-logo-section">
-              <img :src="logoUrl" :alt="title" class="ldesign-template-logo-image">
-            </div>
-            <div v-else class="ldesign-template-app-icon">📱</div>
-            <h1 class="ldesign-template-app-title">{{ title }}</h1>
-            <p class="ldesign-template-app-subtitle">{{ subtitle }}</p>
-          </div>
-        </slot>
+    <form class="mobile-form" @submit.prevent="handleSubmit">
+      <div class="mobile-input-group">
+        <input
+          v-model="formData.username"
+          type="text"
+          placeholder="手机号 / 邮箱"
+          required
+        >
       </div>
 
-      <!-- 配置选择器区域-->
-      <div class="ldesign-template-header-selectors">
-        <!-- 语言选择器-->
-        <div class="ldesign-template-selector-item">
-          <slot name="language-selector" :on-language-change="handleLanguageChange">
-            <!-- 默认语言选择器占位符 -->
-            <div class="ldesign-template-selector-placeholder">🌍</div>
-          </slot>
-        </div>
-
-        <!-- 主题色选择器-->
-        <div class="ldesign-template-selector-item">
-          <slot name="color-selector" :on-theme-change="handleThemeChange">
-            <!-- 默认主题选择器占位符 -->
-            <div class="ldesign-template-selector-placeholder">🎨</div>
-          </slot>
-        </div>
-
-        <!-- 暗黑模式切换☰-->
-        <div class="ldesign-template-selector-item">
-          <slot name="dark-mode-toggle" :on-dark-mode-change="handleDarkModeChange">
-            <!-- 默认暗黑模式切换器占位符 -->
-            <div class="ldesign-template-selector-placeholder">🌙</div>
-          </slot>
-        </div>
-
-        <!-- 尺寸选择器-->
-        <div class="ldesign-template-selector-item">
-          <slot name="size-selector" :on-size-change="handleSizeChange">
-            <!-- 默认尺寸选择器占位符 -->
-            <div class="ldesign-template-selector-placeholder">📏</div>
-          </slot>
-        </div>
+      <div class="mobile-input-group">
+        <input
+          v-model="formData.password"
+          type="password"
+          placeholder="密码"
+          required
+        >
       </div>
 
-      <!-- 主要内容区域 -->
-      <div class="ldesign-template-mobile-main">
-        <!-- 登录面板 -->
-        <div class="ldesign-template-login-panel">
-          <!-- 内容区域 -->
-          <div class="ldesign-template-panel-content">
-            <slot name="content">
-              <!-- 移动端登录表单内容区域，留空供插槽使用-->
-            </slot>
-          </div>
+      <button type="submit" class="mobile-login-btn" :disabled="loading">
+        {{ loading ? '登录中...' : '登录' }}
+      </button>
 
-          <!-- 底部区域 -->
-          <div class="ldesign-template-panel-footer">
-            <slot name="footer">
-              <div class="ldesign-template-footer-links">
-                <a v-if="showForgot" href="#" class="ldesign-template-footer-link">忘记密码？</a>
-                <a v-if="showRegister" href="#" class="ldesign-template-footer-link">立即注册</a>
-              </div>
-            </slot>
-          </div>
-        </div>
+      <div v-if="showForgotPassword" class="mobile-forgot">
+        <a href="#" @click.prevent="handleForgotPassword">忘记密码？</a>
       </div>
+    </form>
+
+    <div v-if="showRegister" class="mobile-register">
+      <span>还没有账号？</span>
+      <a href="#" @click.prevent="handleRegister">立即注册</a>
     </div>
   </div>
 </template>
 
-<style lang="less" scoped>
-/* 移动端登录模板样式 */
-.ldesign-template-login.ldesign-template-mobile {
+<script setup lang="ts">
+import { reactive, ref } from 'vue'
+import type { LoginTemplateProps } from '../../types'
+
+const props = withDefaults(defineProps<LoginTemplateProps>(), {
+  title: '欢迎登录',
+  subtitle: '',
+  logo: '',
+  showRegister: true,
+  showForgotPassword: true,
+})
+
+const formData = reactive({
+  username: '',
+  password: '',
+  remember: false,
+})
+
+const loading = ref(false)
+
+const handleSubmit = async () => {
+  if (!props.onLogin) return
+
+  loading.value = true
+  try {
+    await props.onLogin(formData)
+  } catch (error) {
+    console.error('Login failed:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleRegister = () => {
+  props.onRegister?.()
+}
+
+const handleForgotPassword = () => {
+  props.onForgotPassword?.()
+}
+</script>
+
+<style scoped>
+.mobile-login {
   min-height: 100vh;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.mobile-login-header {
+  text-align: center;
+  padding: 60px 0 40px;
+  color: white;
+}
+
+.mobile-logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 20px;
+  border-radius: 20px;
+}
+
+.mobile-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.mobile-subtitle {
+  font-size: 16px;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.mobile-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mobile-input-group {
+  background: white;
+  border-radius: 12px;
   overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(135deg, #ff6b6b, #feca57);
 }
 
-/* 移动端背景 */
-.ldesign-template-mobile-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-}
-
-/* 装饰元素
- */
-.ldesign-template-mobile-decorations {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-
-  .ldesign-template-decoration-bubble {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    animation: float-mobile 6s ease-in-out infinite;
-
-    &.ldesign-template-bubble-1 {
-      width: 60px;
-      height: 60px;
-      top: 20%;
-      right: 20%;
-      animation-delay: 0s;
-    }
-
-    &.ldesign-template-bubble-2 {
-      width: 40px;
-      height: 40px;
-      top: 60%;
-      left: 15%;
-      animation-delay: 2s;
-    }
-
-    &.ldesign-template-bubble-3 {
-      width: 80px;
-      height: 80px;
-      bottom: 30%;
-      right: 10%;
-      animation-delay: 4s;
-    }
-  }
-
-  .ldesign-template-decoration-line {
-    position: absolute;
-    width: 2px;
-    height: 100px;
-    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.2), transparent);
-    animation: slide-mobile 8s linear infinite;
-
-    &.ldesign-template-line-1 {
-      top: 10%;
-      left: 30%;
-      animation-delay: 0s;
-    }
-
-    &.ldesign-template-line-2 {
-      top: 50%;
-      right: 25%;
-      animation-delay: 4s;
-    }
-  }
-}
-
-@keyframes float-mobile {
-
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-
-  50% {
-    transform: translateY(-20px) scale(1.05);
-  }
-}
-
-@keyframes slide-mobile {
-  0% {
-    transform: translateY(-100px);
-    opacity: 0;
-  }
-
-  50% {
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateY(100px);
-    opacity: 0;
-  }
-}
-
-/* 主容☰ */
-.ldesign-template-mobile-container {
-  position: relative;
-  z-index: 10;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: var(--ls-padding-base);
-}
-
-/* 头部区域
- */
-.ldesign-template-mobile-header {
-  text-align: center;
-  padding: var(--ls-padding-lg) 0;
-
-  .ldesign-template-header-content {
-    .ldesign-template-logo-section {
-      margin-bottom: var(--ls-margin-base);
-
-      .ldesign-template-logo-image {
-        height: 60px;
-        width: auto;
-        object-fit: contain;
-      }
-    }
-
-    .ldesign-template-app-icon {
-      font-size: 3rem;
-      margin-bottom: var(--ls-margin-base);
-    }
-
-    .ldesign-template-app-title {
-      font-size: var(--ls-font-size-h2);
-      font-weight: 700;
-      color: var(--ldesign-font-white-1);
-      margin-bottom: var(--ls-margin-xs);
-    }
-
-    .ldesign-template-app-subtitle {
-      font-size: var(--ls-font-size-base);
-      color: var(--ldesign-font-white-3);
-      margin: 0;
-    }
-  }
-}
-
-.ldesign-template-header-selectors {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ls-spacing-xs);
-  margin-bottom: var(--ls-margin-base);
-  padding: var(--ls-padding-xs);
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--ls-border-radius-base);
-  backdrop-filter: blur(8px);
-
-  .ldesign-template-selector-item {
-    display: flex;
-    align-items: center;
-
-    .ldesign-template-selector-placeholder {
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: var(--ls-border-radius-base);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 13px;
-      color: white;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.25);
-        border-color: rgba(255, 255, 255, 0.4);
-        transform: scale(1.1);
-      }
-
-      &:active {
-        transform: scale(0.9);
-      }
-    }
-  }
-}
-
-/* 主要内容区域
- */
-.ldesign-template-mobile-main {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--ls-padding-base) 0;
-}
-
-/* 登录面板
- */
-.ldesign-template-login-panel {
-  background: var(--ldesign-bg-color-container);
-  backdrop-filter: blur(20px);
-  border-radius: var(--ls-border-radius-lg);
-  padding: var(--ls-padding-xl);
+.mobile-input-group input {
   width: 100%;
-  max-width: 400px;
-  min-height: 300px;
-  box-shadow: var(--ldesign-shadow-2);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  display: flex;
-  flex-direction: column;
+  padding: 18px 20px;
+  border: none;
+  font-size: 16px;
+  box-sizing: border-box;
 }
 
-/* 面板内容
- */
-.ldesign-template-panel-content {
-  flex: 1;
-  margin: var(--ls-margin-base) 0;
-  min-height: 150px;
+.mobile-input-group input:focus {
+  outline: none;
 }
 
-/* 面板底部
- */
-.ldesign-template-panel-footer {
-  margin-top: auto;
+.mobile-login-btn {
+  padding: 18px;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.mobile-login-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.mobile-login-btn:disabled {
+  opacity: 0.6;
+}
+
+.mobile-forgot {
   text-align: center;
-  padding-top: var(--ls-padding-base);
-  border-top: 1px solid var(--ldesign-border-level-1-color);
-
-  .ldesign-template-footer-links {
-    display: flex;
-    justify-content: center;
-    gap: var(--ls-spacing-lg);
-
-    .ldesign-template-footer-link {
-      color: var(--primary-color);
-      text-decoration: none;
-      font-size: var(--ls-font-size-sm);
-      transition: all 0.3s ease;
-
-      &:hover {
-        color: var(--secondary-color);
-        transform: translateY(-1px);
-      }
-    }
-  }
+  margin-top: 8px;
 }
 
-/* 响应式设置 */
-@media (max-width: 480px) {
-  .ldesign-template-mobile-container {
-    padding: var(--ls-padding-sm);
-  }
-
-  .ldesign-template-login-panel {
-    padding: var(--ls-padding-lg);
-    min-height: 250px;
-  }
-
-  .ldesign-template-mobile-header .ldesign-template-header-content .ldesign-template-app-title {
-    font-size: var(--ls-font-size-h3);
-  }
+.mobile-forgot a {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
 }
 
-/* 超小屏幕优化
- */
-@media (max-width: 320px) {
-  .ldesign-template-mobile-container {
-    padding: var(--ls-padding-xs);
-  }
+.mobile-register {
+  text-align: center;
+  padding: 20px 0;
+  color: white;
+  font-size: 14px;
+}
 
-  .ldesign-template-login-panel {
-    padding: var(--ls-padding-base);
-  }
+.mobile-register a {
+  color: white;
+  text-decoration: underline;
+  font-weight: 600;
+  margin-left: 8px;
 }
 </style>
-
-

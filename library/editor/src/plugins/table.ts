@@ -388,51 +388,158 @@ const insertTable: Command = (state, dispatch) => {
   }
   
   try {
+    // 查找表格按钮，用于定位弹窗
+    const tableButton = document.querySelector('[data-name="table"]') as HTMLElement
+    console.log('📋 [Table] Table button found:', !!tableButton)
+    
     // 创建简单直观的表格选择器
     const overlay = document.createElement('div')
-    overlay.className = 'editor-dialog-overlay'
-    overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.3); display: flex; align-items: center; justify-content: center; z-index: 10000;'
+    overlay.className = 'editor-dialog-overlay editor-table-overlay'
+    // 透明背景，点击外部关闭
+    overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: transparent; z-index: 10000;'
     
     const dialog = document.createElement('div')
     dialog.className = 'editor-dialog editor-table-dialog'
-    dialog.style.cssText = 'background: white; border-radius: 8px; padding: 16px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);'
+    
+    // 根据表格按钮定位弹窗，并确保不超出屏幕
+    if (tableButton) {
+      const rect = tableButton.getBoundingClientRect()
+      
+      // 先添加到DOM以获取实际尺寸
+      dialog.style.cssText = `
+        position: fixed;
+        left: -9999px;
+        top: -9999px;
+        background: white;
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e5e7eb;
+        visibility: hidden;
+        max-width: 260px;
+      `
+      overlay.appendChild(dialog)
+      document.body.appendChild(overlay)
+      
+      // 获取实际尺寸
+      const dialogWidth = dialog.offsetWidth
+      const dialogHeight = dialog.offsetHeight
+      console.log('📋 [Table] Dialog actual size:', dialogWidth, 'x', dialogHeight)
+      
+      // 计算初始位置
+      let left = rect.left
+      let top = rect.bottom + 8
+      
+      // 检查右边界
+      const rightOverflow = (left + dialogWidth) - window.innerWidth
+      if (rightOverflow > 0) {
+        left = left - rightOverflow - 16
+      }
+      
+      // 检查左边界
+      if (left < 16) {
+        left = 16
+      }
+      
+      // 检查底部边界
+      const bottomOverflow = (top + dialogHeight) - window.innerHeight
+      if (bottomOverflow > 0) {
+        // 如果下方空间不足，显示在按钮上方
+        const topPosition = rect.top - dialogHeight - 8
+        if (topPosition >= 16) {
+          top = topPosition
+        } else {
+          // 上方也不足，显示在视口中间偏上
+          top = Math.max(16, (window.innerHeight - dialogHeight) / 2 - 50)
+        }
+      }
+      
+      // 检查顶部边界
+      if (top < 16) {
+        top = 16
+      }
+      
+      console.log('📋 [Table] Final position:', left, top)
+      
+      // 应用最终位置
+      dialog.style.cssText = `
+        position: fixed;
+        left: ${left}px;
+        top: ${top}px;
+        background: white;
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e5e7eb;
+        visibility: visible;
+        max-width: 260px;
+      `
+      
+      // 已经添加到DOM，不需要再次添加
+    } else {
+      // 如果没找到按钮，居中显示
+      dialog.style.cssText = 'position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: white; border-radius: 8px; padding: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); border: 1px solid #e5e7eb; max-width: 260px;'
+      overlay.appendChild(dialog)
+      document.body.appendChild(overlay)
+    }
     
     // 创建简单的网格选择器
     dialog.innerHTML = `
       <style>
+        .editor-table-dialog-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .editor-table-dialog-title svg {
+          width: 16px;
+          height: 16px;
+          color: #6b7280;
+        }
         .grid-table {
           display: grid;
-          grid-template-columns: repeat(16, 1fr);
-          grid-template-rows: repeat(16, 1fr);
-          gap: 1px;
-          background: #d1d5db;
-          padding: 1px;
-          border: 1px solid #9ca3af;
-          border-radius: 4px;
-          width: 480px;
-          height: 480px;
+          grid-template-columns: repeat(8, 1fr);
+          grid-template-rows: repeat(8, 1fr);
+          gap: 3px;
+          background: #f9fafb;
+          padding: 6px;
+          border: 1px solid #e5e7eb;
+          border-radius: 6px;
+          width: 200px;
+          height: 180px;
         }
         .grid-cell {
           background: white;
-          border: none;
+          border: 1px solid #e5e7eb;
+          border-radius: 2px;
           cursor: pointer;
-          transition: all 0.1s;
+          transition: all 0.15s ease;
           min-width: 0;
           min-height: 0;
         }
         .grid-cell:hover {
-          background: #eff6ff;
+          background: #dbeafe;
+          border-color: #93c5fd;
+          transform: scale(1.05);
         }
         .grid-cell.selected {
           background: #3b82f6;
-          opacity: 0.7;
+          border-color: #2563eb;
+          transform: scale(1);
         }
         .grid-info {
-          margin-top: 12px;
+          margin-top: 10px;
           text-align: center;
-          font-size: 16px;
-          color: #374151;
+          font-size: 14px;
+          color: #1f2937;
           font-weight: 600;
+          padding: 6px 8px;
+          background: #f3f4f6;
+          border-radius: 4px;
         }
         .close-hint {
           margin-top: 6px;
@@ -442,13 +549,24 @@ const insertTable: Command = (state, dispatch) => {
         }
       </style>
       
+      <div class="editor-table-dialog-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="9" y1="3" x2="9" y2="21"/>
+        </svg>
+        <span>选择表格大小</span>
+      </div>
       <div class="grid-table" id="grid-table"></div>
-      <div class="grid-info" id="grid-info">0 × 0</div>
-      <div class="close-hint">点击选择表格大小</div>
+      <div class="grid-info" id="grid-info">0 × 0 表格</div>
+      <div class="close-hint">点击确认 · ESC取消</div>
     `
     
-    overlay.appendChild(dialog)
-    document.body.appendChild(overlay)
+    // 如果还没有添加到DOM（非tableButton情况已经添加了）
+    if (!document.body.contains(overlay)) {
+      overlay.appendChild(dialog)
+      document.body.appendChild(overlay)
+    }
     
     console.log('📋 [Table] Dialog created and appended')
     
@@ -456,12 +574,12 @@ const insertTable: Command = (state, dispatch) => {
     const gridTable = dialog.querySelector('#grid-table') as HTMLElement
     const gridInfo = dialog.querySelector('#grid-info') as HTMLElement
     
-    // 创建 16x16 的网格（更大更密集的网格）
-    for (let i = 0; i < 256; i++) {
+    // 创建 8x8 的网格（更紧凑）
+    for (let i = 0; i < 64; i++) {
       const cell = document.createElement('div')
       cell.className = 'grid-cell'
-      cell.dataset.row = String(Math.floor(i / 16) + 1)
-      cell.dataset.col = String((i % 16) + 1)
+      cell.dataset.row = String(Math.floor(i / 8) + 1)
+      cell.dataset.col = String((i % 8) + 1)
       gridTable.appendChild(cell)
     }
     
@@ -645,7 +763,7 @@ const insertTable: Command = (state, dispatch) => {
         }
       })
       
-      gridInfo.textContent = `${rows} × ${cols}`
+      gridInfo.textContent = `${rows} × ${cols} 表格`
     }
     
     // 网格鼠标悬停事件

@@ -127,36 +127,6 @@ app.innerHTML = `
       </section>
     </div>
 
-    <div class="demo-section">
-      <h3>Demo Components</h3>
-      <div class="demo-grid">
-        <button class="demo-btn demo-primary">Primary Button</button>
-        <button class="demo-btn demo-success">Success Button</button>
-        <button class="demo-btn demo-warning">Warning Button</button>
-        <button class="demo-btn demo-danger">Danger Button</button>
-        <button class="demo-btn demo-info">Info Button</button>
-      </div>
-      
-      <div class="demo-cards">
-        <div class="demo-card card-primary">
-          <h4>Primary Card</h4>
-          <p>This card uses primary color scheme</p>
-        </div>
-        <div class="demo-card card-success">
-          <h4>Success Card</h4>
-          <p>This card uses success color scheme</p>
-        </div>
-        <div class="demo-card card-warning">
-          <h4>Warning Card</h4>
-          <p>This card uses warning color scheme</p>
-        </div>
-        <div class="demo-card card-danger">
-          <h4>Danger Card</h4>
-          <p>This card uses danger color scheme</p>
-        </div>
-      </div>
-    </div>
-
     <div class="css-output-section">
       <h3>Generated CSS Variables</h3>
       <pre id="css-output"></pre>
