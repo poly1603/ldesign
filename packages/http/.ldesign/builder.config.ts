@@ -1,4 +1,4 @@
-﻿import { defineConfig } from '@ldesign/builder'
+import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
   // Output format config

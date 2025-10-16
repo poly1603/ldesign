@@ -3,7 +3,7 @@ import { RouterView } from '@ldesign/router';
 </script>
 
 <template>
-  <RouterView></RouterView>
+  <RouterView transition="fade"></RouterView>
 </template>
 <style lang="less">
 html,

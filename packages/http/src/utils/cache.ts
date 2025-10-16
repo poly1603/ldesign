@@ -614,7 +614,7 @@ export class EnhancedCacheManager extends CacheManager {
    * 缓存预热
    */
   async preload(urls: string[]): Promise<void> {
-    if (!this.advancedConfig.preload?.enabled) {
+    if (!this.enhancedConfig.preload?.enabled) {
       return
     }
 

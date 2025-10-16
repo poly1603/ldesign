@@ -7,12 +7,13 @@
 import type { Ref } from 'vue'
 import { computed, onUnmounted, ref } from 'vue'
 import {
- ConnectionType,
- createNetworkMonitor,
- type NetworkInfo,
- type NetworkMonitorConfig,
- NetworkStatus,
-} from '../utils/network-status'
+  ConnectionType,
+  createNetworkMonitor,
+  type NetworkInfo,
+  type NetworkMonitorConfig,
+  type NetworkStatus,
+} from '../utils/network'
+
 
 /**
  * 网络状态 Composable 返回值

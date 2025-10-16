@@ -422,9 +422,9 @@ export class SSEClient {
   /**
    * 日志输出
    */
-  private log(...args: any[]): void {
+  private log(..._args: any[]): void {
     if (this.config?.debug) {
-      
+      // console.log('[SSE]', ...args)
     }
   }
 }

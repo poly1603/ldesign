@@ -140,7 +140,7 @@ export function buildQueryString(params: Record<string, any>): string {
   }
 
   // 预估数组大小，减少扩容开销
-  const parts: string[] = new Array(keys.length * 2)
+  const parts: string[] = Array.from({length: keys.length * 2})
   let index = 0
 
   // 优化：使用 for-of 循环，比 for-in 更快
@@ -417,8 +417,8 @@ export const ErrorClassifier = {
 
 // 导出新增的工具模块
 export * from './batch'
+export * from './helpers'
+export * from './memory'
 export * from './offline'
 export * from './signature'
-export * from './memory'
-export * from './helpers'
 export * from './warmup'

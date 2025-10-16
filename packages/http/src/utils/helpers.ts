@@ -130,7 +130,7 @@ export function createBatchRequest<TInput, TOutput>(
     batchFn,
   } = config
 
-  let queue: Array<{
+  const queue: Array<{
     input: TInput
     resolve: (value: TOutput) => void
     reject: (error: any) => void

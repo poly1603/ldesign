@@ -238,7 +238,7 @@ export class SmartRetryManager {
 
    case RetryStrategy.EXPONENTIAL:
     // 指数退避: baseDelay * 2^attempt
-    delay = this.config?.baseDelay * Math.pow(2, attempt)
+    delay = this.config?.baseDelay * 2**attempt
     break
 
    case RetryStrategy.LINEAR:

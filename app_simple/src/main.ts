@@ -3,6 +3,7 @@
  * 使用模块化的项目结构
  */
 
+import { ref } from 'vue'
 import { createEngineApp } from '@ldesign/engine'
 import { createI18nEnginePlugin } from './i18n'
 import App from './App.vue'
@@ -12,6 +13,9 @@ import { auth } from './composables/useAuth'
 import { createColorPlugin } from '@ldesign/color'
 import { createTemplatePlugin } from '@ldesign/template'
 import { sizePlugin } from '@ldesign/size/vue'
+
+// 全局 locale 状态
+const globalLocale = ref('zh-CN')
 
 /**
  * 启动应用
@@ -28,7 +32,7 @@ async function bootstrap() {
 
     // 创建 i18n 插件
     const i18nPlugin = createI18nEnginePlugin({
-      locale: 'zh-CN',
+      locale: globalLocale.value,
       fallbackLocale: 'en-US',
       detectBrowserLanguage: true,
       persistLanguage: true,
@@ -159,7 +163,6 @@ async function bootstrap() {
     // Size 插件配置（尺寸管理系统）
     const sizeOptions = {
       storageKey: 'ldesign-size',
-      locale: 'zh-CN', // 默认语言，与应用 i18n 保持一致
       presets: [
         {
           name: 'extra-compact',
@@ -249,6 +252,9 @@ async function bootstrap() {
 
       // Vue应用配置
       setupApp: async (app) => {
+        // Provide 全局响应式 locale
+        app.provide('app-locale', globalLocale)
+        
         // 安装模板插件 - 一行代码完成所有配置
         app.use(templatePlugin)
 
@@ -274,13 +280,16 @@ async function bootstrap() {
       onReady: (engine) => {
         console.log('✅ 引擎已就绪')
 
-        // 语言切换时同步更新页面标题
+        // 语言切换时同步更新页面标题和全局 locale
         try {
           const api = (engine as any).api
           const router = (engine as any).router
           const i18n = api?.i18n
           if (i18n && router && typeof i18n.on === 'function') {
-            i18n.on('localeChanged', () => {
+            i18n.on('localeChanged', (newLocale: string) => {
+              // 更新全局 locale，触发 size 和 color 组件的响应式更新
+              globalLocale.value = newLocale
+              
               try {
                 const current = typeof router.getCurrentRoute === 'function' ? router.getCurrentRoute().value : null
                 const titleKey = current?.meta?.titleKey

@@ -83,12 +83,23 @@ const presets = getPresets()
 const isOpen = ref(false)
 const selectorRef = ref<HTMLElement>()
 
-// 国际化
-const currentLocale = inject(SIZE_LOCALE_KEY, 'zh-CN')
+// 国际化 - 优先使用应用层的响应式 locale
+const appLocale = inject<any>('app-locale', null)
+const pluginLocale = inject(SIZE_LOCALE_KEY, 'zh-CN')
 const customLocale = inject<Partial<SizeLocale> | undefined>(SIZE_CUSTOM_LOCALE_KEY, undefined)
 
+// 使用响应式 locale
+const currentLocale = computed(() => {
+  // 优先使用应用层的 locale
+  if (appLocale && appLocale.value) {
+    return appLocale.value
+  }
+  // 其次使用插件配置的 locale
+  return pluginLocale
+})
+
 const t = computed(() => {
-  const baseLocale = getLocale(currentLocale)
+  const baseLocale = getLocale(currentLocale.value)
   if (!customLocale) return baseLocale
   
   // 合并自定义翻译

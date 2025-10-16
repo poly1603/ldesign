@@ -21,9 +21,9 @@ export interface RequestConfig {
   /** 请求头 */
   headers?: Record<string, string>
   /** 请求参数（GET 请求的查询参数） */
-  params?: Record<string, any>
+  params?: Record<string, unknown>
   /** 请求体数据 */
-  data?: any
+  data?: unknown
   /** 超时时间（毫秒） */
   timeout?: number
   /** 基础 URL */
@@ -37,13 +37,13 @@ export interface RequestConfig {
   /** 请求优先级 */
   priority?: number
   /** 自定义配置 */
-  [key: string]: any
+  [key: string]: unknown
 }
 
 /**
  * 响应数据接口
  */
-export interface ResponseData<T = any> {
+export interface ResponseData<T = unknown> {
   /** 响应数据 */
   data: T
   /** 状态码 */
@@ -55,7 +55,7 @@ export interface ResponseData<T = any> {
   /** 请求配置 */
   config: RequestConfig
   /** 原始响应对象 */
-  raw?: any
+  raw?: unknown
 }
 
 /**
@@ -87,7 +87,7 @@ export interface RequestInterceptor {
   (config: RequestConfig): RequestConfig | Promise<RequestConfig>
 }
 
-export interface ResponseInterceptor<T = any> {
+export interface ResponseInterceptor<T = unknown> {
   (response: ResponseData<T>): ResponseData<T> | Promise<ResponseData<T>>
 }
 
@@ -136,8 +136,8 @@ export interface CacheConfig {
  * 缓存存储接口
  */
 export interface CacheStorage {
-  get: (key: string) => Promise<any> | any
-  set: (key: string, value: any, ttl?: number) => Promise<void> | void
+  get: (key: string) => Promise<unknown> | unknown
+  set: (key: string, value: unknown, ttl?: number) => Promise<void> | void
   delete: (key: string) => Promise<void> | void
   clear: () => Promise<void> | void
   // 可选的批量删除方法，用于性能优化
@@ -169,11 +169,11 @@ export interface HttpClientConfig extends RequestConfig {
   /** 并发控制配置 */
   concurrency?: ConcurrencyConfig
   /** 性能监控配置 */
-  monitor?: any
+  monitor?: unknown
   /** 优先级队列配置 */
-  priorityQueue?: any
+  priorityQueue?: unknown
   /** 连接池配置 */
-  connectionPool?: any
+  connectionPool?: unknown
 }
 
 /**
@@ -183,7 +183,7 @@ export interface HttpAdapter {
   /** 适配器名称 */
   name: string
   /** 发送请求 */
-  request: <T = any>(config: RequestConfig) => Promise<ResponseData<T>>
+  request: <T = unknown>(config: RequestConfig) => Promise<ResponseData<T>>
   /** 是否支持该环境 */
   isSupported: () => boolean
 }
@@ -200,40 +200,40 @@ export interface HttpClient {
   }
 
   /** 发送请求 */
-  request: <T = any>(config: RequestConfig) => Promise<ResponseData<T>>
+  request: <T = unknown>(config: RequestConfig) => Promise<ResponseData<T>>
 
   /** GET 请求 */
-  get: <T = any>(url: string, config?: RequestConfig) => Promise<ResponseData<T>>
+  get: <T = unknown>(url: string, config?: RequestConfig) => Promise<ResponseData<T>>
 
   /** POST 请求 */
-  post: <T = any>(
+  post: <T = unknown, D = unknown>(
     url: string,
-    data?: any,
+    data?: D,
     config?: RequestConfig
   ) => Promise<ResponseData<T>>
 
   /** PUT 请求 */
-  put: <T = any>(
+  put: <T = unknown, D = unknown>(
     url: string,
-    data?: any,
+    data?: D,
     config?: RequestConfig
   ) => Promise<ResponseData<T>>
 
   /** DELETE 请求 */
-  delete: <T = any>(url: string, config?: RequestConfig) => Promise<ResponseData<T>>
+  delete: <T = unknown>(url: string, config?: RequestConfig) => Promise<ResponseData<T>>
 
   /** PATCH 请求 */
-  patch: <T = any>(
+  patch: <T = unknown, D = unknown>(
     url: string,
-    data?: any,
+    data?: D,
     config?: RequestConfig
   ) => Promise<ResponseData<T>>
 
   /** HEAD 请求 */
-  head: <T = any>(url: string, config?: RequestConfig) => Promise<ResponseData<T>>
+  head: <T = unknown>(url: string, config?: RequestConfig) => Promise<ResponseData<T>>
 
   /** OPTIONS 请求 */
-  options: <T = any>(
+  options: <T = unknown>(
     url: string,
     config?: RequestConfig
   ) => Promise<ResponseData<T>>
@@ -265,14 +265,14 @@ export interface HttpClient {
   cancelQueue: (reason?: string) => void
 
   /** 上传文件 */
-  upload: (
+  upload: <T = unknown>(
     url: string,
     file: File | File[],
-    config?: any
-  ) => Promise<any>
+    config?: RequestConfig
+  ) => Promise<ResponseData<T>>
 
   /** 下载文件 */
-  download: (url: string, config?: any) => Promise<any>
+  download: <T = unknown>(url: string, config?: RequestConfig) => Promise<ResponseData<T>>
 
   /** 添加请求拦截器 */
   addRequestInterceptor: (
@@ -281,7 +281,7 @@ export interface HttpClient {
   ) => number
 
   /** 添加响应拦截器 */
-  addResponseInterceptor: <T = any>(
+  addResponseInterceptor: <T = unknown>(
     fulfilled: (response: ResponseData<T>) => ResponseData<T> | Promise<ResponseData<T>>,
     rejected?: (error: HttpError) => HttpError | Promise<HttpError>
   ) => number
@@ -296,18 +296,18 @@ export interface HttpClient {
 /**
  * 严格类型的 HTTP 客户端接口
  */
-export interface TypedHttpClient<TBaseResponse = any> extends HttpClient {
+export interface TypedHttpClient<TBaseResponse = unknown> extends HttpClient {
   request: <T = TBaseResponse>(config: RequestConfig) => Promise<ResponseData<T>>
   get: <T = TBaseResponse>(
     url: string,
     config?: RequestConfig
   ) => Promise<ResponseData<T>>
-  post: <T = TBaseResponse, D = any>(
+  post: <T = TBaseResponse, D = unknown>(
     url: string,
     data?: D,
     config?: RequestConfig
   ) => Promise<ResponseData<T>>
-  put: <T = TBaseResponse, D = any>(
+  put: <T = TBaseResponse, D = unknown>(
     url: string,
     data?: D,
     config?: RequestConfig
@@ -316,7 +316,7 @@ export interface TypedHttpClient<TBaseResponse = any> extends HttpClient {
     url: string,
     config?: RequestConfig
   ) => Promise<ResponseData<T>>
-  patch: <T = TBaseResponse, D = any>(
+  patch: <T = TBaseResponse, D = unknown>(
     url: string,
     data?: D,
     config?: RequestConfig
@@ -331,30 +331,30 @@ export interface TypedHttpClient<TBaseResponse = any> extends HttpClient {
   ) => Promise<ResponseData<T>>
 
   /** 上传文件 */
-  upload: (
+  upload: <T = TBaseResponse>(
     url: string,
     file: File | File[],
-    config?: any
-  ) => Promise<any>
+    config?: RequestConfig
+  ) => Promise<ResponseData<T>>
 
   /** 下载文件 */
-  download: (url: string, config?: any) => Promise<any>
+  download: <T = TBaseResponse>(url: string, config?: RequestConfig) => Promise<ResponseData<T>>
 }
 
 /**
  * API 端点配置
  */
-export interface ApiEndpoint<TResponse = any, TRequest = any> {
+export interface ApiEndpoint<TResponse = unknown, TRequest = unknown> {
   url: string
   method: HttpMethod
-  transform?: (data: any) => TResponse
+  transform?: (data: unknown) => TResponse
   validate?: (data: TRequest) => boolean
 }
 
 /**
  * 类型化的请求配置
  */
-export interface TypedRequestConfig<TData = any>
+export interface TypedRequestConfig<TData = unknown>
   extends Omit<RequestConfig, 'data'> {
   data?: TData
 }
@@ -362,7 +362,7 @@ export interface TypedRequestConfig<TData = any>
 /**
  * 类型化的响应数据
  */
-export interface TypedResponseData<TData = any>
+export interface TypedResponseData<TData = unknown>
   extends Omit<ResponseData, 'data'> {
   data: TData
 }
@@ -419,7 +419,7 @@ export interface ExtendedRequestConfig extends Omit<RequestConfig, 'priority'> {
   /** 请求标签（用于分组和统计） */
   tags?: string[]
   /** 请求元数据 */
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   /** 是否跳过拦截器 */
   skipInterceptors?: boolean
   /** 自定义验证函数 */
@@ -429,7 +429,7 @@ export interface ExtendedRequestConfig extends Omit<RequestConfig, 'priority'> {
 /**
  * 严格的类型化请求配置
  */
-export interface StrictRequestConfig<TData = any, TParams = any> extends Omit<RequestConfig, 'data' | 'params'> {
+export interface StrictRequestConfig<TData = unknown, TParams = unknown> extends Omit<RequestConfig, 'data' | 'params'> {
   /** 类型化的请求体数据 */
   data?: TData
   /** 类型化的请求参数 */
@@ -439,7 +439,7 @@ export interface StrictRequestConfig<TData = any, TParams = any> extends Omit<Re
 /**
  * 严格的类型化响应数据
  */
-export interface StrictResponseData<TData = any> extends Omit<ResponseData, 'data'> {
+export interface StrictResponseData<TData = unknown> extends Omit<ResponseData, 'data'> {
   /** 类型化的响应数据 */
   data: TData
 }
@@ -447,7 +447,7 @@ export interface StrictResponseData<TData = any> extends Omit<ResponseData, 'dat
 /**
  * API 端点定义
  */
-export interface ApiEndpointDefinition<TRequest = any, TResponse = any, TParams = any> {
+export interface ApiEndpointDefinition<TRequest = unknown, TResponse = unknown, TParams = unknown> {
   /** 端点路径 */
   path: string
   /** HTTP 方法 */
@@ -473,46 +473,46 @@ export interface ApiEndpointDefinition<TRequest = any, TResponse = any, TParams 
  */
 export interface TypedHttpMethods {
   /** GET 请求 */
-  get: <TResponse = any, TParams = any>(
+  get: <TResponse = unknown, TParams = unknown>(
     url: string,
     config?: StrictRequestConfig<never, TParams>
   ) => Promise<StrictResponseData<TResponse>>
 
   /** POST 请求 */
-  post: <TResponse = any, TData = any, TParams = any>(
+  post: <TResponse = unknown, TData = unknown, TParams = unknown>(
     url: string,
     data?: TData,
     config?: StrictRequestConfig<TData, TParams>
   ) => Promise<StrictResponseData<TResponse>>
 
   /** PUT 请求 */
-  put: <TResponse = any, TData = any, TParams = any>(
+  put: <TResponse = unknown, TData = unknown, TParams = unknown>(
     url: string,
     data?: TData,
     config?: StrictRequestConfig<TData, TParams>
   ) => Promise<StrictResponseData<TResponse>>
 
   /** PATCH 请求 */
-  patch: <TResponse = any, TData = any, TParams = any>(
+  patch: <TResponse = unknown, TData = unknown, TParams = unknown>(
     url: string,
     data?: TData,
     config?: StrictRequestConfig<TData, TParams>
   ) => Promise<StrictResponseData<TResponse>>
 
   /** DELETE 请求 */
-  delete: <TResponse = any, TParams = any>(
+  delete: <TResponse = unknown, TParams = unknown>(
     url: string,
     config?: StrictRequestConfig<never, TParams>
   ) => Promise<StrictResponseData<TResponse>>
 
   /** HEAD 请求 */
-  head: <TParams = any>(
+  head: <TParams = unknown>(
     url: string,
     config?: StrictRequestConfig<never, TParams>
   ) => Promise<StrictResponseData<never>>
 
   /** OPTIONS 请求 */
-  options: <TResponse = any, TParams = any>(
+  options: <TResponse = unknown, TParams = unknown>(
     url: string,
     config?: StrictRequestConfig<never, TParams>
   ) => Promise<StrictResponseData<TResponse>>
@@ -521,13 +521,13 @@ export interface TypedHttpMethods {
 /**
  * 条件类型：根据方法确定数据类型
  */
-export type RequestDataByMethod<TMethod extends HttpMethod, TData = any> =
+export type RequestDataByMethod<TMethod extends HttpMethod, TData = unknown> =
   TMethod extends 'GET' | 'HEAD' | 'DELETE' ? never : TData
 
 /**
  * 条件类型：根据响应类型确定数据类型
  */
-export type ResponseDataByType<TResponseType extends RequestConfig['responseType'], TData = any> =
+export type ResponseDataByType<TResponseType extends RequestConfig['responseType'], TData = unknown> =
   TResponseType extends 'json' ? TData :
     TResponseType extends 'text' ? string :
       TResponseType extends 'blob' ? Blob :
@@ -562,28 +562,28 @@ export type DeepPartial<T> = {
 /**
  * 类型守卫：检查是否为 HTTP 错误
  */
-export function isHttpError(error: any): error is HttpError {
+export function isHttpError(error: unknown): error is HttpError {
   return error && typeof error === 'object' && 'config' in error
 }
 
 /**
  * 类型守卫：检查是否为网络错误
  */
-export function isNetworkError(error: any): error is HttpError & { isNetworkError: true } {
+export function isNetworkError(error: unknown): error is HttpError & { isNetworkError: true } {
   return isHttpError(error) && error.isNetworkError === true
 }
 
 /**
  * 类型守卫：检查是否为超时错误
  */
-export function isTimeoutError(error: any): error is HttpError & { isTimeoutError: true } {
+export function isTimeoutError(error: unknown): error is HttpError & { isTimeoutError: true } {
   return isHttpError(error) && error.isTimeoutError === true
 }
 
 /**
  * 类型守卫：检查是否为取消错误
  */
-export function isCancelError(error: any): error is HttpError & { isCancelError: true } {
+export function isCancelError(error: unknown): error is HttpError & { isCancelError: true } {
   return isHttpError(error) && error.isCancelError === true
 }
 

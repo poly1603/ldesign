@@ -86,29 +86,9 @@ export function useRequestQueue<T = any>(
       }
 
       if (!isPaused.value) {
-        processQueue()
+        setTimeout(() => processQueue(), 0)
       }
     })
-  }
-
-  /**
-   * 处理队列
-   */
-  const processQueue = async () => {
-    while (
-      !isPaused.value
-      && queue.value.length > 0
-      && activeRequests.value.size < concurrency
-    ) {
-      const item = queue.value.shift()
-      if (!item)
-        break
-
-      activeRequests.value.add(item.id)
-
-      // 执行请求
-      executeRequest(item)
-    }
   }
 
   /**
@@ -137,6 +117,29 @@ export function useRequestQueue<T = any>(
       }
     }
   }
+
+  /**
+   * 处理队列
+   */
+  const processQueue = async () => {
+    while (
+      !isPaused.value
+      && queue.value.length > 0
+      && activeRequests.value.size < concurrency
+    ) {
+      const item = queue.value.shift()
+      if (!item)
+        break
+
+      activeRequests.value.add(item.id)
+
+      // 执行请求
+      executeRequest(item).catch(() => {
+        // 错误已在executeRequest内部处理
+      })
+    }
+  }
+
 
   /**
    * 暂停队列处理

@@ -69,7 +69,7 @@ export function composeRequestMiddleware(
   }
 
   return async (config: RequestConfig): Promise<RequestConfig> => {
-    let index = 0
+    const index = 0
 
     async function dispatch(i: number, ctx: RequestConfig): Promise<RequestConfig> {
       if (i >= middlewares.length) {
@@ -118,7 +118,7 @@ export function composeResponseMiddleware<T = any>(
   }
 
   return async (response: ResponseData<T>): Promise<ResponseData<T>> => {
-    let index = 0
+    const index = 0
 
     async function dispatch(i: number, ctx: ResponseData<T>): Promise<ResponseData<T>> {
       if (i >= middlewares.length) {
@@ -166,7 +166,7 @@ export function composeErrorMiddleware(
   }
 
   return async (error: HttpError): Promise<HttpError> => {
-    let index = 0
+    const index = 0
 
     async function dispatch(i: number, err: HttpError): Promise<HttpError> {
       if (i >= middlewares.length) {
@@ -518,7 +518,7 @@ export class MiddlewareBuilder<TContext> {
     const composed = this.middlewares
 
     return async (context: TContext, next: () => Promise<TContext>): Promise<TContext> => {
-      let index = 0
+      const index = 0
 
       async function dispatch(i: number, ctx: TContext): Promise<TContext> {
         if (i >= composed.length) {

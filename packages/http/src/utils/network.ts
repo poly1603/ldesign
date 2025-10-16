@@ -94,7 +94,7 @@ export interface NetworkMonitorConfig {
  * ```
  */
 export class NetworkMonitor {
- private config: Required<Omit<NetworkMonitorConfig, 'onStatusChange' | 'onOffline' | 'onOnline'>> & Pick<NetworkMonitorConfig, 'onStatusChange' | 'onOffline' | 'onOnline'>
+ public config: Required<Omit<NetworkMonitorConfig, 'onStatusChange' | 'onOffline' | 'onOnline'>> & Pick<NetworkMonitorConfig, 'onStatusChange' | 'onOffline' | 'onOnline'>
  private currentStatus: NetworkStatus = NetworkStatus.UNKNOWN
  private listeners: Array<() => void> = []
  private isMonitoring: boolean = false
@@ -362,7 +362,7 @@ export function createNetworkInterceptor(config?: NetworkMonitorConfig) {
     // 检查网络状态
     if (monitor.isOffline()) {
      // 如果配置了离线暂停，将请求加入队列
-     if (monitor['config'].pauseOnOffline) {
+     if (monitor.config.pauseOnOffline) {
       return new Promise((resolve, reject) => {
        pendingRequests.push({
         config: requestConfig,

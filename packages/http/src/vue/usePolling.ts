@@ -5,8 +5,8 @@
  */
 
 import type { Ref } from 'vue'
-import { onUnmounted, ref } from 'vue'
 import type { HttpClient, RequestConfig } from '../types'
+import { onUnmounted, ref } from 'vue'
 import { createHttpClient } from '../factory'
 
 /**
@@ -108,10 +108,32 @@ export function usePolling<T = any>(
  let isPageVisible = true
  let isOnline = true
 
- /**
-  * 执行单次请求
-  */
- const execute = async (): Promise<T | null> => {
+  /**
+   * 安排下一次轮询
+   */
+  const scheduleNext = () => {
+    if (timerId) {
+      clearTimeout(timerId)
+    }
+    timerId = setTimeout(pollLoop, config.interval)
+  }
+
+  /**
+   * 停止轮询
+   */
+  const stop = () => {
+    isPolling.value = false
+
+    if (timerId) {
+      clearTimeout(timerId)
+      timerId = null
+    }
+  }
+
+  /**
+   * 执行单次请求
+   */
+  const execute = async (): Promise<T | null> => {
   try {
    loading.value = true
    error.value = null
@@ -182,45 +204,23 @@ export function usePolling<T = any>(
   }
  }
 
- /**
-  * 安排下一次轮询
-  */
- const scheduleNext = () => {
-  if (timerId) {
-   clearTimeout(timerId)
+  /**
+   * 开始轮询
+   */
+  const start = () => {
+    if (isPolling.value) return
+
+    isPolling.value = true
+    pollCount.value = 0
+
+    // 立即执行
+    if (config.immediate !== false) {
+      pollLoop()
+    }
+    else {
+      scheduleNext()
+    }
   }
-  timerId = setTimeout(pollLoop, config.interval)
- }
-
- /**
-  * 开始轮询
-  */
- const start = () => {
-  if (isPolling.value) return
-
-  isPolling.value = true
-  pollCount.value = 0
-
-  // 立即执行
-  if (config.immediate !== false) {
-   pollLoop()
-  }
-  else {
-   scheduleNext()
-  }
- }
-
- /**
-  * 停止轮询
-  */
- const stop = () => {
-  isPolling.value = false
-
-  if (timerId) {
-   clearTimeout(timerId)
-   timerId = null
-  }
- }
 
  /**
   * 重启轮询

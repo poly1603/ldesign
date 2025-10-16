@@ -281,8 +281,8 @@ describe('性能优化测试', () => {
         ids.push(id)
       }
 
-      // 删除50个拦截器
-      for (let i = 0; i < 50; i += 2) {
+      // 删除50个拦截器 (删除偶数索引的拦截器)
+      for (let i = 0; i < 100; i += 2) {
         manager.eject(ids[i])
       }
 

@@ -1,4 +1,4 @@
-import type { HttpClient, RequestConfig, ResponseData, HttpError } from '../types'
+import type { HttpClient, HttpError, RequestConfig, ResponseData } from '../types'
 
 /**
  * 调试日志级别
@@ -164,7 +164,7 @@ export class HttpDebugger {
       handler: config.handler || (() => {}),
       performance: config.performance ?? true,
       cacheTracking: config.cacheTracking ?? true,
-    }
+    } as Required<DebuggerConfig>
   }
 
   /**
@@ -234,7 +234,7 @@ export class HttpDebugger {
 
     // 控制台输出
     if (this.config?.console && this.config?.level >= DebugLevel.DEBUG) {
-      
+      console.log(`[HTTP Request] ${config.method} ${config.url}`, log)
     }
   }
 
@@ -285,9 +285,7 @@ export class HttpDebugger {
 
     // 控制台输出
     if (this.config?.console && this.config?.level >= DebugLevel.DEBUG) {
-      `,
-        log,
-      )
+      console.log(`[HTTP Response] ${response.config.method} ${response.config.url} - ${response.status} (${duration}ms)`, log)
     }
   }
 
@@ -545,6 +543,6 @@ export function createDebugInterceptor(config?: DebuggerConfig) {
       })
       return Promise.reject(error)
     },
-    : httpDebugger,
+    debugger: httpDebugger,
   }
 }

@@ -108,6 +108,60 @@
       background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
     }
 
+    .map-card:nth-child(7) .map-header {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    }
+
+    .map-card:nth-child(8) .map-header {
+      background: linear-gradient(135deg, #20bf6b 0%, #26de81 100%);
+    }
+
+    .selection-controls {
+      padding: 15px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .selection-controls button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    .selection-controls button:hover {
+      background: #0056b3;
+    }
+
+    .selection-controls button.active {
+      background: #28a745;
+    }
+
+    .selection-controls button.clear {
+      background: #dc3545;
+    }
+
+    .selection-controls button.clear:hover {
+      background: #c82333;
+    }
+
+    .selection-info {
+      padding: 10px 15px;
+      background: #fff3cd;
+      border-bottom: 1px solid #ffc107;
+      font-size: 13px;
+      color: #856404;
+      min-height: 40px;
+    }
+
     @media (max-width: 768px) {
       .maps-grid {
         grid-template-columns: 1fr;
@@ -122,8 +176,8 @@
 
 <body>
   <div class="page-header">
-    <h1>🎨 配色方案对比展示</h1>
-    <p>同时展示所有可用的配色方案，方便对比选择</p>
+    <h1>🎨 Map Renderer 功能展示</h1>
+    <p>展示配色方案和选择功能</p>
   </div>
 
   <div class="maps-grid">
@@ -173,6 +227,30 @@
         <p>使用自定义颜色函数</p>
       </div>
       <div class="map-container" id="map-custom"></div>
+    </div>
+
+    <div class="map-card">
+      <div class="map-header">
+        <h3>单选模式</h3>
+        <p>点击区域进行单选（再次点击取消）</p>
+      </div>
+      <div class="selection-controls">
+        <button id="clear-single">清除选择</button>
+      </div>
+      <div class="selection-info" id="info-single">未选择任何区域</div>
+      <div class="map-container" id="map-single-select"></div>
+    </div>
+
+    <div class="map-card">
+      <div class="map-header">
+        <h3>多选模式</h3>
+        <p>点击区域进行多选（再次点击取消）</p>
+      </div>
+      <div class="selection-controls">
+        <button id="clear-multiple">清除所有选择</button>
+      </div>
+      <div class="selection-info" id="info-multiple">未选择任何区域</div>
+      <div class="map-container" id="map-multiple-select"></div>
     </div>
   </div>
 

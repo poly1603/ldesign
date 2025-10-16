@@ -11,7 +11,9 @@ import type {
   TooltipInfo,
   DeckGLLayer,
   ColorScheme,
-  ColorMode
+  ColorMode,
+  SelectionMode,
+  SelectionStyle
 } from './types';
 
 /**
@@ -26,6 +28,23 @@ export class MapRenderer {
   private viewState: ViewState;
   private autoFit: boolean;
   private geoJsonBounds: { minLng: number; maxLng: number; minLat: number; maxLat: number } | null = null;
+  private lastZoom: number = 8;
+  private layerLabelOptions: Map<string, { labelOptions: TextLabelOptions; colorScheme?: ColorScheme }> = new Map();
+  // 保存原始的图层配置（用于选中功能）
+  private originalLayerProps: Map<string, any> = new Map();
+  
+  // 缩放控制配置
+  private smoothZoom: boolean;
+  private zoomSpeed: number;
+  private transitionDuration: number;
+  private inertia: boolean;
+  
+  // 选择控制配置
+  private selectionMode: SelectionMode;
+  private selectionStyle: SelectionStyle;
+  private showTooltip: boolean;
+  private selectedFeatures: Set<string> = new Set();  // 存储选中的 feature ID
+  private onSelectCallback?: (selectedFeatures: Feature[]) => void;
 
   constructor(container: HTMLElement | string, options: MapRendererOptions = {}) {
     this.container = typeof container === 'string' 
@@ -42,6 +61,24 @@ export class MapRenderer {
 
     this.mode = options.mode || '2d';
     this.autoFit = options.autoFit !== false;  // 默认启用自动适配
+    
+    // 初始化缩放控制选项
+    this.smoothZoom = options.smoothZoom !== false;  // 默认启用
+    this.zoomSpeed = options.zoomSpeed || 0.5;  // 默认速度
+    this.transitionDuration = options.transitionDuration || 300;  // 默认 300ms
+    this.inertia = options.inertia !== false;  // 默认启用
+    
+    // 初始化选择控制选项
+    this.selectionMode = options.selectionMode || 'none';  // 默认不启用选择
+    this.showTooltip = options.showTooltip !== undefined ? options.showTooltip : false;  // 默认不显示
+    this.onSelectCallback = options.onSelect;
+    this.selectionStyle = {
+      strokeColor: [255, 215, 0, 255],  // 黑色描边
+      strokeWidth: 4,
+      fillOpacity: 1.0,
+      highlightColor: [255, 215, 0, 100],  // 黄色高亮
+      ...options.selectionStyle
+    };
     
     // 如果启用自动适配，使用智能计算的初始视口
     if (this.autoFit) {
@@ -62,6 +99,9 @@ export class MapRenderer {
         ...options.viewState
       };
     }
+    
+    // 初始化 lastZoom
+    this.lastZoom = this.viewState.zoom || 8;
 
     this.initDeck();
   }
@@ -97,17 +137,41 @@ export class MapRenderer {
       this.container.appendChild(canvas);
       
       // 使用canvas模式而非container模式
+      // 配置 controller
+      const controllerOptions: any = {
+        scrollZoom: {
+          speed: this.zoomSpeed,
+          smooth: this.smoothZoom
+        },
+        touchZoom: true,
+        touchRotate: true,
+        doubleClickZoom: true,
+        keyboard: true,
+        inertia: this.inertia ? 300 : 0,  // 惯性时长（毫秒）
+        dragPan: true,
+        dragRotate: this.mode === '3d',
+        transitionDuration: this.smoothZoom ? this.transitionDuration : 0,
+        transitionEasing: (t: number) => {
+          // 使用 easeOutCubic 缓动函数，更加平滑
+          return 1 - Math.pow(1 - t, 3);
+        }
+      };
+      
       this.deck = new Deck({
         canvas: canvas,
         width,
         height,
         initialViewState: this.viewState,
-        controller: true,
+        controller: controllerOptions,
         layers: [],
         style: {
           position: 'absolute'
         },
-        getTooltip: ({ object }: TooltipInfo) => object && {
+        onViewStateChange: ({ viewState }) => {
+          this.handleViewStateChange(viewState);
+          return viewState;
+        },
+        getTooltip: this.showTooltip ? (({ object }: TooltipInfo) => object && {
           html: this.getTooltipHTML(object),
           style: {
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -116,7 +180,8 @@ export class MapRenderer {
             borderRadius: '4px',
             fontSize: '12px'
           }
-        }
+        }) : undefined,
+        onClick: (info: any) => this.handleClick(info)
       });
       
       console.log('Deck.gl initialized successfully');
@@ -126,6 +191,225 @@ export class MapRenderer {
     }
   }
 
+  /**
+   * Handle click event for selection
+   */
+  private handleClick(info: any): void {
+    console.log('handleClick called, selectionMode:', this.selectionMode, 'info:', info);
+    
+    if (this.selectionMode === 'none' || !info.object) {
+      console.log('Selection disabled or no object clicked');
+      return;
+    }
+    
+    const feature = info.object as Feature;
+    const featureId = this.getFeatureId(feature);
+    console.log('Feature clicked:', featureId, 'Feature:', feature.properties?.name);
+    
+    if (this.selectionMode === 'single') {
+      // 单选模式：清空其他选中，只选中当前
+      if (this.selectedFeatures.has(featureId)) {
+        // 如果已经选中，则取消选中
+        this.selectedFeatures.clear();
+      } else {
+        this.selectedFeatures.clear();
+        this.selectedFeatures.add(featureId);
+      }
+    } else if (this.selectionMode === 'multiple') {
+      // 多选模式：切换选中状态
+      if (this.selectedFeatures.has(featureId)) {
+        this.selectedFeatures.delete(featureId);
+      } else {
+        this.selectedFeatures.add(featureId);
+      }
+    }
+    
+    // 重新渲染图层以显示选中效果
+    this.updateSelectionLayers();
+    
+    // 触发回调
+    if (this.onSelectCallback) {
+      const selectedFeaturesList = this.getSelectedFeaturesList();
+      this.onSelectCallback(selectedFeaturesList);
+    }
+  }
+  
+  /**
+   * Get feature unique ID
+   */
+  private getFeatureId(feature: Feature): string {
+    return feature.properties?.adcode?.toString() || 
+           feature.properties?.name || 
+           JSON.stringify(feature.geometry.coordinates[0][0]);
+  }
+  
+  /**
+   * Get list of selected features
+   */
+  private getSelectedFeaturesList(): Feature[] {
+    const allFeatures: Feature[] = [];
+    
+    // 遍历所有 GeoJSON 层，收集选中的 features
+    this.layers.forEach(layer => {
+      if (layer.props.data && (layer.props.data as FeatureCollection).features) {
+        const features = (layer.props.data as FeatureCollection).features;
+        features.forEach(feature => {
+          const id = this.getFeatureId(feature);
+          if (this.selectedFeatures.has(id)) {
+            allFeatures.push(feature);
+          }
+        });
+      }
+    });
+    
+    return allFeatures;
+  }
+  
+  /**
+   * Update layers to show selection effect
+   */
+  private updateSelectionLayers(): void {
+    console.log('updateSelectionLayers called, selected:', Array.from(this.selectedFeatures));
+    
+    // 重新渲染所有 GeoJSON 层
+    const geoJsonLayers = this.layers.filter(layer => 
+      layer.id && !layer.id.endsWith('-labels') && layer.props.data
+    );
+    
+    console.log('Found geoJsonLayers:', geoJsonLayers.map(l => l.id));
+    
+    geoJsonLayers.forEach(layer => {
+      const layerId = layer.id!;
+      const geoJsonData = layer.props.data as FeatureCollection;
+      
+      // 使用保存的原始配置，如果不存在则保存当前配置
+      if (!this.originalLayerProps.has(layerId)) {
+        this.originalLayerProps.set(layerId, { ...layer.props });
+      }
+      const originalProps = this.originalLayerProps.get(layerId)!;
+      
+      // 创建新的颜色函数，考虑选中状态
+      const originalFillColor = originalProps.getFillColor;
+      const newFillColor = (feature: any, info: any) => {
+        const featureId = this.getFeatureId(feature);
+        const isSelected = this.selectedFeatures.has(featureId);
+        
+        if (isSelected && this.selectionStyle.highlightColor) {
+          // 如果选中且有高亮颜色，使用高亮颜色
+          return this.selectionStyle.highlightColor;
+        }
+        
+        // 否则使用原始颜色
+        return typeof originalFillColor === 'function' 
+          ? originalFillColor(feature, info)
+          : originalFillColor;
+      };
+      
+      const originalLineColor = originalProps.getLineColor;
+      const newLineColor = (feature: any, info: any) => {
+        const featureId = this.getFeatureId(feature);
+        const isSelected = this.selectedFeatures.has(featureId);
+        
+        if (isSelected && this.selectionStyle.strokeColor) {
+          return this.selectionStyle.strokeColor;
+        }
+        
+        // 使用原始颜色
+        if (typeof originalLineColor === 'function') {
+          return originalLineColor(feature, info);
+        } else if (Array.isArray(originalLineColor)) {
+          return originalLineColor;
+        } else {
+          return [255, 255, 255, 255];
+        }
+      };
+      
+      const originalLineWidth = originalProps.getLineWidth;
+      const newLineWidth = (feature: any, info: any) => {
+        const featureId = this.getFeatureId(feature);
+        const isSelected = this.selectedFeatures.has(featureId);
+        
+        if (isSelected && this.selectionStyle.strokeWidth) {
+          return this.selectionStyle.strokeWidth;
+        }
+        
+        // 使用原始宽度
+        if (typeof originalLineWidth === 'function') {
+          return originalLineWidth(feature, info);
+        } else if (typeof originalLineWidth === 'number') {
+          return originalLineWidth;
+        } else {
+          return 1;
+        }
+      };
+      
+      // 创建新的 layer
+      const newLayer = new GeoJsonLayer({
+        ...originalProps,
+        id: layerId,
+        data: geoJsonData,
+        getFillColor: newFillColor,
+        getLineColor: newLineColor,
+        getLineWidth: newLineWidth,
+        updateTriggers: {
+          getFillColor: Date.now(),
+          getLineColor: Date.now(),
+          getLineWidth: Date.now()
+        }
+      } as any);
+      
+      // 替换层
+      const layerIndex = this.layers.findIndex(l => l.id === layerId);
+      if (layerIndex !== -1) {
+        this.layers[layerIndex] = newLayer;
+        console.log('Replaced layer:', layerId);
+      }
+    });
+    
+    this.updateLayers();
+  }
+  
+  /**
+   * Handle view state changes (zoom, pan, etc.)
+   */
+  private handleViewStateChange(newViewState: any): void {
+    const newZoom = newViewState.zoom || 8;
+    const zoomDiff = Math.abs(newZoom - this.lastZoom);
+    
+    // 当 zoom 变化超过 0.3 时，更新文本大小
+    if (zoomDiff > 0.3) {
+      this.viewState = { ...this.viewState, ...newViewState };
+      this.updateTextLayersSize();
+      this.lastZoom = newZoom;
+    } else {
+      this.viewState = { ...this.viewState, ...newViewState };
+    }
+  }
+  
+  /**
+   * Update all text layers' size based on current zoom
+   */
+  private updateTextLayersSize(): void {
+    // 遍历所有保存的图层配置，重新渲染文本图层
+    this.layerLabelOptions.forEach((config, layerId) => {
+      const geoJsonLayer = this.layers.find(layer => layer.id === layerId);
+      if (geoJsonLayer && geoJsonLayer.props.data) {
+        const labelLayerId = `${layerId}-labels`;
+        // 移除旧的文本图层
+        this.removeLayer(labelLayerId);
+        // 重新添加文本图层，使用新的 zoom 级别
+        this.addTextLabels(geoJsonLayer.props.data as FeatureCollection, {
+          id: layerId,
+          colorScheme: config.colorScheme,
+          labelOptions: config.labelOptions
+        });
+      }
+    });
+    
+    // 更新图层
+    this.updateLayers();
+  }
+  
   /**
    * Calculate luminance of an RGB color
    */
@@ -234,16 +518,29 @@ export class MapRenderer {
       }
     };
 
-    const layer = new GeoJsonLayer({
+    const finalOptions = {
       ...defaultOptions,
       ...layerOptions,
       data: geoJson
-    } as any);
+    };
+    
+    const layer = new GeoJsonLayer(finalOptions as any);
+    
+    // 保存原始配置（用于选中功能）
+    const layerId = layerOptions.id || 'geojson-layer';
+    this.originalLayerProps.set(layerId, finalOptions);
+    console.log('Saved original props for layer:', layerId);
 
     this.addLayer(layer);
     
     // 如果启用了显示标签，添加文本层
     if (layerOptions.showLabels !== false) {
+      // 保存标签配置，用于动态更新
+      const layerId = layerOptions.id || 'geojson-layer';
+      this.layerLabelOptions.set(layerId, {
+        labelOptions: layerOptions.labelOptions || {},
+        colorScheme: layerOptions.colorScheme
+      });
       this.addTextLabels(geoJson, layerOptions);
     }
   }
@@ -480,6 +777,8 @@ export class MapRenderer {
    */
   removeLayer(layerId: string): void {
     this.layers = this.layers.filter(layer => layer.id !== layerId);
+    // 清理对应的标签配置
+    this.layerLabelOptions.delete(layerId);
     this.updateLayers();
   }
 
@@ -489,6 +788,7 @@ export class MapRenderer {
   clearLayers(): void {
     console.log('Clearing all layers...');
     this.layers = [];
+    this.layerLabelOptions.clear(); // 清理所有标签配置
     if (this.deck) {
       // 直接设置空层数组
       this.deck.setProps({ layers: [] });
@@ -955,6 +1255,134 @@ export class MapRenderer {
   }
   
   /**
+   * Update zoom settings
+   */
+  setZoomOptions(options: {
+    smoothZoom?: boolean;
+    zoomSpeed?: number;
+    transitionDuration?: number;
+    inertia?: boolean;
+  }): void {
+    if (options.smoothZoom !== undefined) {
+      this.smoothZoom = options.smoothZoom;
+    }
+    if (options.zoomSpeed !== undefined) {
+      this.zoomSpeed = options.zoomSpeed;
+    }
+    if (options.transitionDuration !== undefined) {
+      this.transitionDuration = options.transitionDuration;
+    }
+    if (options.inertia !== undefined) {
+      this.inertia = options.inertia;
+    }
+    
+    // 重新配置 controller
+    if (this.deck) {
+      const controllerOptions: any = {
+        scrollZoom: {
+          speed: this.zoomSpeed,
+          smooth: this.smoothZoom
+        },
+        touchZoom: true,
+        touchRotate: true,
+        doubleClickZoom: true,
+        keyboard: true,
+        inertia: this.inertia ? 300 : 0,
+        dragPan: true,
+        dragRotate: this.mode === '3d',
+        transitionDuration: this.smoothZoom ? this.transitionDuration : 0,
+        transitionEasing: (t: number) => 1 - Math.pow(1 - t, 3)
+      };
+      
+      this.deck.setProps({ controller: controllerOptions });
+    }
+  }
+  
+  /**
+   * Get current zoom settings
+   */
+  getZoomOptions(): {
+    smoothZoom: boolean;
+    zoomSpeed: number;
+    transitionDuration: number;
+    inertia: boolean;
+  } {
+    return {
+      smoothZoom: this.smoothZoom,
+      zoomSpeed: this.zoomSpeed,
+      transitionDuration: this.transitionDuration,
+      inertia: this.inertia
+    };
+  }
+  
+  /**
+   * Set selection mode
+   */
+  setSelectionMode(mode: SelectionMode): void {
+    this.selectionMode = mode;
+  }
+  
+  /**
+   * Get current selection mode
+   */
+  getSelectionMode(): SelectionMode {
+    return this.selectionMode;
+  }
+  
+  /**
+   * Clear all selections
+   */
+  clearSelection(): void {
+    this.selectedFeatures.clear();
+    this.updateSelectionLayers();
+    
+    if (this.onSelectCallback) {
+      this.onSelectCallback([]);
+    }
+  }
+  
+  /**
+   * Get selected features
+   */
+  getSelectedFeatures(): Feature[] {
+    return this.getSelectedFeaturesList();
+  }
+  
+  /**
+   * Select features by IDs
+   */
+  selectFeatures(featureIds: string[]): void {
+    if (this.selectionMode === 'single' && featureIds.length > 1) {
+      console.warn('Selection mode is single, only first feature will be selected');
+      this.selectedFeatures.clear();
+      this.selectedFeatures.add(featureIds[0]);
+    } else {
+      if (this.selectionMode === 'single') {
+        this.selectedFeatures.clear();
+      }
+      featureIds.forEach(id => this.selectedFeatures.add(id));
+    }
+    
+    this.updateSelectionLayers();
+    
+    if (this.onSelectCallback) {
+      const selectedFeaturesList = this.getSelectedFeaturesList();
+      this.onSelectCallback(selectedFeaturesList);
+    }
+  }
+  
+  /**
+   * Update selection style
+   */
+  setSelectionStyle(style: Partial<SelectionStyle>): void {
+    this.selectionStyle = {
+      ...this.selectionStyle,
+      ...style
+    };
+    this.updateSelectionLayers();
+  }
+  
+  /**
    * Show or hide text labels for a specific layer
    */
   toggleLabels(layerId: string, show: boolean): void {
@@ -1035,12 +1463,21 @@ export class MapRenderer {
     if (layerIndex !== -1) {
       this.layers[layerIndex] = newLayer;
       
+      // 更新保存的配色方案
+      const savedConfig = this.layerLabelOptions.get(layerId);
+      if (savedConfig) {
+        savedConfig.colorScheme = colorScheme;
+      }
+      
       // 同时更新文本标签层（如果存在）
       const labelLayerId = `${layerId}-labels`;
       const labelLayer = this.layers.find(layer => layer.id === labelLayerId);
       if (labelLayer) {
         // 移除旧标签层
-        this.removeLayer(labelLayerId);
+        const labelIndex = this.layers.findIndex(layer => layer.id === labelLayerId);
+        if (labelIndex !== -1) {
+          this.layers.splice(labelIndex, 1);
+        }
         // 重新添加标签层，使用新的配色方案
         this.addTextLabels(geoJsonData, {
           id: layerId,

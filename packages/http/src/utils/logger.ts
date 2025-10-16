@@ -66,7 +66,9 @@ export class Logger {
    * 设置日志级别
    */
   setLevel(level: LogLevel): void {
-    this.config?.level = level
+    if (this.config) {
+      this.config.level = level
+    }
   }
 
   /**

@@ -1,179 +1,265 @@
 /**
- * 请求去重工具
- *
- * 防止重复的请求同时发送,自动合并相同的请求
+ * 请求去重键生成器模块
  */
 
-import type { RequestConfig, ResponseData } from '../types'
+import type { RequestConfig } from '../types'
 
 /**
- * 生成请求唯一键
+ * 去重键生成器配置
  */
-export function generateRequestKey(config: RequestConfig): string {
-  const { method = 'GET', url, params, data } = config
+export interface DeduplicationKeyConfig {
+  /** 是否包含请求方法 */
+  includeMethod?: boolean
+  /** 是否包含URL */
+  includeUrl?: boolean
+  /** 是否包含查询参数 */
+  includeParams?: boolean
+  /** 是否包含请求体 */
+  includeData?: boolean
+  /** 是否包含请求头 */
+  includeHeaders?: boolean
+  /** 要包含的特定请求头 */
+  specificHeaders?: string[]
+  /** 自定义键生成函数 */
+  customGenerator?: (config: RequestConfig) => string
+}
 
-  // 基础key
-  let key = `${method.toUpperCase()}:${url}`
+/**
+ * 智能去重键生成器（优化版）
+ *
+ * 优化点：
+ * 1. 添加键缓存，避免重复计算
+ * 2. 使用 WeakMap 自动管理缓存生命周期
+ * 3. 优化序列化性能
+ */
+export class DeduplicationKeyGenerator {
+  private config: Required<Omit<DeduplicationKeyConfig, 'customGenerator'>> & Pick<DeduplicationKeyConfig, 'customGenerator'>
+  // 使用 WeakMap 缓存键，自动垃圾回收
+  private keyCache = new WeakMap<RequestConfig, string>()
+  // 对于非对象配置，使用普通 Map（带 LRU）
+  private stringKeyCache = new Map<string, string>()
+  private maxCacheSize = 1000
 
-  // 添加参数
-  if (params && Object.keys(params).length > 0) {
-    const sortedParams = Object.keys(params)
-      .sort()
-      .map(k => `${k}=${params[k]}`)
-      .join('&')
-    key += `?${sortedParams}`
+  constructor(config: DeduplicationKeyConfig = {}) {
+    this.config = {
+      includeMethod: true,
+      includeUrl: true,
+      includeParams: true,
+      includeData: false,
+      includeHeaders: false,
+      specificHeaders: [],
+      customGenerator: config.customGenerator,
+      ...config,
+    }
   }
 
-  // 添加数据（仅对POST/PUT等有body的请求）
-  if (data && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
+  /**
+   * 生成去重键（优化版 - 带缓存）
+   */
+  generate(requestConfig: RequestConfig): string {
+    // 尝试从缓存获取
+    const cached = this.keyCache.get(requestConfig)
+    if (cached) {
+      return cached
+    }
+
+    // 生成新键
+    const key = this.generateKey(requestConfig)
+
+    // 缓存结果
+    this.keyCache.set(requestConfig, key)
+
+    // 同时缓存到字符串 Map（用于相同配置的不同对象实例）
+    this.cacheStringKey(key)
+
+    return key
+  }
+
+  /**
+   * 实际生成键的逻辑
+   */
+  private generateKey(requestConfig: RequestConfig): string {
+    if (this.config?.customGenerator) {
+      return this.config?.customGenerator(requestConfig)
+    }
+
+    const parts: string[] = []
+
+    if (this.config?.includeMethod && requestConfig.method) {
+      parts.push(`method:${requestConfig.method.toUpperCase()}`)
+    }
+
+    if (this.config?.includeUrl && requestConfig.url) {
+      parts.push(`url:${requestConfig.url}`)
+    }
+
+    if (this.config?.includeParams && requestConfig.params) {
+      const paramsStr = this.serializeParams(requestConfig.params)
+      if (paramsStr) {
+        parts.push(`params:${paramsStr}`)
+      }
+    }
+
+    if (this.config?.includeData && requestConfig.data) {
+      const dataStr = this.serializeData(requestConfig.data)
+      if (dataStr) {
+        parts.push(`data:${dataStr}`)
+      }
+    }
+
+    if (this.config?.includeHeaders && requestConfig.headers) {
+      const headersStr = this.serializeHeaders(requestConfig.headers)
+      if (headersStr) {
+        parts.push(`headers:${headersStr}`)
+      }
+    }
+
+    if (this.config?.specificHeaders.length > 0 && requestConfig.headers) {
+      const specificHeadersStr = this.serializeSpecificHeaders(
+        requestConfig.headers,
+        this.config?.specificHeaders,
+      )
+      if (specificHeadersStr) {
+        parts.push(`specific-headers:${specificHeadersStr}`)
+      }
+    }
+
+    return parts.join('|')
+  }
+
+  /**
+   * 缓存字符串键（LRU）
+   */
+  private cacheStringKey(key: string): void {
+    // 如果缓存已满，删除最旧的项
+    if (this.stringKeyCache.size >= this.maxCacheSize) {
+      const firstKey = this.stringKeyCache.keys().next().value
+      if (firstKey) {
+        this.stringKeyCache.delete(firstKey)
+      }
+    }
+    this.stringKeyCache.set(key, key)
+  }
+
+  /**
+   * 清除缓存
+   */
+  clearCache(): void {
+    this.stringKeyCache.clear()
+  }
+
+  /**
+   * 序列化参数（优化版 - 减少对象创建）
+   */
+  private serializeParams(params: Record<string, any>): string {
     try {
-      const dataStr = typeof data === 'string' ? data : JSON.stringify(data)
-      key += `|${dataStr}`
+      const keys = Object.keys(params).sort()
+      // 直接构建字符串，避免创建中间对象
+      const parts: string[] = []
+      for (const key of keys) {
+        parts.push(`${key}:${JSON.stringify(params[key])}`)
+      }
+      return parts.join(',')
     }
     catch {
-      // 无法序列化的数据不参与去重
+      return String(params)
     }
   }
 
-  return key
-}
-
-/**
- * 请求去重管理器
- *
- * @example
- * ```typescript
- * const deduper = new RequestDeduplicator()
- *
- * // 同时发送多个相同的请求
- * const [res1, res2, res3] = await Promise.all([
- *   deduper.execute(config, fetchFn),
- *   deduper.execute(config, fetchFn), // 会复用第一个请求
- *   deduper.execute(config, fetchFn), // 会复用第一个请求
- * ])
- *
- * // 实际只发送了1个请求
- * ```
- */
-export class RequestDeduplicator {
-  private pendingRequests = new Map<string, Promise<any>>()
-  private subscribers = new Map<string, Set<{ resolve: Function, reject: Function }>>()
-
   /**
-   * 执行请求（带去重）
+   * 序列化数据（优化版）
    */
-  async execute<T>(
-    config: RequestConfig,
-    fetchFn: () => Promise<ResponseData<T>>,
-  ): Promise<ResponseData<T>> {
-    const key = generateRequestKey(config)
-
-    // 如果已有相同请求正在进行,等待结果
-    if (this.pendingRequests.has(key)) {
-      return new Promise((resolve, reject) => {
-        if (!this.subscribers.has(key)) {
-          this.subscribers.set(key, new Set())
+  private serializeData(data: any): string {
+    try {
+      if (data instanceof FormData) {
+        // FormData 特殊处理
+        const entries: string[] = []
+        for (const [key, value] of data.entries()) {
+          entries.push(`${key}:${typeof value === 'string' ? value : '[File]'}`)
         }
-        this.subscribers.get(key)!.add({ resolve, reject })
-      })
+        return entries.sort().join(',')
+      }
+
+      if (typeof data === 'object' && data !== null) {
+        // 直接构建字符串，避免创建排序后的对象
+        const keys = Object.keys(data).sort()
+        const parts: string[] = []
+        for (const key of keys) {
+          parts.push(`${key}:${JSON.stringify(data[key])}`)
+        }
+        return parts.join(',')
+      }
+
+      return String(data)
     }
-
-    // 执行新请求
-    const requestPromise = fetchFn()
-      .then((response) => {
-        // 通知所有订阅者
-        this.notifySubscribers(key, response, null)
-        return response
-      })
-      .catch((error) => {
-        // 通知所有订阅者
-        this.notifySubscribers(key, null, error)
-        throw error
-      })
-      .finally(() => {
-        // 清理
-        this.pendingRequests.delete(key)
-        this.subscribers.delete(key)
-      })
-
-    this.pendingRequests.set(key, requestPromise)
-    return requestPromise
+    catch {
+      return String(data)
+    }
   }
 
   /**
-   * 通知订阅者
+   * 序列化请求头（优化版）
    */
-  private notifySubscribers(key: string, response: any, error: any) {
-    const subs = this.subscribers.get(key)
-    if (!subs)
-      return
+  private serializeHeaders(headers: Record<string, string>): string {
+    try {
+      // 排除一些动态的请求头
+      const excludeHeaders = new Set(['authorization', 'x-request-id', 'x-timestamp'])
+      const parts: string[] = []
 
-    subs.forEach((sub) => {
-      if (error) {
-        sub.reject(error)
+      const keys = Object.keys(headers).sort()
+      for (const key of keys) {
+        if (!excludeHeaders.has(key.toLowerCase())) {
+          parts.push(`${key}:${headers[key]}`)
+        }
       }
-      else {
-        sub.resolve(response)
+
+      return parts.join(',')
+    }
+    catch {
+      return String(headers)
+    }
+  }
+
+  /**
+   * 序列化特定请求头（优化版）
+   */
+  private serializeSpecificHeaders(
+    headers: Record<string, string>,
+    specificHeaders: string[],
+  ): string {
+    try {
+      const parts: string[] = []
+      const sortedHeaders = [...specificHeaders].sort()
+
+      for (const header of sortedHeaders) {
+        if (headers[header] !== undefined) {
+          parts.push(`${header}:${headers[header]}`)
+        }
       }
-    })
-  }
 
-  /**
-   * 获取待处理请求数量
-   */
-  getPendingCount(): number {
-    return this.pendingRequests.size
-  }
-
-  /**
-   * 清除所有待处理请求
-   */
-  clear(): void {
-    this.pendingRequests.clear()
-    this.subscribers.forEach((subs) => {
-      subs.forEach(sub => sub.reject(new Error('Request deduplicator cleared')))
-    })
-    this.subscribers.clear()
-  }
-
-  /**
-   * 获取统计信息
-   */
-  getStats() {
-    let totalSubscribers = 0
-    this.subscribers.forEach((subs) => {
-      totalSubscribers += subs.size
-    })
-
-    return {
-      pendingRequests: this.pendingRequests.size,
-      totalSubscribers,
-      savedRequests: totalSubscribers, // 节省的请求数
+      return parts.join(',')
+    }
+    catch {
+      return ''
     }
   }
 }
 
 /**
- * 创建请求去重拦截器
- *
- * 可以作为拦截器使用,自动为所有请求添加去重功能
+ * 创建去重键生成器
  */
-export function createDeduplicationInterceptor() {
-  const deduplicator = new RequestDeduplicator()
-
-  return {
-    deduplicator,
-    interceptor: {
-      // 在请求阶段标记配置
-      request: (config: RequestConfig) => {
-        ;(config as any).__dedup = true
-        return config
-      },
-    },
-  }
+export function createDeduplicationKeyGenerator(
+  config?: DeduplicationKeyConfig,
+): DeduplicationKeyGenerator {
+  return new DeduplicationKeyGenerator(config)
 }
 
+// 导出默认的键生成器
+export const defaultKeyGenerator = new DeduplicationKeyGenerator()
+
 /**
- * 全局请求去重器
+ * 生成请求唯一键（简化版本，向后兼容）
  */
-export const globalDeduplicator = new RequestDeduplicator()
+export function generateRequestKey(config: RequestConfig): string {
+  return defaultKeyGenerator.generate(config)
+}

@@ -4,6 +4,8 @@
 
 export interface SizeLocale {
   title: string
+  close: string
+  ariaLabel: string
   presets: {
     compact: string
     comfortable: string
@@ -22,6 +24,8 @@ export interface SizeLocale {
 
 export const zhCN: SizeLocale = {
   title: '调整尺寸',
+  close: '关闭',
+  ariaLabel: '调整尺寸',
   presets: {
     compact: '紧凑',
     comfortable: '舒适',
@@ -42,6 +46,8 @@ export const zhCN: SizeLocale = {
 
 export const enUS: SizeLocale = {
   title: 'Adjust Size',
+  close: 'Close',
+  ariaLabel: 'Adjust Size',
   presets: {
     compact: 'Compact',
     comfortable: 'Comfortable',

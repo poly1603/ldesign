@@ -124,7 +124,7 @@ export class HttpClientImpl implements HttpClient {
   /**
    * 发送请求（优化版）
    */
-  async request<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
+  async request<T = unknown>(config: RequestConfig): Promise<ResponseData<T>> {
     this.checkDestroyed()
 
     // 合并配置（只在需要时进行深度合并）
@@ -173,7 +173,7 @@ export class HttpClientImpl implements HttpClient {
   /**
    * 执行带重试的请求
    */
-  private async executeRequestWithRetry<T = any>(
+  private async executeRequestWithRetry<T = unknown>(
     config: RequestConfig,
     requestId: string,
   ): Promise<ResponseData<T>> {
@@ -194,7 +194,7 @@ export class HttpClientImpl implements HttpClient {
   /**
    * 执行单次请求
    */
-  private async executeRequest<T = any>(
+  private async executeRequest<T = unknown>(
     config: RequestConfig,
   ): Promise<ResponseData<T>> {
     // 检查缓存
@@ -213,7 +213,7 @@ export class HttpClientImpl implements HttpClient {
   /**
    * 执行实际的请求
    */
-  private async performRequest<T = any>(
+  private async performRequest<T = unknown>(
     config: RequestConfig,
   ): Promise<ResponseData<T>> {
     try {
@@ -243,7 +243,7 @@ export class HttpClientImpl implements HttpClient {
   /**
    * GET 请求
    */
-  get<T = any>(
+  get<T = unknown>(
     url: string,
     config: RequestConfig = {},
   ): Promise<ResponseData<T>> {
@@ -257,9 +257,9 @@ export class HttpClientImpl implements HttpClient {
   /**
    * POST 请求
    */
-  post<T = any>(
+  post<T = unknown, D = unknown>(
     url: string,
-    data?: any,
+    data?: D,
     config: RequestConfig = {},
   ): Promise<ResponseData<T>> {
     return this.request<T>({
@@ -273,9 +273,9 @@ export class HttpClientImpl implements HttpClient {
   /**
    * PUT 请求
    */
-  put<T = any>(
+  put<T = unknown, D = unknown>(
     url: string,
-    data?: any,
+    data?: D,
     config: RequestConfig = {},
   ): Promise<ResponseData<T>> {
     return this.request<T>({
@@ -289,7 +289,7 @@ export class HttpClientImpl implements HttpClient {
   /**
    * DELETE 请求
    */
-  delete<T = any>(
+  delete<T = unknown>(
     url: string,
     config: RequestConfig = {},
   ): Promise<ResponseData<T>> {
@@ -303,9 +303,9 @@ export class HttpClientImpl implements HttpClient {
   /**
    * PATCH 请求
    */
-  patch<T = any>(
+  patch<T = unknown, D = unknown>(
     url: string,
-    data?: any,
+    data?: D,
     config: RequestConfig = {},
   ): Promise<ResponseData<T>> {
     return this.request<T>({
@@ -319,7 +319,7 @@ export class HttpClientImpl implements HttpClient {
   /**
    * HEAD 请求
    */
-  head<T = any>(
+  head<T = unknown>(
     url: string,
     config: RequestConfig = {},
   ): Promise<ResponseData<T>> {
@@ -333,7 +333,7 @@ export class HttpClientImpl implements HttpClient {
   /**
    * OPTIONS 请求
    */
-  options<T = any>(
+  options<T = unknown>(
     url: string,
     config: RequestConfig = {},
   ): Promise<ResponseData<T>> {

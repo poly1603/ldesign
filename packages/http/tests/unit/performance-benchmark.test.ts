@@ -182,33 +182,47 @@ describe('Performance Benchmarks', () => {
     })
 
     it('缓存应该提升性能', () => {
+      const iterations = 1000
+      
+      // 使用不同的参数来测试缓存效果
+      const testParams = Array.from({length: 10}, (_, i) => ({
+        name: `User${i}`,
+        age: 20 + i,
+        city: `City${i}`,
+      }))
+
+      // 清除缓存并预热
       clearQueryStringCache()
-
-      const params = {
-        name: 'John',
-        age: 30,
-        city: 'NY',
-      }
-
-      // 第一次执行（无缓存）
+      
+      // 测试无缓存性能（每次使用不同参数，避免缓存）
+      const noCacheParams = Array.from({length: iterations}, (_, i) => ({
+        name: `NoCacheUser${i}`,
+        age: i,
+        city: `NoCacheCity${i}`,
+      }))
+      
+      clearQueryStringCache()
       const startTime1 = performance.now()
-      for (let i = 0; i < 1000; i++) {
-        buildQueryString(params)
+      for (let i = 0; i < iterations; i++) {
+        buildQueryString(noCacheParams[i])
       }
       const duration1 = performance.now() - startTime1
-
-      // 第二次执行（有缓存）
+      
+      // 测试有缓存性能（重复使用相同参数）
+      clearQueryStringCache()
       const startTime2 = performance.now()
-      for (let i = 0; i < 1000; i++) {
-        buildQueryString(params)
+      for (let i = 0; i < iterations; i++) {
+        // 循环使用10个相同的参数，让缓存发挥作用
+        buildQueryString(testParams[i % 10])
       }
       const duration2 = performance.now() - startTime2
 
-      console.log(`无缓存: ${duration1.toFixed(2)}ms, 有缓存: ${duration2.toFixed(2)}ms`)
+      console.log(`无缓存（每次不同参数）: ${duration1.toFixed(2)}ms`)
+      console.log(`有缓存（重复参数）: ${duration2.toFixed(2)}ms`)
       console.log(`性能提升: ${((1 - duration2 / duration1) * 100).toFixed(1)}%`)
 
-      // 有缓存应该更快（至少快20%）
-      expect(duration2).toBeLessThan(duration1 * 0.8)
+      // 有缓存应该更快（至少快30%）
+      expect(duration2).toBeLessThan(duration1 * 0.7)
     })
   })
 

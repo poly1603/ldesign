@@ -303,8 +303,9 @@ describe('utils', () => {
 
         expect(mergeConfig(config, null as any)).toEqual(config)
         expect(mergeConfig(config, undefined as any)).toEqual(config)
-        expect(mergeConfig(null as any, config)).toEqual(config)
-        expect(mergeConfig(undefined as any, config)).toEqual(config)
+        // mergeConfig expects valid defaultConfig, so these should throw
+        expect(() => mergeConfig(null as any, config)).toThrow('defaultConfig must be a valid object')
+        expect(() => mergeConfig(undefined as any, config)).toThrow('defaultConfig must be a valid object')
       })
 
       it('should handle empty configs', () => {

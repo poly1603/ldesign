@@ -131,11 +131,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick, getCurrentInstance, inject } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick, inject } from 'vue'
 import { useTheme } from './useTheme'
 import { ColorPluginSymbol } from '../plugin'
 import type { PresetTheme } from '../themes/presets'
 import type { ColorPlugin } from '../plugin'
+import { getLocale } from '../locales'
+import type { ColorLocale } from '../locales'
 
 interface Props {
   modelValue?: string
@@ -162,14 +164,33 @@ const emit = defineEmits<{
   'change': [value: string, preset?: PresetTheme]
 }>()
 
-// Optional i18n support
-const instance = getCurrentInstance()
-const i18n = instance?.appContext.config.globalProperties.$i18n
-const t = (key: string, fallback?: string) => {
-  if (i18n && typeof i18n.t === 'function') {
-    return i18n.t(key)
+// 响应式国际化支持
+const appLocale = inject<any>('app-locale', null)
+
+// 使用响应式 locale
+const currentLocale = computed(() => {
+  if (appLocale && appLocale.value) {
+    return appLocale.value
   }
-  return fallback || key
+  return 'zh-CN'
+})
+
+// 响应式的翻译函数
+const locale = computed(() => getLocale(currentLocale.value))
+
+const t = (key: string, fallback?: string): string => {
+  const keys = key.split('.')
+  let value: any = locale.value
+  
+  for (const k of keys) {
+    if (value && typeof value === 'object') {
+      value = value[k]
+    } else {
+      return fallback || key
+    }
+  }
+  
+  return typeof value === 'string' ? value : (fallback || key)
 }
 
 const pickerRef = ref<HTMLElement>()

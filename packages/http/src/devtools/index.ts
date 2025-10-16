@@ -348,16 +348,15 @@ export class HttpDevTools {
   printStats(): void {
     const stats = this.getStats()
 
-    
-    
-    
-    .padEnd(20)} ║`)
-    .padEnd(20)} ║`)
-    .padEnd(20)} ║`)
-    .padEnd(20)} ║`)
-    .padEnd(17 - stats.averageDuration.toString().length)} ║`)
-    .padEnd(20)} ║`)
-    
+    console.group('HTTP DevTools Statistics')
+    console.log(`Total Requests: ${stats.total}`)
+    console.log(`Pending: ${stats.pending}`)
+    console.log(`Success: ${stats.success}`)
+    console.log(`Error: ${stats.error}`)
+    console.log(`Cancelled: ${stats.cancelled}`)
+    console.log(`Average Duration: ${stats.averageDuration}ms`)
+    console.log(`Slow Requests: ${stats.slowRequests}`)
+    console.groupEnd()
   }
 }
 

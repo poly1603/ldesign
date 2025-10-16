@@ -88,6 +88,9 @@ const mapConfigs = [
   { containerId: 'map-custom', layerId: 'custom-layer', colorScheme: colorSchemes.custom }
 ];
 
+// 存储地图实例
+const mapInstances = {};
+
 // 初始化所有地图
 function initAllMaps() {
   console.log('Initializing all maps...');
@@ -101,10 +104,21 @@ function initAllMaps() {
     }
 
     try {
-      // 创建地图渲染器
+      // 创建地图渲染器，启用平滑缩放，明确禁用 tooltip，启用单选
       const mapRenderer = new MapRenderer(container, {
         mode: '2d',
-        autoFit: true
+        autoFit: true,
+        smoothZoom: true,           // 启用平滑缩放动画
+        zoomSpeed: 0.5,             // 缩放速度（0.5 = 中速）
+        transitionDuration: 300,    // 动画时长 300ms
+        inertia: true,              // 启用惯性效果
+        showTooltip: false,         // 明确禁用 tooltip（黑色弹窗）
+        selectionMode: 'single',    // 启用单选模式
+        selectionStyle: {
+          strokeColor: [255, 0, 0, 255],     // 红色描边
+          strokeWidth: 3,
+          highlightColor: [255, 0, 0, 80]    // 红色半透明高亮
+        }
       });
 
       // 渲染 GeoJSON 数据
@@ -128,5 +142,129 @@ function initAllMaps() {
   console.log('All maps initialized!');
 }
 
+// 初始化单选模式地图
+function initSingleSelectMap() {
+  const container = document.getElementById('map-single-select');
+  const infoDiv = document.getElementById('info-single');
+  
+  if (!container || !infoDiv) {
+    console.error('Single select map container not found!');
+    return;
+  }
+  
+  try {
+    const mapRenderer = new MapRenderer(container, {
+      mode: '2d',
+      autoFit: true,
+      smoothZoom: true,
+      zoomSpeed: 0.5,
+      transitionDuration: 300,
+      inertia: true,
+      showTooltip: false,           // 禁用 tooltip
+      selectionMode: 'single',      // 启用单选模式
+      selectionStyle: {
+        strokeColor: [255, 215, 0, 255],   // 金色描边
+        strokeWidth: 4,
+        highlightColor: [255, 215, 0, 100] // 金色高亮
+      },
+      onSelect: (selectedFeatures) => {
+        // 选择回调
+        if (selectedFeatures.length === 0) {
+          infoDiv.textContent = '未选择任何区域';
+        } else {
+          const feature = selectedFeatures[0];
+          const name = feature.properties?.name || '未知';
+          const adcode = feature.properties?.adcode || 'N/A';
+          infoDiv.textContent = `已选择：${name} (${adcode})`;
+        }
+      }
+    });
+    
+    mapRenderer.renderGeoJSON(guangzhouData, {
+      id: 'single-select-layer',
+      showLabels: true,
+      colorScheme: colorSchemes.category,
+      labelOptions: {
+        getColor: 'auto',
+        fontSize: 14
+      }
+    });
+    
+    mapInstances['single-select'] = mapRenderer;
+    
+    // 清除按钮
+    document.getElementById('clear-single')?.addEventListener('click', () => {
+      mapRenderer.clearSelection();
+    });
+    
+    console.log('Single select map initialized');
+  } catch (error) {
+    console.error('Error initializing single select map:', error);
+  }
+}
+
+// 初始化多选模式地图
+function initMultipleSelectMap() {
+  const container = document.getElementById('map-multiple-select');
+  const infoDiv = document.getElementById('info-multiple');
+  
+  if (!container || !infoDiv) {
+    console.error('Multiple select map container not found!');
+    return;
+  }
+  
+  try {
+    const mapRenderer = new MapRenderer(container, {
+      mode: '2d',
+      autoFit: true,
+      smoothZoom: true,
+      zoomSpeed: 0.5,
+      transitionDuration: 300,
+      inertia: true,
+      showTooltip: false,           // 禁用 tooltip
+      selectionMode: 'multiple',    // 启用多选模式
+      selectionStyle: {
+        strokeColor: [76, 175, 80, 255],   // 绿色描边
+        strokeWidth: 4,
+        highlightColor: [76, 175, 80, 100] // 绿色高亮
+      },
+      onSelect: (selectedFeatures) => {
+        // 选择回调
+        if (selectedFeatures.length === 0) {
+          infoDiv.textContent = '未选择任何区域';
+        } else {
+          const names = selectedFeatures.map(f => f.properties?.name || '未知').join('、');
+          infoDiv.textContent = `已选择 ${selectedFeatures.length} 个区域：${names}`;
+        }
+      }
+    });
+    
+    mapRenderer.renderGeoJSON(guangzhouData, {
+      id: 'multiple-select-layer',
+      showLabels: true,
+      colorScheme: colorSchemes.gradient,
+      labelOptions: {
+        getColor: 'auto',
+        fontSize: 14
+      }
+    });
+    
+    mapInstances['multiple-select'] = mapRenderer;
+    
+    // 清除按钮
+    document.getElementById('clear-multiple')?.addEventListener('click', () => {
+      mapRenderer.clearSelection();
+    });
+    
+    console.log('Multiple select map initialized');
+  } catch (error) {
+    console.error('Error initializing multiple select map:', error);
+  }
+}
+
 // DOM加载完成后初始化所有地图
-document.addEventListener('DOMContentLoaded', initAllMaps);
+document.addEventListener('DOMContentLoaded', () => {
+  initAllMaps();
+  initSingleSelectMap();
+  initMultipleSelectMap();
+});

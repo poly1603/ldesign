@@ -213,7 +213,7 @@ export class SignatureManager {
     if (typeof require !== 'undefined') {
       try {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const crypto = require('crypto')
+        const crypto = require('node:crypto')
         return crypto.createHash(algorithm).update(data).digest('hex')
       }
       catch {

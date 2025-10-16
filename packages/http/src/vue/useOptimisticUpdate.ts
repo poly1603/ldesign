@@ -88,7 +88,11 @@ export function useOptimisticUpdate<T = any, Input = any>(
 
       // 失败回滚
       if (previousData !== null) {
-        rollback()
+        // 直接执行回滚逻辑而不调用函数
+        const previous = previousData
+        dataRef.value = previous
+        options.onRollback?.(error.value || new Error('Rollback'), previous)
+        previousData = null
       }
 
       return null

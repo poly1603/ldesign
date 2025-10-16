@@ -4,6 +4,15 @@ import type { Feature, FeatureCollection, GeoJsonProperties } from 'geojson';
 
 export type ViewMode = '2d' | '3d';
 
+export type SelectionMode = 'none' | 'single' | 'multiple';
+
+export interface SelectionStyle {
+  strokeColor?: number[];     // 选中区域的描边颜色
+  strokeWidth?: number;        // 选中区域的描边宽度
+  fillOpacity?: number;        // 选中区域的填充透明度
+  highlightColor?: number[];   // 选中区域的高亮颜色
+}
+
 export interface ViewState {
   longitude: number;
   latitude: number;
@@ -22,6 +31,18 @@ export interface MapRendererOptions {
   bearing?: number;
   viewState?: Partial<ViewState>;
   autoFit?: boolean;  // 自动适配容器尺寸
+  
+  // 缩放控制选项
+  smoothZoom?: boolean;  // 启用平滑缩放动画，默认 true
+  zoomSpeed?: number;    // 缩放速度，默认 0.5（1-2 之间）
+  transitionDuration?: number;  // 动画时长（毫秒），默认 300
+  inertia?: boolean;     // 启用惯性效果，默认 true
+  
+  // 选择控制选项
+  selectionMode?: SelectionMode;  // 选择模式，默认 'none'
+  selectionStyle?: SelectionStyle;  // 选中样式
+  showTooltip?: boolean;  // 是否显示 tooltip，默认 false
+  onSelect?: (selectedFeatures: Feature[]) => void;  // 选择回调
 }
 
 export interface TextLabelOptions {

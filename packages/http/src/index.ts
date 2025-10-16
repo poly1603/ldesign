@@ -16,6 +16,18 @@ export {
 // 核心类导出
 export { HttpClientImpl as HttpClient } from './client'
 
+// 开发工具导出
+export {
+  createDevTools,
+  globalDevTools,
+  HttpDevTools,
+} from './devtools'
+
+export type {
+  DevToolsConfig,
+  RequestRecord,
+} from './devtools'
+
 // Engine 插件导出
 export {
   createHttpEnginePlugin,
@@ -35,10 +47,6 @@ export {
   withCache,
 } from './features/cache'
 
-export {
-  withRetry,
-} from './features/retry'
-
 // GraphQL 功能导出
 export {
   createGraphQLClient,
@@ -55,19 +63,23 @@ export type {
   GraphQLVariables,
 } from './features/graphql'
 
-// WebSocket 功能导出
+// Mock 功能导出
 export {
-  createWebSocketClient,
-  WebSocketClient,
-  WebSocketStatus,
-} from './features/websocket'
+  createMockAdapter,
+  createMockInterceptor,
+  MockAdapter,
+} from './features/mock'
 
 export type {
-  WebSocketClientConfig,
-  WebSocketEventListener,
-  WebSocketEventType,
-  WebSocketMessage,
-} from './features/websocket'
+  MockMatcher,
+  MockResponse,
+  MockRule,
+  MockStats,
+} from './features/mock'
+
+export {
+  withRetry,
+} from './features/retry'
 
 // SSE 功能导出
 export {
@@ -84,19 +96,19 @@ export type {
   SSEEventListener,
 } from './features/sse'
 
-// Mock 功能导出
+// WebSocket 功能导出
 export {
-  createMockAdapter,
-  createMockInterceptor,
-  MockAdapter,
-} from './features/mock'
+  createWebSocketClient,
+  WebSocketClient,
+  WebSocketStatus,
+} from './features/websocket'
 
 export type {
-  MockMatcher,
-  MockResponse,
-  MockRule,
-  MockStats,
-} from './features/mock'
+  WebSocketClientConfig,
+  WebSocketEventListener,
+  WebSocketEventType,
+  WebSocketMessage,
+} from './features/websocket'
 
 // 拦截器导出
 export {
@@ -189,6 +201,17 @@ export {
   mergeConfig,
 } from './utils'
 
+// 批处理导出
+export {
+  BatchManager,
+  createBatchManager,
+} from './utils/batch'
+
+export type {
+  BatchConfig,
+  BatchStats,
+} from './utils/batch'
+
 // 缓存功能导出
 export {
   CacheManager,
@@ -236,6 +259,38 @@ export type {
   DeduplicationKeyConfig,
 } from './utils/concurrency'
 
+// 调试工具导出
+export {
+  createDebugInterceptor,
+  createHttpDebugger,
+  DebugLevel,
+  HttpDebugger,
+} from './utils/debugger'
+
+export type {
+  DebugEvent,
+  DebuggerConfig,
+  PerformanceMetrics as DebugPerformanceMetrics,
+  RequestLog,
+  ResponseLog,
+} from './utils/debugger'
+
+// 请求去重导出
+export {
+  DeduplicationManager as RequestDeduplicator,
+  DeduplicationStats,
+} from './utils/concurrency'
+
+export {
+  generateRequestKey,
+  DeduplicationKeyGenerator,
+  defaultKeyGenerator,
+} from './utils/request-dedup'
+
+export type {
+  DeduplicationKeyConfig,
+} from './utils/request-dedup'
+
 export {
   createDownloadChunks,
   createRangeHeader,
@@ -268,6 +323,34 @@ export type {
   ErrorStats,
 } from './utils/error'
 
+// 日志管理器导出
+export {
+  createLogger,
+  devLogger,
+  logger,
+  Logger,
+  LogLevel,
+} from './utils/logger'
+
+export type {
+  LoggerConfig,
+} from './utils/logger'
+
+// 内存监控导出
+export {
+  createMemoryMonitor,
+  globalMemoryCleaner,
+  globalMemoryMonitor,
+  MemoryCleaner,
+  MemoryMonitor,
+} from './utils/memory'
+
+export type {
+  MemoryMonitorConfig,
+  MemoryStats,
+  MemoryUsage,
+} from './utils/memory'
+
 // 性能监控导出
 export {
   createRequestMonitor,
@@ -280,6 +363,33 @@ export type {
   PerformanceMetrics,
   PerformanceStats,
 } from './utils/monitor'
+
+// 网络状态导出
+export {
+  ConnectionType,
+  createNetworkInterceptor,
+  createNetworkMonitor,
+  globalNetworkMonitor,
+  NetworkMonitor,
+  NetworkStatus,
+  waitForOnline,
+} from './utils/network'
+
+export type {
+  NetworkInfo,
+  NetworkMonitorConfig,
+} from './utils/network'
+
+// 离线队列导出
+export {
+  createOfflineQueueManager,
+  OfflineQueueManager,
+} from './utils/offline'
+
+export type {
+  OfflineQueueConfig,
+  OfflineQueueStats,
+} from './utils/offline'
 
 // 连接池导出
 export {
@@ -308,54 +418,6 @@ export type {
   PriorityQueueStats,
 } from './utils/priority'
 
-// 文件上传下载导出
-export {
-  createFileChunks,
-  createFilePreviewURL,
-  createUploadFormData,
-  FileValidationError,
-  formatFileSize,
-  generateFileHash,
-  getFileExtension,
-  isAudioFile,
-  isDocumentFile,
-  isImageFile,
-  isVideoFile,
-  ProgressCalculator,
-  revokeFilePreviewURL,
-  validateFile,
-} from './utils/upload'
-
-// 批处理导出
-export {
-  BatchManager,
-  createBatchManager,
-} from './utils/batch'
-
-export type {
-  BatchConfig,
-  BatchStats,
-} from './utils/batch'
-
-// 请求去重导出
-export {
-  RequestDeduplicator,
-  createDeduplicationInterceptor,
-  generateRequestKey,
-  globalDeduplicator,
-} from './utils/request-dedup'
-
-// 离线队列导出
-export {
-  createOfflineQueueManager,
-  OfflineQueueManager,
-} from './utils/offline'
-
-export type {
-  OfflineQueueConfig,
-  OfflineQueueStats,
-} from './utils/offline'
-
 // 签名功能导出
 export {
   createSignatureInterceptor,
@@ -368,62 +430,6 @@ export type {
   SignatureResult,
 } from './utils/signature'
 
-// 内存监控导出
-export {
-  createMemoryMonitor,
-  globalMemoryCleaner,
-  globalMemoryMonitor,
-  MemoryCleaner,
-  MemoryMonitor,
-} from './utils/memory'
-
-export type {
-  MemoryMonitorConfig,
-  MemoryStats,
-  MemoryUsage,
-} from './utils/memory'
-
-// 调试工具导出
-export {
-  createDebugInterceptor,
-  createHttpDebugger,
-  DebugLevel,
-  HttpDebugger,
-} from './utils/'
-
-export type {
-  DebugEvent,
-  DebuggerConfig,
-  PerformanceMetrics as DebugPerformanceMetrics,
-  RequestLog,
-  ResponseLog,
-} from './utils/'
-
-// 开发工具导出
-export {
-  createDevTools,
-  globalDevTools,
-  HttpDevTools,
-} from './devtools'
-
-export type {
-  DevToolsConfig,
-  RequestRecord,
-} from './devtools'
-
-// 日志管理器导出
-export {
-  createLogger,
-  devLogger,
-  logger,
-  Logger,
-  LogLevel,
-} from './utils/logger'
-
-export type {
-  LoggerConfig,
-} from './utils/logger'
-
 // 智能重试导出
 export {
   createSmartRetryInterceptor,
@@ -431,27 +437,12 @@ export {
   globalSmartRetryManager,
   RetryStrategy,
   SmartRetryManager,
-} from './utils/smart-retry'
+} from './utils/smartRetry'
 
 export type {
   RetryDecision,
   SmartRetryConfig,
-} from './utils/smart-retry'
-
-// 数据转换导出
-export {
-  createDataTransformer,
-  createDataTransformInterceptor,
-  DataTransformer,
-  globalDataTransformer,
-  nullToUndefined,
-  transformBigInts,
-  transformDates,
-} from './utils/data-transformer'
-
-export type {
-  TransformerConfig,
-} from './utils/data-transformer'
+} from './utils/smartRetry'
 
 // 请求追踪导出
 export {
@@ -473,21 +464,38 @@ export type {
   TraceTag,
 } from './utils/trace'
 
-// 网络状态导出
+// 数据转换导出
 export {
-  ConnectionType,
-  createNetworkInterceptor,
-  createNetworkMonitor,
-  globalNetworkMonitor,
-  NetworkMonitor,
-  NetworkStatus,
-  waitForOnline,
-} from './utils/network-status'
+  createDataTransformer,
+  createDataTransformInterceptor,
+  DataTransformer,
+  globalDataTransformer,
+  nullToUndefined,
+  transformBigInts,
+  transformDates,
+} from './utils/transformer'
 
 export type {
-  NetworkInfo,
-  NetworkMonitorConfig,
-} from './utils/network-status'
+  TransformerConfig,
+} from './utils/transformer'
+
+// 文件上传下载导出
+export {
+  createFileChunks,
+  createFilePreviewURL,
+  createUploadFormData,
+  FileValidationError,
+  formatFileSize,
+  generateFileHash,
+  getFileExtension,
+  isAudioFile,
+  isDocumentFile,
+  isImageFile,
+  isVideoFile,
+  ProgressCalculator,
+  revokeFilePreviewURL,
+  validateFile,
+} from './utils/upload'
 
 // Vue 相关导出
 export * from './vue'
