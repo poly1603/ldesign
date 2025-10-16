@@ -157,10 +157,15 @@ export function createPlugin(config: PluginConfig): PluginType {
     name: config.name,
     config,
     install(editor: any) {
+      console.log(`[createPlugin] Installing plugin: ${config.name}`)
+      console.log(`[createPlugin] Config commands:`, config.commands ? Object.keys(config.commands) : 'none')
+      
       // 注册命令
       if (config.commands) {
         Object.entries(config.commands).forEach(([name, command]) => {
+          console.log(`[createPlugin] Registering command: ${name} for plugin: ${config.name}`)
           editor.commands.register(name, command)
+          console.log(`[createPlugin] Command ${name} registered successfully`)
         })
       }
 

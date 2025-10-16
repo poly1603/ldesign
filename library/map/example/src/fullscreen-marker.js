@@ -62,17 +62,19 @@ function initMap() {
   
   mapRenderer = new MapRenderer(container, {
     mode: '2d',
-    autoFit: false,
+    autoFit: false,  // 禁用自动适配
     smoothZoom: true,
     zoomSpeed: 0.6,
-    transitionDuration: 400,
+    transitionDuration: 0,  // 初始加载时无动画
     inertia: true,
     showTooltip: false,
-    longitude: 113.28,
-    latitude: 23.13,
-    zoom: 9.5,  // 稍微缩小以避免超出
-    // 限制视图范围
+    // 直接设置初始视口
     viewState: {
+      longitude: 113.28,
+      latitude: 23.13,
+      zoom: 9,
+      pitch: 0,
+      bearing: 0,
       maxZoom: 15,
       minZoom: 8,
       maxPitch: 0,

@@ -85,6 +85,8 @@ export interface PluginConfig {
   keys?: Record<string, Command>
   schema?: SchemaSpec
   toolbar?: ToolbarItem[]
+  init?: (editor: any) => void
+  destroy?: () => void
 }
 
 // Schema 规范

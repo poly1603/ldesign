@@ -55,6 +55,10 @@ export { createColorPlugin, ColorPluginSymbol } from './plugin';
 export type { ColorPlugin, ColorPluginOptions } from './plugin';
 export { useColorPlugin } from './plugin/useColorPlugin';
 
+// Engine plugin integration
+export { createColorEnginePlugin, useColorFromEngine } from './plugin/engine';
+export type { ColorEnginePluginOptions } from './plugin/engine';
+
 // Vue 3 support
 // Note: Vue components should be imported from '@ldesign/color/vue'
 

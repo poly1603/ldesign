@@ -17,13 +17,14 @@ export interface DropdownOptions {
   customContent?: HTMLElement // 自定义内容（用于颜色选择器等复杂UI）
   width?: number | string // 自定义宽度
   maxHeight?: number | string // 最大高度
+  selectedValue?: string // 当前选中的值
 }
 
 /**
  * 创建下拉选择器
  */
 export function createDropdown(options: DropdownOptions): HTMLElement {
-  const { options: items, onSelect, customContent, width, maxHeight } = options
+  const { options: items, onSelect, customContent, width, maxHeight, selectedValue } = options
 
   const dropdown = document.createElement('div')
   dropdown.className = 'editor-dropdown'
@@ -53,6 +54,11 @@ export function createDropdown(options: DropdownOptions): HTMLElement {
       const optionElement = document.createElement('div')
       optionElement.className = 'editor-dropdown-option'
       optionElement.dataset.value = item.value
+      
+      // 如果是当前选中项，添加活动类
+      if (selectedValue && item.value === selectedValue) {
+        optionElement.classList.add('active')
+      }
 
       // 如果有颜色，创建颜色预览
       if (item.color) {

@@ -4,29 +4,40 @@
 
 export interface ColorLocale {
   theme: {
+    title: string
     selectThemeColor: string
     customColor: string
+    custom: string
     apply: string
     addCustomTheme: string
     themeName: string
     add: string
     remove: string
+    confirmRemove: string
     searchPlaceholder: string
     presets: {
       [key: string]: string
     }
   }
+  themeMode: {
+    light: string
+    dark: string
+    system: string
+  }
 }
 
 export const zhCN: ColorLocale = {
   theme: {
+    title: '主题色',
     selectThemeColor: '选择主题色',
     customColor: '自定义颜色',
+    custom: '当前颜色',
     apply: '应用',
     addCustomTheme: '添加自定义主题',
     themeName: '主题名称',
     add: '添加',
     remove: '移除',
+    confirmRemove: '确定移除主题 "%s" 吗？',
     searchPlaceholder: '搜索颜色...',
     presets: {
       blue: '蓝色',
@@ -47,18 +58,26 @@ export const zhCN: ColorLocale = {
       lavender: '薰衣草',
       coral: '珊瑚红'
     }
+  },
+  themeMode: {
+    light: '浅色',
+    dark: '深色',
+    system: '跟随系统'
   }
 }
 
 export const enUS: ColorLocale = {
   theme: {
+    title: 'Theme Color',
     selectThemeColor: 'Select Theme Color',
     customColor: 'Custom Color',
+    custom: 'Current Color',
     apply: 'Apply',
     addCustomTheme: 'Add Custom Theme',
     themeName: 'Theme name',
     add: 'Add',
     remove: 'Remove',
+    confirmRemove: 'Remove theme "%s"?',
     searchPlaceholder: 'Search colors...',
     presets: {
       blue: 'Blue',
@@ -79,6 +98,11 @@ export const enUS: ColorLocale = {
       lavender: 'Lavender',
       coral: 'Coral'
     }
+  },
+  themeMode: {
+    light: 'Light',
+    dark: 'Dark',
+    system: 'Follow System'
   }
 }
 

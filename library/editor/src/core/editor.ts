@@ -64,9 +64,23 @@ export class Editor {
     }
 
     // 注册插件 - 如果没有指定插件，默认加载所有插件
+    console.log('[Editor] options.plugins provided?', !!options.plugins)
+    if (options.plugins) {
+      console.log('[Editor] Using provided plugins:', options.plugins.length)
+    } else {
+      console.log('[Editor] Using default plugins from getAllDefaultPlugins()')
+    }
+    
     const pluginsToLoad = options.plugins || this.getAllDefaultPlugins()
     
     console.log('[Editor] Loading plugins, total:', pluginsToLoad.length)
+    console.log('[Editor] Plugin list:', pluginsToLoad.map(p => typeof p === 'string' ? p : p?.name || 'unnamed'))
+    console.log('[Editor] HeadingPlugin exists in AllPlugins:', !!AllPlugins.HeadingPlugin)
+    if (AllPlugins.HeadingPlugin) {
+      console.log('[Editor] HeadingPlugin name:', AllPlugins.HeadingPlugin.name)
+      console.log('[Editor] HeadingPlugin config:', AllPlugins.HeadingPlugin.config)
+      console.log('[Editor] Is HeadingPlugin in pluginsToLoad?', pluginsToLoad.includes(AllPlugins.HeadingPlugin))
+    }
     
     pluginsToLoad.forEach((plugin, index) => {
       if (typeof plugin === 'string') {
@@ -75,6 +89,10 @@ export class Editor {
         this.loadBuiltinPlugin(plugin)
       } else {
         console.log(`[Editor] Loading plugin [${index}]: "${plugin.name || 'unnamed'}"`)
+        if (plugin.name === 'heading') {
+          console.log('[Editor] HeadingPlugin found in plugins list!')
+          console.log('[Editor] HeadingPlugin config:', plugin.config)
+        }
         this.plugins.register(plugin)
       }
     })
@@ -90,61 +108,101 @@ export class Editor {
    * 获取所有默认插件
    */
   private getAllDefaultPlugins(): PluginType[] {
-    const plugins: PluginType[] = [
-      // 基础格式化
-      AllPlugins.BoldPlugin,
-      AllPlugins.ItalicPlugin,
-      AllPlugins.UnderlinePlugin,
-      AllPlugins.StrikePlugin,
-      AllPlugins.InlineCodePlugin,  // 行内代码
-      AllPlugins.SuperscriptPlugin,  // 上标
-      AllPlugins.SubscriptPlugin,    // 下标
-      AllPlugins.ClearFormatPlugin,
-      
-      // 标题和块级元素
-      AllPlugins.HeadingPlugin,
-      AllPlugins.BlockquotePlugin,
-      AllPlugins.CodeBlockPlugin,
-      
-      // 列表
-      AllPlugins.BulletListPlugin,
-      AllPlugins.OrderedListPlugin,
-      AllPlugins.TaskListPlugin,
-      
-      // 节点插件
-      AllPlugins.LinkPlugin,
-      AllPlugins.ImagePlugin,
-      AllPlugins.TablePlugin,
-      AllPlugins.HorizontalRulePlugin,
-      
-      // 文本样式
-      AllPlugins.AlignPlugin,
-      AllPlugins.TextColorPlugin,
-      AllPlugins.BackgroundColorPlugin,
-      AllPlugins.FontSizePlugin,
-      AllPlugins.FontFamilyPlugin,
-      AllPlugins.IndentPlugin,
-      AllPlugins.LineHeightPlugin,
-      AllPlugins.TextTransformPlugin,
-      
-      // 功能插件
-      AllPlugins.HistoryPlugin,
-      AllPlugins.FullscreenPlugin,
-      AllPlugins.FindReplacePlugin,
-      AllPlugins.WordCountPlugin,
-      AllPlugins.ExportMarkdownPlugin,
-      AllPlugins.MediaDialogPlugin,  // 媒体插入对话框（图片、视频、音频）
-      AllPlugins.ContextMenuPlugin,
-      
-      // 图片编辑功能插件 - 创建实例
-      new AllPlugins.MediaContextMenuPlugin(),  // 媒体右键菜单（滤镜、环绕、边框等）
-      new AllPlugins.ImageResizePlugin({  // 图片调整大小功能
+    console.log('[Editor] Getting default plugins...')
+    console.log('[Editor] AllPlugins keys:', Object.keys(AllPlugins))
+    
+    // 检查 HeadingPlugin 是否存在
+    console.log('[Editor] HeadingPlugin check:', {
+      exists: !!AllPlugins.HeadingPlugin,
+      type: typeof AllPlugins.HeadingPlugin,
+      value: AllPlugins.HeadingPlugin
+    })
+    
+    const plugins: PluginType[] = []
+    
+    // 最重要！首先加载 HeadingPlugin
+    if (AllPlugins.HeadingPlugin) {
+      console.log('[Editor] ✅ Adding HeadingPlugin to default plugins')
+      plugins.push(AllPlugins.HeadingPlugin)
+    } else {
+      console.error('[Editor] ❌ HeadingPlugin is undefined! This is critical!')
+    }
+    
+    // 首先加入基础插件（命令插件）
+    if (AllPlugins.MediaCommandsPlugin) {
+      console.log('[Editor] Adding MediaCommandsPlugin')
+      plugins.push(AllPlugins.MediaCommandsPlugin)
+    }
+    if (AllPlugins.FormattingCommandsPlugin) {
+      console.log('[Editor] Adding FormattingCommandsPlugin')
+      plugins.push(AllPlugins.FormattingCommandsPlugin)
+    }
+    
+    // 基础格式化
+    if (AllPlugins.BoldPlugin) plugins.push(AllPlugins.BoldPlugin)
+    if (AllPlugins.ItalicPlugin) plugins.push(AllPlugins.ItalicPlugin)
+    if (AllPlugins.UnderlinePlugin) plugins.push(AllPlugins.UnderlinePlugin)
+    if (AllPlugins.StrikePlugin) plugins.push(AllPlugins.StrikePlugin)
+    if (AllPlugins.InlineCodePlugin) plugins.push(AllPlugins.InlineCodePlugin)
+    if (AllPlugins.SuperscriptPlugin) plugins.push(AllPlugins.SuperscriptPlugin)
+    if (AllPlugins.SubscriptPlugin) plugins.push(AllPlugins.SubscriptPlugin)
+    if (AllPlugins.ClearFormatPlugin) plugins.push(AllPlugins.ClearFormatPlugin)
+    
+    // 标题和块级元素 - 特别检查 HeadingPlugin
+    if (AllPlugins.HeadingPlugin) {
+      console.log('[Editor] Adding HeadingPlugin to list')
+      plugins.push(AllPlugins.HeadingPlugin)
+    } else {
+      console.error('[Editor] HeadingPlugin is undefined!')
+    }
+    if (AllPlugins.BlockquotePlugin) plugins.push(AllPlugins.BlockquotePlugin)
+    if (AllPlugins.CodeBlockPlugin) plugins.push(AllPlugins.CodeBlockPlugin)
+    
+    // 列表
+    if (AllPlugins.BulletListPlugin) plugins.push(AllPlugins.BulletListPlugin)
+    if (AllPlugins.OrderedListPlugin) plugins.push(AllPlugins.OrderedListPlugin)
+    if (AllPlugins.TaskListPlugin) plugins.push(AllPlugins.TaskListPlugin)
+    
+    // 节点插件
+    if (AllPlugins.LinkPlugin) plugins.push(AllPlugins.LinkPlugin)
+    if (AllPlugins.ImagePlugin) plugins.push(AllPlugins.ImagePlugin)
+    if (AllPlugins.TablePlugin) plugins.push(AllPlugins.TablePlugin)
+    if (AllPlugins.HorizontalRulePlugin) plugins.push(AllPlugins.HorizontalRulePlugin)
+    
+    // 文本样式
+    if (AllPlugins.AlignPlugin) plugins.push(AllPlugins.AlignPlugin)
+    if (AllPlugins.TextColorPlugin) plugins.push(AllPlugins.TextColorPlugin)
+    if (AllPlugins.BackgroundColorPlugin) plugins.push(AllPlugins.BackgroundColorPlugin)
+    if (AllPlugins.FontSizePlugin) plugins.push(AllPlugins.FontSizePlugin)
+    if (AllPlugins.FontFamilyPlugin) plugins.push(AllPlugins.FontFamilyPlugin)
+    if (AllPlugins.IndentPlugin) plugins.push(AllPlugins.IndentPlugin)
+    if (AllPlugins.LineHeightPlugin) plugins.push(AllPlugins.LineHeightPlugin)
+    if (AllPlugins.TextTransformPlugin) plugins.push(AllPlugins.TextTransformPlugin)
+    
+    // 功能插件
+    if (AllPlugins.HistoryPlugin) plugins.push(AllPlugins.HistoryPlugin)
+    if (AllPlugins.FullscreenPlugin) plugins.push(AllPlugins.FullscreenPlugin)
+    if (AllPlugins.FindReplacePlugin) plugins.push(AllPlugins.FindReplacePlugin)
+    if (AllPlugins.WordCountPlugin) plugins.push(AllPlugins.WordCountPlugin)
+    if (AllPlugins.ExportMarkdownPlugin) plugins.push(AllPlugins.ExportMarkdownPlugin)
+    if (AllPlugins.MediaDialogPlugin) plugins.push(AllPlugins.MediaDialogPlugin)
+    if (AllPlugins.ContextMenuPlugin) plugins.push(AllPlugins.ContextMenuPlugin)
+    
+    // 图片编辑功能插件 - 创建实例
+    if (AllPlugins.MediaContextMenuPlugin) {
+      plugins.push(new AllPlugins.MediaContextMenuPlugin())
+    }
+    if (AllPlugins.ImageResizePlugin) {
+      plugins.push(new AllPlugins.ImageResizePlugin({
         minWidth: 50,
         minHeight: 50,
         preserveAspectRatio: true,
         showDimensions: true
-      })
-    ]
+      }))
+    }
+    
+    console.log(`[Editor] Total plugins to load: ${plugins.length}`)
+    console.log('[Editor] Plugin names:', plugins.map(p => p.name).join(', '))
     
     // 添加 EmojiPlugin（确保它被加载）
     if (AllPlugins.EmojiPlugin) {

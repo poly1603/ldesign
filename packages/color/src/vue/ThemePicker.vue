@@ -89,7 +89,12 @@
           </div>
           
           <div class="ld-theme-picker__presets">
-            <label class="ld-theme-picker__label">{{ t('theme.selectThemeColor', '选择主题色') }}</label>
+            <label class="ld-theme-picker__label">
+              {{ t('theme.selectThemeColor', 'Select Theme Color') }}
+              <span style="font-size: 10px; color: #999; margin-left: 8px;">
+                ({{ currentLocale }})
+              </span>
+            </label>
             <div class="ld-theme-picker__grid">
               <div
                 v-for="preset in filteredPresets"
@@ -160,18 +165,27 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
-  'change': [value: string, preset?: PresetTheme]
+  (e: 'update:modelValue', value: string): void
+  (e: 'change', value: string, preset?: PresetTheme): void
 }>()
+
+// Try to get plugin instance from injection
+const pluginInstance = inject<ColorPlugin | undefined>(ColorPluginSymbol, undefined)
 
 // 响应式国际化支持
 const appLocale = inject<any>('app-locale', null)
 
-// 使用响应式 locale
+// 使用响应式 locale - 优先使用插件的 locale
 const currentLocale = computed(() => {
+  // 优先使用插件的当前语言
+  if (pluginInstance?.currentLocale?.value) {
+    return pluginInstance.currentLocale.value
+  }
+  // 其次使用注入的 app locale
   if (appLocale && appLocale.value) {
     return appLocale.value
   }
+  // 默认中文
   return 'zh-CN'
 })
 
@@ -202,9 +216,6 @@ const newThemeColor = ref('#1890ff')
 const dropdownStyle = ref({})
 // Local selected theme name for immediate UI update
 const selectedThemeName = ref<string>('')
-
-// Try to get plugin instance from injection
-const pluginInstance = inject<ColorPlugin | undefined>(ColorPluginSymbol, undefined)
 
 const { 
   currentTheme,
@@ -256,7 +267,7 @@ const currentLabel = computed(() => {
     const i18nKey = `theme.presets.${preset.name}`
     return t(i18nKey, preset.label)
   }
-  return t('theme.title', '主题色')
+  return t('theme.title', 'Theme Color')
 })
 
 // Active theme name (use local selected first, fallback to themeName)
@@ -268,9 +279,9 @@ const visiblePresets = computed(() => {
   const inPresets = list.some(p => p.color.toLowerCase() === (currentThemeColor.value || '').toLowerCase())
   if (!inPresets && currentThemeColor.value) {
     // Show current custom color as a temporary preset
-    list.unshift({ 
+            list.unshift({ 
       name: 'custom-current', 
-      label: t('theme.custom', '当前颜色'), 
+      label: t('theme.custom', 'Current Color'), 
       color: currentThemeColor.value, 
       custom: true 
     })
@@ -423,7 +434,8 @@ const handleAddCustomTheme = async () => {
 
 // 删除自定义主题
 const handleRemoveCustomTheme = async (name: string) => {
-  if (!confirm(t('theme.confirmRemove', `Remove theme "${name}"?`))) {
+  const confirmMessage = t('theme.confirmRemove', `Remove theme "${name}"?`).replace('%s', name)
+  if (!confirm(confirmMessage)) {
     return
   }
 

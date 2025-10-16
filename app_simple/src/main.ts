@@ -10,12 +10,12 @@ import App from './App.vue'
 import { createRouter } from './router'
 import { engineConfig } from './config/app.config'
 import { auth } from './composables/useAuth'
-import { createColorPlugin } from '@ldesign/color'
-import { createTemplatePlugin } from '@ldesign/template'
+import { createColorPlugin } from '@ldesign/color/plugin'
 import { sizePlugin } from '@ldesign/size/vue'
+import { createTemplatePlugin } from '@ldesign/template'
 
 // 全局 locale 状态
-const globalLocale = ref('zh-CN')
+const globalLocale = ref('en-US')
 
 /**
  * 启动应用
@@ -36,7 +36,16 @@ async function bootstrap() {
       fallbackLocale: 'en-US',
       detectBrowserLanguage: true,
       persistLanguage: true,
-      showMissingKeys: import.meta.env.DEV
+      showMissingKeys: import.meta.env.DEV,
+      // 语言变化时的回调
+      onLocaleChange: (locale: string) => {
+        // 更新全局响应式 locale
+        globalLocale.value = locale
+        // 通过 engine.state 传播语言变化（将在 onReady 中设置）
+        if ((window as any).__ENGINE__?.state) {
+          (window as any).__ENGINE__.state.set('locale', locale)
+        }
+      }
     })
 
     // 创建模板插件 - 规范化配置
@@ -160,8 +169,9 @@ async function bootstrap() {
       performance: import.meta.env.DEV    // 开发环境开启性能监控
     })
 
-    // Size 插件配置（尺寸管理系统）
+    // Size 插件配置（支持响应式国际化）
     const sizeOptions = {
+      locale: globalLocale.value, // 初始语言
       storageKey: 'ldesign-size',
       presets: [
         {
@@ -181,7 +191,7 @@ async function bootstrap() {
       ]
     }
 
-    // 创建 Color 插件（主题系统）
+    // 创建 Color 插件（支持响应式国际化）
     const colorPlugin = createColorPlugin({
       prefix: 'ld',
       storageKey: 'ldesign-theme',
@@ -237,6 +247,9 @@ async function bootstrap() {
         }
       }
     })
+    
+    // 绑定 Color 插件的 locale 到全局 locale
+    colorPlugin.currentLocale = globalLocale
 
     // 创建应用引擎
     const engine = await createEngineApp({
@@ -252,22 +265,33 @@ async function bootstrap() {
 
       // Vue应用配置
       setupApp: async (app) => {
-        // Provide 全局响应式 locale
+        // Provide 全局响应式 locale - 必须在插件安装之前
         app.provide('app-locale', globalLocale)
         
         // 安装模板插件 - 一行代码完成所有配置
         app.use(templatePlugin)
 
-        // 安装 Color 主题插件（提供全局主题管理和持久化）
+        // 安装 Color 主题插件（插件会自动检测并绑定 app-locale）
         app.use(colorPlugin)
 
-        // 安装 Size 尺寸插件（提供响应式尺寸管理）
+        // 安装 Size 尺寸插件（插件会自动检测并绑定 app-locale）
         app.use(sizePlugin, sizeOptions)
 
         // 手动安装 i18n Vue 插件
         if (i18nPlugin.setupVueApp) {
           i18nPlugin.setupVueApp(app);
         }
+        
+        // 设置全局语言切换方法
+        app.config.globalProperties.$getLocale = () => globalLocale.value
+        app.config.globalProperties.$setLocale = (locale: string) => {
+          globalLocale.value = locale
+          // 同时更新 i18n 的 locale
+          if (i18nPlugin.api?.i18n) {
+            i18nPlugin.api.changeLocale(locale)
+          }
+        }
+        
         console.log('✅ 应用设置完成')
       },
 
@@ -279,17 +303,31 @@ async function bootstrap() {
       // 引擎就绪
       onReady: (engine) => {
         console.log('✅ 引擎已就绪')
+        
+        // 设置初始 locale 到 engine.state
+        if (engine.state) {
+          engine.state.set('locale', globalLocale.value)
+          
+          // 监听 engine.state 中 locale 的变化
+          engine.state.watch('locale', (newLocale: string) => {
+            if (newLocale !== globalLocale.value) {
+              globalLocale.value = newLocale
+              
+              // 同步到 i18n
+              if (i18nPlugin.api?.changeLocale) {
+                i18nPlugin.api.changeLocale(newLocale)
+              }
+            }
+          })
+        }
 
-        // 语言切换时同步更新页面标题和全局 locale
+        // 语言切换时同步更新页面标题
         try {
           const api = (engine as any).api
           const router = (engine as any).router
           const i18n = api?.i18n
           if (i18n && router && typeof i18n.on === 'function') {
             i18n.on('localeChanged', (newLocale: string) => {
-              // 更新全局 locale，触发 size 和 color 组件的响应式更新
-              globalLocale.value = newLocale
-              
               try {
                 const current = typeof router.getCurrentRoute === 'function' ? router.getCurrentRoute().value : null
                 const titleKey = current?.meta?.titleKey

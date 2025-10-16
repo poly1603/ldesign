@@ -11,5 +11,17 @@ export {
   type SizeChangeListener 
 } from './core/SizeManager'
 
+// Plugin exports
+export { createSizePlugin, SizePluginSymbol } from './plugin'
+export type { SizePlugin, SizePluginOptions } from './plugin'
+
+// Engine plugin integration
+export { createSizeEnginePlugin, useSizeFromEngine } from './plugin/engine'
+export type { SizeEnginePluginOptions } from './plugin/engine'
+
+// Locale exports
+export { zhCN, enUS, getLocale } from './locales'
+export type { SizeLocale, LocaleKey } from './locales'
+
 // Version
 export const version = '1.0.0'

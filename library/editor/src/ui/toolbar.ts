@@ -98,27 +98,92 @@ export class Toolbar {
     // 如果是下拉按钮，需要更宽的按钮容纳图标和箭头
     if (isDropdown) {
       button.style.width = 'auto'
-      button.style.minWidth = '48px'
+      button.style.minWidth = item.name === 'heading' ? '80px' : '48px'  // 标题按钮需要更宽
       button.style.paddingLeft = '8px'
       button.style.paddingRight = '8px'
       button.style.gap = '4px'
+      button.style.display = 'flex'
+      button.style.alignItems = 'center'
+      button.style.justifyContent = 'space-between'
     }
 
-    // 创建图标
-    const iconElement = createIcon(item.icon)
-    if (iconElement) {
-      button.appendChild(iconElement)
-      
-      // 如果是下拉按钮，添加向下箭头
-      if (isDropdown) {
-        const chevron = createIcon('chevron-down')
-        if (chevron) {
-          chevron.style.opacity = '0.6'
-          button.appendChild(chevron)
+    // 如果是标题按钮，特殊处理
+    if (item.name === 'heading') {
+      // 不使用默认图标，而是创建实时更新的文本
+      const levelText = document.createElement('span')
+      levelText.className = 'heading-level-text'
+      levelText.style.fontSize = '14px'
+      levelText.style.fontWeight = '600'
+      levelText.style.marginRight = 'auto'
+      levelText.textContent = 'H1'  // 默认显示
+      button.appendChild(levelText)
+        
+      // 更新当前级别显示
+      const updateLevelText = () => {
+        const selection = window.getSelection()
+        if (!selection || selection.rangeCount === 0) {
+          levelText.textContent = '正文'
+          return
         }
+        
+        let element = selection.anchorNode
+        if (!element) {
+          levelText.textContent = '正文'
+          return
+        }
+        
+        element = element.nodeType === Node.TEXT_NODE 
+          ? element.parentElement 
+          : element as HTMLElement
+        
+        while (element && element !== document.body) {
+          const tagName = element.tagName?.toUpperCase()
+          switch(tagName) {
+            case 'H1': levelText.textContent = 'H1'; return
+            case 'H2': levelText.textContent = 'H2'; return
+            case 'H3': levelText.textContent = 'H3'; return
+            case 'H4': levelText.textContent = 'H4'; return
+            case 'H5': levelText.textContent = 'H5'; return
+            case 'H6': levelText.textContent = 'H6'; return
+            case 'P':
+            case 'DIV':
+              if (!element.closest('h1,h2,h3,h4,h5,h6')) {
+                levelText.textContent = '正文'
+                return
+              }
+              break
+          }
+          element = element.parentElement
+        }
+        levelText.textContent = '正文'
       }
+      
+      // 监听事件
+      button.addEventListener('mouseenter', updateLevelText)
+      document.addEventListener('selectionchange', updateLevelText)
+      if (this.editor.contentElement) {
+        this.editor.contentElement.addEventListener('input', updateLevelText)
+      }
+      
+      // 初始化显示
+      updateLevelText()
     } else {
-      button.textContent = item.title
+      // 其他按钮使用图标
+      const iconElement = createIcon(item.icon)
+      if (iconElement) {
+        button.appendChild(iconElement)
+      } else {
+        button.textContent = item.title
+      }
+    }
+    
+    // 如果是下拉按钮，添加向下箭头
+    if (isDropdown) {
+      const chevron = createIcon('chevron-down')
+      if (chevron) {
+        chevron.style.opacity = '0.6'
+        button.appendChild(chevron)
+      }
     }
 
     // 防止按钮获取焦点导致选区丢失
@@ -147,6 +212,33 @@ export class Toolbar {
 
       // 特殊处理：标题级别下拉
       if (item.name === 'heading') {
+        // 获取当前标题级别
+        const getCurrentLevel = () => {
+          const selection = window.getSelection()
+          if (!selection || selection.rangeCount === 0) return 'p'
+          
+          let element = selection.anchorNode
+          if (!element) return 'p'
+          
+          element = element.nodeType === Node.TEXT_NODE 
+            ? element.parentElement 
+            : element as HTMLElement
+          
+          while (element && element !== document.body) {
+            const tagName = element.tagName?.toUpperCase()
+            if (['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(tagName)) {
+              return tagName.toLowerCase()
+            }
+            if (['P', 'DIV'].includes(tagName) && !element.closest('h1,h2,h3,h4,h5,h6')) {
+              return 'p'
+            }
+            element = element.parentElement
+          }
+          return 'p'
+        }
+        
+        const currentLevel = getCurrentLevel()
+        
         showDropdown(button, {
           options: [
             { label: '正文', value: 'p' },
@@ -157,6 +249,7 @@ export class Toolbar {
             { label: '标题 5', value: 'h5' },
             { label: '标题 6', value: 'h6' }
           ],
+          selectedValue: currentLevel,  // 传递当前值
           onSelect: (value) => {
             const map: Record<string, string> = {
               p: 'setParagraph',

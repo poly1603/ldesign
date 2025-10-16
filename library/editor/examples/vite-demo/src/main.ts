@@ -15,6 +15,7 @@ import '@/styles/codeblock.css'
 import { Editor } from '@/core/Editor'
 
 // 导入插件
+import { HeadingPlugin } from '@/plugins/text/heading'  // 重要！标题插件
 import { MediaCommandsPlugin } from '@/plugins/media'
 import { FormattingCommandsPlugin } from '@/plugins/formatting'
 import FullscreenPlugin from '@/plugins/utils/fullscreen'
@@ -30,6 +31,8 @@ const editor = new Editor({
   placeholder: '开始输入内容...',
   autofocus: true,
   plugins: [
+    // 标题插件 - 必须放在最前面！
+    HeadingPlugin,
     // 媒体插件
     MediaCommandsPlugin,
     // 格式化插件

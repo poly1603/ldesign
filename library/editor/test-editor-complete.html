@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>完整编辑器测试 - 包含标题功能</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      font-size: 36px;
+      margin: 0 0 10px 0;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .main-content {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+    
+    .editor-wrapper {
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+    
+    .editor-container {
+      min-height: 500px;
+      background: white;
+    }
+    
+    .test-controls {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .test-controls h3 {
+      margin: 0 0 15px 0;
+      color: #1f2937;
+    }
+    
+    .test-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .test-button {
+      padding: 10px 20px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .test-button:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .test-button.heading {
+      background: #10b981;
+    }
+    
+    .test-button.heading:hover {
+      background: #059669;
+    }
+    
+    .status-message {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      display: none;
+    }
+    
+    .status-message.success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #6ee7b7;
+      display: block;
+    }
+    
+    .status-message.error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      display: block;
+    }
+    
+    .info-box {
+      background: #eff6ff;
+      border: 1px solid #93c5fd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .info-box h4 {
+      margin: 0 0 10px 0;
+      color: #1e40af;
+    }
+    
+    .info-box ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .info-box li {
+      margin-bottom: 5px;
+      color: #3730a3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>完整编辑器测试</h1>
+      <p>包含所有插件功能，特别是标题和段落功能</p>
+    </div>
+    
+    <div class="main-content">
+      <div class="info-box">
+        <h4>🎯 测试说明</h4>
+        <ul>
+          <li>编辑器已加载所有默认插件</li>
+          <li>标题插件已正确注册</li>
+          <li>点击下方按钮测试各种功能</li>
+          <li>工具栏会显示当前标题级别</li>
+        </ul>
+      </div>
+      
+      <div class="test-controls">
+        <h3>快速测试按钮</h3>
+        <div class="test-buttons">
+          <button class="test-button heading" data-command="setParagraph">设为段落</button>
+          <button class="test-button heading" data-command="setHeading1">H1 标题</button>
+          <button class="test-button heading" data-command="setHeading2">H2 标题</button>
+          <button class="test-button heading" data-command="setHeading3">H3 标题</button>
+          <button class="test-button heading" data-command="setHeading4">H4 标题</button>
+          <button class="test-button heading" data-command="setHeading5">H5 标题</button>
+          <button class="test-button heading" data-command="setHeading6">H6 标题</button>
+          <button class="test-button" data-command="bold">加粗</button>
+          <button class="test-button" data-command="italic">斜体</button>
+          <button class="test-button" data-command="underline">下划线</button>
+        </div>
+      </div>
+      
+      <div class="editor-wrapper">
+        <div class="editor-container" id="editor"></div>
+      </div>
+      
+      <div id="status" class="status-message"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    // 正确导入 Editor 类和所有插件
+    import { Editor } from './src/index.ts'
+    
+    // 显示状态消息
+    function showStatus(message, type = 'success') {
+      const statusEl = document.getElementById('status')
+      statusEl.className = `status-message ${type}`
+      statusEl.textContent = message
+      setTimeout(() => {
+        statusEl.className = 'status-message'
+      }, 3000)
+    }
+    
+    try {
+      // 初始化编辑器 - 不指定插件列表，将自动加载所有默认插件
+      const editor = new Editor({
+        element: document.getElementById('editor'),
+        placeholder: '开始输入内容，或使用上方按钮测试功能...',
+        content: `
+          <h1>标题功能测试</h1>
+          <p>这是一个段落。将光标放在不同的位置，工具栏会显示当前的标题级别。</p>
+          <h2>二级标题</h2>
+          <p>选中文本后，可以使用工具栏或快捷键设置标题级别。</p>
+          <h3>三级标题</h3>
+          <p>编辑器支持 H1 到 H6 六个级别的标题。</p>
+          <blockquote>
+            <p>提示：工具栏的标题按钮会动态显示当前选中文本的标题级别。</p>
+          </blockquote>
+        `,
+        autofocus: true
+      })
+      
+      // 将编辑器实例暴露到全局，方便调试
+      window.editor = editor
+      
+      // 检查插件是否正确加载
+      console.log('✅ 编辑器初始化成功')
+      console.log('📦 已加载插件:', editor.plugins.getPlugins().map(p => p.name))
+      console.log('⌨️ 已注册命令:', editor.commands.getCommands())
+      
+      // 验证标题命令是否存在
+      const headingCommands = ['setParagraph', 'setHeading1', 'setHeading2', 'setHeading3', 'setHeading4', 'setHeading5', 'setHeading6']
+      const missingCommands = headingCommands.filter(cmd => !editor.commands.hasCommand(cmd))
+      
+      if (missingCommands.length === 0) {
+        console.log('✅ 所有标题命令已成功注册')
+        showStatus('编辑器初始化成功，所有功能就绪！', 'success')
+      } else {
+        console.warn('⚠️ 缺少以下标题命令:', missingCommands)
+        showStatus('警告：部分标题命令未注册', 'error')
+      }
+      
+      // 绑定测试按钮
+      document.querySelectorAll('.test-button').forEach(button => {
+        button.addEventListener('click', () => {
+          const command = button.dataset.command
+          if (command) {
+            try {
+              // 先确保编辑器获得焦点
+              editor.focus()
+              
+              // 执行命令
+              const result = editor.commands.execute(command)
+              
+              if (result) {
+                console.log(`✅ 执行命令 '${command}' 成功`)
+                showStatus(`命令 '${command}' 执行成功`, 'success')
+              } else {
+                console.warn(`⚠️ 执行命令 '${command}' 失败`)
+                showStatus(`命令 '${command}' 执行失败`, 'error')
+              }
+            } catch (error) {
+              console.error(`❌ 执行命令 '${command}' 出错:`, error)
+              showStatus(`错误: ${error.message}`, 'error')
+            }
+          }
+        })
+      })
+      
+      // 监听选区变化，显示当前标题级别
+      editor.on('selectionUpdate', (selection) => {
+        const sel = window.getSelection()
+        if (sel && sel.rangeCount > 0) {
+          const node = sel.anchorNode
+          if (node) {
+            const block = node.nodeType === Node.TEXT_NODE 
+              ? node.parentElement 
+              : node
+            
+            if (block) {
+              const tagName = block.tagName?.toLowerCase()
+              let levelText = '段落'
+              
+              if (tagName && tagName.startsWith('h')) {
+                const level = tagName.charAt(1)
+                levelText = `标题 ${level}`
+              }
+              
+              // 更新工具栏标题按钮（如果存在）
+              const headingButton = document.querySelector('.ldesign-toolbar button[data-command="heading"]')
+              if (headingButton) {
+                const buttonText = headingButton.querySelector('.button-text')
+                if (buttonText) {
+                  buttonText.textContent = levelText
+                }
+              }
+            }
+          }
+        }
+      })
+      
+    } catch (error) {
+      console.error('❌ 编辑器初始化失败:', error)
+      showStatus(`初始化失败: ${error.message}`, 'error')
+    }
+  </script>
+</body>
+</html>

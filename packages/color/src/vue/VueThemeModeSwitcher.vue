@@ -24,8 +24,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, inject } from 'vue'
 import { Sun, Moon, Monitor, Check, ChevronDown } from 'lucide-vue-next'
+import { getLocale } from '../locales'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 
@@ -44,19 +45,31 @@ const isOpen = ref(false)
 const currentMode = ref<ThemeMode>('system')
 const systemPreference = ref<'light' | 'dark'>('light')
 
-const modes = [
-  { value: 'light' as const, label: '浅色', icon: Sun },
-  { value: 'dark' as const, label: '深色', icon: Moon },
-  { value: 'system' as const, label: '跟随系统', icon: Monitor }
-]
+// 响应式国际化支持
+const appLocale = inject<any>('app-locale', null)
+
+const currentLocale = computed(() => {
+  if (appLocale && appLocale.value) {
+    return appLocale.value
+  }
+  return 'zh-CN'
+})
+
+const locale = computed(() => getLocale(currentLocale.value))
+
+const modes = computed(() => [
+  { value: 'light' as const, label: locale.value.themeMode.light, icon: Sun },
+  { value: 'dark' as const, label: locale.value.themeMode.dark, icon: Moon },
+  { value: 'system' as const, label: locale.value.themeMode.system, icon: Monitor }
+])
 
 const currentModeLabel = computed(() => {
-  const mode = modes.find(m => m.value === currentMode.value)
+  const mode = modes.value.find(m => m.value === currentMode.value)
   return mode?.label || '主题'
 })
 
 const currentIcon = computed(() => {
-  const mode = modes.find(m => m.value === currentMode.value)
+  const mode = modes.value.find(m => m.value === currentMode.value)
   return mode?.icon || Sun
 })
 
@@ -131,7 +144,7 @@ onMounted(() => {
   
   // 从 localStorage 读取保存的主题模式
   const savedMode = localStorage.getItem(STORAGE_KEY) as ThemeMode | null
-  if (savedMode && modes.some(m => m.value === savedMode)) {
+  if (savedMode && modes.value.some(m => m.value === savedMode)) {
     currentMode.value = savedMode
   } else if (props.defaultMode) {
     currentMode.value = props.defaultMode

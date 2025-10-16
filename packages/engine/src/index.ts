@@ -89,5 +89,9 @@ export {
   usePlugins
 } from './vue/composables'
 
+// ==================== 插件导出 ====================
+export { createI18nEnginePlugin } from './plugins/i18n'
+export type { I18nEnginePluginOptions } from './plugins/i18n'
+
 // ==================== 版本信息 ====================
 export const version = '1.0.0'

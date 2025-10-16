@@ -5,8 +5,11 @@
  */
 
 import type { App } from 'vue'
+import { ref, computed, type Ref, type ComputedRef } from 'vue'
 import { ThemeManager, type ThemeOptions, type ThemeState } from '../themes/themeManager'
 import { presetThemes, type PresetTheme } from '../themes/presets'
+import { getLocale } from '../locales'
+import type { ColorLocale } from '../locales'
 
 /**
  * Color plugin configuration options
@@ -149,6 +152,16 @@ export interface ColorPlugin {
   }
 
   /**
+   * Current locale (reactive)
+   */
+  currentLocale: Ref<string>
+
+  /**
+   * Current locale messages (computed)
+   */
+  localeMessages: ComputedRef<ColorLocale>
+
+  /**
    * Apply a theme
    */
   applyTheme: (colorOrName: string, options?: ThemeOptions) => Promise<ThemeState>
@@ -187,6 +200,11 @@ export interface ColorPlugin {
    * Install the plugin
    */
   install: (app: App) => void
+  
+  /**
+   * Set locale
+   */
+  setLocale: (locale: string) => void
 }
 
 /**
@@ -198,6 +216,19 @@ export const ColorPluginSymbol = Symbol('ColorPlugin')
  * Create color plugin
  */
 export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin {
+  // Reactive locale support - will be linked to global locale
+  // Try to get initial locale from engine.state or default to 'en-US'
+  let initialLocale = 'en-US'
+  if (typeof window !== 'undefined' && (window as any).__ENGINE__?.state) {
+    const engineLocale = (window as any).__ENGINE__.state.get('locale')
+    if (engineLocale) {
+      initialLocale = engineLocale
+    }
+  }
+  
+  let currentLocale = ref(initialLocale)
+  const localeMessages = computed(() => getLocale(currentLocale.value))
+  
   // Merge options with defaults
   const mergedOptions = {
     prefix: options.prefix || 'ld',
@@ -462,6 +493,8 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
     manager,
     presets: availablePresets,
     options: mergedOptions,
+    currentLocale,
+    localeMessages,
     applyTheme,
     applyPresetTheme,
     getCurrentTheme: () => manager.getCurrentTheme(),
@@ -469,10 +502,44 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
     addCustomTheme,
     removeCustomTheme,
     getSortedPresets,
+    setLocale: (locale: string) => {
+      currentLocale.value = locale
+    },
 
     install(app: App) {
       // Provide plugin instance
       app.provide(ColorPluginSymbol, plugin)
+      
+      // Use existing app-locale if available
+      const existingLocale = app._context?.provides?.['app-locale']
+      if (existingLocale && typeof existingLocale.value !== 'undefined') {
+        // Bind to the shared global locale
+        plugin.currentLocale = existingLocale
+        currentLocale = existingLocale
+      }
+      
+      // Sync with engine.state locale and listen to changes
+      if (typeof window !== 'undefined' && (window as any).__ENGINE__?.state) {
+        const engine = (window as any).__ENGINE__
+        
+        // Get initial locale from engine.state
+        const initialLocale = engine.state.get('locale')
+        if (initialLocale && currentLocale.value !== initialLocale) {
+          currentLocale.value = initialLocale
+        }
+        
+        // Listen to future changes
+        engine.state.watch('locale', (newLocale: string) => {
+          if (currentLocale.value !== newLocale) {
+            currentLocale.value = newLocale
+          }
+        })
+      }
+      
+      // Provide color locale for consumers
+      app.provide('color-locale', localeMessages)
+      
+      app.provide('color-locale', localeMessages)
 
       // Add global property
       app.config.globalProperties.$color = plugin

@@ -65,7 +65,7 @@ export class MapRenderer {
     console.log('Container dimensions:', rect.width, 'x', rect.height);
 
     this.mode = options.mode || '2d';
-    this.autoFit = options.autoFit !== false;  // 默认启用自动适配
+    this.autoFit = options.autoFit === true;  // 默认禁用自动适配，只有明确设置true时才启用
     
     // 初始化缩放控制选项
     this.smoothZoom = options.smoothZoom !== false;  // 默认启用
@@ -85,23 +85,32 @@ export class MapRenderer {
       ...options.selectionStyle
     };
     
-    // 如果启用自动适配，使用智能计算的初始视口
-    if (this.autoFit) {
-      const autoViewState = this.calculateOptimalViewState(rect.width, rect.height);
+    // 设置视口状态
+    // 如果提供了viewState，使用它；否则根据autoFit决定
+    if (options.viewState) {
       this.viewState = {
-        ...autoViewState,
+        longitude: 113.3,
+        latitude: 23.1,
+        zoom: 6,
         pitch: this.mode === '3d' ? 45 : 0,
         bearing: 0,
         ...options.viewState
       };
+    } else if (this.autoFit === true) {
+      const autoViewState = this.calculateOptimalViewState(rect.width, rect.height);
+      this.viewState = {
+        ...autoViewState,
+        pitch: this.mode === '3d' ? 45 : 0,
+        bearing: 0
+      };
     } else {
+      // 使用简单的默认值，优先使用传入的经纬度和缩放
       this.viewState = {
         longitude: options.longitude || 113.3,
         latitude: options.latitude || 23.1,
         zoom: options.zoom || 6,
         pitch: this.mode === '3d' ? 45 : 0,
-        bearing: 0,
-        ...options.viewState
+        bearing: 0
       };
     }
     
@@ -127,9 +136,17 @@ export class MapRenderer {
       this.container.style.position = 'relative';
     }
     
+    // 确保容器有overflow hidden以防止内容溢出
+    this.container.style.overflow = 'hidden';
+    
     const rect = this.container.getBoundingClientRect();
-    const width = rect.width || this.container.offsetWidth || 800;
-    const height = rect.height || this.container.offsetHeight || 600;
+    const width = rect.width || this.container.offsetWidth;
+    const height = rect.height || this.container.offsetHeight;
+    
+    if (!width || !height) {
+      console.error('Container has no size:', width, height);
+      return;
+    }
     
     console.log('Initializing deck with container:', this.container);
     console.log('Container size:', width, 'x', height);
@@ -138,14 +155,10 @@ export class MapRenderer {
       // 创建canvas元素
       const canvas = document.createElement('canvas');
       canvas.style.position = 'absolute';
-      canvas.style.top = '0';
       canvas.style.left = '0';
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
-      canvas.style.pointerEvents = 'auto';
+      canvas.style.top = '0';
       this.container.appendChild(canvas);
       
-      // 使用canvas模式而非container模式
       // 配置 controller
       const controllerOptions: any = {
         scrollZoom: {
@@ -167,18 +180,14 @@ export class MapRenderer {
       };
       
       this.deck = new Deck({
-        canvas: canvas,
-        width,
-        height,
+        canvas: canvas,  // 使用我们创建的canvas
+        width: width,
+        height: height,
         initialViewState: this.viewState,
         controller: controllerOptions,
         layers: [],
-        style: {
-          position: 'absolute',
-          top: '0px',
-          left: '0px',
-          width: '100%',
-          height: '100%'
+        onResize: ({width, height}) => {
+          console.log('Deck resized:', width, height);
         },
         onViewStateChange: ({ viewState }) => {
           this.handleViewStateChange(viewState);
@@ -466,7 +475,8 @@ export class MapRenderer {
     console.log('renderGeoJSON called with:', geoJson, 'features count:', geoJson.features?.length);
     
     // 如果启用自动适配，计算并设置最佳视口
-    if (this.autoFit && geoJson.features && geoJson.features.length > 0) {
+    // 只有在明确设置了autoFit为true时才进行自动适配
+    if (this.autoFit === true && geoJson.features && geoJson.features.length > 0) {
       this.calculateGeoJsonBounds(geoJson);
       this.fitToGeoJson();
     }
@@ -916,6 +926,10 @@ export class MapRenderer {
       };
     }).filter(item => item.text && item.position) || [];
     
+    // 构建中文字符集
+    const chineseChars = labelData.map(d => d.text).join('');
+    const uniqueChars = Array.from(new Set(chineseChars)).join('');
+    
     const textLayer = new TextLayer({
       id: `${options.id || 'geojson-layer'}-labels`,
       data: labelData,
@@ -933,7 +947,7 @@ export class MapRenderer {
       sizeMinPixels: labelOptions.sizeMinPixels || Math.max(8, dynamicFontSize * 0.6),
       sizeMaxPixels: labelOptions.sizeMaxPixels || Math.min(48, dynamicFontSize * 1.8),
       billboard: labelOptions.billboard !== false,  // 3D模式下始终面向相机
-      characterSet: labelOptions.characterSet || 'auto'
+      characterSet: labelOptions.characterSet || uniqueChars  // 使用实际的字符集
     } as any);
     
     this.addLayer(textLayer);
@@ -1253,8 +1267,8 @@ export class MapRenderer {
     const lngDiff = maxLng - minLng;
     const latDiff = maxLat - minLat;
     
-    // 添加 15% 的 padding 确保地图不被裁剪
-    const paddingFactor = 0.15;
+    // 添加 20% 的 padding 确保地图不被裁剪
+    const paddingFactor = 0.2;
     const lngPadding = lngDiff * paddingFactor;
     const latPadding = latDiff * paddingFactor;
     
@@ -1281,6 +1295,9 @@ export class MapRenderer {
       zoom = Math.log2((height * 360) / (paddedLatDiff * 512));
     }
     
+    // 减小缩放级别以确保地图完全显示
+    zoom = zoom - 0.5;  // 减小 0.5 级缩放
+    
     // 限制 zoom 的范围，避免过度缩放
     zoom = Math.max(1, Math.min(20, zoom));
     
@@ -1293,7 +1310,15 @@ export class MapRenderer {
       paddedSize: { paddedLngDiff, paddedLatDiff }
     });
     
-    this.setViewState({ longitude: centerLng, latitude: centerLat, zoom });
+    // 使用 setTimeout 延迟设置视口，确保 deck.gl 已经初始化完成
+    setTimeout(() => {
+      this.setViewState({ 
+        longitude: centerLng, 
+        latitude: centerLat, 
+        zoom,
+        transitionDuration: 300  // 添加平滑过渡
+      });
+    }, 100);
   }
   
   /**

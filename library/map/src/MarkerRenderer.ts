@@ -552,6 +552,10 @@ export class MarkerRenderer {
       marker
     }));
     
+    // 构建标签字符集
+    const labelChars = labelData.map(d => d.text).join('');
+    const uniqueLabelChars = Array.from(new Set(labelChars)).join('');
+    
     return new TextLayer({
       id: 'marker-labels-layer',
       data: labelData,
@@ -565,8 +569,9 @@ export class MarkerRenderer {
       fontFamily: (d: any) => d.marker.label?.fontFamily || 'Arial, sans-serif',
       fontWeight: (d: any) => d.marker.label?.fontWeight || 'normal',
       maxWidth: (d: any) => d.marker.label?.maxWidth || 200,
-      backgroundColor: (d: any) => d.marker.label?.backgroundColor,
-      backgroundPadding: (d: any) => d.marker.label?.backgroundPadding || [2, 2]
+      getBackgroundColor: (d: any) => d.marker.label?.backgroundColor || [255, 255, 255, 0],  // 使用新的API
+      backgroundPadding: (d: any) => d.marker.label?.backgroundPadding || [2, 2],
+      characterSet: uniqueLabelChars  // 设置字符集
     } as any);
   }
   

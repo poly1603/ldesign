@@ -261,6 +261,24 @@
   transform: translateX(0);
 }
 
+/* 当前选中的选项样式 */
+.editor-dropdown-option.active {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  font-weight: 500;
+  position: relative;
+  padding-left: 28px;
+}
+
+.editor-dropdown-option.active::before {
+  content: '✓';
+  position: absolute;
+  left: 10px;
+  color: #1976d2;
+  font-size: 14px;
+  font-weight: bold;
+}
+
 /* 颜色预览 */
 .editor-dropdown-color-preview {
   width: 18px;

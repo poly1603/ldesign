@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>标题功能修复测试</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    #editor {
+      min-height: 400px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+    .test-buttons {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button.success {
+      background: #28a745;
+    }
+    button.success:hover {
+      background: #218838;
+    }
+    .heading-button {
+      background: #6f42c1;
+    }
+    .heading-button:hover {
+      background: #5a32a3;
+    }
+    pre {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      display: none;
+    }
+    .status.show {
+      display: block;
+    }
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✨ 标题功能修复测试</h1>
+    
+    <div class="status" id="status"></div>
+    
+    <div class="test-buttons">
+      <button onclick="testHeading(1)" class="heading-button">H1 标题</button>
+      <button onclick="testHeading(2)" class="heading-button">H2 标题</button>
+      <button onclick="testHeading(3)" class="heading-button">H3 标题</button>
+      <button onclick="testHeading(4)" class="heading-button">H4 标题</button>
+      <button onclick="testHeading(5)" class="heading-button">H5 标题</button>
+      <button onclick="testHeading(6)" class="heading-button">H6 标题</button>
+      <button onclick="testParagraph()" class="heading-button">段落</button>
+      <button onclick="manualSetHeading()" class="success">手动设置标题</button>
+      <button onclick="checkCommands()">检查命令</button>
+      <button onclick="checkPlugins()">检查插件</button>
+    </div>
+    
+    <div id="editor"></div>
+    
+    <h2>测试结果：</h2>
+    <pre id="output">等待测试...</pre>
+  </div>
+
+  <script type="module">
+    // 直接从源码导入
+    import { Editor } from './src/index.ts'
+    import { HeadingPlugin } from './src/plugins/text/heading.ts'
+    
+    // 全局变量
+    let editor = null;
+    
+    function showStatus(message, type = 'success') {
+      const status = document.getElementById('status');
+      status.className = `status show ${type}`;
+      status.textContent = message;
+      setTimeout(() => {
+        status.className = 'status';
+      }, 3000);
+    }
+    
+    function log(message) {
+      const output = document.getElementById('output');
+      const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+      output.textContent += `[${timestamp}] ${message}\n`;
+      console.log(message);
+    }
+    
+    // 初始化编辑器
+    try {
+      log('开始初始化编辑器...');
+      
+      // 验证 HeadingPlugin
+      log(`HeadingPlugin 导入成功: ${!!HeadingPlugin}`);
+      if (HeadingPlugin) {
+        log(`HeadingPlugin.name: ${HeadingPlugin.name}`);
+        log(`HeadingPlugin.config: ${HeadingPlugin.config ? 'exists' : 'missing'}`);
+        
+        if (HeadingPlugin.config && HeadingPlugin.config.commands) {
+          const commands = Object.keys(HeadingPlugin.config.commands);
+          log(`HeadingPlugin 命令: ${commands.join(', ')}`);
+        }
+      }
+      
+      // 创建编辑器，明确指定 HeadingPlugin
+      editor = new Editor({
+        element: document.getElementById('editor'),
+        placeholder: '在这里输入文本，然后点击上面的按钮设置标题...',
+        content: `
+          <p>这是第一段文本，点击 H1 按钮将其变为一级标题。</p>
+          <p>这是第二段文本，点击 H2 按钮将其变为二级标题。</p>
+          <p>这是第三段文本，点击 H3 按钮将其变为三级标题。</p>
+        `,
+        plugins: [HeadingPlugin]  // 明确只加载 HeadingPlugin
+      });
+      
+      window.editor = editor;
+      log('✅ 编辑器初始化成功');
+      
+      // 立即检查命令注册
+      setTimeout(() => {
+        const commands = editor.commands.getCommands();
+        log(`已注册命令: ${commands.join(', ')}`);
+        
+        // 检查标题命令
+        const headingCommands = ['setHeading1', 'setHeading2', 'setHeading3', 'setHeading4', 'setHeading5', 'setHeading6', 'setParagraph'];
+        headingCommands.forEach(cmd => {
+          const exists = commands.includes(cmd);
+          log(`${cmd}: ${exists ? '✅ 已注册' : '❌ 未注册'}`);
+        });
+      }, 100);
+      
+    } catch (error) {
+      log(`❌ 初始化失败: ${error.message}`);
+      console.error(error);
+    }
+    
+    // 测试标题设置
+    window.testHeading = function(level) {
+      log(`\n--- 测试设置 H${level} ---`);
+      
+      if (!editor) {
+        showStatus('编辑器未初始化', 'error');
+        return;
+      }
+      
+      // 确保编辑器有焦点
+      editor.contentElement.focus();
+      
+      // 获取或创建选区
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) {
+        // 选中第一个段落
+        const firstP = editor.contentElement.querySelector('p, h1, h2, h3, h4, h5, h6');
+        if (firstP) {
+          const range = document.createRange();
+          range.selectNodeContents(firstP);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      }
+      
+      // 检查命令是否存在
+      const commandName = `setHeading${level}`;
+      const hasCommand = editor.commands.get(commandName) !== undefined;
+      
+      if (hasCommand) {
+        try {
+          const success = editor.commands.execute(commandName);
+          if (success) {
+            showStatus(`成功设置为 H${level} 标题`, 'success');
+            log(`✅ 成功执行 ${commandName}`);
+          } else {
+            showStatus(`设置 H${level} 失败`, 'error');
+            log(`❌ 执行 ${commandName} 返回 false`);
+          }
+        } catch (error) {
+          showStatus(`执行命令出错: ${error.message}`, 'error');
+          log(`❌ 执行错误: ${error.message}`);
+        }
+      } else {
+        showStatus(`命令 ${commandName} 未注册`, 'error');
+        log(`❌ 命令 ${commandName} 不存在`);
+        
+        // 尝试手动执行
+        log('尝试直接使用 document.execCommand...');
+        const success = document.execCommand('formatBlock', false, `H${level}`);
+        log(`document.execCommand 结果: ${success}`);
+        if (success) {
+          showStatus(`通过 execCommand 设置成功`, 'success');
+        }
+      }
+    };
+    
+    // 测试段落设置
+    window.testParagraph = function() {
+      log('\n--- 测试设置段落 ---');
+      
+      if (!editor) {
+        showStatus('编辑器未初始化', 'error');
+        return;
+      }
+      
+      editor.contentElement.focus();
+      
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) {
+        const firstH = editor.contentElement.querySelector('h1, h2, h3, h4, h5, h6, p');
+        if (firstH) {
+          const range = document.createRange();
+          range.selectNodeContents(firstH);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      }
+      
+      const hasCommand = editor.commands.get('setParagraph') !== undefined;
+      
+      if (hasCommand) {
+        try {
+          const success = editor.commands.execute('setParagraph');
+          if (success) {
+            showStatus('成功设置为段落', 'success');
+            log('✅ 成功执行 setParagraph');
+          } else {
+            showStatus('设置段落失败', 'error');
+            log('❌ 执行 setParagraph 返回 false');
+          }
+        } catch (error) {
+          showStatus(`执行命令出错: ${error.message}`, 'error');
+          log(`❌ 执行错误: ${error.message}`);
+        }
+      } else {
+        showStatus('命令 setParagraph 未注册', 'error');
+        log('❌ 命令 setParagraph 不存在');
+        
+        // 尝试手动执行
+        log('尝试直接使用 document.execCommand...');
+        const success = document.execCommand('formatBlock', false, 'P');
+        log(`document.execCommand 结果: ${success}`);
+        if (success) {
+          showStatus('通过 execCommand 设置成功', 'success');
+        }
+      }
+    };
+    
+    // 手动设置标题（绕过命令系统）
+    window.manualSetHeading = function() {
+      log('\n--- 手动设置标题测试 ---');
+      
+      if (!editor) {
+        showStatus('编辑器未初始化', 'error');
+        return;
+      }
+      
+      // 手动注册命令
+      const setHeading1 = (state, dispatch) => {
+        if (!dispatch) return true;
+        
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) {
+          return false;
+        }
+        
+        // 如果没有选中内容，选中当前段落
+        let range = selection.getRangeAt(0);
+        if (range.collapsed) {
+          const container = range.commonAncestorContainer;
+          const block = container.nodeType === Node.TEXT_NODE 
+            ? container.parentElement 
+            : container;
+          
+          if (block) {
+            let blockElement = block;
+            while (blockElement && !['DIV', 'P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(blockElement.tagName)) {
+              if (blockElement.parentElement) {
+                blockElement = blockElement.parentElement;
+              } else {
+                break;
+              }
+            }
+            
+            if (blockElement) {
+              range = document.createRange();
+              range.selectNodeContents(blockElement);
+              selection.removeAllRanges();
+              selection.addRange(range);
+            }
+          }
+        }
+        
+        const success = document.execCommand('formatBlock', false, 'H1');
+        return success;
+      };
+      
+      // 注册所有标题命令
+      for (let i = 1; i <= 6; i++) {
+        const commandName = `setHeading${i}`;
+        editor.commands.register(commandName, (state, dispatch) => {
+          if (!dispatch) return true;
+          
+          const selection = window.getSelection();
+          if (!selection || selection.rangeCount === 0) return false;
+          
+          let range = selection.getRangeAt(0);
+          if (range.collapsed) {
+            const container = range.commonAncestorContainer;
+            const block = container.nodeType === Node.TEXT_NODE 
+              ? container.parentElement 
+              : container;
+            
+            if (block) {
+              let blockElement = block;
+              while (blockElement && !['DIV', 'P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(blockElement.tagName)) {
+                if (blockElement.parentElement) {
+                  blockElement = blockElement.parentElement;
+                } else {
+                  break;
+                }
+              }
+              
+              if (blockElement) {
+                range = document.createRange();
+                range.selectNodeContents(blockElement);
+                selection.removeAllRanges();
+                selection.addRange(range);
+              }
+            }
+          }
+          
+          return document.execCommand('formatBlock', false, `H${i}`);
+        });
+        
+        log(`✅ 手动注册命令 ${commandName}`);
+      }
+      
+      // 注册段落命令
+      editor.commands.register('setParagraph', (state, dispatch) => {
+        if (!dispatch) return true;
+        
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return false;
+        
+        let range = selection.getRangeAt(0);
+        if (range.collapsed) {
+          const container = range.commonAncestorContainer;
+          const block = container.nodeType === Node.TEXT_NODE 
+            ? container.parentElement 
+            : container;
+          
+          if (block) {
+            let blockElement = block;
+            while (blockElement && !['DIV', 'P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(blockElement.tagName)) {
+              if (blockElement.parentElement) {
+                blockElement = blockElement.parentElement;
+              } else {
+                break;
+              }
+            }
+            
+            if (blockElement) {
+              range = document.createRange();
+              range.selectNodeContents(blockElement);
+              selection.removeAllRanges();
+              selection.addRange(range);
+            }
+          }
+        }
+        
+        return document.execCommand('formatBlock', false, 'P');
+      });
+      
+      log('✅ 手动注册命令 setParagraph');
+      
+      showStatus('已手动注册所有标题命令，现在可以使用标题按钮了', 'success');
+      log('✅ 所有标题命令已手动注册完成');
+      
+      // 验证注册
+      const commands = editor.commands.getCommands();
+      log(`当前所有命令: ${commands.join(', ')}`);
+    };
+    
+    // 检查命令
+    window.checkCommands = function() {
+      log('\n--- 检查已注册命令 ---');
+      
+      if (!editor) {
+        log('❌ 编辑器未初始化');
+        return;
+      }
+      
+      const commands = editor.commands.getCommands();
+      log(`命令总数: ${commands.length}`);
+      log(`命令列表: ${commands.join(', ')}`);
+      
+      // 特别检查标题命令
+      const headingCommands = ['setHeading1', 'setHeading2', 'setHeading3', 'setHeading4', 'setHeading5', 'setHeading6', 'setParagraph'];
+      log('\n标题命令检查:');
+      headingCommands.forEach(cmd => {
+        const exists = commands.includes(cmd);
+        log(`  ${cmd}: ${exists ? '✅ 已注册' : '❌ 未注册'}`);
+      });
+    };
+    
+    // 检查插件
+    window.checkPlugins = function() {
+      log('\n--- 检查已加载插件 ---');
+      
+      if (!editor) {
+        log('❌ 编辑器未初始化');
+        return;
+      }
+      
+      const plugins = editor.plugins.getAll();
+      log(`插件总数: ${plugins.length}`);
+      
+      plugins.forEach((plugin, index) => {
+        log(`${index + 1}. ${plugin.name}`);
+        if (plugin.config && plugin.config.commands) {
+          const commands = Object.keys(plugin.config.commands);
+          log(`   命令: ${commands.join(', ')}`);
+        }
+      });
+    };
+  </script>
+</body>
+</html>

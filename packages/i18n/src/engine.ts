@@ -20,6 +20,10 @@ export interface I18nEnginePluginOptions extends I18nConfig {
    * localStorage 的 key
    */
   storageKey?: string;
+  /**
+   * 语言变化时的回调
+   */
+  onLocaleChange?: (locale: string) => void;
 }
 
 /**
@@ -30,6 +34,7 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
     detectBrowserLanguage = true,
     persistLanguage = true,
     storageKey = 'ldesign-locale',
+    onLocaleChange,
     ...i18nConfig
   } = options;
 
@@ -65,6 +70,10 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
       if (typeof document !== 'undefined') {
         document.documentElement.lang = String(locale).split('-')[0];
       }
+      // 调用自定义回调
+      if (onLocaleChange) {
+        onLocaleChange(locale);
+      }
     });
 
     // 初始化时同步 <html lang>
@@ -87,6 +96,18 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
       // 将 API 添加到 context
       if (context.engine) {
         context.engine.i18n = instance;
+        
+        // 初始化时同步当前语言到 engine.state
+        if (context.engine.state && instance.locale) {
+          context.engine.state.set('locale', instance.locale);
+        }
+        
+        // 监听语言变化，同步到 engine.state
+        instance.on('localeChanged', ({ locale }) => {
+          if (context.engine.state && locale) {
+            context.engine.state.set('locale', locale);
+          }
+        });
       }
     },
     
