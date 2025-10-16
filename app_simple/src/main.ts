@@ -11,6 +11,7 @@ import { engineConfig } from './config/app.config'
 import { auth } from './composables/useAuth'
 import { createColorPlugin } from '@ldesign/color'
 import { createTemplatePlugin } from '@ldesign/template'
+import { sizePlugin } from '@ldesign/size/vue'
 
 /**
  * 启动应用
@@ -155,6 +156,29 @@ async function bootstrap() {
       performance: import.meta.env.DEV    // 开发环境开启性能监控
     })
 
+    // Size 插件配置（尺寸管理系统）
+    const sizeOptions = {
+      storageKey: 'ldesign-size',
+      presets: [
+        {
+          name: 'extra-compact',
+          label: 'Extra Compact',
+          description: 'Very high density for maximum content',
+          baseSize: 12,
+          scale: 0.85,
+          category: 'high-density'
+        },
+        {
+          name: 'extra-spacious',
+          label: 'Extra Spacious',
+          description: 'Very low density for enhanced readability',
+          baseSize: 18,
+          scale: 1.25,
+          category: 'low-density'
+        }
+      ]
+    }
+
     // 创建 Color 插件（主题系统）
     const colorPlugin = createColorPlugin({
       prefix: 'ld',
@@ -231,6 +255,9 @@ async function bootstrap() {
 
         // 安装 Color 主题插件（提供全局主题管理和持久化）
         app.use(colorPlugin)
+
+        // 安装 Size 尺寸插件（提供响应式尺寸管理）
+        app.use(sizePlugin, sizeOptions)
 
         // 手动安装 i18n Vue 插件
         if (i18nPlugin.setupVueApp) {

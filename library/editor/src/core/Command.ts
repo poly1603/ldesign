@@ -96,9 +96,26 @@ export class KeymapManager {
 
   /**
    * 注册快捷键
+   * 支持两种形式：
+   * - register('Mod-B', command)
+   * - register({ key: 'Ctrl+Z', command: 'undo' | Command })
    */
-  register(keys: string, command: Command): void {
-    this.keymap.set(this.normalizeKey(keys), command)
+  register(keys: string | { key: string, command: Command | string }, command?: Command): void {
+    if (typeof keys === 'string') {
+      if (!command) return
+      this.keymap.set(this.normalizeKey(keys), command)
+      return
+    }
+
+    const keyStr = keys.key
+    const cmdOrName = keys.command
+    const handler: Command = (state, dispatch) => {
+      if (typeof cmdOrName === 'string') {
+        return this.editor.commands.execute(cmdOrName)
+      }
+      return cmdOrName(state, dispatch)
+    }
+    this.keymap.set(this.normalizeKey(keyStr), handler)
   }
 
   /**
@@ -146,9 +163,9 @@ export class KeymapManager {
    */
   private normalizeKey(key: string): string {
     return key
-      .split('-')
+      .split(/[-+]/) // 同时支持用 - 或 + 连接
       .map(part => {
-        if (part === 'Ctrl' || part === 'Cmd' || part === 'Command') return 'Mod'
+        if (part === 'Ctrl' || part === 'Cmd' || part === 'Command' || part === 'Meta') return 'Mod'
         if (part === 'Option') return 'Alt'
         return part
       })

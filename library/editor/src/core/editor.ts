@@ -90,6 +90,9 @@ export class Editor {
    * 获取所有默认插件
    */
   private getAllDefaultPlugins(): PluginType[] {
+    console.log('[Editor] Checking EmojiPlugin:', AllPlugins.EmojiPlugin)
+    console.log('[Editor] All available plugins:', Object.keys(AllPlugins))
+    
     return [
       // 基础格式化
       AllPlugins.BoldPlugin,

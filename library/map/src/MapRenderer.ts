@@ -70,44 +70,60 @@ export class MapRenderer {
    * Initialize deck.gl instance
    */
   private initDeck(): void {
-    // 确保容器是正确的
-    console.log('Init deck with container:', this.container);
+    // 清空容器内容
+    this.container.innerHTML = '';
+    
+    // 确保容器有正确的定位上下文
+    const position = window.getComputedStyle(this.container).position;
+    if (position === 'static') {
+      this.container.style.position = 'relative';
+    }
     
     const rect = this.container.getBoundingClientRect();
-    const width = rect.width || this.container.offsetWidth;
-    const height = rect.height || this.container.offsetHeight;
+    const width = rect.width || this.container.offsetWidth || 800;
+    const height = rect.height || this.container.offsetHeight || 600;
     
-    // 使用容器直接初始化
-    this.deck = new Deck({
-      container: this.container,
-      width,
-      height,
-      initialViewState: this.viewState,
-      controller: true,
-      layers: this.layers,
-      getTooltip: ({ object }: TooltipInfo) => object && {
-        html: this.getTooltipHTML(object),
+    console.log('Initializing deck with container:', this.container);
+    console.log('Container size:', width, 'x', height);
+    
+    try {
+      // 创建canvas元素
+      const canvas = document.createElement('canvas');
+      canvas.style.position = 'absolute';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      this.container.appendChild(canvas);
+      
+      // 使用canvas模式而非container模式
+      this.deck = new Deck({
+        canvas: canvas,
+        width,
+        height,
+        initialViewState: this.viewState,
+        controller: true,
+        layers: [],
         style: {
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          color: 'white',
-          padding: '8px',
-          borderRadius: '4px',
-          fontSize: '12px'
+          position: 'absolute'
+        },
+        getTooltip: ({ object }: TooltipInfo) => object && {
+          html: this.getTooltipHTML(object),
+          style: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            color: 'white',
+            padding: '8px',
+            borderRadius: '4px',
+            fontSize: '12px'
+          }
         }
-      },
-      onWebGLInitialized: (gl: WebGLRenderingContext) => {
-        console.log('WebGL initialized:', gl);
-      },
-      onLoad: () => {
-        console.log('Deck.gl loaded successfully');
-      },
-      onError: (error: Error) => {
-        console.error('Deck.gl error:', error);
-      }
-    });
-    
-    console.log('Deck initialized with size:', width, 'x', height);
-    console.log('Deck instance:', this.deck);
+      });
+      
+      console.log('Deck.gl initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize Deck.gl:', error);
+      throw error;
+    }
   }
 
   /**
@@ -251,13 +267,22 @@ export class MapRenderer {
    * Create gradient color function
    */
   private createGradientColorFunction(scheme: ColorScheme, geoJson: FeatureCollection, opacity: number): (feature: any, info?: any) => number[] {
-    const startColor = scheme.startColor || [0, 100, 200, opacity];
-    const endColor = scheme.endColor || [200, 100, 0, opacity];
+    const startColor = scheme.startColor || [0, 100, 200];
+    const endColor = scheme.endColor || [200, 100, 0];
     const featureCount = geoJson.features?.length || 1;
     
+    // 创建一个映射来存储每个feature的索引
+    const featureIndexMap = new Map();
+    geoJson.features?.forEach((feature, index) => {
+      const id = feature.properties?.adcode || feature.properties?.name || index;
+      featureIndexMap.set(id, index);
+    });
+    
     return (feature: any, info?: any) => {
-      const index = info?.index || 0;
-      const ratio = index / (featureCount - 1);
+      // 获取feature的索引
+      const id = feature.properties?.adcode || feature.properties?.name;
+      const index = featureIndexMap.get(id) ?? info?.index ?? 0;
+      const ratio = featureCount > 1 ? index / (featureCount - 1) : 0;
       
       return [
         Math.round(startColor[0] + (endColor[0] - startColor[0]) * ratio),
@@ -312,8 +337,12 @@ export class MapRenderer {
     
     if (!scheme.dataRange) {
       geoJson.features?.forEach(feature => {
-        const value = feature.properties?.[dataField];
-        if (typeof value === 'number') {
+        let value = feature.properties?.[dataField];
+        // 如果是字符串，尝试转换为数字
+        if (typeof value === 'string') {
+          value = parseFloat(value);
+        }
+        if (typeof value === 'number' && !isNaN(value)) {
           minValue = Math.min(minValue, value);
           maxValue = Math.max(maxValue, value);
         }
@@ -330,8 +359,12 @@ export class MapRenderer {
     ];
     
     return (feature: any) => {
-      const value = feature.properties?.[dataField];
-      if (typeof value !== 'number') {
+      let value = feature.properties?.[dataField];
+      // 如果是字符串，尝试转换为数字
+      if (typeof value === 'string') {
+        value = parseFloat(value);
+      }
+      if (typeof value !== 'number' || isNaN(value)) {
         return [128, 128, 128, opacity];  // 默认灰色
       }
       
@@ -432,12 +465,15 @@ export class MapRenderer {
    * Clear all layers
    */
   clearLayers(): void {
+    console.log('Clearing all layers...');
     this.layers = [];
-    this.updateLayers();
-    // 触发重绘
     if (this.deck) {
-      this.deck.redraw(true);
+      // 直接设置空层数组
+      this.deck.setProps({ layers: [] });
+      // 强制重绘
+      this.deck.redraw();
     }
+    console.log('All layers cleared');
   }
 
   /**
@@ -446,7 +482,12 @@ export class MapRenderer {
   private updateLayers(): void {
     if (this.deck) {
       console.log('Updating deck layers, count:', this.layers.length);
-      this.deck.setProps({ layers: this.layers });
+      // 使用新数组确保eck.gl检测到变化
+      this.deck.setProps({ 
+        layers: [...this.layers]
+      });
+      // 强制重绘
+      this.deck.redraw();
       console.log('Deck layers updated');
     } else {
       console.error('Deck not initialized!');
@@ -880,6 +921,48 @@ export class MapRenderer {
           labelOptions
         });
       }
+    }
+  }
+  
+  /**
+   * Update color scheme for a specific layer
+   * This allows changing the color scheme without re-rendering the entire layer
+   */
+  updateColorScheme(layerId: string, colorScheme: ColorScheme): void {
+    console.log(`Updating color scheme for layer ${layerId}...`);
+    
+    // 找到对应的 GeoJSON 层
+    const geoJsonLayer = this.layers.find(layer => layer.id === layerId);
+    
+    if (!geoJsonLayer || !geoJsonLayer.props.data) {
+      console.error(`Layer ${layerId} not found or has no data`);
+      return;
+    }
+    
+    // 获取原始数据和配置
+    const geoJsonData = geoJsonLayer.props.data as FeatureCollection;
+    const originalProps = geoJsonLayer.props;
+    
+    // 创建新的颜色函数
+    const newFillColor = this.createColorFunction(colorScheme, geoJsonData);
+    
+    // 创建新的 layer（保留所有原有配置，只更新颜色）
+    const newLayer = new GeoJsonLayer({
+      ...originalProps,
+      id: layerId,
+      data: geoJsonData,
+      getFillColor: newFillColor,
+      updateTriggers: {
+        getFillColor: Date.now() // 强制更新颜色
+      }
+    } as any);
+    
+    // 替换旧层
+    const layerIndex = this.layers.findIndex(layer => layer.id === layerId);
+    if (layerIndex !== -1) {
+      this.layers[layerIndex] = newLayer;
+      this.updateLayers();
+      console.log(`Color scheme updated for layer ${layerId}`);
     }
   }
 }

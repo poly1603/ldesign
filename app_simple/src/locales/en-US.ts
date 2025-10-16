@@ -96,29 +96,61 @@ export default {
 
   // Login Page
   login: {
-    title: 'Login to Your Account',
-    subtitle: 'Please enter your credentials to continue',
+    title: 'Welcome Back',
+    subtitle: 'Please enter your account information',
     username: 'Username',
     password: 'Password',
     usernamePlaceholder: 'Enter your username',
     passwordPlaceholder: 'Enter your password',
-    rememberMe: 'Remember me',
-    forgotPassword: 'Forgot password?',
+    noAccount: "Don't have an account?",
+    registerNow: 'Register Now',
+    orContinueWith: 'Or continue with',
+    forgotPassword: 'Forgot Password?',
+    rememberMe: 'Remember Me',
     submit: 'Login',
     submitting: 'Logging in...',
-    noAccount: "Don't have an account?",
+    success: 'Login successful',
+    sendCode: 'Get Code',
+    resendIn: 'Resend in {{seconds}}s',
+    codeSent: 'Code sent',
+    help: 'Help Center',
     register: 'Register now',
     or: 'or',
     loginWith: 'Login with {provider}',
+    modes: {
+      password: 'Password',
+      sms: 'SMS',
+      qrcode: 'QR Code'
+    },
+    placeholders: {
+      username: 'Username / Email',
+      password: 'Password',
+      phone: 'Phone Number',
+      smsCode: 'Verification Code'
+    },
+    providers: {
+      wechat: 'WeChat',
+      github: 'GitHub',
+      google: 'Google'
+    },
+    qrcode: {
+      loading: 'Loading QR Code...',
+      tip: 'Scan with mobile app to login',
+      refresh: 'Refresh QR Code'
+    },
     errors: {
-      required: 'This field is required',
+      required: 'Please fill in required fields',
       invalid: 'Invalid username or password',
+      failed: 'Login failed, please try again',
+      phoneRequired: 'Please enter phone number',
+      invalidPhone: 'Invalid phone number format',
+      invalidCode: 'Invalid verification code',
+      sendCodeFailed: 'Failed to send code',
       usernameRequired: 'Please enter username',
       passwordRequired: 'Please enter password',
       minLength: 'At least {min} characters required',
       network: 'Network error, please try again later'
-    },
-    success: 'Login successful! Redirecting...'
+    }
   },
 
   // Dashboard Page

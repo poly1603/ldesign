@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emoji Picker Test - LDesign Editor</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f3f4f6;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #1f2937;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+    .description {
+      color: #6b7280;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+    #editor-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 12px;
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 6px;
+      color: #92400e;
+      font-size: 14px;
+    }
+    .success {
+      background: #d1fae5;
+      border-color: #34d399;
+      color: #065f46;
+    }
+    .error {
+      background: #fee2e2;
+      border-color: #f87171;
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 表情选择器测试</h1>
+    <div class="description">
+      点击工具栏中的表情图标 😊 打开表情选择器。选择器会在按钮下方显示，包含多个分类的表情供选择。
+    </div>
+    
+    <div id="editor-container"></div>
+    
+    <div id="status" class="status">
+      正在加载编辑器...
+    </div>
+  </div>
+
+  <script type="module">
+    const status = document.getElementById('status');
+    
+    try {
+      // 动态导入编辑器模块
+      const module = await import('./dist/index.js').catch(() => import('./src/index.ts'));
+      const { Editor } = module;
+      
+      // 创建编辑器实例
+      const editor = new Editor({
+        element: '#editor-container',
+        content: `
+          <h2>欢迎使用 LDesign Editor! 😊</h2>
+          <p>这是一个功能强大的富文本编辑器，支持：</p>
+          <ul>
+            <li>丰富的文本格式化选项</li>
+            <li>表情符号插入 - 点击工具栏的表情按钮试试！</li>
+            <li>图片、视频、音频等媒体插入</li>
+            <li>表格编辑</li>
+            <li>代码块高亮</li>
+          </ul>
+          <p>现在试试点击工具栏的表情按钮，插入一些有趣的表情吧！</p>
+        `,
+        placeholder: '开始输入...',
+        autofocus: true,
+        toolbar: true,
+        plugins: undefined // 使用所有默认插件，包括 EmojiPlugin
+      });
+      
+      // 监听编辑器事件
+      editor.on('ready', () => {
+        console.log('Editor ready!');
+        status.textContent = '✅ 编辑器加载成功！点击工具栏的表情按钮开始测试。';
+        status.className = 'status success';
+      });
+      
+      editor.on('update', () => {
+        console.log('Content updated');
+      });
+      
+      // 暴露到全局以便调试
+      window.editor = editor;
+      
+      // 检查插件是否加载
+      setTimeout(() => {
+        const plugins = editor.plugins.getAll();
+        const emojiPlugin = plugins.find(p => p.name === 'emoji');
+        
+        if (emojiPlugin) {
+          console.log('✅ EmojiPlugin loaded successfully:', emojiPlugin);
+        } else {
+          console.error('❌ EmojiPlugin not found!');
+          status.textContent = '⚠️ 表情插件未正确加载，请检查配置。';
+          status.className = 'status error';
+        }
+        
+        // 检查命令是否注册
+        const commands = editor.commands.getCommands();
+        if (commands.includes('insertEmoji')) {
+          console.log('✅ insertEmoji command registered');
+        } else {
+          console.error('❌ insertEmoji command not registered');
+        }
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Failed to load editor:', error);
+      status.textContent = `❌ 加载失败: ${error.message}`;
+      status.className = 'status error';
+    }
+  </script>
+</body>
+</html>

@@ -22,6 +22,7 @@ import HistoryPlugin from '@/plugins/utils/history'
 import FindReplacePlugin from '@/plugins/utils/find-replace'
 import ExportMarkdownPlugin from '@/plugins/utils/export-markdown'
 import ContextMenuPlugin from '@/plugins/utils/context-menu'
+import WordCountPlugin from '@/plugins/utils/word-count'
 
 // 创建编辑器实例
 const editor = new Editor({
@@ -38,7 +39,8 @@ const editor = new Editor({
     HistoryPlugin,
     FindReplacePlugin,
     ExportMarkdownPlugin,
-    ContextMenuPlugin
+    ContextMenuPlugin,
+    WordCountPlugin
   ],
   content: `
     <h1>欢迎使用 LDesign Editor!</h1>
@@ -58,3 +60,4 @@ const editor = new Editor({
 
 // 暴露到全局方便调试
 ;(window as any).editor = editor
+

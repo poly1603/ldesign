@@ -17,6 +17,9 @@ export * from './table'
 // 工具插件
 export * from './utils'
 
+// Emoji 插件
+export * from './emoji'
+
 // 聚合导出所有插件集合
 import { formattingPlugins } from './formatting'
 import { mediaPlugins } from './media'
@@ -29,7 +32,9 @@ export const allPlugins = [
   ...mediaPlugins,
   ...textPlugins,
   ...tablePlugins,
-  ...utilPlugins
+  ...utilPlugins,
+  // 单独插件
+  'EmojiPlugin'
 ]
 
 // 默认插件集合（保持向后兼容）

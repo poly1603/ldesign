@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, defineProps, defineEmits, defineExpose } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { Picker, PickerOption, PickerConfig } from '../core/Picker';
 
 // Props定义
@@ -52,11 +52,7 @@ const props = withDefaults(defineProps<{
 });
 
 // Emits定义
-const emit = defineEmits<{
-  'update:modelValue': [value: string | number | undefined];
-  'change': [value: string | number | undefined, option?: PickerOption];
-  'pick': [value: string | number | undefined, option?: PickerOption, trigger: string];
-}>();
+const emit = defineEmits(['update:modelValue', 'change', 'pick']);
 
 // Refs
 const containerRef = ref<HTMLElement>();

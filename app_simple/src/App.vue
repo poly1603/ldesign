@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { RouterView } from '@ldesign/router';
-
 </script>
 
 <template>
@@ -15,6 +14,8 @@ body {
 
 body {
   -webkit-font-smoothing: antialiased;
-  font-family: LarkEmojiFont, LarkChineseQuote, -apple-system, BlinkMacSystemFont, Helvetica Neue, Tahoma, PingFang SC, Microsoft Yahei, Arial, Hiragino Sans GB, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-family: var(--size-font-family, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: var(--size-font-medium, 14px);
+  line-height: var(--size-line-normal, 1.5);
 }
 </style>

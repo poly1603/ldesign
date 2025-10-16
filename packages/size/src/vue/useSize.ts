@@ -5,7 +5,7 @@
  */
 
 import { inject, ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { SizePluginSymbol, type SizePlugin } from './index'
+import { SizePluginSymbol, type SizePlugin } from './plugin'
 import type { SizeConfig, SizePreset } from '../core/SizeManager'
 
 /**

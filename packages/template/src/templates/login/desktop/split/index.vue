@@ -1,60 +1,114 @@
 <template>
   <div class="login-desktop-split">
+    <!-- 左侧面板 -->
     <div class="left-panel" :style="{ backgroundImage: `url(${bgImage})` }">
-      <div class="overlay">
-        <h1 class="brand">{{ brandName }}</h1>
-        <p class="slogan">{{ slogan }}</p>
-      </div>
+      <slot name="leftPanel" :brand="brandName" :slogan="slogan">
+        <div class="overlay">
+          <slot name="brand">
+            <h1 class="brand">{{ brandName }}</h1>
+            <p class="slogan">{{ slogan }}</p>
+          </slot>
+          
+          <!-- 左侧额外内容 -->
+          <slot name="leftExtra"></slot>
+        </div>
+      </slot>
     </div>
 
+    <!-- 右侧登录区域 -->
     <div class="right-panel">
       <div class="login-box">
-        <h2>{{ title }}</h2>
-        <p class="subtitle">{{ subtitle }}</p>
-
-        <form class="login-form" @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <input
-              v-model="form.username"
-              type="text"
-              placeholder="用户名或邮箱"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <input
-              v-model="form.password"
-              type="password"
-              placeholder="密码"
-              required
-            />
-          </div>
-
-          <div class="form-options">
-            <label class="checkbox">
-              <input v-model="form.remember" type="checkbox" />
-              <span>记住我</span>
-            </label>
-            <a href="#" class="forgot-link" @click.prevent="handleForgot">忘记密码？</a>
-          </div>
-
-          <button type="submit" class="btn-submit">
-            登录
-          </button>
-        </form>
-
-        <div class="footer-text">
-          还没有账号？
-          <a href="#" @click.prevent="handleRegister">立即注册</a>
+        <!-- Logo 插槽 -->
+        <div class="logo-area" v-if="$slots.logo || showLogo">
+          <slot name="logo">
+            <div class="default-logo">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="currentColor">
+                <circle cx="20" cy="20" r="18" opacity="0.1" />
+                <path d="M20 10 L28 20 L20 30 L12 20 Z" fill="currentColor" />
+              </svg>
+            </div>
+          </slot>
         </div>
+
+        <!-- 标题区域 -->
+        <slot name="header" :title="title" :subtitle="subtitle">
+          <h2>{{ title }}</h2>
+          <p class="subtitle">{{ subtitle }}</p>
+        </slot>
+
+        <!-- 登录面板插槽 -->
+        <slot name="loginPanel" 
+              :form="form"
+              :loading="loading"
+              :error="error"
+              :handleSubmit="handleSubmit">
+          <form class="login-form" @submit.prevent="handleSubmit">
+            <div class="form-group">
+              <input
+                v-model="form.username"
+                type="text"
+                placeholder="用户名或邮箱"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <input
+                v-model="form.password"
+                type="password"
+                placeholder="密码"
+                required
+              />
+            </div>
+
+            <div class="form-options">
+              <label class="checkbox">
+                <input v-model="form.remember" type="checkbox" />
+                <span>记住我</span>
+              </label>
+              <a href="#" class="forgot-link" @click.prevent="handleForgot">忘记密码？</a>
+            </div>
+
+            <button type="submit" class="btn-submit" :disabled="loading">
+              {{ loading ? '登录中...' : '登录' }}
+            </button>
+          </form>
+        </slot>
+
+        <!-- 社交登录插槽 -->
+        <div v-if="$slots.socialLogin || showSocialLogin" class="social-section">
+          <slot name="socialLogin" :providers="socialProviders">
+            <div class="divider">
+              <span>或</span>
+            </div>
+            <div class="social-buttons">
+              <button v-for="provider in socialProviders"
+                      :key="provider.name"
+                      @click="handleSocialLogin(provider)"
+                      class="social-btn">
+                {{ provider.label }}
+              </button>
+            </div>
+          </slot>
+        </div>
+
+        <!-- 底部插槽 -->
+        <div class="footer-text">
+          <slot name="footer">
+            还没有账号？
+            <a href="#" @click.prevent="handleRegister">立即注册</a>
+          </slot>
+        </div>
+
+        <!-- 额外内容 -->
+        <slot name="extra"></slot>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 
 interface Props {
   title?: string
@@ -62,6 +116,15 @@ interface Props {
   brandName?: string
   slogan?: string
   bgImage?: string
+  showLogo?: boolean
+  showSocialLogin?: boolean
+  socialProviders?: Array<{
+    name: string
+    label: string
+    icon?: string
+  }>
+  loading?: boolean
+  error?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -70,12 +133,18 @@ const props = withDefaults(defineProps<Props>(), {
   brandName: 'LDesign',
   slogan: '专业的模板管理系统',
   bgImage: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=800',
+  showLogo: false,
+  showSocialLogin: false,
+  socialProviders: () => [],
+  loading: false,
+  error: null,
 })
 
 const emit = defineEmits<{
   submit: [data: { username: string; password: string; remember: boolean }]
   register: []
   forgot: []
+  socialLogin: [provider: any]
 }>()
 
 const form = reactive({
@@ -83,6 +152,9 @@ const form = reactive({
   password: '',
   remember: false,
 })
+
+const loading = ref(props.loading)
+const error = ref(props.error)
 
 const handleSubmit = () => {
   emit('submit', { ...form })
@@ -94,6 +166,10 @@ const handleRegister = () => {
 
 const handleForgot = () => {
   emit('forgot')
+}
+
+const handleSocialLogin = (provider: any) => {
+  emit('socialLogin', provider)
 }
 </script>
 
@@ -250,5 +326,76 @@ const handleForgot = () => {
 
 .footer-text a:hover {
   text-decoration: underline;
+}
+
+/* Logo 区域 */
+.logo-area {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.default-logo {
+  display: inline-block;
+  color: #667eea;
+}
+
+/* 社交登录 */
+.social-section {
+  margin: 24px 0;
+}
+
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 24px 0;
+}
+
+.divider span {
+  background: white;
+  padding: 0 16px;
+  color: #999;
+  font-size: 13px;
+  position: relative;
+  z-index: 1;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+.social-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.social-btn {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.social-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  background: #f5f7ff;
+}
+
+/* 加载状态 */
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #ccc;
 }
 </style>

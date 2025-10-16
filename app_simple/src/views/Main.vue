@@ -36,6 +36,10 @@
 
           <!-- 主题颜色切换器 -->
           <VueThemePicker class="nav-theme" />
+          <SizeSelector />
+
+          <!-- 尺寸管理器 -->
+          <!-- <SizeSelector class="nav-size" /> -->
 
           <button v-if="!isLoggedIn" @click="goToLogin" class="nav-button login">
             {{ t('nav.login') }}
@@ -69,6 +73,8 @@ import { useI18n } from '@/i18n'
 import { auth } from '@/composables/useAuth'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import { VueThemePicker, VueThemeModeSwitcher } from '@ldesign/color/vue'
+import { SizeSelector } from '@ldesign/size/vue';
+// import { SizeSelector } from '@ldesign/size/vue'
 import { Rocket } from 'lucide-vue-next'
 
 const route = useRoute()

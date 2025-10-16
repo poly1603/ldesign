@@ -9,9 +9,9 @@ import type { RouteRecordRaw } from '@ldesign/router'
 const Main = () => import('@/views/Main.vue')
 const Home = () => import('@/views/Home.vue')
 const Login = () => import('@/views/Login.vue')
+const LoginTest = () => import('@/views/LoginTest.vue')
 const Dashboard = () => import('@/views/Dashboard.vue')
 const About = () => import('@/views/About.vue')
-const TemplateDemo = () => import('@/pages/TemplateDemo.vue')
 
 /**
  * 公开路由
@@ -58,6 +58,16 @@ export const publicRoutes: RouteRecordRaw[] = [
       titleKey: 'nav.login',
       requiresAuth: false,
       layout: 'blank'  // 登录页面使用全屏布局，不显示导航栏和页脚
+    }
+  },
+  {
+    path: '/login-test',
+    name: 'login-test',
+    component: LoginTest, // 测试页面
+    meta: {
+      titleKey: 'Login Test',
+      requiresAuth: false,
+      layout: 'default'
     }
   },
 ]

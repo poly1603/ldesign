@@ -4,26 +4,90 @@
  * Manages size schemes, persistence, and CSS injection
  */
 
-import type {
-  SizeScheme,
-  PresetScheme,
-  SizeManagerOptions,
-  SizeManagerState,
-  SizeChangeEvent,
-  DeepPartial
-} from '../types';
-import { getPresetScheme, comfortableScheme } from './presets';
-import { generateCSS, injectCSS, removeCSS, generateCSSVariables } from './cssGenerator';
-import { deepMerge } from '../utils';
+// Types
+export interface SizeConfig {
+  presetName?: string
+  baseSize: number
+  scale: number
+  deviceType?: string
+}
 
-const DEFAULT_STORAGE_KEY = 'ldesign-size-scheme';
-const DEFAULT_PREFIX = 'size';
+export interface SizePreset {
+  name: string
+  label: string
+  description?: string
+  baseSize: number
+  scale: number
+  category?: string
+}
+
+export type SizeChangeListener = (config: SizeConfig) => void
+
+// Default presets
+const defaultPresets: SizePreset[] = [
+  {
+    name: 'compact',
+    label: 'Compact',
+    description: 'High density for maximum content',
+    baseSize: 14,
+    scale: 0.9,
+    category: 'density'
+  },
+  {
+    name: 'comfortable', 
+    label: 'Comfortable',
+    description: 'Balanced spacing for everyday use',
+    baseSize: 16,
+    scale: 1,
+    category: 'density'
+  },
+  {
+    name: 'default',
+    label: 'Default',
+    description: 'Standard size settings',
+    baseSize: 16,
+    scale: 1,
+    category: 'density'
+  },
+  {
+    name: 'spacious',
+    label: 'Spacious',
+    description: 'Lower density for better readability',
+    baseSize: 18,
+    scale: 1.1,
+    category: 'density'
+  },
+  {
+    name: 'mobile',
+    label: 'Mobile',
+    description: 'Optimized for touch interfaces',
+    baseSize: 16,
+    scale: 1.05,
+    category: 'device'
+  },
+  {
+    name: 'tablet',
+    label: 'Tablet',
+    description: 'Optimized for tablet screens',
+    baseSize: 16,
+    scale: 1.02,
+    category: 'device'
+  },
+  {
+    name: 'desktop',
+    label: 'Desktop',
+    description: 'Optimized for desktop screens',
+    baseSize: 16,
+    scale: 1,
+    category: 'device'
+  }
+]
 
 export class SizeManager {
-  private options: Required<SizeManagerOptions>;
-  private state: SizeManagerState;
-  private listeners: Set<(event: SizeChangeEvent) => void> = new Set();
-  private styleId: string;
+  private config: SizeConfig
+  private presets: Map<string, SizePreset>
+  private listeners: Set<SizeChangeListener>
+  private styleElement: HTMLStyleElement | null = null
 
   constructor(options: SizeManagerOptions = {}) {
     this.options = {

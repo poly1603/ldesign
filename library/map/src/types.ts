@@ -93,16 +93,6 @@ export interface LayerOptions {
   labelOptions?: TextLabelOptions;  // 标签样式配置
   colorScheme?: ColorScheme;  // 颜色方案配置
 }
-    shininess?: number;
-    specularColor?: number[];
-  };
-  transitions?: {
-    getElevation?: {
-      duration?: number;
-      easing?: (t: number) => number;
-    };
-  };
-}
 
 export interface CityMarker {
   name: string;

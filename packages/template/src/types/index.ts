@@ -46,6 +46,21 @@ export interface TemplateMetadata {
  * 模板配置（config.ts 中导出的格式）
  */
 export interface TemplateConfig extends Omit<TemplateMetadata, 'category' | 'device'> {
+  /** 支持的插槽定义 */
+  slots?: {
+    [key: string]: {
+      /** 插槽名称 */
+      name: string
+      /** 插槽描述 */
+      description?: string
+      /** 插槽示例 */
+      example?: string
+      /** 插槽接受的props */
+      props?: Record<string, any>
+      /** 是否必需 */
+      required?: boolean
+    }
+  }
   /** 额外的配置项 */
   [key: string]: any
 }
@@ -93,6 +108,29 @@ export interface TemplateFilter {
 }
 
 /**
+ * 模板插槽定义
+ */
+export interface TemplateSlot {
+  /** 插槽名称 */
+  name: string
+  /** 插槽描述 */
+  description?: string
+  /** 插槽默认内容 */
+  default?: Component | string
+  /** 插槽props定义 */
+  props?: Record<string, any>
+  /** 是否必需 */
+  required?: boolean
+}
+
+/**
+ * 模板插槽配置
+ */
+export interface TemplateSlots {
+  [key: string]: Component | string | TemplateSlot
+}
+
+/**
  * 模板加载选项
  */
 export interface TemplateLoadOptions {
@@ -104,6 +142,8 @@ export interface TemplateLoadOptions {
   onError?: (error: Error) => void
   /** 加载成功回调 */
   onLoad?: (component: Component) => void
+  /** 插槽内容 */
+  slots?: TemplateSlots
 }
 
 /**

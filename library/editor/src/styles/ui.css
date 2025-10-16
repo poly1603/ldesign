@@ -209,3 +209,48 @@
 .editor-dropdown::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* Emoji Picker 表情选择器 */
+.ldesign-emoji-picker {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 8px;
+  width: 380px;
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* 表情选择器滚动条 */
+.ldesign-emoji-picker::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ldesign-emoji-picker::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.ldesign-emoji-picker::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+  border-radius: 3px;
+}
+
+.ldesign-emoji-picker::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

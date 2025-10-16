@@ -593,13 +593,19 @@ export class Picker {
       
       item.style.visibility = 'visible';
       
-      // 计算3D变换
-      const angle = delta * 15; // 每项15度
-      const scale = 1 - absDistance * 0.05;
-      const opacity = 1 - absDistance * 0.15;
+      // 计算3D变换 - 使用CSS变量实现更流畅的效果
+      const angle = delta * 25; // 匹配CSS变量 --picker-3d-rotate
+      const scale = Math.max(0.8, 1 - absDistance * 0.08); // 匹配 --picker-3d-scale
+      const opacity = Math.max(0.4, 1 - absDistance * 0.2); // 匹配 --picker-3d-opacity
       
-      item.style.transform = `rotateX(${-angle}deg) translateZ(${100}px) scale(${scale})`;
-      item.style.opacity = String(Math.max(0.3, opacity));
+      // 使用CSS变量控制3D效果，让CSS处理实际渲染
+      item.style.setProperty('--item-rotate-x', `${-angle}deg`);
+      item.style.setProperty('--item-scale', scale.toString());
+      item.style.setProperty('--item-opacity', opacity.toString());
+      
+      // 标记当前选中项
+      const isActive = Math.abs(delta) < 0.5;
+      item.classList.toggle('picker__item--active', isActive);
     });
   }
 
@@ -657,142 +663,8 @@ export class Picker {
   }
 
   private injectStyles(): void {
-    if (document.getElementById('picker-styles')) return;
-    
-    const style = document.createElement('style');
-    style.id = 'picker-styles';
-    style.textContent = `
-      .picker {
-        display: inline-block;
-        position: relative;
-        --picker-bg: #fff;
-        --picker-border: #e5e7eb;
-        --picker-text: #111827;
-        --picker-active-color: #1d4ed8;
-        --picker-active-bg: rgba(29, 78, 216, 0.06);
-      }
-      
-      .picker--dark {
-        --picker-bg: #1f2937;
-        --picker-border: #374151;
-        --picker-text: #f3f4f6;
-        --picker-active-color: #60a5fa;
-        --picker-active-bg: rgba(96, 165, 250, 0.1);
-      }
-      
-      .picker--disabled {
-        opacity: 0.6;
-        pointer-events: none;
-      }
-      
-      .picker__search {
-        margin-bottom: 8px;
-      }
-      
-      .picker__search-input {
-        width: 100%;
-        padding: 8px 12px;
-        border: 1px solid var(--picker-border);
-        border-radius: 6px;
-        background: var(--picker-bg);
-        color: var(--picker-text);
-        font-size: 14px;
-        outline: none;
-      }
-      
-      .picker__search-input:focus {
-        border-color: var(--picker-active-color);
-        box-shadow: 0 0 0 3px var(--picker-active-bg);
-      }
-      
-      .picker__panel {
-        position: relative;
-        overflow: hidden;
-        background: var(--picker-bg);
-        border: 1px solid var(--picker-border);
-        border-radius: 8px;
-        touch-action: none;
-        user-select: none;
-      }
-      
-      .picker__indicator {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        pointer-events: none;
-        background: var(--picker-active-bg);
-        border-top: 1px solid var(--picker-active-color);
-        border-bottom: 1px solid var(--picker-active-color);
-        opacity: 0.3;
-        z-index: 1;
-      }
-      
-      .picker__list {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        position: relative;
-        z-index: 2;
-        will-change: transform;
-      }
-      
-      .picker__item {
-        text-align: center;
-        height: 36px;
-        line-height: 36px;
-        font-size: 14px;
-        color: var(--picker-text);
-        cursor: pointer;
-        transition: color 0.2s, font-weight 0.2s;
-      }
-      
-      .picker__item--active {
-        color: var(--picker-active-color);
-        font-weight: 600;
-      }
-      
-      .picker__item--disabled {
-        color: #9ca3af;
-        cursor: not-allowed;
-      }
-      
-      .picker__mask {
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 40%;
-        pointer-events: none;
-        z-index: 3;
-      }
-      
-      .picker__mask--top {
-        top: 0;
-        background: linear-gradient(to bottom, var(--picker-bg) 0%, transparent 100%);
-      }
-      
-      .picker__mask--bottom {
-        bottom: 0;
-        background: linear-gradient(to top, var(--picker-bg) 0%, transparent 100%);
-      }
-      
-      .picker--3d .picker__panel {
-        perspective: 1000px;
-      }
-      
-      .picker--3d .picker__list {
-        transform-style: preserve-3d;
-      }
-      
-      .picker--3d .picker__item {
-        backface-visibility: hidden;
-        transform-origin: center center -100px;
-        will-change: transform, opacity;
-        transition: transform 0.2s, opacity 0.2s;
-      }
-    `;
-    document.head.appendChild(style);
+    // 样式已通过外部CSS文件加载
+    // 不再需要内联注入
   }
 
   // 公开方法

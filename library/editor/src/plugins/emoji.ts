@@ -57,16 +57,17 @@ function createEmojiPicker(onSelect: (emoji: string) => void): HTMLElement {
   const picker = document.createElement('div')
   picker.className = 'ldesign-emoji-picker'
   picker.style.cssText = `
-    position: absolute;
+    position: fixed;
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     padding: 8px;
-    max-width: 380px;
+    width: 380px;
     max-height: 320px;
     overflow-y: auto;
     z-index: 10000;
+    animation: fadeIn 0.2s ease-out;
   `
 
   // 创建分类标签
@@ -172,13 +173,20 @@ function createEmojiPicker(onSelect: (emoji: string) => void): HTMLElement {
   // 点击外部关闭
   setTimeout(() => {
     const closeOnClickOutside = (e: MouseEvent) => {
-      if (!picker.contains(e.target as Node)) {
+      const target = e.target as Node
+      const emojiButton = document.querySelector('[data-name="emoji"]')
+      // 如果点击的是表情按钮本身，不关闭
+      if (emojiButton && emojiButton.contains(target)) {
+        return
+      }
+      // 如果点击的不是picker内部，则关闭
+      if (!picker.contains(target)) {
         picker.remove()
         document.removeEventListener('click', closeOnClickOutside)
       }
     }
     document.addEventListener('click', closeOnClickOutside)
-  }, 0)
+  }, 100) // 稍微延迟以避免立即触发
 
   return picker
 }
@@ -188,6 +196,13 @@ function createEmojiPicker(onSelect: (emoji: string) => void): HTMLElement {
  */
 const insertEmoji: Command = (state, dispatch) => {
   if (!dispatch) return true
+
+  // 检查是否已经有打开的表情选择器
+  const existingPicker = document.querySelector('.ldesign-emoji-picker')
+  if (existingPicker) {
+    existingPicker.remove()
+    return true
+  }
 
   const selection = window.getSelection()
   if (!selection || selection.rangeCount === 0) return false
@@ -203,12 +218,32 @@ const insertEmoji: Command = (state, dispatch) => {
     document.execCommand('insertText', false, emoji)
   })
 
-  // 获取工具栏按钮位置
-  const button = document.querySelector('[data-name="emoji"]') as HTMLElement
+  // 获取工具栏按钮位置 - 使用事件目标获取准确的按钮
+  const button = (window.event?.target as HTMLElement)?.closest('[data-name="emoji"]') || 
+                 document.querySelector('[data-name="emoji"]') as HTMLElement
+  
   if (button) {
     const rect = button.getBoundingClientRect()
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft
+    
+    // 设置位置为按钮下方
+    picker.style.position = 'fixed'
     picker.style.top = `${rect.bottom + 5}px`
     picker.style.left = `${rect.left}px`
+    
+    // 检查是否超出右边界
+    setTimeout(() => {
+      const pickerRect = picker.getBoundingClientRect()
+      if (pickerRect.right > window.innerWidth) {
+        picker.style.left = `${window.innerWidth - pickerRect.width - 10}px`
+      }
+      // 检查是否超出下边界
+      if (pickerRect.bottom > window.innerHeight) {
+        // 显示在按钮上方
+        picker.style.top = `${rect.top - pickerRect.height - 5}px`
+      }
+    }, 0)
   }
 
   document.body.appendChild(picker)

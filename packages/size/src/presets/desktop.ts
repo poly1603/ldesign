@@ -30,33 +30,37 @@ export const desktopCompact: Preset = {
       huge: '1.125rem',   // 18px
       giant: '1.25rem',   // 20px
       
-      h1: '1.75rem',
-      h2: '1.5rem',
-      h3: '1.25rem',
-      h4: '1.125rem',
-      h5: '1rem',
-      h6: '0.875rem',
+      h1: '1.75rem',      // 28px
+      h2: '1.5rem',       // 24px
+      h3: '1.25rem',      // 20px
+      h4: '1.125rem',     // 18px
+      h5: '1rem',         // 16px
+      h6: '0.875rem',     // 14px
       
-      display1: '2.25rem',
-      display2: '2rem',
-      display3: '1.75rem',
+      display1: '3rem',   // 48px
+      display2: '2.625rem', // 42px
+      display3: '2.25rem',  // 36px
       
-      caption: '0.6875rem',
-      overline: '0.625rem',
-      code: '0.8125rem'
+      caption: '0.6875rem',  // 11px
+      overline: '0.625rem',  // 10px
+      code: '0.8125rem'      // 13px
     },
     
     spacing: {
       none: '0',
       tiny: '0.125rem',  // 2px
       small: '0.25rem',  // 4px
-      medium: '0.375rem',// 6px
-      large: '0.5rem',   // 8px
-      huge: '0.75rem',   // 12px
-      giant: '1rem',     // 16px
+      medium: '0.5rem',  // 8px
+      large: '0.75rem',  // 12px
+      huge: '1rem',      // 16px
+      giant: '1.5rem',   // 24px
       
-      massive: '1.5rem',
-      colossal: '2rem'
+      massive: '2rem',   // 32px
+      colossal: '3rem',  // 48px
+      
+      half: '0.375rem',    // 6px
+      quarter: '0.1875rem', // 3px
+      double: '1rem'       // 16px
     },
     
     radius: {
@@ -121,11 +125,54 @@ export const desktopCompact: Preset = {
       },
       
       card: {
-        small: '0.5rem',
-        medium: '0.75rem',
-        large: '1rem'
+        small: '0.75rem',   // 12px
+        medium: '1rem',     // 16px
+        large: '1.5rem'     // 24px
       }
     },
+    
+    custom: {
+      // Border widths
+      'border-width-thin': '1px',
+      'border-width-medium': '2px',
+      'border-width-thick': '3px',
+      
+      // Shadow sizes
+      'shadow-sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+      'shadow-md': '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+      'shadow-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+      'shadow-xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+      
+      // Z-index
+      'z-dropdown': '1000',
+      'z-sticky': '1020',
+      'z-modal': '1050',
+      'z-tooltip': '1070',
+      
+      // Container widths
+      'container-sm': '640px',
+      'container-md': '768px',
+      'container-lg': '1024px',
+      'container-xl': '1280px',
+      'container-xxl': '1536px',
+      
+      // Component specific
+      'modal-width-sm': '400px',
+      'modal-width-md': '600px',
+      'modal-width-lg': '800px',
+      'drawer-width-sm': '320px',
+      'drawer-width-md': '480px',
+      'table-row-height': '44px',
+      'menu-item-height': '32px',
+      'tag-height': '24px',
+      'progress-height': '8px',
+      'switch-width': '44px',
+      'switch-height': '22px',
+      'checkbox-size': '16px',
+      'radio-size': '16px'
+    }
+  }
+};
     
     grid: {
       columns: 24,

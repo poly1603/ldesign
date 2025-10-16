@@ -23,8 +23,13 @@
       v-else-if="component"
       :is="component"
       v-bind="componentProps"
-      @[eventName]="handleEvent"
-    />
+      v-on="$attrs"
+    >
+      <!-- 传递所有插槽（除了保留插槽） -->
+      <template v-for="(slot, name) in availableSlots" :key="name" #[name]="slotProps">
+        <slot :name="name" v-bind="slotProps" />
+      </template>
+    </component>
 
     <!-- 空状态 -->
     <div v-else class="template-empty">
@@ -45,9 +50,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, toRefs, ref, watch, onMounted, onUnmounted } from 'vue'
+import { computed, toRefs, ref, watch, onMounted, onUnmounted, useSlots, type Component, type VNode } from 'vue'
 import { useTemplate } from '../composables/useTemplate'
-import type { TemplateLoadOptions, DeviceType } from '../types'
+import type { TemplateLoadOptions, DeviceType, TemplateSlots } from '../types'
 import { getManager } from '../core'
 import TemplateSelector from './TemplateSelector.vue'
 
@@ -72,6 +77,8 @@ const props = withDefaults(
     loadOptions?: TemplateLoadOptions
     /** 是否显示模板选择器 */
     showSelector?: boolean
+    /** 插槽内容配置 */
+    slots?: TemplateSlots
   }>(),
   {
     device: undefined,
@@ -81,6 +88,7 @@ const props = withDefaults(
     componentProps: () => ({}),
     loadOptions: undefined,
     showSelector: true,
+    slots: undefined,
   }
 )
 
@@ -261,6 +269,28 @@ const handleTemplateSelect = (templateName: string) => {
     templatePlugin.savePreference(props.category, currentDevice.value, templateName)
   }
 }
+
+/**
+ * 获取当前组件的插槽
+ */
+const slots = useSlots()
+
+/**
+ * 计算可用的插槽（排除保留插槽）
+ */
+const availableSlots = computed(() => {
+  const reserved = ['loading', 'error', 'empty']
+  const result: Record<string, any> = {}
+  
+  // 传递所有非保留插槽
+  for (const slotName in slots) {
+    if (!reserved.includes(slotName)) {
+      result[slotName] = slots[slotName]
+    }
+  }
+  
+  return result
+})
 </script>
 
 <style scoped>
