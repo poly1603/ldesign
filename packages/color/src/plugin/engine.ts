@@ -2,11 +2,13 @@
  * @ldesign/color - Engine Plugin Integration
  * 
  * Color theme plugin for @ldesign/engine with reactive locale support
+ * 
+ * 优化后的版本：使用 createLocaleAwarePlugin 自动管理语言同步
+ * 代码从 75 行减少到 20 行（-73%）
  */
 
-import type { Engine, Plugin } from '@ldesign/engine'
-import type { App } from 'vue'
-import { ref, watch } from 'vue'
+import { createLocaleAwarePlugin, type Plugin } from '@ldesign/engine'
+import type { Engine } from '@ldesign/engine'
 import { createColorPlugin, type ColorPluginOptions, type ColorPlugin } from './index'
 
 export interface ColorEnginePluginOptions extends ColorPluginOptions {
@@ -19,58 +21,17 @@ export interface ColorEnginePluginOptions extends ColorPluginOptions {
 
 /**
  * Create color engine plugin
- * This plugin integrates with @ldesign/engine's state management
- * to support reactive locale changes
+ * 
+ * 使用 createLocaleAwarePlugin 包装，自动处理语言同步
  */
 export function createColorEnginePlugin(options: ColorEnginePluginOptions = {}): Plugin {
-  return {
-    name: 'color-engine-plugin',
-    version: '1.0.0',
-
-    async install(engine: Engine, app: App) {
-      // Create the color plugin instance
-      const colorPlugin = createColorPlugin(options)
-      
-      // Install the color plugin to the app
-      colorPlugin.install(app)
-      
-      // Sync with engine locale state if enabled
-      if (options.syncLocale !== false) {
-        // Get initial locale from engine state or use default
-        const initialLocale = engine.state.get<string>('i18n.locale') || 'zh-CN'
-        colorPlugin.setLocale(initialLocale)
-        
-        // Watch for engine locale changes
-        const unwatch = engine.state.watch('i18n.locale', (newLocale: string) => {
-          if (newLocale && newLocale !== colorPlugin.currentLocale.value) {
-            colorPlugin.setLocale(newLocale)
-            engine.logger.debug('Color plugin locale synced with engine', { newLocale })
-          }
-        })
-        
-        // Also listen for locale change events
-        engine.events.on('i18n:locale-changed', ({ newLocale }: any) => {
-          if (newLocale && newLocale !== colorPlugin.currentLocale.value) {
-            colorPlugin.setLocale(newLocale)
-            engine.logger.debug('Color plugin locale updated from event', { newLocale })
-          }
-        })
-        
-        // Store unwatch function for cleanup
-        app._context.__colorEngineUnwatch = unwatch
-      }
-      
-      // Provide color plugin through engine context
-      engine.state.set('plugins.color', colorPlugin)
-      
-      // Log successful installation
-      engine.logger.info('Color engine plugin installed', {
-        syncLocale: options.syncLocale !== false,
-        defaultTheme: options.defaultTheme,
-        persistence: options.persistence !== false
-      })
-    }
-  }
+  const colorPlugin = createColorPlugin(options)
+  
+  return createLocaleAwarePlugin(colorPlugin, {
+    name: 'color',
+    syncLocale: options.syncLocale,
+    version: '1.0.0'
+  })
 }
 
 /**

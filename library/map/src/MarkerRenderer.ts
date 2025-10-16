@@ -279,12 +279,12 @@ export class MarkerRenderer {
       stroked: true,
       filled: true,
       radiusScale: 1,
-      radiusMinPixels: 3,
-      radiusMaxPixels: 100,
-      lineWidthMinPixels: 1,
+      radiusMinPixels: 10,  // 增大最小半径到 10 像素
+      radiusMaxPixels: 150,  // 增大最大半径
+      lineWidthMinPixels: 3,  // 增加边框最小宽度
       getPosition: (d: MarkerOptions) => d.position,
       getRadius: (d: MarkerOptions) => {
-        const baseRadius = (d.size || 10) * 1.2; // 增大基础尺寸
+        const baseRadius = (d.size || 15) * 2; // 大幅增大基础尺寸
         const time = Date.now() / 1000;
         const phase = (d as any)._animationPhase || 0;
         let scale = (d as any)._hoverScale || 1.0;

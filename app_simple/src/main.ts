@@ -3,7 +3,7 @@
  * 使用模块化的项目结构
  */
 
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { createEngineApp } from '@ldesign/engine'
 import { createI18nEnginePlugin } from './i18n'
 import App from './App.vue'
@@ -15,7 +15,25 @@ import { sizePlugin } from '@ldesign/size/vue'
 import { createTemplatePlugin } from '@ldesign/template'
 
 // 全局 locale 状态
-const globalLocale = ref('en-US')
+// 从 localStorage 读取上次保存的语言，与 i18n 保持一致
+const getInitialLocale = () => {
+  try {
+    return localStorage.getItem('app-locale') || 'zh-CN'
+  } catch {
+    return 'zh-CN'
+  }
+}
+const globalLocale = ref(getInitialLocale())
+
+// 监听 globalLocale 变化，自动保存到 localStorage
+watch(globalLocale, (newLocale) => {
+  try {
+    localStorage.setItem('app-locale', newLocale)
+    console.log('[locale] saved to localStorage:', newLocale)
+  } catch (error) {
+    console.error('[locale] failed to save:', error)
+  }
+})
 
 /**
  * 启动应用
@@ -32,8 +50,8 @@ async function bootstrap() {
 
     // 创建 i18n 插件
     const i18nPlugin = createI18nEnginePlugin({
-      locale: globalLocale.value,
-      fallbackLocale: 'en-US',
+      locale: globalLocale.value,  // 使用 zh-CN
+      fallbackLocale: 'zh-CN',  // 后备语言也改为中文
       detectBrowserLanguage: true,
       persistLanguage: true,
       showMissingKeys: import.meta.env.DEV,
@@ -171,7 +189,7 @@ async function bootstrap() {
 
     // Size 插件配置（支持响应式国际化）
     const sizeOptions = {
-      locale: globalLocale.value, // 初始语言
+      defaultLocale: globalLocale.value, // 初始语言（修正：使用 defaultLocale）
       storageKey: 'ldesign-size',
       presets: [
         {

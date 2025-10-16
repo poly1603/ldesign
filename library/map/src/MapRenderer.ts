@@ -159,12 +159,9 @@ export class MapRenderer {
       canvas.style.top = '0';
       this.container.appendChild(canvas);
       
-      // 配置 controller
+      // 配置 controller，默认禁用滚轮缩放
       const controllerOptions: any = {
-        scrollZoom: {
-          speed: this.zoomSpeed,
-          smooth: this.smoothZoom
-        },
+        scrollZoom: false,  // 默认禁用滚轮缩放
         touchZoom: true,
         touchRotate: true,
         doubleClickZoom: true,
@@ -207,10 +204,107 @@ export class MapRenderer {
       });
       
       console.log('Deck.gl initialized successfully');
+      
+      // 初始化后设置鼠标事件监听
+      this.setupMouseWheelControl();
     } catch (error) {
       console.error('Failed to initialize Deck.gl:', error);
       throw error;
     }
+  }
+
+  /**
+   * Setup mouse wheel control
+   */
+  private setupMouseWheelControl(): void {
+    // 跟踪鼠标是否在地图图形上
+    let isMouseOverMapFeature = false;
+    let lastPickedObject: any = null;
+    
+    // 监听鼠标移动，检测是否在地图特征上
+    this.container.addEventListener('mousemove', (event: MouseEvent) => {
+      if (!this.deck) return;
+      
+      // 确保 deck.gl 已经完全初始化
+      try {
+        // 获取鼠标位置下的对象
+        const rect = this.container.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        
+        // 检查坐标是否在有效范围内
+        if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+          return;
+        }
+        
+        // 使用 deck.gl 的 pickObject 方法
+        const pickInfo = this.deck.pickObject({ x, y, radius: 1 });
+      
+      // 检查是否拾取到了地图特征
+      const wasOverFeature = isMouseOverMapFeature;
+      isMouseOverMapFeature = !!pickInfo && !!pickInfo.object;
+      
+      // 当鼠标从无特征移到特征上时
+      if (!wasOverFeature && isMouseOverMapFeature) {
+        // 启用滚轮缩放
+        const currentController = this.deck.props.controller || {};
+        this.deck.setProps({
+          controller: {
+            ...currentController,
+            scrollZoom: {
+              speed: this.zoomSpeed,
+              smooth: this.smoothZoom
+            }
+          }
+        });
+        // 修改鼠标样式为抓手
+        this.container.style.cursor = 'grab';
+      }
+      // 当鼠标从特征上移开时
+      else if (wasOverFeature && !isMouseOverMapFeature) {
+        // 禁用滚轮缩放
+        const currentController = this.deck.props.controller || {};
+        this.deck.setProps({
+          controller: {
+            ...currentController,
+            scrollZoom: false
+          }
+        });
+        // 恢复默认鼠标样式
+        this.container.style.cursor = 'default';
+      }
+      
+        lastPickedObject = pickInfo;
+      } catch (error) {
+        // 忽略 pick 错误，可能是 deck.gl 还没有完全初始化
+        console.debug('Pick object error (safe to ignore):', error);
+      }
+    });
+    
+    // 监听鼠标离开容器
+    this.container.addEventListener('mouseleave', () => {
+      isMouseOverMapFeature = false;
+      // 禁用滚轮缩放
+      if (this.deck) {
+        const currentController = this.deck.props.controller || {};
+        this.deck.setProps({
+          controller: {
+            ...currentController,
+            scrollZoom: false
+          }
+        });
+      }
+      // 恢复默认鼠标样式
+      this.container.style.cursor = 'default';
+    });
+    
+    // 阻止滚轮事件冒泡
+    this.container.addEventListener('wheel', (event: WheelEvent) => {
+      if (isMouseOverMapFeature) {
+        // 鼠标在地图特征上，阻止事件冒泡到页面
+        event.stopPropagation();
+      }
+    }, { passive: false });
   }
 
   /**
@@ -1267,8 +1361,8 @@ export class MapRenderer {
     const lngDiff = maxLng - minLng;
     const latDiff = maxLat - minLat;
     
-    // 添加 20% 的 padding 确保地图不被裁剪
-    const paddingFactor = 0.2;
+    // 添加 10% 的 padding 确保地图不被裁剪
+    const paddingFactor = 0.1;
     const lngPadding = lngDiff * paddingFactor;
     const latPadding = latDiff * paddingFactor;
     
@@ -1295,8 +1389,8 @@ export class MapRenderer {
       zoom = Math.log2((height * 360) / (paddedLatDiff * 512));
     }
     
-    // 减小缩放级别以确保地图完全显示
-    zoom = zoom - 0.5;  // 减小 0.5 级缩放
+    // 不需要额外减小缩放级别
+    // zoom = zoom - 0.5;  // 移除额外的缩放调整
     
     // 限制 zoom 的范围，避免过度缩放
     zoom = Math.max(1, Math.min(20, zoom));
@@ -1310,15 +1404,13 @@ export class MapRenderer {
       paddedSize: { paddedLngDiff, paddedLatDiff }
     });
     
-    // 使用 setTimeout 延迟设置视口，确保 deck.gl 已经初始化完成
-    setTimeout(() => {
-      this.setViewState({ 
-        longitude: centerLng, 
-        latitude: centerLat, 
-        zoom,
-        transitionDuration: 300  // 添加平滑过渡
-      });
-    }, 100);
+    // 直接设置视口，不使用延迟
+    this.setViewState({ 
+      longitude: centerLng, 
+      latitude: centerLat, 
+      zoom,
+      transitionDuration: 0  // 初始化时不使用动画
+    });
   }
   
   /**
@@ -1402,10 +1494,7 @@ export class MapRenderer {
     // 重新配置 controller
     if (this.deck) {
       const controllerOptions: any = {
-        scrollZoom: {
-          speed: this.zoomSpeed,
-          smooth: this.smoothZoom
-        },
+        scrollZoom: false,  // 默认禁用，由mouseenter/mouseleave控制
         touchZoom: true,
         touchRotate: true,
         doubleClickZoom: true,

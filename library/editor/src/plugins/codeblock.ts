@@ -4,292 +4,52 @@
 
 import { createPlugin } from '../core/Plugin'
 import type { Plugin, Command } from '../types'
+import { showCodeBlockDialog } from '../ui/CodeBlockDialog'
 
-/**
- * 创建代码编辑器对话框
- */
-function createCodeEditorDialog(onInsert: (code: string, language: string) => void) {
-  // 创建遮罩层
-  const overlay = document.createElement('div')
-  overlay.className = 'code-editor-overlay'
-  overlay.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `
-
-  // 创建对话框
-  const dialog = document.createElement('div')
-  dialog.className = 'code-editor-dialog'
-  dialog.style.cssText = `
-    background: white;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 800px;
-    height: 600px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  `
-
-  // 对话框头部
-  const header = document.createElement('div')
-  header.style.cssText = `
-    padding: 16px 20px;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-  `
-
-  const title = document.createElement('h3')
-  title.textContent = '插入代码块'
-  title.style.cssText = `
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: #1f2937;
-  `
-
-  // 语言选择器容器
-  const languageContainer = document.createElement('div')
-  languageContainer.style.cssText = `
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  `
-
-  const languageLabel = document.createElement('label')
-  languageLabel.textContent = '语言：'
-  languageLabel.style.cssText = `
-    font-size: 14px;
-    color: #6b7280;
-  `
-
-  // 语言选择下拉框
-  const languageSelect = document.createElement('select')
-  languageSelect.style.cssText = `
-    padding: 6px 10px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 14px;
-    background: white;
-    color: #374151;
-    cursor: pointer;
-    outline: none;
-    min-width: 150px;
-  `
-
-  // 常用编程语言列表
-  const languages = [
-    { value: 'plaintext', label: '纯文本' },
-    { value: 'javascript', label: 'JavaScript' },
-    { value: 'typescript', label: 'TypeScript' },
-    { value: 'python', label: 'Python' },
-    { value: 'java', label: 'Java' },
-    { value: 'cpp', label: 'C++' },
-    { value: 'c', label: 'C' },
-    { value: 'csharp', label: 'C#' },
-    { value: 'html', label: 'HTML' },
-    { value: 'css', label: 'CSS' },
-    { value: 'sql', label: 'SQL' },
-    { value: 'json', label: 'JSON' },
-    { value: 'xml', label: 'XML' },
-    { value: 'markdown', label: 'Markdown' },
-    { value: 'bash', label: 'Bash/Shell' },
-    { value: 'php', label: 'PHP' },
-    { value: 'ruby', label: 'Ruby' },
-    { value: 'go', label: 'Go' },
-    { value: 'rust', label: 'Rust' },
-    { value: 'swift', label: 'Swift' },
-    { value: 'kotlin', label: 'Kotlin' },
-    { value: 'yaml', label: 'YAML' },
-  ]
-
-  languages.forEach(lang => {
-    const option = document.createElement('option')
-    option.value = lang.value
-    option.textContent = lang.label
-    languageSelect.appendChild(option)
-  })
-
-  languageContainer.appendChild(languageLabel)
-  languageContainer.appendChild(languageSelect)
-
-  header.appendChild(title)
-  header.appendChild(languageContainer)
-
-  // 代码编辑区域
-  const editorContainer = document.createElement('div')
-  editorContainer.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  `
-
-  const codeTextarea = document.createElement('textarea')
-  codeTextarea.placeholder = '在此输入或粘贴代码...'
-  codeTextarea.style.cssText = `
-    width: 100%;
-    flex: 1;
-    padding: 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-    font-size: 14px;
-    line-height: 1.6;
-    resize: none;
-    outline: none;
-    background: #f9fafb;
-    color: #1f2937;
-  `
-
-  // 聚焦时改变边框颜色
-  codeTextarea.addEventListener('focus', () => {
-    codeTextarea.style.borderColor = '#3b82f6'
-    codeTextarea.style.background = '#fff'
-  })
-
-  codeTextarea.addEventListener('blur', () => {
-    codeTextarea.style.borderColor = '#d1d5db'
-    codeTextarea.style.background = '#f9fafb'
-  })
-
-  editorContainer.appendChild(codeTextarea)
-
-  // 按钮容器
-  const footer = document.createElement('div')
-  footer.style.cssText = `
-    padding: 16px 20px;
-    border-top: 1px solid #e5e7eb;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    flex-shrink: 0;
-  `
-
-  const cancelButton = document.createElement('button')
-  cancelButton.textContent = '取消'
-  cancelButton.style.cssText = `
-    padding: 8px 20px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    background: white;
-    color: #374151;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-  `
-
-  cancelButton.addEventListener('mouseenter', () => {
-    cancelButton.style.background = '#f3f4f6'
-  })
-
-  cancelButton.addEventListener('mouseleave', () => {
-    cancelButton.style.background = 'white'
-  })
-
-  const insertButton = document.createElement('button')
-  insertButton.textContent = '插入代码'
-  insertButton.style.cssText = `
-    padding: 8px 20px;
-    border: none;
-    border-radius: 6px;
-    background: #3b82f6;
-    color: white;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-  `
-
-  insertButton.addEventListener('mouseenter', () => {
-    insertButton.style.background = '#2563eb'
-  })
-
-  insertButton.addEventListener('mouseleave', () => {
-    insertButton.style.background = '#3b82f6'
-  })
-
-  // 关闭对话框
-  const closeDialog = () => {
-    overlay.remove()
+// 扩展 Window 类型
+declare global {
+  interface Window {
+    CodeMirror?: any
   }
-
-  // 插入代码
-  const handleInsert = () => {
-    const code = codeTextarea.value.trim()
-    if (code) {
-      onInsert(code, languageSelect.value)
-      closeDialog()
-    } else {
-      // 如果没有输入代码，提示用户
-      codeTextarea.style.borderColor = '#ef4444'
-      codeTextarea.placeholder = '请输入代码内容'
-      setTimeout(() => {
-        codeTextarea.style.borderColor = '#d1d5db'
-        codeTextarea.placeholder = '在此输入或粘贴代码...'
-      }, 2000)
-    }
-  }
-
-  // 绑定事件
-  cancelButton.addEventListener('click', closeDialog)
-  insertButton.addEventListener('click', handleInsert)
-
-  // 点击遮罩层关闭
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      closeDialog()
-    }
-  })
-
-  // ESC键关闭
-  const handleKeydown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      closeDialog()
-    } else if (e.key === 'Enter' && e.ctrlKey) {
-      // Ctrl+Enter 插入代码
-      handleInsert()
-    }
-  }
-  document.addEventListener('keydown', handleKeydown)
-
-  // 清理事件监听器
-  const originalRemove = overlay.remove
-  overlay.remove = function() {
-    document.removeEventListener('keydown', handleKeydown)
-    originalRemove.call(overlay)
-  }
-
-  footer.appendChild(cancelButton)
-  footer.appendChild(insertButton)
-
-  dialog.appendChild(header)
-  dialog.appendChild(editorContainer)
-  dialog.appendChild(footer)
-  overlay.appendChild(dialog)
-
-  document.body.appendChild(overlay)
-
-  // 自动聚焦到文本框
-  setTimeout(() => {
-    codeTextarea.focus()
-  }, 50)
-
-  return { overlay, codeTextarea, languageSelect }
 }
+
+// 代码编辑器主题配置
+const CODE_THEMES = {
+  oneDark: {
+    name: 'One Dark',
+    background: '#282c34',
+    color: '#abb2bf',
+    border: '#3a3f4a',
+    lineNumber: '#5c6370',
+    lineNumberBg: '#21252b',
+  },
+  vsLight: {
+    name: 'VS Light',
+    background: '#ffffff',
+    color: '#000000',
+    border: '#e5e7eb',
+    lineNumber: '#6b7280',
+    lineNumberBg: '#f9fafb',
+  },
+  monokai: {
+    name: 'Monokai',
+    background: '#272822',
+    color: '#f8f8f2',
+    border: '#49483e',
+    lineNumber: '#75715e',
+    lineNumberBg: '#1e1f1c',
+  },
+  dracula: {
+    name: 'Dracula',
+    background: '#282a36',
+    color: '#f8f8f2',
+    border: '#44475a',
+    lineNumber: '#6272a4',
+    lineNumberBg: '#1e1f29',
+  },
+}
+
+// 不再需要内置的对话框代码，已移至 CodeBlockDialog.ts
 
 /**
  * 应用语法高亮
@@ -750,7 +510,7 @@ function escapeHtml(text: string): string {
  * 插入代码块
  */
 const insertCodeBlock: Command = (state, dispatch) => {
-  // dispatch 参数存在时才执行，这里直接执行
+  console.log('[CodeBlock] insertCodeBlock called', { state, dispatch })
   
   // 保存当前的选区
   const editorContent = document.querySelector('.ldesign-editor-content') as HTMLElement
@@ -758,6 +518,8 @@ const insertCodeBlock: Command = (state, dispatch) => {
     console.error('[CodeBlock] Editor content not found')
     return false
   }
+  
+  console.log('[CodeBlock] Editor content found', editorContent)
 
   const selection = window.getSelection()
   let savedRange: Range | null = null
@@ -772,8 +534,10 @@ const insertCodeBlock: Command = (state, dispatch) => {
   // 获取选中的文本（如果有）
   const selectedText = selection?.toString() || ''
 
-  // 显示代码编辑器对话框
-  const { codeTextarea } = createCodeEditorDialog((codeContent, language) => {
+  // 显示代码编辑器对话框（使用统一的对话框组件）
+  showCodeBlockDialog({
+    selectedText,
+    onConfirm: (codeContent, language, theme) => {
     // 恢复焦点到编辑器
     editorContent.focus()
 
@@ -795,16 +559,20 @@ const insertCodeBlock: Command = (state, dispatch) => {
       currentSelection.addRange(range)
     }
 
+    // 获取选择的主题
+    const currentTheme = CODE_THEMES[theme as keyof typeof CODE_THEMES] || CODE_THEMES.oneDark
+    
     // 创建代码块容器
     const codeBlockContainer = document.createElement('div')
     codeBlockContainer.className = 'code-block-container'
+    codeBlockContainer.setAttribute('data-theme', theme)
     codeBlockContainer.style.cssText = `
       position: relative;
       margin: 16px 0;
       border-radius: 8px;
       overflow: hidden;
-      background: #282c34;
-      border: 1px solid #3a3f4a;
+      background: ${currentTheme.background};
+      border: 1px solid ${currentTheme.border};
     `
 
     // 创建头部（显示语言和复制按钮）
@@ -1037,12 +805,8 @@ const insertCodeBlock: Command = (state, dispatch) => {
       const event = new Event('input', { bubbles: true, cancelable: true })
       editorContent.dispatchEvent(event)
     }, 0)
+    }
   })
-
-  // 如果有选中的文本，自动填充到编辑器中
-  if (selectedText) {
-    codeTextarea.value = selectedText
-  }
 
   return true
 }

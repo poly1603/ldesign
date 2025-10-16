@@ -71,8 +71,10 @@ function createCodeEditorDialog(
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
     z-index: 10000;
     display: flex;
+    animation: fadeIn 0.2s ease-out;
     align-items: center;
     justify-content: center;
   `
@@ -89,6 +91,7 @@ function createCodeEditorDialog(
     display: flex;
     flex-direction: column;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease-out;
   `
 
   // 对话框头部
@@ -320,10 +323,21 @@ function createCodeEditorDialog(
 
   // 关闭对话框
   const closeDialog = () => {
-    if (editorView) {
-      editorView.destroy()
-    }
-    overlay.remove()
+    // 添加关闭动画
+    overlay.style.animation = 'fadeIn 0.2s ease-out reverse'
+    dialog.style.animation = 'slideUp 0.2s ease-out reverse'
+    
+    setTimeout(() => {
+      if (editorView) {
+        editorView.destroy()
+      }
+      overlay.remove()
+      // 清理动画样式
+      const animStyle = document.querySelector('.code-editor-animations')
+      if (animStyle) {
+        animStyle.remove()
+      }
+    }, 200)
   }
 
   // 插入代码
@@ -377,6 +391,32 @@ function createCodeEditorDialog(
   overlay.appendChild(dialog)
 
   document.body.appendChild(overlay)
+
+  // 添加动画样式
+  const style = document.createElement('style')
+  style.className = 'code-editor-animations'
+  style.textContent = `
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  `
+  document.head.appendChild(style)
 
   // 初始化编辑器
   initEditor(initialLanguage, initialCode)

@@ -20,6 +20,9 @@ export * from './utils'
 // Emoji 插件
 export * from './emoji'
 
+// 代码块插件
+export { CodeBlockPlugin } from './codeblock'
+
 // 聚合导出所有插件集合
 import { formattingPlugins } from './formatting'
 import { mediaPlugins } from './media'

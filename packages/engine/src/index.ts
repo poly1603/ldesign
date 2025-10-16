@@ -93,5 +93,16 @@ export {
 export { createI18nEnginePlugin } from './plugins/i18n'
 export type { I18nEnginePluginOptions } from './plugins/i18n'
 
+// ==================== Locale 模块导出 ====================
+export {
+  LocaleManager,
+  createLocaleManager,
+  createLocaleAwarePlugin,
+  createSimpleLocaleAwarePlugin,
+  type LocaleAwarePlugin,
+  type LocaleManagerOptions,
+  type CreateLocaleAwarePluginOptions
+} from './locale'
+
 // ==================== 版本信息 ====================
 export const version = '1.0.0'
