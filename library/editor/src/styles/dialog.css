@@ -15,12 +15,25 @@
   animation: fadeIn 0.2s ease-out;
 }
 
+.editor-dialog-overlay.closing {
+  animation: fadeOut 0.2s ease-out;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 
@@ -48,7 +61,8 @@
 }
 
 /* 对话框标题 */
-.editor-dialog-title {
+.editor-dialog-title,
+.editor-dialog-header {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -57,6 +71,70 @@
   font-size: 18px;
   font-weight: 600;
   color: #1f2937;
+}
+
+/* 对话框内容 */
+.editor-dialog-content {
+  padding: 24px;
+}
+
+/* 对话框表单 */
+.editor-dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.editor-dialog-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editor-dialog-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.editor-dialog-required {
+  color: #ef4444;
+}
+
+.editor-dialog-input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.editor-dialog-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.editor-dialog-input.error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.editor-dialog-error {
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 4px;
+}
+
+/* 对话框底部 */
+.editor-dialog-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #f9fafb;
+  border-radius: 0 0 8px 8px;
 }
 
 .editor-dialog-title svg {

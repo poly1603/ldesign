@@ -234,7 +234,7 @@ export class Popover extends BaseComponent {
       if (!this.isVisible) { // Check if still hidden
         this.popoverElement.style.display = 'none';
       }
-    }, 200);
+    }, 250); // Updated to match CSS animation duration
 
     this.isVisible = false;
 

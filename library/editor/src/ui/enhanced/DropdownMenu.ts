@@ -527,7 +527,7 @@ export class DropdownMenu extends BaseComponent {
       if (!this.isOpen) { // Check if still closed
         this.menuElement.style.display = 'none';
       }
-    }, 200);
+    }, 300); // Updated to match CSS animation duration
 
     this.isOpen = false;
 

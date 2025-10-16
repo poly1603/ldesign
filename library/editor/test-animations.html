@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UI组件动画测试</title>
+  <link rel="stylesheet" href="./src/ui/enhanced/DropdownMenu.css">
+  <link rel="stylesheet" href="./src/ui/enhanced/DialogModal.css">
+  <link rel="stylesheet" href="./src/ui/enhanced/Popover.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 12px;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 40px;
+    }
+
+    .test-section {
+      margin-bottom: 48px;
+      padding-bottom: 48px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .test-section:last-child {
+      border-bottom: none;
+    }
+
+    .test-section h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .test-section p {
+      color: #666;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .test-button {
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 500;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .test-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .test-button:active {
+      transform: translateY(0);
+    }
+
+    .test-button.secondary {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-button.secondary:hover {
+      background: #f0f4ff;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .demo-text {
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-top: 20px;
+      color: #555;
+      line-height: 1.8;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-left: 12px;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    /* 确保动画效果更明显 */
+    .dropdown-menu {
+      --dropdown-shadow-open: 0 10px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .dialog-modal {
+      --dialog-shadow-open: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .popover {
+      --popover-shadow-open: 0 8px 32px rgba(0, 0, 0, 0.25);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 UI 组件动画测试</h1>
+    <p class="subtitle">测试增强型 UI 组件的打开和关闭动画效果 - 现在包含 Scale + TranslateY 动画</p>
+
+    <!-- Dropdown Menu Test -->
+    <div class="test-section">
+      <h2>1. Dropdown Menu <span class="status info">下拉菜单</span></h2>
+      <p>测试下拉菜单的 <strong>缩放(scale) + 位移(translateY)</strong> 组合动画。注意观察打开时的展开效果和关闭时的收缩效果。</p>
+      <div class="button-group">
+        <button class="test-button" id="dropdownBtn">打开下拉菜单</button>
+        <button class="test-button secondary" id="dropdownBtn2">另一个下拉菜单</button>
+      </div>
+    </div>
+
+    <!-- Dialog Modal Test -->
+    <div class="test-section">
+      <h2>2. Dialog Modal <span class="status info">对话框</span></h2>
+      <p>测试模态对话框的 <strong>缩放(scale) + 位移(translateY)</strong> 弹性动画。对话框会从小变大并伴随向上移动。</p>
+      <div class="button-group">
+        <button class="test-button" id="dialogBtn">打开对话框</button>
+        <button class="test-button secondary" id="dialogBtn2">打开另一个对话框</button>
+      </div>
+    </div>
+
+    <!-- Popover Test -->
+    <div class="test-section">
+      <h2>3. Popover <span class="status info">弹出提示</span></h2>
+      <p>测试 Popover 的 <strong>缩放(scale) + 轻微位移</strong> 动画效果。</p>
+      <div class="button-group">
+        <button class="test-button" id="popoverBtn">点击显示 Popover</button>
+        <button class="test-button secondary" id="popoverBtn2">悬停显示 Popover</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // 简单的测试代码
+    document.addEventListener('DOMContentLoaded', () => {
+      // 测试下拉菜单
+      const dropdownBtn = document.getElementById('dropdownBtn');
+      dropdownBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        // 创建一个临时的下拉菜单
+        const menu = document.createElement('div');
+        menu.className = 'dropdown-menu';
+        menu.innerHTML = `
+          <div class="dropdown-items">
+            <div class="dropdown-item">
+              <span class="dropdown-item-icon">📄</span>
+              <span class="dropdown-item-label">选项 1</span>
+            </div>
+            <div class="dropdown-item">
+              <span class="dropdown-item-icon">✏️</span>
+              <span class="dropdown-item-label">选项 2</span>
+            </div>
+            <div class="dropdown-item">
+              <span class="dropdown-item-icon">🗑️</span>
+              <span class="dropdown-item-label">选项 3</span>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(menu);
+        
+        // 定位
+        const rect = dropdownBtn.getBoundingClientRect();
+        menu.style.position = 'fixed';
+        menu.style.top = rect.bottom + 'px';
+        menu.style.left = rect.left + 'px';
+        menu.style.display = 'block';
+        
+        // 触发动画
+        void menu.offsetHeight; // 强制重排
+        requestAnimationFrame(() => {
+          menu.classList.add('dropdown-menu-open');
+        });
+        
+        // 点击外部关闭
+        const closeHandler = (e) => {
+          if (!menu.contains(e.target) && e.target !== dropdownBtn) {
+            menu.classList.remove('dropdown-menu-open');
+            setTimeout(() => {
+              menu.remove();
+            }, 300);
+            document.removeEventListener('click', closeHandler);
+          }
+        };
+        
+        setTimeout(() => {
+          document.addEventListener('click', closeHandler);
+        }, 0);
+      });
+
+      // 测试对话框
+      const dialogBtn = document.getElementById('dialogBtn');
+      dialogBtn.addEventListener('click', () => {
+        // 创建遮罩和对话框
+        const overlay = document.createElement('div');
+        overlay.className = 'dialog-overlay';
+        overlay.style.display = 'flex';
+        
+        const modal = document.createElement('div');
+        modal.className = 'dialog-modal';
+        modal.innerHTML = `
+          <div class="dialog-header">
+            <h2 class="dialog-title">测试对话框</h2>
+            <button class="dialog-close-btn">×</button>
+          </div>
+          <div class="dialog-body">
+            <div class="dialog-content">
+              这是一个测试对话框。观察打开时的缩放和位移动画效果。
+              对话框从 scale(0.85) translateY(-20px) 动画到 scale(1) translateY(0)。
+            </div>
+          </div>
+          <div class="dialog-footer">
+            <button class="dialog-btn dialog-btn-secondary">取消</button>
+            <button class="dialog-btn dialog-btn-primary">确定</button>
+          </div>
+        `;
+        
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        
+        // 触发动画
+        void overlay.offsetHeight; // 强制重排
+        requestAnimationFrame(() => {
+          overlay.classList.add('dialog-overlay-open');
+          modal.classList.add('dialog-modal-open');
+        });
+        
+        // 关闭处理
+        const closeDialog = () => {
+          overlay.classList.remove('dialog-overlay-open');
+          modal.classList.remove('dialog-modal-open');
+          setTimeout(() => {
+            overlay.remove();
+          }, 300);
+        };
+        
+        modal.querySelector('.dialog-close-btn').addEventListener('click', closeDialog);
+        modal.querySelector('.dialog-btn-secondary').addEventListener('click', closeDialog);
+        modal.querySelector('.dialog-btn-primary').addEventListener('click', closeDialog);
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) closeDialog();
+        });
+      });
+
+      // 测试 Popover
+      const popoverBtn = document.getElementById('popoverBtn');
+      let popover = null;
+      
+      popoverBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        if (popover) {
+          // 关闭现有的
+          popover.classList.remove('popover-visible');
+          setTimeout(() => {
+            popover.remove();
+            popover = null;
+          }, 250);
+        } else {
+          // 创建新的
+          popover = document.createElement('div');
+          popover.className = 'popover popover-bottom';
+          popover.innerHTML = `
+            <div class="popover-arrow"></div>
+            <div class="popover-content">
+              <strong>Popover 内容</strong><br>
+              观察 scale(0.9) + translateY(-5px) 的动画效果
+            </div>
+          `;
+          
+          document.body.appendChild(popover);
+          
+          // 定位
+          const rect = popoverBtn.getBoundingClientRect();
+          popover.style.position = 'fixed';
+          popover.style.top = (rect.bottom + 8) + 'px';
+          popover.style.left = (rect.left + rect.width / 2 - 150) + 'px';
+          popover.style.display = 'block';
+          popover.style.width = '300px';
+          
+          // 触发动画
+          void popover.offsetHeight; // 强制重排
+          requestAnimationFrame(() => {
+            popover.classList.add('popover-visible');
+          });
+          
+          // 点击外部关闭
+          const closeHandler = (e) => {
+            if (popover && !popover.contains(e.target) && e.target !== popoverBtn) {
+              popover.classList.remove('popover-visible');
+              setTimeout(() => {
+                if (popover) {
+                  popover.remove();
+                  popover = null;
+                }
+              }, 250);
+              document.removeEventListener('click', closeHandler);
+            }
+          };
+          
+          setTimeout(() => {
+            document.addEventListener('click', closeHandler);
+          }, 0);
+        }
+      });
+
+      // 悬停显示 Popover
+      const popoverBtn2 = document.getElementById('popoverBtn2');
+      let hoverPopover = null;
+      let hoverTimeout = null;
+      
+      popoverBtn2.addEventListener('mouseenter', () => {
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+        
+        if (!hoverPopover) {
+          hoverPopover = document.createElement('div');
+          hoverPopover.className = 'popover popover-top';
+          hoverPopover.innerHTML = `
+            <div class="popover-arrow"></div>
+            <div class="popover-content">
+              悬停触发的 Popover<br>
+              鼠标移开后会自动关闭
+            </div>
+          `;
+          
+          document.body.appendChild(hoverPopover);
+          
+          // 定位
+          const rect = popoverBtn2.getBoundingClientRect();
+          hoverPopover.style.position = 'fixed';
+          hoverPopover.style.width = '200px';
+          
+          // 先设置位置以获取高度
+          hoverPopover.style.display = 'block';
+          const popoverHeight = hoverPopover.offsetHeight;
+          hoverPopover.style.top = (rect.top - popoverHeight - 8) + 'px';
+          hoverPopover.style.left = (rect.left + rect.width / 2 - 100) + 'px';
+          
+          // 触发动画
+          void hoverPopover.offsetHeight; // 强制重排
+          requestAnimationFrame(() => {
+            hoverPopover.classList.add('popover-visible');
+          });
+        }
+      });
+      
+      popoverBtn2.addEventListener('mouseleave', () => {
+        if (hoverPopover) {
+          hoverTimeout = setTimeout(() => {
+            if (hoverPopover) {
+              hoverPopover.classList.remove('popover-visible');
+              setTimeout(() => {
+                if (hoverPopover) {
+                  hoverPopover.remove();
+                  hoverPopover = null;
+                }
+              }, 250);
+            }
+          }, 200);
+        }
+      });
+
+      console.log('✨ 动画测试页面已加载');
+      console.log('📌 提示：');
+      console.log('- 下拉菜单：scale(0.95) + translateY(-10px) → scale(1) + translateY(0)');
+      console.log('- 对话框：scale(0.85) + translateY(-20px) → scale(1) + translateY(0)');
+      console.log('- Popover：scale(0.9) + translateY(-5px) → scale(1) + translateY(0)');
+    });
+  </script>
+</body>
+</html>

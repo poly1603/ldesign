@@ -1,6 +1,5 @@
 import { Deck } from '@deck.gl/core';
 import { GeoJsonLayer, ScatterplotLayer, TextLayer } from '@deck.gl/layers';
-import type { Feature, FeatureCollection } from 'geojson';
 import type {
   ViewMode,
   ViewState,
@@ -11,10 +10,13 @@ import type {
   TooltipInfo,
   DeckGLLayer,
   ColorScheme,
-  ColorMode,
   SelectionMode,
-  SelectionStyle
+  SelectionStyle,
+  Feature,
+  FeatureCollection,
+  TextLabelOptions
 } from './types';
+import { MarkerRenderer, type MarkerOptions, type MarkerGroupOptions } from './MarkerRenderer';
 
 /**
  * MapRenderer - A deck.gl based map renderer for GeoJSON data
@@ -45,6 +47,9 @@ export class MapRenderer {
   private showTooltip: boolean;
   private selectedFeatures: Set<string> = new Set();  // 存储选中的 feature ID
   private onSelectCallback?: (selectedFeatures: Feature[]) => void;
+  
+  // MarkerRenderer instance
+  private markerRenderer: MarkerRenderer;
 
   constructor(container: HTMLElement | string, options: MapRendererOptions = {}) {
     this.container = typeof container === 'string' 
@@ -102,6 +107,9 @@ export class MapRenderer {
     
     // 初始化 lastZoom
     this.lastZoom = this.viewState.zoom || 8;
+    
+    // 初始化 MarkerRenderer
+    this.markerRenderer = new MarkerRenderer();
 
     this.initDeck();
   }
@@ -134,6 +142,7 @@ export class MapRenderer {
       canvas.style.left = '0';
       canvas.style.width = '100%';
       canvas.style.height = '100%';
+      canvas.style.pointerEvents = 'auto';
       this.container.appendChild(canvas);
       
       // 使用canvas模式而非container模式
@@ -165,7 +174,11 @@ export class MapRenderer {
         controller: controllerOptions,
         layers: [],
         style: {
-          position: 'absolute'
+          position: 'absolute',
+          top: '0px',
+          left: '0px',
+          width: '100%',
+          height: '100%'
         },
         onViewStateChange: ({ viewState }) => {
           this.handleViewStateChange(viewState);
@@ -202,7 +215,13 @@ export class MapRenderer {
       return;
     }
     
+    // 过滤文字层点击，只处理 GeoJSON feature
     const feature = info.object as Feature;
+    if (!feature.geometry || !feature.properties) {
+      console.log('Not a valid GeoJSON feature, ignoring click');
+      return;
+    }
+    
     const featureId = this.getFeatureId(feature);
     console.log('Feature clicked:', featureId, 'Feature:', feature.properties?.name);
     
@@ -271,100 +290,72 @@ export class MapRenderer {
   private updateSelectionLayers(): void {
     console.log('updateSelectionLayers called, selected:', Array.from(this.selectedFeatures));
     
-    // 重新渲染所有 GeoJSON 层
+    // 先移除旧的选中层
+    this.layers = this.layers.filter(layer => layer.id !== 'selection-highlight-layer');
+    
+    // 重新渲染所有 GeoJSON 层（不再修改颜色，保持原样）
     const geoJsonLayers = this.layers.filter(layer => 
       layer.id && !layer.id.endsWith('-labels') && layer.props.data
     );
     
     console.log('Found geoJsonLayers:', geoJsonLayers.map(l => l.id));
     
-    geoJsonLayers.forEach(layer => {
-      const layerId = layer.id!;
-      const geoJsonData = layer.props.data as FeatureCollection;
-      
-      // 使用保存的原始配置，如果不存在则保存当前配置
-      if (!this.originalLayerProps.has(layerId)) {
-        this.originalLayerProps.set(layerId, { ...layer.props });
-      }
-      const originalProps = this.originalLayerProps.get(layerId)!;
-      
-      // 创建新的颜色函数，考虑选中状态
-      const originalFillColor = originalProps.getFillColor;
-      const newFillColor = (feature: any, info: any) => {
-        const featureId = this.getFeatureId(feature);
-        const isSelected = this.selectedFeatures.has(featureId);
+    // 如果有选中的区域，创建一个单独的高亮层
+    if (this.selectedFeatures.size > 0) {
+      geoJsonLayers.forEach(layer => {
+        const layerId = layer.id!;
+        const geoJsonData = layer.props.data as FeatureCollection;
         
-        if (isSelected && this.selectionStyle.highlightColor) {
-          // 如果选中且有高亮颜色，使用高亮颜色
-          return this.selectionStyle.highlightColor;
+        // 使用保存的原始配置
+        if (!this.originalLayerProps.has(layerId)) {
+          this.originalLayerProps.set(layerId, { ...layer.props });
         }
+        const originalProps = this.originalLayerProps.get(layerId)!;
         
-        // 否则使用原始颜色
-        return typeof originalFillColor === 'function' 
-          ? originalFillColor(feature, info)
-          : originalFillColor;
-      };
-      
-      const originalLineColor = originalProps.getLineColor;
-      const newLineColor = (feature: any, info: any) => {
-        const featureId = this.getFeatureId(feature);
-        const isSelected = this.selectedFeatures.has(featureId);
+        // 筛选出选中的 features
+        const selectedFeatures = geoJsonData.features?.filter(feature => {
+          const featureId = this.getFeatureId(feature);
+          return this.selectedFeatures.has(featureId);
+        }) || [];
         
-        if (isSelected && this.selectionStyle.strokeColor) {
-          return this.selectionStyle.strokeColor;
+        if (selectedFeatures.length > 0) {
+          // 创建选中的 FeatureCollection
+          const selectedGeoJson: FeatureCollection = {
+            type: 'FeatureCollection',
+            features: selectedFeatures
+          };
+          
+          // 创建高亮层（支持填充颜色）
+          const highlightLayer = new GeoJsonLayer({
+            id: 'selection-highlight-layer',
+            data: selectedGeoJson,
+            pickable: true,
+            stroked: true,
+            filled: !!this.selectionStyle.highlightColor,  // 根据是否设置高亮颜色决定是否填充
+            extruded: originalProps.extruded || false,
+            wireframe: false,
+            lineWidthMinPixels: this.selectionStyle.strokeWidth || 3,
+            lineWidthMaxPixels: this.selectionStyle.strokeWidth || 3,
+            getLineColor: this.selectionStyle.strokeColor || [255, 0, 0, 255],
+            getFillColor: this.selectionStyle.highlightColor || [255, 0, 0, 80],
+            getLineWidth: this.selectionStyle.strokeWidth || 3,
+            getElevation: originalProps.getElevation || 0,
+            elevationScale: originalProps.elevationScale || 1
+          } as any);
+          
+          // 将高亮层插入到所有文本层之前（保证文字在最上面）
+          const firstLabelIndex = this.layers.findIndex(l => l.id && l.id.endsWith('-labels'));
+          if (firstLabelIndex !== -1) {
+            // 如果有文本层，插入到第一个文本层之前
+            this.layers.splice(firstLabelIndex, 0, highlightLayer);
+          } else {
+            // 如果没有文本层，添加到末尾
+            this.layers.push(highlightLayer);
+          }
+          console.log('Added selection highlight layer with', selectedFeatures.length, 'features');
         }
-        
-        // 使用原始颜色
-        if (typeof originalLineColor === 'function') {
-          return originalLineColor(feature, info);
-        } else if (Array.isArray(originalLineColor)) {
-          return originalLineColor;
-        } else {
-          return [255, 255, 255, 255];
-        }
-      };
-      
-      const originalLineWidth = originalProps.getLineWidth;
-      const newLineWidth = (feature: any, info: any) => {
-        const featureId = this.getFeatureId(feature);
-        const isSelected = this.selectedFeatures.has(featureId);
-        
-        if (isSelected && this.selectionStyle.strokeWidth) {
-          return this.selectionStyle.strokeWidth;
-        }
-        
-        // 使用原始宽度
-        if (typeof originalLineWidth === 'function') {
-          return originalLineWidth(feature, info);
-        } else if (typeof originalLineWidth === 'number') {
-          return originalLineWidth;
-        } else {
-          return 1;
-        }
-      };
-      
-      // 创建新的 layer
-      const newLayer = new GeoJsonLayer({
-        ...originalProps,
-        id: layerId,
-        data: geoJsonData,
-        getFillColor: newFillColor,
-        getLineColor: newLineColor,
-        getLineWidth: newLineWidth,
-        updateTriggers: {
-          getFillColor: Date.now(),
-          getLineColor: Date.now(),
-          getLineWidth: Date.now()
-        }
-      } as any);
-      
-      // 替换层
-      const layerIndex = this.layers.findIndex(l => l.id === layerId);
-      if (layerIndex !== -1) {
-        this.layers[layerIndex] = newLayer;
-        console.log('Replaced layer:', layerId);
-      }
-    });
+      });
+    }
     
     this.updateLayers();
   }
@@ -803,10 +794,14 @@ export class MapRenderer {
    */
   private updateLayers(): void {
     if (this.deck) {
-      console.log('Updating deck layers, count:', this.layers.length);
-      // 使用新数组确保eck.gl检测到变化
+      // 合并地图层和标记层
+      const markerLayers = this.markerRenderer.getLayers();
+      const allLayers = [...this.layers, ...markerLayers];
+      console.log('Updating deck layers, map layers:', this.layers.length, 'marker layers:', markerLayers.length);
+      
+      // 使用新数组确保deck.gl检测到变化
       this.deck.setProps({ 
-        layers: [...this.layers]
+        layers: allLayers
       });
       // 强制重绘
       this.deck.redraw();
@@ -1047,7 +1042,7 @@ export class MapRenderer {
   }
   
   /**
-   * Add city markers
+   * Add city markers (deprecated - use addMarker instead)
    */
   addCityMarkers(cities: CityMarker[], options: CityMarkerOptions = {}): void {
     const layer = new ScatterplotLayer({
@@ -1070,6 +1065,109 @@ export class MapRenderer {
     } as any);
 
     this.addLayer(layer);
+  }
+  
+  /**
+   * Add a single marker to the map
+   */
+  addMarker(marker: MarkerOptions): string {
+    const markerId = this.markerRenderer.addMarker(marker);
+    this.updateLayers();
+    return markerId;
+  }
+  
+  /**
+   * Add multiple markers to the map
+   */
+  addMarkers(markers: MarkerOptions[]): string[] {
+    const markerIds = this.markerRenderer.addMarkers(markers);
+    this.updateLayers();
+    return markerIds;
+  }
+  
+  /**
+   * Add a marker group
+   */
+  addMarkerGroup(group: MarkerGroupOptions): void {
+    this.markerRenderer.addMarkerGroup(group);
+    this.updateLayers();
+  }
+  
+  /**
+   * Update a marker
+   */
+  updateMarker(markerId: string, updates: Partial<MarkerOptions>): void {
+    this.markerRenderer.updateMarker(markerId, updates);
+    this.updateLayers();
+  }
+  
+  /**
+   * Remove a marker
+   */
+  removeMarker(markerId: string): void {
+    this.markerRenderer.removeMarker(markerId);
+    this.updateLayers();
+  }
+  
+  /**
+   * Remove a marker group
+   */
+  removeMarkerGroup(groupId: string): void {
+    this.markerRenderer.removeMarkerGroup(groupId);
+    this.updateLayers();
+  }
+  
+  /**
+   * Clear all markers
+   */
+  clearMarkers(): void {
+    this.markerRenderer.clearMarkers();
+    this.updateLayers();
+  }
+  
+  /**
+   * Get a marker by ID
+   */
+  getMarker(markerId: string): MarkerOptions | undefined {
+    return this.markerRenderer.getMarker(markerId);
+  }
+  
+  /**
+   * Get all markers
+   */
+  getAllMarkers(): MarkerOptions[] {
+    return this.markerRenderer.getAllMarkers();
+  }
+  
+  /**
+   * Find markers by condition
+   */
+  findMarkers(predicate: (marker: MarkerOptions) => boolean): MarkerOptions[] {
+    return this.markerRenderer.findMarkers(predicate);
+  }
+  
+  /**
+   * Set marker visibility
+   */
+  setMarkerVisibility(markerId: string, visible: boolean): void {
+    this.markerRenderer.setMarkerVisibility(markerId, visible);
+    this.updateLayers();
+  }
+  
+  /**
+   * Highlight a marker
+   */
+  highlightMarker(markerId: string, highlightColor?: number[]): void {
+    this.markerRenderer.highlightMarker(markerId, highlightColor);
+    this.updateLayers();
+  }
+  
+  /**
+   * Unhighlight a marker
+   */
+  unhighlightMarker(markerId: string): void {
+    this.markerRenderer.unhighlightMarker(markerId);
+    this.updateLayers();
   }
 
   /**

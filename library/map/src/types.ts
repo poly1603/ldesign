@@ -1,6 +1,19 @@
 import type { Deck, DeckProps } from '@deck.gl/core';
 import type { GeoJsonLayer, ScatterplotLayer } from '@deck.gl/layers';
-import type { Feature, FeatureCollection, GeoJsonProperties } from 'geojson';
+
+// Inline GeoJSON types
+export interface Feature<G = any, P = any> {
+  type: 'Feature';
+  geometry: G;
+  properties: P;
+}
+
+export interface FeatureCollection<G = any, P = any> {
+  type: 'FeatureCollection';
+  features: Feature<G, P>[];
+}
+
+export type GeoJsonProperties = { [key: string]: any } | null;
 
 export type ViewMode = '2d' | '3d';
 
@@ -147,4 +160,4 @@ export interface TooltipInfo {
   coordinate?: [number, number];
 }
 
-export type DeckGLLayer = GeoJsonLayer | ScatterplotLayer;
+export type DeckGLLayer = GeoJsonLayer | ScatterplotLayer | any; // Allow any layer type from deck.gl

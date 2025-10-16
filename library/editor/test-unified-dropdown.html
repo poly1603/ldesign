@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>统一下拉框测试 - LDesign Editor</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      font-size: 36px;
+      margin: 0 0 10px 0;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .header p {
+      font-size: 18px;
+      opacity: 0.95;
+    }
+    
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    @media (max-width: 768px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .card-header {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      padding: 20px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    .card-body {
+      padding: 20px;
+    }
+    
+    .editor-container {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      min-height: 400px;
+    }
+    
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .feature-list li {
+      padding: 12px;
+      margin-bottom: 8px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .feature-list li:hover {
+      transform: translateX(4px);
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .feature-icon {
+      font-size: 24px;
+    }
+    
+    .test-section {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .test-section h3 {
+      margin: 0 0 15px 0;
+      color: #333;
+      font-size: 18px;
+    }
+    
+    .test-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+    }
+    
+    .test-button {
+      padding: 12px;
+      background: white;
+      border: 2px solid #3b82f6;
+      color: #3b82f6;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    
+    .test-button:hover {
+      background: #3b82f6;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .animation-info {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .animation-info h3 {
+      margin: 0 0 10px 0;
+      font-size: 20px;
+    }
+    
+    .animation-info ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    
+    .animation-info li {
+      margin: 8px 0;
+      line-height: 1.6;
+    }
+    
+    .code-preview {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      margin-top: 15px;
+    }
+    
+    .status-message {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s;
+      z-index: 10000;
+    }
+    
+    .status-message.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="header">
+      <h1>🎨 LDesign Editor - 统一下拉框体验</h1>
+      <p>所有下拉功能使用统一的动画效果，提供一致的用户体验</p>
+    </div>
+    
+    <div class="animation-info">
+      <h3>✨ 统一动画系统</h3>
+      <ul>
+        <li>📍 <strong>打开动画</strong>：0.2秒渐入 + 缩放效果，使用 cubic-bezier(0.4, 0, 0.2, 1) 缓动</li>
+        <li>📍 <strong>关闭动画</strong>：0.15秒渐出 + 缩放效果，快速响应用户操作</li>
+        <li>📍 <strong>交互反馈</strong>：悬停时选项右移2px，点击时有视觉反馈</li>
+        <li>📍 <strong>键盘支持</strong>：ESC键快速关闭，无需点击</li>
+        <li>📍 <strong>智能定位</strong>：自动调整位置避免超出屏幕</li>
+      </ul>
+    </div>
+    
+    <div class="content-grid">
+      <div class="card">
+        <div class="card-header">
+          📝 富文本编辑器
+        </div>
+        <div class="card-body">
+          <div class="editor-container" id="editor"></div>
+          <div class="test-section">
+            <h3>工具栏下拉功能</h3>
+            <p style="color: #666; margin: 10px 0;">点击工具栏上的按钮，体验统一的下拉框动画：</p>
+            <ul style="color: #666; line-height: 1.8;">
+              <li>🎯 标题级别 - H1-H6 标题选择</li>
+              <li>📐 对齐方式 - 左/中/右/两端对齐</li>
+              <li>📏 字体大小 - 12px-72px</li>
+              <li>🔤 字体选择 - 中英文字体</li>
+              <li>🎨 文本颜色 - 颜色网格选择</li>
+              <li>🖌️ 背景颜色 - 高亮背景色</li>
+              <li>😊 插入表情 - 分类表情选择</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          🧪 独立测试区
+        </div>
+        <div class="card-body">
+          <ul class="feature-list">
+            <li>
+              <span class="feature-icon">🎯</span>
+              <div>
+                <strong>标题级别</strong>
+                <div style="color: #666; font-size: 13px;">选择段落或标题格式</div>
+              </div>
+            </li>
+            <li>
+              <span class="feature-icon">📐</span>
+              <div>
+                <strong>对齐方式</strong>
+                <div style="color: #666; font-size: 13px;">文本对齐控制</div>
+              </div>
+            </li>
+            <li>
+              <span class="feature-icon">📏</span>
+              <div>
+                <strong>字体大小</strong>
+                <div style="color: #666; font-size: 13px;">精确的字号选择</div>
+              </div>
+            </li>
+            <li>
+              <span class="feature-icon">🔤</span>
+              <div>
+                <strong>字体家族</strong>
+                <div style="color: #666; font-size: 13px;">多种字体可选</div>
+              </div>
+            </li>
+            <li>
+              <span class="feature-icon">🎨</span>
+              <div>
+                <strong>颜色选择</strong>
+                <div style="color: #666; font-size: 13px;">丰富的颜色网格</div>
+              </div>
+            </li>
+            <li>
+              <span class="feature-icon">😊</span>
+              <div>
+                <strong>表情符号</strong>
+                <div style="color: #666; font-size: 13px;">分类表情选择器</div>
+              </div>
+            </li>
+          </ul>
+          
+          <div class="test-section">
+            <h3>快速测试按钮</h3>
+            <div class="test-buttons">
+              <button class="test-button" id="test-heading">
+                <span>🎯</span> 标题
+              </button>
+              <button class="test-button" id="test-align">
+                <span>📐</span> 对齐
+              </button>
+              <button class="test-button" id="test-fontsize">
+                <span>📏</span> 字号
+              </button>
+              <button class="test-button" id="test-fontfamily">
+                <span>🔤</span> 字体
+              </button>
+              <button class="test-button" id="test-textcolor">
+                <span>🎨</span> 文字颜色
+              </button>
+              <button class="test-button" id="test-bgcolor">
+                <span>🖌️</span> 背景色
+              </button>
+              <button class="test-button" id="test-emoji">
+                <span>😊</span> 表情
+              </button>
+            </div>
+          </div>
+          
+          <div class="code-preview">
+            // 统一的下拉框调用示例<br>
+            showDropdown(button, {<br>
+            &nbsp;&nbsp;options: [...],<br>
+            &nbsp;&nbsp;onSelect: (value) => { ... },<br>
+            &nbsp;&nbsp;customContent: element, // 可选<br>
+            &nbsp;&nbsp;width: 280, // 可选<br>
+            &nbsp;&nbsp;maxHeight: 400 // 可选<br>
+            })
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="status-message" id="statusMessage">
+    <span id="statusText">选中了项目</span>
+  </div>
+
+  <script type="module">
+    import { LDesignEditor } from './src/index.ts'
+    import { showDropdown } from './src/ui/Dropdown.ts'
+    import { showColorDropdown, showEmojiDropdown } from './src/ui/UnifiedDropdown.ts'
+    
+    // 显示状态消息
+    function showStatus(message) {
+      const statusEl = document.getElementById('statusMessage')
+      const textEl = document.getElementById('statusText')
+      textEl.textContent = message
+      statusEl.classList.add('show')
+      setTimeout(() => {
+        statusEl.classList.remove('show')
+      }, 2000)
+    }
+    
+    // 初始化编辑器
+    const container = document.getElementById('editor')
+    const editor = new LDesignEditor(container, {
+      placeholder: '开始输入内容，使用工具栏测试各种下拉功能...',
+      content: `
+        <h2>统一下拉框动画系统</h2>
+        <p>这个编辑器现在使用<strong>统一的下拉框组件</strong>，为所有下拉功能提供一致的动画体验。</p>
+        <p style="color: #3b82f6;">试试工具栏上的各种按钮，感受流畅的动画效果！</p>
+        <ul>
+          <li>🎯 标题级别选择</li>
+          <li>📐 文本对齐控制</li>
+          <li>📏 字体大小调整</li>
+          <li>🔤 字体家族选择</li>
+          <li>🎨 颜色选择器</li>
+          <li>😊 表情符号插入</li>
+        </ul>
+        <blockquote>
+          <p>提示：点击右侧的测试按钮，可以快速体验各种下拉框功能。</p>
+        </blockquote>
+      `
+    })
+    
+    // 测试标题级别
+    document.getElementById('test-heading').addEventListener('click', (e) => {
+      showDropdown(e.target, {
+        options: [
+          { label: '正文', value: 'p' },
+          { label: '标题 1', value: 'h1' },
+          { label: '标题 2', value: 'h2' },
+          { label: '标题 3', value: 'h3' },
+          { label: '标题 4', value: 'h4' },
+          { label: '标题 5', value: 'h5' },
+          { label: '标题 6', value: 'h6' }
+        ],
+        onSelect: (value) => {
+          showStatus(`选择了标题级别: ${value.toUpperCase()}`)
+        }
+      })
+    })
+    
+    // 测试对齐方式
+    document.getElementById('test-align').addEventListener('click', (e) => {
+      showDropdown(e.target, {
+        options: [
+          { label: '左对齐', value: 'left' },
+          { label: '居中', value: 'center' },
+          { label: '右对齐', value: 'right' },
+          { label: '两端对齐', value: 'justify' }
+        ],
+        onSelect: (value) => {
+          showStatus(`选择了对齐方式: ${value}`)
+        }
+      })
+    })
+    
+    // 测试字体大小
+    document.getElementById('test-fontsize').addEventListener('click', (e) => {
+      showDropdown(e.target, {
+        options: [
+          { label: '12px', value: '12px' },
+          { label: '14px', value: '14px' },
+          { label: '16px', value: '16px' },
+          { label: '18px', value: '18px' },
+          { label: '20px', value: '20px' },
+          { label: '24px', value: '24px' },
+          { label: '28px', value: '28px' },
+          { label: '32px', value: '32px' },
+          { label: '36px', value: '36px' },
+          { label: '48px', value: '48px' },
+          { label: '72px', value: '72px' }
+        ],
+        onSelect: (value) => {
+          showStatus(`选择了字体大小: ${value}`)
+        }
+      })
+    })
+    
+    // 测试字体家族
+    document.getElementById('test-fontfamily').addEventListener('click', (e) => {
+      showDropdown(e.target, {
+        options: [
+          { label: '默认', value: 'inherit' },
+          { label: '宋体', value: '宋体, SimSun' },
+          { label: '黑体', value: '黑体, SimHei' },
+          { label: '微软雅黑', value: '微软雅黑, Microsoft YaHei' },
+          { label: '楷体', value: '楷体, KaiTi' },
+          { label: 'Arial', value: 'Arial, sans-serif' },
+          { label: 'Times New Roman', value: 'Times New Roman, serif' },
+          { label: 'Courier New', value: 'Courier New, monospace' }
+        ],
+        onSelect: (value) => {
+          showStatus(`选择了字体: ${value.split(',')[0]}`)
+        }
+      })
+    })
+    
+    // 测试文字颜色
+    document.getElementById('test-textcolor').addEventListener('click', (e) => {
+      showColorDropdown(e.target, (color) => {
+        showStatus(`选择了文字颜色: ${color}`)
+      })
+    })
+    
+    // 测试背景颜色
+    document.getElementById('test-bgcolor').addEventListener('click', (e) => {
+      showColorDropdown(e.target, (color) => {
+        showStatus(`选择了背景颜色: ${color}`)
+      })
+    })
+    
+    // 测试表情选择
+    document.getElementById('test-emoji').addEventListener('click', (e) => {
+      showEmojiDropdown(e.target, (emoji) => {
+        showStatus(`选择了表情: ${emoji}`)
+      })
+    })
+    
+    console.log('✅ 统一下拉框测试页面初始化完成')
+    console.log('📍 所有下拉功能现在使用相同的动画效果')
+  </script>
+</body>
+</html>

@@ -516,7 +516,7 @@ export class DialogModal extends BaseComponent {
       if (!this.isOpen) { // Double check we're still closed
         this.overlay.style.display = 'none';
       }
-    }, 200);
+    }, 300); // Updated to match CSS animation duration
 
     this.isOpen = false;
 

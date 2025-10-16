@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>颜色选择器优化测试 - LDesign Editor</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    
+    .editor-container {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      min-height: 400px;
+      background: white;
+    }
+    
+    .test-section {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .test-section h3 {
+      margin: 0 0 15px 0;
+      color: #333;
+      font-size: 18px;
+    }
+    
+    .test-buttons {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    
+    .test-button {
+      padding: 12px 24px;
+      border: 2px solid #3b82f6;
+      background: white;
+      color: #3b82f6;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .test-button:hover {
+      background: #3b82f6;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+    
+    .feature-card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-card h4 {
+      margin: 0 0 10px 0;
+      color: #3b82f6;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .feature-card p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .color-preview {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      border: 2px dashed #e5e7eb;
+      align-items: center;
+    }
+    
+    .preview-text {
+      flex: 1;
+      font-size: 18px;
+      padding: 10px;
+      border-radius: 4px;
+      transition: all 0.3s;
+    }
+    
+    .selected-color {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #f3f4f6;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 颜色选择器优化测试</h1>
+    
+    <div class="card">
+      <h2>✨ 优化特性</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h4><span>📏</span> 布局优化</h4>
+          <p>合理的内边距，颜色块使用响应式网格布局，自适应容器宽度</p>
+        </div>
+        <div class="feature-card">
+          <h4><span>🚫</span> 无横向滚动</h4>
+          <p>使用 box-sizing 和 overflow-x: hidden 防止横向滚动条出现</p>
+        </div>
+        <div class="feature-card">
+          <h4><span>🏷️</span> 清晰标识</h4>
+          <p>显示"文字颜色"或"背景色"标题，让用户清楚当前操作</p>
+        </div>
+        <div class="feature-card">
+          <h4><span>🎯</span> 智能定位</h4>
+          <p>自动调整位置避免超出屏幕边界，始终保持最佳可见性</p>
+        </div>
+        <div class="feature-card">
+          <h4><span>💎</span> 精美外观</h4>
+          <p>统一的动画效果，优雅的阴影和圆角设计</p>
+        </div>
+        <div class="feature-card">
+          <h4><span>⚡</span> 流畅交互</h4>
+          <p>颜色块悬停放大效果，点击反馈动画</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2>📝 编辑器测试</h2>
+      <div class="editor-container" id="editor"></div>
+      
+      <div class="color-preview">
+        <div class="preview-text" id="previewText">
+          这是示例文本，选择颜色查看效果
+        </div>
+        <div>
+          文字颜色: <span class="selected-color" id="textColor">#000000</span>
+        </div>
+        <div>
+          背景色: <span class="selected-color" id="bgColor">transparent</span>
+        </div>
+      </div>
+      
+      <div class="test-section">
+        <h3>独立测试按钮</h3>
+        <div class="test-buttons">
+          <button class="test-button" id="testTextColor">
+            <span>🎨</span> 测试文字颜色
+          </button>
+          <button class="test-button" id="testBgColor">
+            <span>🖌️</span> 测试背景色
+          </button>
+          <button class="test-button" id="testRightAlign">
+            <span>→</span> 右侧对齐测试
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { LDesignEditor } from './src/index.ts'
+    import { showColorDropdown } from './src/ui/UnifiedDropdown.ts'
+    
+    // 初始化编辑器
+    const container = document.getElementById('editor')
+    const editor = new LDesignEditor(container, {
+      placeholder: '在这里输入内容，使用工具栏上的颜色按钮...',
+      content: `
+        <h2>颜色选择器测试</h2>
+        <p>点击工具栏上的 <strong>文字颜色</strong> 或 <strong>背景色</strong> 按钮，体验优化后的颜色选择器。</p>
+        <p style="color: #3b82f6;">这段文字是蓝色的</p>
+        <p style="background-color: #fef3c7; padding: 10px;">这段文字有黄色背景</p>
+        <p>特性：</p>
+        <ul>
+          <li>📏 合理的内边距(12px)</li>
+          <li>🚫 无横向滚动条</li>
+          <li>🏷️ 清晰的标题标识</li>
+          <li>🎯 智能边界检测</li>
+        </ul>
+      `
+    })
+    
+    // 预览元素
+    const previewText = document.getElementById('previewText')
+    const textColorDisplay = document.getElementById('textColor')
+    const bgColorDisplay = document.getElementById('bgColor')
+    
+    // 测试文字颜色
+    document.getElementById('testTextColor').addEventListener('click', (e) => {
+      const rect = e.target.getBoundingClientRect()
+      const button = e.target
+      
+      showColorDropdown(button, (color) => {
+        previewText.style.color = color
+        textColorDisplay.textContent = color
+        console.log('选择了文字颜色:', color)
+      }, true, '文字颜色')
+    })
+    
+    // 测试背景色
+    document.getElementById('testBgColor').addEventListener('click', (e) => {
+      const button = e.target
+      
+      showColorDropdown(button, (color) => {
+        previewText.style.backgroundColor = color
+        bgColorDisplay.textContent = color
+        console.log('选择了背景色:', color)
+      }, true, '背景色')
+    })
+    
+    // 右侧对齐测试
+    document.getElementById('testRightAlign').addEventListener('click', (e) => {
+      const button = e.target
+      // 移动按钮到右侧
+      button.style.marginLeft = 'auto'
+      
+      showColorDropdown(button, (color) => {
+        console.log('右侧按钮选择了颜色:', color)
+        // 恢复按钮位置
+        button.style.marginLeft = ''
+      }, true, '边界测试')
+    })
+    
+    console.log('✅ 颜色选择器优化测试页面加载完成')
+    console.log('🎨 点击按钮测试颜色选择器的各项优化')
+  </script>
+</body>
+</html>

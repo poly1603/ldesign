@@ -88,35 +88,17 @@ const handleSocialLogin = (provider: SocialProvider) => {
       </div>
 
       <!-- 登录面板插槽 - 核心插槽 -->
-      <slot
-        name="loginPanel" 
-        :form="form"
-        :loading="loading"
-        :error="error"
-        :handle-submit="handleSubmit"
-      >
+      <slot name="loginPanel" :form="form" :loading="loading" :error="error" :handle-submit="handleSubmit">
         <!-- 默认表单 -->
         <form class="login-form" @submit.prevent="handleSubmit">
           <div class="form-group">
             <label for="username">用户名</label>
-            <input
-              id="username"
-              v-model="form.username"
-              type="text"
-              placeholder="请输入用户名"
-              required
-            >
+            <input id="username" v-model="form.username" type="text" placeholder="请输入用户名" required>
           </div>
 
           <div class="form-group">
             <label for="password">密码</label>
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              placeholder="请输入密码"
-              required
-            >
+            <input id="password" v-model="form.password" type="password" placeholder="请输入密码" required>
           </div>
 
           <div v-if="showRememberMe" class="form-group">
@@ -141,12 +123,8 @@ const handleSocialLogin = (provider: SocialProvider) => {
             <span>或</span>
           </div>
           <div class="social-buttons">
-            <button
-              v-for="provider in socialProviders" 
-              :key="provider.name"
-              class="social-btn"
-              @click="handleSocialLogin(provider)"
-            >
+            <button v-for="provider in socialProviders" :key="provider.name" class="social-btn"
+              @click="handleSocialLogin(provider)">
               {{ provider.label }}
             </button>
           </div>
@@ -179,7 +157,7 @@ const handleSocialLogin = (provider: SocialProvider) => {
 .login-container {
   width: 100%;
   max-width: 400px;
-  padding: 40px;
+  padding: 20px;
   background: white;
   border-radius: 8px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
@@ -187,7 +165,7 @@ const handleSocialLogin = (provider: SocialProvider) => {
 
 .login-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .login-header h1 {
@@ -273,7 +251,7 @@ const handleSocialLogin = (provider: SocialProvider) => {
 /* Logo 样式 */
 .login-logo {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
 }
 
 .default-logo {

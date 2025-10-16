@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>媒体插入功能测试 - LDesign Editor</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      font-size: 36px;
+      margin: 0 0 10px 0;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .header p {
+      font-size: 18px;
+      opacity: 0.95;
+    }
+    
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    @media (max-width: 768px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card h2 {
+      margin: 0 0 20px 0;
+      color: #333;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .editor-container {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      min-height: 500px;
+      background: white;
+    }
+    
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 30px 0;
+    }
+    
+    .feature-item {
+      padding: 15px;
+      margin-bottom: 10px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    
+    .feature-icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+    
+    .feature-content {
+      flex: 1;
+    }
+    
+    .feature-title {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    
+    .feature-desc {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .test-section {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .test-section h3 {
+      margin: 0 0 15px 0;
+      color: #333;
+      font-size: 18px;
+    }
+    
+    .test-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .test-button {
+      padding: 10px 20px;
+      border: 2px solid #3b82f6;
+      background: white;
+      color: #3b82f6;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .test-button:hover {
+      background: #3b82f6;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .info-box {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .info-box h3 {
+      margin: 0 0 10px 0;
+      font-size: 20px;
+    }
+    
+    .info-box ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    
+    .info-box li {
+      margin: 8px 0;
+      line-height: 1.6;
+    }
+    
+    .sample-media {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .sample-item {
+      border: 2px dashed #e5e7eb;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+    
+    .sample-item:hover {
+      border-color: #3b82f6;
+      background: #f0f9ff;
+    }
+    
+    .sample-item img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    
+    .sample-item video,
+    .sample-item audio {
+      width: 100%;
+    }
+    
+    .sample-label {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎬 媒体插入功能测试</h1>
+      <p>支持图片、视频、音频的本地上传和网络地址插入</p>
+    </div>
+    
+    <div class="info-box">
+      <h3>✨ 功能特性</h3>
+      <ul>
+        <li>📸 <strong>图片插入</strong>：支持本地上传和网络图片地址</li>
+        <li>🎥 <strong>视频插入</strong>：支持常见视频格式</li>
+        <li>🎵 <strong>音频插入</strong>：支持音频文件播放</li>
+        <li>📁 <strong>多选支持</strong>：图片支持批量上传</li>
+        <li>🌐 <strong>网络地址</strong>：通过URL插入媒体</li>
+        <li>🎨 <strong>统一界面</strong>：使用相同的下拉框动画</li>
+      </ul>
+    </div>
+    
+    <div class="content-grid">
+      <div class="card">
+        <h2><span>📝</span> 富文本编辑器</h2>
+        <div class="editor-container" id="editor"></div>
+        
+        <div class="test-section">
+          <h3>独立测试按钮</h3>
+          <div class="test-buttons">
+            <button class="test-button" id="testImage">
+              <span>🖼️</span> 测试插入图片
+            </button>
+            <button class="test-button" id="testVideo">
+              <span>🎬</span> 测试插入视频
+            </button>
+            <button class="test-button" id="testAudio">
+              <span>🎵</span> 测试插入音频
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2><span>🎯</span> 使用说明</h2>
+        
+        <ul class="feature-list">
+          <li class="feature-item">
+            <span class="feature-icon">📸</span>
+            <div class="feature-content">
+              <div class="feature-title">插入图片</div>
+              <div class="feature-desc">点击工具栏的图片按钮，选择本地上传或输入网络图片地址。支持JPG、PNG、GIF等格式。</div>
+            </div>
+          </li>
+          
+          <li class="feature-item">
+            <span class="feature-icon">🎥</span>
+            <div class="feature-content">
+              <div class="feature-title">插入视频</div>
+              <div class="feature-desc">点击工具栏的视频按钮，上传本地视频或输入视频URL。支持MP4、WebM等格式。</div>
+            </div>
+          </li>
+          
+          <li class="feature-item">
+            <span class="feature-icon">🎵</span>
+            <div class="feature-content">
+              <div class="feature-title">插入音频</div>
+              <div class="feature-desc">点击工具栏的音频按钮，选择音频文件或输入音频地址。支持MP3、WAV等格式。</div>
+            </div>
+          </li>
+          
+          <li class="feature-item">
+            <span class="feature-icon">📁</span>
+            <div class="feature-content">
+              <div class="feature-title">批量上传</div>
+              <div class="feature-desc">图片支持多选上传，按住Ctrl或Shift键可以选择多个文件。</div>
+            </div>
+          </li>
+          
+          <li class="feature-item">
+            <span class="feature-icon">🌐</span>
+            <div class="feature-content">
+              <div class="feature-title">网络地址</div>
+              <div class="feature-desc">支持直接输入媒体文件的网络地址，包括CDN链接、图床链接等。</div>
+            </div>
+          </li>
+        </ul>
+        
+        <div class="sample-media">
+          <div class="sample-item">
+            <img src="data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100' height='100' fill='%23ddd'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3E示例图片%3C/text%3E%3C/svg%3E" alt="示例图片">
+            <div class="sample-label">图片示例</div>
+          </div>
+          
+          <div class="sample-item">
+            <video controls style="background: #f3f4f6;">
+              <source src="" type="video/mp4">
+              您的浏览器不支持视频
+            </video>
+            <div class="sample-label">视频示例</div>
+          </div>
+          
+          <div class="sample-item">
+            <audio controls style="width: 100%;">
+              <source src="" type="audio/mpeg">
+              您的浏览器不支持音频
+            </audio>
+            <div class="sample-label">音频示例</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { LDesignEditor } from './src/index.ts'
+    import { showMediaInsert, insertMedia } from './src/ui/MediaInsert.ts'
+    
+    // 初始化编辑器
+    const container = document.getElementById('editor')
+    const editor = new LDesignEditor(container, {
+      placeholder: '在这里输入内容，使用工具栏上的媒体插入按钮...',
+      content: `
+        <h2>媒体插入测试</h2>
+        <p>点击工具栏上的 <strong>图片</strong>、<strong>视频</strong> 或 <strong>音频</strong> 按钮来插入媒体文件。</p>
+        <p>您可以选择：</p>
+        <ul>
+          <li>📁 本地上传 - 从您的电脑选择文件</li>
+          <li>🌐 网络地址 - 输入媒体文件的URL</li>
+        </ul>
+        <p>试试看吧！</p>
+      `
+    })
+    
+    // 测试插入图片
+    document.getElementById('testImage').addEventListener('click', (e) => {
+      showMediaInsert(e.target, {
+        type: 'image',
+        onInsert: (urls) => {
+          console.log('插入图片:', urls)
+          insertMedia('image', urls)
+        },
+        multiple: true
+      })
+    })
+    
+    // 测试插入视频
+    document.getElementById('testVideo').addEventListener('click', (e) => {
+      showMediaInsert(e.target, {
+        type: 'video',
+        onInsert: (urls) => {
+          console.log('插入视频:', urls)
+          insertMedia('video', urls)
+        },
+        multiple: false
+      })
+    })
+    
+    // 测试插入音频
+    document.getElementById('testAudio').addEventListener('click', (e) => {
+      showMediaInsert(e.target, {
+        type: 'audio',
+        onInsert: (urls) => {
+          console.log('插入音频:', urls)
+          insertMedia('audio', urls)
+        },
+        multiple: false
+      })
+    })
+    
+    console.log('✅ 媒体插入功能测试页面加载完成')
+    console.log('🎬 点击按钮测试图片、视频、音频插入功能')
+  </script>
+</body>
+</html>

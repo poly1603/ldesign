@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UI 组件动画测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 12px;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 40px;
+    }
+
+    .test-section {
+      margin-bottom: 48px;
+      padding-bottom: 48px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .test-section:last-child {
+      border-bottom: none;
+    }
+
+    .test-section h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .test-section p {
+      color: #666;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .test-button {
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 500;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .test-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .test-button:active {
+      transform: translateY(0);
+    }
+
+    .test-button.secondary {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-button.secondary:hover {
+      background: #f0f4ff;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .demo-text {
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-top: 20px;
+      color: #555;
+      line-height: 1.8;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-left: 12px;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 UI 组件动画测试</h1>
+    <p class="subtitle">测试增强型 UI 组件的打开和关闭动画效果</p>
+
+    <!-- Dropdown Menu Test -->
+    <div class="test-section">
+      <h2>1. Dropdown Menu <span class="status info">下拉菜单</span></h2>
+      <p>测试下拉菜单的流畅淡入淡出和滑动动画。点击按钮打开下拉菜单，观察打开和关闭时的过渡效果。</p>
+      <div class="button-group">
+        <button class="test-button" id="dropdownBtn">打开下拉菜单</button>
+        <button class="test-button secondary" id="dropdownSearchBtn">带搜索的下拉菜单</button>
+      </div>
+    </div>
+
+    <!-- Dialog Modal Test -->
+    <div class="test-section">
+      <h2>2. Dialog Modal <span class="status info">对话框</span></h2>
+      <p>测试模态对话框的缩放和淡入淡出动画。注意背景遮罩和对话框内容的同步动画效果。</p>
+      <div class="button-group">
+        <button class="test-button" id="dialogBtn">打开简单对话框</button>
+        <button class="test-button secondary" id="dialogFormBtn">打开表单对话框</button>
+      </div>
+    </div>
+
+    <!-- Popover Test -->
+    <div class="test-section">
+      <h2>3. Popover <span class="status info">弹出提示</span></h2>
+      <p>测试 Popover 的缩放动画和定位效果。支持多种触发方式和位置。</p>
+      <div class="button-group">
+        <button class="test-button" id="popoverClickBtn">点击触发 Popover</button>
+        <button class="test-button secondary" id="popoverHoverBtn">悬停触发 Popover</button>
+        <button class="test-button" id="popoverBottomBtn">底部 Popover</button>
+      </div>
+    </div>
+
+    <!-- Emoji Picker Test -->
+    <div class="test-section">
+      <h2>4. Emoji Picker <span class="status success">已增强</span></h2>
+      <p>测试使用 Popover 重构后的 Emoji 选择器。应该具有流畅的打开/关闭动画。</p>
+      <div class="button-group">
+        <button class="test-button" id="emojiBtn">😀 打开 Emoji 选择器</button>
+      </div>
+      <div class="demo-text" id="emojiResult">
+        选中的 Emoji 将显示在这里...
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { DropdownMenu } from './src/ui/enhanced/DropdownMenu.js';
+    import { DialogModal } from './src/ui/enhanced/DialogModal.js';
+    import { Popover } from './src/ui/enhanced/Popover.js';
+    import { EmojiPicker } from './src/ui/EmojiPickerEnhanced.js';
+
+    // Dropdown Menu Tests
+    const dropdownBtn = document.getElementById('dropdownBtn');
+    const dropdown = new DropdownMenu({
+      trigger: dropdownBtn,
+      items: [
+        { id: '1', label: '选项 1', icon: '📄' },
+        { id: '2', label: '选项 2', icon: '✏️' },
+        { id: '3', label: '选项 3', icon: '🗑️', disabled: true },
+        { id: 'divider1', divider: true },
+        { id: '4', label: '嵌套菜单', icon: '📁', children: [
+          { id: '4-1', label: '子选项 1' },
+          { id: '4-2', label: '子选项 2' }
+        ]},
+        { id: '5', label: '退出', icon: '🚪', shortcut: 'Ctrl+Q' }
+      ],
+      onSelect: (item) => {
+        console.log('Selected:', item.label);
+      }
+    });
+
+    const dropdownSearchBtn = document.getElementById('dropdownSearchBtn');
+    const dropdownSearch = new DropdownMenu({
+      trigger: dropdownSearchBtn,
+      searchable: true,
+      items: Array.from({ length: 20 }, (_, i) => ({
+        id: `item-${i}`,
+        label: `搜索项 ${i + 1}`,
+        icon: '🔍'
+      })),
+      maxHeight: 300,
+      onSelect: (item) => {
+        console.log('Selected:', item.label);
+      }
+    });
+
+    // Dialog Modal Tests
+    const dialogBtn = document.getElementById('dialogBtn');
+    dialogBtn.addEventListener('click', () => {
+      const dialog = new DialogModal({
+        title: '简单对话框',
+        content: '这是一个简单的对话框示例。观察打开和关闭时的动画效果。背景遮罩应该淡入淡出，对话框内容应该有缩放效果。',
+        buttons: [
+          { id: 'cancel', label: '取消', type: 'secondary' },
+          { id: 'confirm', label: '确定', type: 'primary', onClick: (modal) => modal.close() }
+        ]
+      });
+      dialog.open();
+    });
+
+    const dialogFormBtn = document.getElementById('dialogFormBtn');
+    dialogFormBtn.addEventListener('click', () => {
+      const formDialog = new DialogModal({
+        title: '表单对话框',
+        fields: [
+          { id: 'name', type: 'text', label: '姓名', placeholder: '请输入姓名', required: true },
+          { id: 'email', type: 'email', label: '邮箱', placeholder: 'example@email.com', required: true },
+          { id: 'message', type: 'textarea', label: '留言', placeholder: '请输入留言内容' },
+          { id: 'subscribe', type: 'checkbox', label: '订阅', placeholder: '接收更新通知' }
+        ],
+        onSubmit: async (data) => {
+          console.log('Form submitted:', data);
+          alert('表单提交成功！\n' + JSON.stringify(data, null, 2));
+        }
+      });
+      formDialog.open();
+    });
+
+    // Popover Tests
+    const popoverClickBtn = document.getElementById('popoverClickBtn');
+    const popoverClick = new Popover({
+      trigger: popoverClickBtn,
+      content: '<strong>点击触发的 Popover</strong><br>这是通过点击触发显示的提示内容。',
+      placement: 'top',
+      triggerType: 'click',
+      arrow: true
+    });
+
+    const popoverHoverBtn = document.getElementById('popoverHoverBtn');
+    const popoverHover = new Popover({
+      trigger: popoverHoverBtn,
+      content: '<strong>悬停触发的 Popover</strong><br>鼠标悬停即可显示。',
+      placement: 'top',
+      triggerType: 'hover',
+      delay: 200,
+      hideDelay: 100,
+      arrow: true,
+      interactive: true
+    });
+
+    const popoverBottomBtn = document.getElementById('popoverBottomBtn');
+    const popoverBottom = new Popover({
+      trigger: popoverBottomBtn,
+      content: '<strong>底部 Popover</strong><br>这个 Popover 显示在按钮下方。',
+      placement: 'bottom',
+      triggerType: 'click',
+      arrow: true
+    });
+
+    // Emoji Picker Test
+    const emojiBtn = document.getElementById('emojiBtn');
+    const emojiResult = document.getElementById('emojiResult');
+    
+    emojiBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const picker = new EmojiPicker({
+        onSelect: (emoji) => {
+          emojiResult.textContent = `你选择了: ${emoji}`;
+          console.log('Selected emoji:', emoji);
+        }
+      });
+      picker.show(emojiBtn);
+    });
+
+    console.log('🎨 UI 动画测试页面已加载');
+    console.log('测试所有组件的打开/关闭动画效果');
+  </script>
+</body>
+</html>

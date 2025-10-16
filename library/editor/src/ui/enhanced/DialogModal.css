@@ -29,14 +29,17 @@
   display: flex;
   flex-direction: column;
   opacity: 0;
-  transform: scale(0.9);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transform: scale(0.85) translateY(-20px);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s ease;
   font-family: var(--dialog-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
 }
 
 .dialog-modal.dialog-modal-open {
   opacity: 1;
-  transform: scale(1);
+  transform: scale(1) translateY(0);
+  box-shadow: var(--dialog-shadow-open, 0 12px 48px rgba(0, 0, 0, 0.25));
 }
 
 /* Header */
@@ -339,22 +342,25 @@ textarea.dialog-field-input {
 
 /* Animations */
 @keyframes dialog-fade-in {
-  from {
+  0% {
     opacity: 0;
   }
-  to {
+  100% {
     opacity: 1;
   }
 }
 
 @keyframes dialog-scale-in {
-  from {
+  0% {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.8) translateY(-30px);
   }
-  to {
+  50% {
+    transform: scale(1.02) translateY(5px);
+  }
+  100% {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
   }
 }
 

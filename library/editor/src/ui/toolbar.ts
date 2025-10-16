@@ -5,9 +5,9 @@
 
 import type { ToolbarItem, Editor as EditorType } from '../types'
 import { createIcon } from './icons'
-import { showColorPicker } from './ColorPicker'
 import { showDropdown } from './Dropdown'
-import { showEmojiPicker } from './EmojiPicker'
+import { showColorDropdown, showEmojiDropdown } from './UnifiedDropdown'
+import { showMediaInsert, insertMedia } from './MediaInsert'
 import { showLinkDialog } from './LinkDialog'
 import { FONT_SIZES, FONT_FAMILIES } from '../plugins/formatting/font'
 import { LINE_HEIGHTS } from '../plugins/formatting/line-height'
@@ -130,22 +130,18 @@ export class Toolbar {
     button.addEventListener('click', (e) => {
       e.preventDefault()
 
-      // 特殊处理：颜色选择器
+      // 特殊处理：颜色选择器（使用统一的下拉框）
       if (item.name === 'textColor') {
-        showColorPicker(button, {
-          onSelect: (color) => {
-            this.editor.commands.execute('setTextColor', color)
-          }
-        })
+        showColorDropdown(button, (color) => {
+          this.editor.commands.execute('setTextColor', color)
+        }, true, '文字颜色')
         return
       }
 
       if (item.name === 'backgroundColor') {
-        showColorPicker(button, {
-          onSelect: (color) => {
-            this.editor.commands.execute('setBackgroundColor', color)
-          }
-        })
+        showColorDropdown(button, (color) => {
+          this.editor.commands.execute('setBackgroundColor', color)
+        }, true, '背景色')
         return
       }
 
@@ -259,10 +255,53 @@ export class Toolbar {
         return
       }
       
-      // 特殊处理：表情选择器
+      // 特殊处理：媒体插入
+      if (item.name === 'image') {
+        showMediaInsert(button, {
+          type: 'image',
+          onInsert: (urls) => {
+            insertMedia('image', urls)
+            if (this.editor.emit) {
+              this.editor.emit('update')
+            }
+          },
+          multiple: true
+        })
+        return
+      }
+      
+      if (item.name === 'video') {
+        showMediaInsert(button, {
+          type: 'video',
+          onInsert: (urls) => {
+            insertMedia('video', urls)
+            if (this.editor.emit) {
+              this.editor.emit('update')
+            }
+          },
+          multiple: false
+        })
+        return
+      }
+      
+      if (item.name === 'audio') {
+        showMediaInsert(button, {
+          type: 'audio',
+          onInsert: (urls) => {
+            insertMedia('audio', urls)
+            if (this.editor.emit) {
+              this.editor.emit('update')
+            }
+          },
+          multiple: false
+        })
+        return
+      }
+      
+      // 特殊处理：表情选择器（使用统一的下拉框）
       if (item.name === 'emoji') {
         console.log('[Toolbar] Opening emoji picker')
-        showEmojiPicker(button, (emoji) => {
+        showEmojiDropdown(button, (emoji) => {
           console.log('[Toolbar] Inserting emoji:', emoji)
           document.execCommand('insertText', false, emoji)
         })

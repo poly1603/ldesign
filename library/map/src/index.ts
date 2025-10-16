@@ -1,4 +1,5 @@
 export { MapRenderer } from './MapRenderer';
+export { MarkerRenderer } from './MarkerRenderer';
 export type {
   ViewMode,
   ViewState,
@@ -12,3 +13,12 @@ export type {
   TooltipInfo,
   DeckGLLayer
 } from './types';
+export type {
+  MarkerStyle,
+  MarkerAnimation,
+  MarkerOptions,
+  MarkerIconOptions,
+  MarkerLabelOptions,
+  MarkerGroupOptions,
+  CustomMarkerRenderer
+} from './MarkerRenderer';
