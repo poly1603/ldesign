@@ -3,7 +3,6 @@
  */
 
 import { DatabaseManager } from '../DatabaseManager'
-import { v4 as uuidv4 } from 'uuid'
 
 export type NpmSourceType = 'public' | 'private'
 
@@ -219,7 +218,7 @@ export class NpmSourceRepository {
         description: '淘宝 NPM 镜像源',
       })
 
-      console.log('[NpmSourceRepository] 已初始化默认 NPM 源')
+      
     }
   }
 

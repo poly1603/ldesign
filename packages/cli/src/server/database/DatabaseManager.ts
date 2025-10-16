@@ -55,7 +55,7 @@ export class DatabaseManager {
    */
   public async initialize(): Promise<void> {
     try {
-      console.log(`[DatabaseManager] 初始化数据库: ${this.dbPath}`)
+      
 
       // 初始化 sql.js
       this.SQL = await initSqlJs()
@@ -64,7 +64,7 @@ export class DatabaseManager {
       let buffer: Uint8Array | undefined
       if (fs.existsSync(this.dbPath)) {
         buffer = fs.readFileSync(this.dbPath)
-      } else if (this.config.fileMustExist) {
+      } else if (this.config?.fileMustExist) {
         throw new Error(`数据库文件不存在: ${this.dbPath}`)
       }
 
@@ -77,7 +77,7 @@ export class DatabaseManager {
       // 创建表结构
       await this.createTables()
 
-      console.log('[DatabaseManager] 数据库初始化成功')
+      
     } catch (error) {
       console.error('[DatabaseManager] 数据库初始化失败:', error)
       throw error
@@ -216,7 +216,7 @@ export class DatabaseManager {
       CREATE INDEX IF NOT EXISTS idx_ai_messages_created_at ON ai_messages(created_at);
     `)
 
-    console.log('[DatabaseManager] 数据库表创建成功')
+    
   }
 
   /**
@@ -295,7 +295,7 @@ export class DatabaseManager {
       this.save()
       this.db.close()
       this.db = null
-      console.log('[DatabaseManager] 数据库连接已关闭')
+      
     }
   }
 
@@ -335,7 +335,7 @@ export class DatabaseManager {
       this.save()
       // 复制文件
       fs.copyFileSync(this.dbPath, targetPath)
-      console.log(`[DatabaseManager] 数据库备份成功: ${targetPath}`)
+      
       return targetPath
     } catch (error) {
       throw error
@@ -353,7 +353,7 @@ export class DatabaseManager {
     this.exec('PRAGMA optimize')
     this.exec('VACUUM')
     this.save()
-    console.log('[DatabaseManager] 数据库优化完成')
+    
   }
 
   /**

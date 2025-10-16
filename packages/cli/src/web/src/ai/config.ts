@@ -49,7 +49,7 @@ export function saveAIConfig(config: Partial<AIConfig>): boolean {
     }
     
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newConfig))
-    console.log('✅ AI 配置已保存')
+    
     return true
   } catch (error) {
     console.error('保存 AI 配置失败:', error)
@@ -63,7 +63,7 @@ export function saveAIConfig(config: Partial<AIConfig>): boolean {
 export function clearAIConfig(): void {
   try {
     localStorage.removeItem(STORAGE_KEY)
-    console.log('🗑️ AI 配置已清除')
+    
   } catch (error) {
     console.error('清除 AI 配置失败:', error)
   }

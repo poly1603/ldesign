@@ -267,8 +267,7 @@ export function useIntersectionObserver(config: IntersectionObserverConfig = {})
  *     const { state, start, stop } = useElementIntersectionObserver(elementRef, {
  *       threshold: [0, 0.5, 1],
  *       onIntersect: (entry) => {
- *         console.log('交叉状态变化:', entry.isIntersecting)
- *       }
+ *          *       }
  *     })
  *     
  *     return {

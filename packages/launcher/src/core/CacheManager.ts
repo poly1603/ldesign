@@ -129,19 +129,19 @@ export class CacheManager {
   private async initialize(): Promise<void> {
     try {
       // 确保缓存目录存在
-      await FileSystem.ensureDir(this.config.cacheDir)
+      await FileSystem.ensureDir(this.config?.cacheDir)
 
       // 加载现有缓存
       await this.loadCache()
 
       // 设置自动清理
-      if (this.config.autoClean.enabled) {
+      if (this.config?.autoClean.enabled) {
         this.startAutoCleanup()
       }
 
       // 只在debug模式下输出详细信息
       if (this.logger.getLevel() === 'debug') {
-        this.logger.debug(`缓存系统初始化完成，缓存目录: ${this.config.cacheDir}`)
+        this.logger.debug(`缓存系统初始化完成，缓存目录: ${this.config?.cacheDir}`)
       }
     } catch (error) {
       this.logger.error('缓存系统初始化失败', error)
@@ -152,7 +152,7 @@ export class CacheManager {
    * 获取缓存
    */
   async get<T = any>(key: string, type: CacheType): Promise<T | null> {
-    if (!this.config.enabled || !this.config.types.includes(type)) {
+    if (!this.config?.enabled || !this.config?.types.includes(type)) {
       return null
     }
 
@@ -184,7 +184,7 @@ export class CacheManager {
    * 设置缓存
    */
   async set(key: string, type: CacheType, data: any, ttl?: number): Promise<void> {
-    if (!this.config.enabled || !this.config.types.includes(type)) {
+    if (!this.config?.enabled || !this.config?.types.includes(type)) {
       return
     }
 
@@ -200,7 +200,7 @@ export class CacheManager {
       lastAccessed: now,
       accessCount: 1,
       size,
-      expiresAt: ttl ? now + ttl : now + this.config.ttl
+      expiresAt: ttl ? now + ttl : now + this.config?.ttl
     }
 
     // 检查缓存大小限制
@@ -230,7 +230,7 @@ export class CacheManager {
    * 检查缓存是否存在
    */
   async has(key: string, type: CacheType): Promise<boolean> {
-    if (!this.config.enabled || !this.config.types.includes(type)) {
+    if (!this.config?.enabled || !this.config?.types.includes(type)) {
       return false
     }
 
@@ -265,7 +265,7 @@ export class CacheManager {
     } else {
       // 清理所有缓存
       this.cache.clear()
-      await FileSystem.emptyDir(this.config.cacheDir)
+      await FileSystem.emptyDir(this.config?.cacheDir)
       
       this.logger.info('已清理所有缓存')
     }
@@ -286,7 +286,7 @@ export class CacheManager {
     }
 
     // 初始化类型统计
-    for (const type of this.config.types) {
+    for (const type of this.config?.types) {
       stats.byType[type] = { count: 0, size: 0 }
     }
 
@@ -307,7 +307,7 @@ export class CacheManager {
    * 压缩缓存
    */
   async compress(): Promise<void> {
-    if (!this.config.compression) {
+    if (!this.config?.compression) {
       return
     }
 
@@ -360,7 +360,7 @@ export class CacheManager {
     }
 
     // 如果仍然超过阈值，删除最少使用的项
-    const sizeThreshold = this.config.maxSize * 1024 * 1024 * this.config.autoClean.threshold
+    const sizeThreshold = this.config?.maxSize * 1024 * 1024 * this.config?.autoClean.threshold
     if (stats.totalSize > sizeThreshold && lru.length > 0) {
       lru.sort((a, b) => a.score - b.score)
       
@@ -425,7 +425,7 @@ export class CacheManager {
    */
   private async loadFromDisk(key: string): Promise<CacheItem | null> {
     try {
-      const filePath = path.join(this.config.cacheDir, `${key}.json`)
+      const filePath = path.join(this.config?.cacheDir, `${key}.json`)
       
       if (!(await FileSystem.exists(filePath))) {
         return null
@@ -451,7 +451,7 @@ export class CacheManager {
    */
   private async saveToDisk(item: CacheItem): Promise<void> {
     try {
-      const filePath = path.join(this.config.cacheDir, `${item.key}.json`)
+      const filePath = path.join(this.config?.cacheDir, `${item.key}.json`)
       await FileSystem.writeFile(filePath, JSON.stringify(item))
     } catch (error) {
       this.logger.debug(`保存缓存失败: ${item.key}`, error)
@@ -463,7 +463,7 @@ export class CacheManager {
    */
   private async deleteFromDisk(key: string): Promise<void> {
     try {
-      const filePath = path.join(this.config.cacheDir, `${key}.json`)
+      const filePath = path.join(this.config?.cacheDir, `${key}.json`)
       if (await FileSystem.exists(filePath)) {
         await FileSystem.remove(filePath)
       }
@@ -477,18 +477,18 @@ export class CacheManager {
    */
   private async loadCache(): Promise<void> {
     try {
-      if (!(await FileSystem.exists(this.config.cacheDir))) {
+      if (!(await FileSystem.exists(this.config?.cacheDir))) {
         return
       }
 
-      const files = await FileSystem.readDir(this.config.cacheDir)
+      const files = await FileSystem.readDir(this.config?.cacheDir)
       let loaded = 0
 
       for (const file of files) {
         if (!file.endsWith('.json')) continue
 
         try {
-          const filePath = path.join(this.config.cacheDir, file)
+          const filePath = path.join(this.config?.cacheDir, file)
           const content = await FileSystem.readFile(filePath)
           const item: CacheItem = JSON.parse(content)
 
@@ -516,7 +516,7 @@ export class CacheManager {
    */
   private async enforceSize(newItemSize: number): Promise<void> {
     const stats = this.getStats()
-    const maxBytes = this.config.maxSize * 1024 * 1024
+    const maxBytes = this.config?.maxSize * 1024 * 1024
     const projectedSize = stats.totalSize + newItemSize
 
     if (projectedSize > maxBytes) {
@@ -558,7 +558,7 @@ export class CacheManager {
    * 启动自动清理
    */
   private startAutoCleanup(): void {
-    const interval = this.config.autoClean.interval * 60 * 60 * 1000 // 转换为毫秒
+    const interval = this.config?.autoClean.interval * 60 * 60 * 1000 // 转换为毫秒
 
     this.cleanupTimer = setInterval(async () => {
       try {
@@ -573,7 +573,7 @@ export class CacheManager {
       (this.cleanupTimer as any).unref()
     }
 
-    this.logger.debug(`启动自动清理，间隔: ${this.config.autoClean.interval} 小时`)
+    this.logger.debug(`启动自动清理，间隔: ${this.config?.autoClean.interval} 小时`)
   }
 
   /**

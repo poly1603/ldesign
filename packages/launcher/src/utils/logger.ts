@@ -138,10 +138,10 @@ export class Logger {
     // 输出到控制台
     switch (level) {
       case 'debug':
-        console.debug(formatted)
+        
         break
       case 'info':
-        console.log(formatted)
+        
         break
       case 'warn':
         console.warn(formatted)

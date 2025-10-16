@@ -190,18 +190,18 @@ export class PluginCommand implements CliCommandDefinition {
       }
 
       // 显示搜索结果
-      console.log(chalk.green(`\n找到 ${results.length} 个插件:\n`))
+      )
       
       results.forEach((plugin, index) => {
         const official = plugin.official ? chalk.blue('[官方]') : ''
         const installed = plugin.installed ? chalk.green('[已安装]') : ''
         const rating = '★'.repeat(Math.round(plugin.rating))
         
-        console.log(`${chalk.cyan((index + 1).toString().padStart(2))}. ${chalk.bold(plugin.name)} ${official} ${installed}`)
-        console.log(`    ${plugin.description}`)
-        console.log(`    ${chalk.gray(`v${plugin.version} • ${plugin.downloads.toLocaleString()} 下载 • ${rating} (${plugin.reviewCount})`)}`)
-        console.log(`    ${chalk.yellow(plugin.tags.join(', '))}`)
-        console.log()
+        .toString().padStart(2))}. ${chalk.bold(plugin.name)} ${official} ${installed}`)
+        
+        } 下载 • ${rating} (${plugin.reviewCount})`)}`)
+        )}`)
+        
       })
 
     } catch (error) {
@@ -322,25 +322,25 @@ export class PluginCommand implements CliCommandDefinition {
           return
         }
 
-        console.log(chalk.yellow(`\n发现 ${updates.length} 个插件有更新:\n`))
+        )
         
         updates.forEach((update, index) => {
-          console.log(`${chalk.cyan((index + 1).toString().padStart(2))}. ${chalk.bold(update.plugin.name)}`)
-          console.log(`    ${chalk.gray(`当前版本: ${update.currentVersion}`)}`)
-          console.log(`    ${chalk.green(`最新版本: ${update.latestVersion}`)}`)
-          console.log()
+          .toString().padStart(2))}. ${chalk.bold(update.plugin.name)}`)
+          }`)
+          }`)
+          
         })
 
       } else {
-        console.log(chalk.green(`\n已安装 ${installedPlugins.length} 个插件:\n`))
+        )
         
         installedPlugins.forEach((plugin, index) => {
           const official = plugin.official ? chalk.blue('[官方]') : ''
           
-          console.log(`${chalk.cyan((index + 1).toString().padStart(2))}. ${chalk.bold(plugin.name)} ${official}`)
-          console.log(`    ${plugin.description}`)
-          console.log(`    ${chalk.gray(`v${plugin.installedVersion} • ${plugin.category}`)}`)
-          console.log()
+          .toString().padStart(2))}. ${chalk.bold(plugin.name)} ${official}`)
+          
+          }`)
+          
         })
       }
 
@@ -371,73 +371,73 @@ export class PluginCommand implements CliCommandDefinition {
       }
 
       // 显示插件详细信息
-      console.log()
-      console.log(chalk.bold.cyan(`${plugin.name}`))
+      
+      )
       
       const badges = []
       if (plugin.official) badges.push(chalk.blue('[官方]'))
       if (plugin.installed) badges.push(chalk.green('[已安装]'))
-      if (badges.length > 0) console.log(badges.join(' '))
+      if (badges.length > 0) )
       
-      console.log()
-      console.log(chalk.bold('描述:'))
-      console.log(`  ${plugin.description}`)
       
-      console.log()
-      console.log(chalk.bold('基本信息:'))
-      console.log(`  版本: ${plugin.version}`)
-      console.log(`  作者: ${plugin.author.name}`)
-      console.log(`  许可证: ${plugin.license}`)
-      console.log(`  类别: ${plugin.category}`)
-      console.log(`  类型: ${plugin.type}`)
+      )
       
-      console.log()
-      console.log(chalk.bold('统计信息:'))
-      console.log(`  下载量: ${plugin.downloads.toLocaleString()}`)
-      console.log(`  评分: ${'★'.repeat(Math.round(plugin.rating))} (${plugin.reviewCount} 评价)`)
-      console.log(`  最后更新: ${new Date(plugin.lastUpdated).toLocaleDateString()}`)
+      
+      
+      )
+      
+      
+      
+      
+      
+      
+      
+      )
+      }`)
+      )} (${plugin.reviewCount} 评价)`)
+      .toLocaleDateString()}`)
       
       if (plugin.tags.length > 0) {
-        console.log()
-        console.log(chalk.bold('标签:'))
-        console.log(`  ${plugin.tags.join(', ')}`)
+        
+        )
+        }`)
       }
       
       if (plugin.repository || plugin.homepage || plugin.documentation) {
-        console.log()
-        console.log(chalk.bold('链接:'))
-        if (plugin.repository) console.log(`  仓库: ${plugin.repository}`)
-        if (plugin.homepage) console.log(`  主页: ${plugin.homepage}`)
-        if (plugin.documentation) console.log(`  文档: ${plugin.documentation}`)
+        
+        )
+        if (plugin.repository) 
+        if (plugin.homepage) 
+        if (plugin.documentation) 
       }
 
       if (Object.keys(plugin.dependencies).length > 0) {
-        console.log()
-        console.log(chalk.bold('依赖:'))
+        
+        )
         Object.entries(plugin.dependencies).forEach(([dep, version]) => {
-          console.log(`  ${dep}: ${version}`)
+          
         })
       }
 
       if (Object.keys(plugin.peerDependencies).length > 0) {
-        console.log()
-        console.log(chalk.bold('对等依赖:'))
+        
+        )
         Object.entries(plugin.peerDependencies).forEach(([dep, version]) => {
-          console.log(`  ${dep}: ${version}`)
+          
         })
       }
 
       if (plugin.examples && plugin.examples.length > 0) {
-        console.log()
-        console.log(chalk.bold('使用示例:'))
+        
+        )
         plugin.examples.forEach((example, index) => {
-          console.log(`  ${index + 1}. ${example.title}`)
-          console.log(`     ${example.description}`)
-          console.log(`     ${chalk.gray(JSON.stringify(example.config, null, 6))}`)
+          
+          
+          )}`)
         })
       }
 
-      console.log()
+      
 
     } catch (error) {
       logger.error('获取插件信息失败', error)

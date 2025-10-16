@@ -1,23 +1,22 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { performance } from 'perf_hooks'
+import { performance } from 'node:perf_hooks'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  PerformanceAnalyzer,
-  globalPerformanceAnalyzer,
+  createManagedPromise,
+  memoryManager
+} from '../../src/utils/memory-manager'
+import {
+  BatchProcessor,
   debounce,
-  throttle,
   ObjectPool,
-  BatchProcessor
+  PerformanceAnalyzer,
+  throttle
 } from '../../src/utils/performance-analyzer'
 import {
-  safeDeepClone,
-  safeAsync,
   InputValidator,
-  PromiseUtil
+  PromiseUtil,
+  safeAsync,
+  safeDeepClone
 } from '../../src/utils/type-safety'
-import {
-  memoryManager,
-  createManagedPromise
-} from '../../src/utils/memory-manager'
 
 // 基准测试配置
 const BENCHMARK_CONFIG = {
@@ -61,7 +60,7 @@ class BenchmarkRunner {
     const averageTime = totalTime / iterations
     const minTime = Math.min(...times)
     const maxTime = Math.max(...times)
-    const variance = times.reduce((sum, time) => sum + Math.pow(time - averageTime, 2), 0) / iterations
+    const variance = times.reduce((sum, time) => sum + (time - averageTime)**2, 0) / iterations
     const stdDev = Math.sqrt(variance)
 
     const result = {
@@ -427,7 +426,7 @@ describe('性能基准测试套件', () => {
     }, 10000)
   })
 
-  describe('Promise工具性能测试', () => {
+  describe('promise工具性能测试', () => {
     it.skip('测量Promise重试机制性能', async () => {
       let attempts = 0
       const flakyFunction = async () => {

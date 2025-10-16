@@ -87,17 +87,17 @@ export class LdesignTimePicker {
   @Event() ldesignPick!: EventEmitter<{ value: string; context: { trigger: 'click' | 'scroll' | 'keyboard' | 'now' | 'clear' | 'preset' | 'touch' | 'wheel' } }>;
 
   // state
-  @State() h: number = 0;
-  @State() m: number = 0;
-  @State() s: number = 0;
-  @State() meridiem: 'AM' | 'PM' = 'AM'; // AM/PM 状态
-  @State() endH: number = 0; // 范围选择的结束时间
-  @State() endM: number = 0;
-  @State() endS: number = 0;
-  @State() endMeridiem: 'AM' | 'PM' = 'AM';
-  @State() activePanel: 'start' | 'end' = 'start'; // 当前激活的面板（范围选择时）
-  @State() drawerVisible: boolean = false; // internal visible for drawer when trigger!=='manual'
-  @State() panelOpen: boolean = false; // 当前面板是否打开（popup/drawer 任一）
+  @State() h!: number = 0;
+  @State() m!: number = 0;
+  @State() s!: number = 0;
+  @State() meridiem!: 'AM' | 'PM' = 'AM'; // AM/PM 状态
+  @State() endH!: number = 0; // 范围选择的结束时间
+  @State() endM!: number = 0;
+  @State() endS!: number = 0;
+  @State() endMeridiem!: 'AM' | 'PM' = 'AM';
+  @State() activePanel!: 'start' | 'end' = 'start'; // 当前激活的面板（范围选择时）
+  @State() drawerVisible!: boolean = false; // internal visible for drawer when trigger!=='manual'
+  @State() panelOpen!: boolean = false; // 当前面板是否打开（popup/drawer 任一）
 
   // cached picker options（保持引用稳定，避免因 options 变化而触发子 picker 的无动画对齐覆盖动画）
   private hourOpts: Array<{ value: string; label: string }> = [];

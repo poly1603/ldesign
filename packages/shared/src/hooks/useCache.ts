@@ -74,12 +74,10 @@ export interface UseCacheReturn<T = any> {
  * 
  * // 检查缓存
  * if (has('user:1')) {
- *   console.log('缓存存在')
- * }
+ *    * }
  * 
  * // 缓存大小
- * console.log('缓存大小:', size.value)
- * </script>
+ *  * </script>
  * ```
  */
 export function useCache<T = any>(options: UseCacheOptions = {}): UseCacheReturn<T> {
@@ -175,8 +173,7 @@ export function useLRUCache<T = any>(
  * 
  * // 缓存计算结果
  * const expensiveCalculation = (a: number, b: number) => {
- *   console.log('执行复杂计算...')
- *   return a * b + Math.random()
+ *    *   return a * b + Math.random()
  * }
  * 
  * const memoizedFn = useMemoize(expensiveCalculation, {
@@ -311,15 +308,14 @@ export function useAsyncMemoize<T extends (...args: any[]) => Promise<any>>(
  * })
  * 
  * // 响应式的缓存值
- * console.log(value.value.theme) // 'light'
+ *  // 'light'
  * 
  * // 更新缓存
  * set({ theme: 'dark', language: 'en-US' })
  * 
  * // 检查缓存是否存在
  * if (exists.value) {
- *   console.log('缓存存在')
- * }
+ *    * }
  * </script>
  * ```
  */

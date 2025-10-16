@@ -1,18 +1,44 @@
 {
-  "name": "@ldesign/map",
+  "name": "@ldesign/map-renderer",
   "version": "1.0.0",
-  "description": "A customizable GeoJSON map renderer",
-  "main": "src/index.ts",
+  "description": "A deck.gl-based map renderer with GeoJSON support",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "type-check": "tsc --noEmit",
+    "example": "cd example && npm run dev"
   },
-  "keywords": ["map", "geojson", "visualization"],
+  "keywords": [
+    "deck.gl",
+    "map",
+    "geojson",
+    "visualization",
+    "3d"
+  ],
   "author": "",
   "license": "MIT",
+  "peerDependencies": {
+    "@deck.gl/core": "^9.0.0",
+    "@deck.gl/layers": "^9.0.0",
+    "@deck.gl/geo-layers": "^9.0.0"
+  },
   "devDependencies": {
-    "vite": "^5.0.0",
+    "@deck.gl/core": "^9.0.0",
+    "@deck.gl/layers": "^9.0.0", 
+    "@deck.gl/geo-layers": "^9.0.0",
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.2.0",
+    "@rollup/plugin-typescript": "^11.1.0",
+    "@types/node": "^20.0.0",
+    "rollup": "^4.0.0",
+    "rollup-plugin-dts": "^6.0.0",
+    "tslib": "^2.6.0",
     "typescript": "^5.0.0"
   }
 }

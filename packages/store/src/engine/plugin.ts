@@ -150,8 +150,7 @@ export function createStoreEnginePlugin(
   } = config
 
   if (debug) {
-    console.log('[Store Plugin] createStoreEnginePlugin called with options:', options)
-  }
+      }
 
   return {
     name,
@@ -161,17 +160,14 @@ export function createStoreEnginePlugin(
     async install(context: EnginePluginContext) {
       try {
         if (debug) {
-          console.log('[Store Plugin] install method called with context:', context)
-        }
+                  }
 
         // 从上下文中获取引擎实例和 Vue 应用实例
         const engine = context.engine || context
         const app = context.app || engine?.app
 
         if (debug) {
-          console.log('[Store Plugin] engine instance:', !!engine)
-          console.log('[Store Plugin] app instance:', !!app)
-        }
+                            }
 
         // 创建 Pinia 实例
         const pinia = createPinia()
@@ -183,8 +179,7 @@ export function createStoreEnginePlugin(
         if (app) {
           app.use(pinia)
           if (debug) {
-            console.log('[Store Plugin] Pinia installed to Vue app')
-          }
+                      }
         }
 
         // 创建性能优化器实例
@@ -192,8 +187,7 @@ export function createStoreEnginePlugin(
         if (storeConfig.enablePerformanceOptimization) {
           performanceOptimizer = new PerformanceOptimizer()
           if (debug) {
-            console.log('[Store Plugin] Performance optimizer created')
-          }
+                      }
         }
 
         // 创建 Store 工厂实例
@@ -218,8 +212,7 @@ export function createStoreEnginePlugin(
               optimizer: performanceOptimizer
             }
             if (debug) {
-              console.log('[Store Plugin] Global properties injected immediately')
-            }
+                          }
           } else if (globalInjection && globalPropertyName) {
             // 如果没有 Vue 应用实例，监听应用创建事件
             if (engine.events) {
@@ -230,8 +223,7 @@ export function createStoreEnginePlugin(
                   optimizer: performanceOptimizer
                 }
                 if (debug) {
-                  console.log('[Store Plugin] Global properties injected after app creation')
-                }
+                                  }
               })
             }
           }
@@ -240,8 +232,7 @@ export function createStoreEnginePlugin(
           if (engine.events) {
             engine.events.on('store:create', (storeOptions: any) => {
               if (debug) {
-                console.log('[Store Plugin] Creating store with options:', storeOptions)
-              }
+                              }
               // 确保 storeOptions 有正确的类型
               const options = {
                 ...storeOptions,
@@ -252,8 +243,7 @@ export function createStoreEnginePlugin(
 
             engine.events.on('store:destroy', (storeName: string) => {
               if (debug) {
-                console.log('[Store Plugin] Destroying store:', storeName)
-              }
+                              }
               // 这里可以添加 store 销毁逻辑
             })
           }
@@ -265,8 +255,7 @@ export function createStoreEnginePlugin(
         }
 
         if (debug) {
-          console.log('[Store Plugin] Store plugin installed successfully')
-        }
+                  }
       } catch (error) {
         console.error('[Store Plugin] Failed to install store plugin:', error)
         throw error
@@ -276,8 +265,7 @@ export function createStoreEnginePlugin(
     async uninstall(context: EnginePluginContext) {
       try {
         if (debug) {
-          console.log('[Store Plugin] uninstall method called')
-        }
+                  }
 
         const engine = context.engine || context
 
@@ -295,8 +283,7 @@ export function createStoreEnginePlugin(
         }
 
         if (debug) {
-          console.log('[Store Plugin] Store plugin uninstalled successfully')
-        }
+                  }
       } catch (error) {
         console.error('[Store Plugin] Failed to uninstall store plugin:', error)
         throw error

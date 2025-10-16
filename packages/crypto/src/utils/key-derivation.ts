@@ -54,8 +54,8 @@ export class KeyDerivation {
    * @example
    * ```typescript
    * const result = KeyDerivation.deriveKey('myPassword123')
-   * console.log(result.key) // 派生的密钥
-   * console.log(result.salt) // 使用的盐值
+   *  // 派生的密钥
+   *  // 使用的盐值
    * ```
    */
   static deriveKey(
@@ -97,7 +97,7 @@ export class KeyDerivation {
    * ```typescript
    * const result = KeyDerivation.deriveKey('myPassword123')
    * const isValid = KeyDerivation.verifyKey('myPassword123', result.key, result.salt)
-   * console.log(isValid) // true
+   *  // true
    * ```
    */
   static verifyKey(

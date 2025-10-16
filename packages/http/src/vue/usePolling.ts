@@ -77,7 +77,7 @@ export interface UsePollingReturn<T> {
  *   stopWhen: (task) => task.status === 'completed',
  *   onSuccess: (task) => {
  *    if (task.status === 'completed') {
- *     console.log('任务已完成')
+ *     
  *    }
  *   },
  *  }

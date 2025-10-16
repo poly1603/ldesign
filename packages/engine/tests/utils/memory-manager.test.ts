@@ -1,17 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  TimerManager,
+  createManagedPromise,
   ListenerManager,
-  ResourceManager,
-  MemoryLeakDetector,
-  ReferenceTracker,
-  GlobalMemoryManager,
-  memoryManager,
   managedLifecycle,
-  createManagedPromise
+  MemoryLeakDetector,
+  memoryManager,
+  ReferenceTracker,
+  ResourceManager,
+  TimerManager
 } from '../../src/utils/memory-manager'
 
-describe('TimerManager', () => {
+describe('timerManager', () => {
   let timerManager: TimerManager
 
   beforeEach(() => {
@@ -146,7 +145,7 @@ describe('TimerManager', () => {
   })
 })
 
-describe('ListenerManager', () => {
+describe('listenerManager', () => {
   let listenerManager: ListenerManager
   let mockElement: any
 
@@ -230,7 +229,7 @@ describe('ListenerManager', () => {
   })
 })
 
-describe('ResourceManager', () => {
+describe('resourceManager', () => {
   let resourceManager: ResourceManager
 
   beforeEach(() => {
@@ -326,7 +325,7 @@ describe('ResourceManager', () => {
   })
 })
 
-describe('MemoryLeakDetector', () => {
+describe('memoryLeakDetector', () => {
   let detector: MemoryLeakDetector
 
   beforeEach(() => {
@@ -389,7 +388,7 @@ describe('MemoryLeakDetector', () => {
   })
 })
 
-describe('ReferenceTracker', () => {
+describe('referenceTracker', () => {
   let tracker: ReferenceTracker
 
   beforeEach(() => {
@@ -440,7 +439,7 @@ describe('ReferenceTracker', () => {
   })
 })
 
-describe('GlobalMemoryManager', () => {
+describe('globalMemoryManager', () => {
   beforeEach(() => {
     // 清理全局状态
     memoryManager.cleanup()

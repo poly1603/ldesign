@@ -6,6 +6,7 @@
 import type { RouteRecordRaw } from '@ldesign/router'
 
 // 路由懒加载
+const Main = () => import('@/views/Main.vue')
 const Home = () => import('@/views/Home.vue')
 const Login = () => import('@/views/Login.vue')
 const Dashboard = () => import('@/views/Dashboard.vue')
@@ -20,12 +21,34 @@ export const publicRoutes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'home',
-    component: Home,
+    component: Main,
     meta: {
       titleKey: 'nav.home',
       requiresAuth: false,
       layout: 'default'
-    }
+    },
+    children: [
+      {
+        path: '',
+        name: 'Home',
+        component: Home,
+        meta: {
+          titleKey: 'nav.home',
+          requiresAuth: false,
+          layout: 'default'
+        }
+      },
+      {
+        path: 'about',
+        name: 'About',
+        component: About,
+        meta: {
+          titleKey: 'nav.about',
+          requiresAuth: false,
+          layout: 'default'
+        }
+      },
+    ]
   },
   {
     path: '/login',
@@ -34,37 +57,7 @@ export const publicRoutes: RouteRecordRaw[] = [
     meta: {
       titleKey: 'nav.login',
       requiresAuth: false,
-      layout: 'auth'
-    }
-  },
-  {
-    path: '/login-classic',
-    name: 'login-classic',
-    component: Login, // 经典登录页（保留作为备用）
-    meta: {
-      titleKey: 'nav.login',
-      requiresAuth: false,
-      layout: 'auth'
-    }
-  },
-  {
-    path: '/about',
-    name: 'about',
-    component: About,
-    meta: {
-      titleKey: 'nav.about',
-      requiresAuth: false,
-      layout: 'default'
-    }
-  },
-  {
-    path: '/template-demo',
-    name: 'template-demo',
-    component: TemplateDemo,
-    meta: {
-      titleKey: 'nav.templateDemo',
-      requiresAuth: false,
-      layout: 'blank'
+      layout: 'blank'  // 登录页面使用全屏布局，不显示导航栏和页脚
     }
   },
 ]

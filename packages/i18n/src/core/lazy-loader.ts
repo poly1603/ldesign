@@ -127,20 +127,20 @@ export class LazyLoader {
     }
 
     // 限制并发数
-    await this.executeWithConcurrency(tasks, this.config.concurrent!);
+    await this.executeWithConcurrency(tasks, this.config?.concurrent!);
   }
 
   /**
    * 智能预加载
    */
   smartPreload(patterns: string[]): void {
-    if (this.config.preloadStrategy === 'none') return;
+    if (this.config?.preloadStrategy === 'none') return;
 
     patterns.forEach(pattern => {
       this.preloadQueue.add(pattern);
     });
 
-    switch (this.config.preloadStrategy) {
+    switch (this.config?.preloadStrategy) {
       case 'idle':
         this.preloadOnIdle();
         break;
@@ -220,19 +220,19 @@ export class LazyLoader {
     try {
       let messages: Messages;
 
-      if (this.config.loader) {
+      if (this.config?.loader) {
         messages = await this.withRetry(
-          () => this.config.loader!(locale, namespace),
-          this.config.retry!
+          () => this.config?.loader!(locale, namespace),
+          this.config?.retry!
         );
-      } else if (this.config.baseUrl) {
+      } else if (this.config?.baseUrl) {
         messages = await this.loadFromUrl(locale, namespace);
       } else {
         throw new Error('No loader configured');
       }
 
       // 解压缩
-      if (this.config.compression) {
+      if (this.config?.compression) {
         messages = await this.decompress(messages);
       }
 
@@ -240,11 +240,13 @@ export class LazyLoader {
       const size = this.estimateSize(messages);
       const loadTime = Date.now() - startTime;
 
-      console.log(`[LazyLoader] Loaded ${locale}${namespace ? `:${namespace}` : ''} in ${loadTime}ms (${this.formatSize(size)})`);
+      this.updateLoadState(this.getCacheKey(locale, namespace), 'loaded', {
+        size,
+        loadTime
+      });
 
       return messages;
     } catch (error) {
-      console.error(`[LazyLoader] Failed to load ${locale}${namespace ? `:${namespace}` : ''}:`, error);
       throw error;
     }
   }
@@ -261,7 +263,7 @@ export class LazyLoader {
         'Accept': 'application/json',
         'Accept-Encoding': 'gzip, deflate, br'
       },
-      signal: AbortSignal.timeout(this.config.timeout!)
+      signal: AbortSignal.timeout(this.config?.timeout!)
     });
 
     if (!response.ok) {
@@ -275,7 +277,7 @@ export class LazyLoader {
    * 构建URL
    */
   private buildUrl(locale: Locale, namespace?: string): string {
-    const base = this.config.baseUrl!.replace(/\/$/, '');
+    const base = this.config?.baseUrl!.replace(/\/$/, '');
     if (namespace) {
       return `${base}/${locale}/${namespace}.json`;
     }
@@ -339,10 +341,10 @@ export class LazyLoader {
     if ('requestIdleCallback' in window) {
       this.idleCallback = window.requestIdleCallback(
         () => this.processPreloadQueue(),
-        { timeout: this.config.preloadDelay }
+        { timeout: this.config?.preloadDelay }
       );
     } else {
-      setTimeout(() => this.processPreloadQueue(), this.config.preloadDelay);
+      setTimeout(() => this.processPreloadQueue(), this.config?.preloadDelay);
     }
   }
 
@@ -401,7 +403,7 @@ export class LazyLoader {
       return this.load(locale, namespace);
     });
 
-    await this.executeWithConcurrency(tasks, this.config.concurrent!);
+    await this.executeWithConcurrency(tasks, this.config?.concurrent!);
     this.preloadQueue.clear();
   }
 
@@ -409,7 +411,7 @@ export class LazyLoader {
    * 解压缩
    */
   private async decompress(data: any): Promise<Messages> {
-    if (this.config.compressionAlgorithm === 'lz-string' && typeof data === 'string') {
+    if (this.config?.compressionAlgorithm === 'lz-string' && typeof data === 'string') {
       // 使用LZ-string解压
       return JSON.parse(this.lzDecompress(data));
     }

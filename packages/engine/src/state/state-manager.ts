@@ -66,7 +66,8 @@ export class StateManagerImpl implements StateManager {
     if (!this.watchers.has(key)) {
       this.watchers.set(key, [])
     }
-    this.watchers.get(key)!.push(callback as WatchCallback)
+    const watchers = this.watchers.get(key)
+    watchers?.push(callback as WatchCallback)
 
     // 返回取消监听函数
     return () => {
@@ -240,6 +241,17 @@ export class StateManagerImpl implements StateManager {
     return new StateNamespace(this, ns)
   }
 
+  // 获取整个状态对象
+  getState(): Record<string, unknown> {
+    return { ...this.state }
+  }
+
+  // 设置整个状态对象
+  setState(newState: Partial<Record<string, unknown>>): void {
+    Object.assign(this.state, newState)
+    this.logger?.debug('State updated', { newState })
+  }
+
   // 记录变更历史
   private recordChange(path: string, oldValue: unknown, newValue: unknown): void {
     this.changeHistory.unshift({
@@ -395,6 +407,29 @@ export class StateNamespace implements StateManager {
 
   namespace(name: string): StateManager {
     return this.stateManager.namespace(`${this.namespaceName}.${name}`)
+  }
+
+  // 获取整个状态对象（仅限当前命名空间）
+  getState(): Record<string, unknown> {
+    const allState = this.stateManager.getState()
+    const namespacePrefix = `${this.namespaceName}.`
+    const result: Record<string, unknown> = {}
+
+    Object.keys(allState).forEach(key => {
+      if (key.startsWith(namespacePrefix)) {
+        const shortKey = key.substring(namespacePrefix.length)
+        result[shortKey] = allState[key]
+      }
+    })
+
+    return result
+  }
+
+  // 设置整个状态对象（仅限当前命名空间）
+  setState(newState: Partial<Record<string, unknown>>): void {
+    Object.keys(newState).forEach(key => {
+      this.set(key, newState[key])
+    })
   }
 }
 

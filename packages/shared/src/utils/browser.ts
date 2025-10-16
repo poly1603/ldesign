@@ -376,8 +376,8 @@ export function removeUrlParams(
  * @example
  * ```typescript
  * const device = getDeviceInfo()
- * console.log(device.isMobile) // true/false
- * console.log(device.os) // 'iOS', 'Android', 'Windows', etc.
+ *  // true/false
+ *  // 'iOS', 'Android', 'Windows', etc.
  * ```
  */
 export function getDeviceInfo(): DeviceInfo {
@@ -540,8 +540,7 @@ export function getPageVisibility(): boolean {
  * @example
  * ```typescript
  * const unwatch = watchPageVisibility((isVisible) => {
- *   console.log('页面可见性:', isVisible)
- * })
+ *    * })
  * 
  * // 取消监听
  * unwatch()

@@ -75,8 +75,9 @@ export class NotificationManagerImpl implements NotificationManager {
    * 创建指定位置的容器
    */
   private createContainer(position: NotificationPosition): HTMLElement {
-    if (this.containers.has(position)) {
-      return this.containers.get(position)!
+    const existing = this.containers.get(position)
+    if (existing) {
+      return existing
     }
 
     const container = document.createElement('div')
@@ -130,7 +131,8 @@ export class NotificationManagerImpl implements NotificationManager {
     }
 
     // 检查通知数量限制
-    this.enforceMaxNotifications(notification.position!)
+    const position = notification.position || this.defaultPosition
+    this.enforceMaxNotifications(position)
 
     // 添加通知
     this.notifications.set(id, notification)
@@ -307,7 +309,8 @@ export class NotificationManagerImpl implements NotificationManager {
   private async renderNotification(
     notification: NotificationItem
   ): Promise<void> {
-    const container = this.createContainer(notification.position!)
+    const position = notification.position || this.defaultPosition
+    const container = this.createContainer(position)
     if (!container) {
       return
     }
@@ -473,14 +476,16 @@ export class NotificationManagerImpl implements NotificationManager {
         if (
           (e.target as HTMLElement).closest(
             '.engine-notification-close, .engine-notification-actions'
-          )
+        )
         ) {
           return
         }
-        try {
-          notification.onClick!()
-        } catch (error) {
-          this.logger?.error('Error in notification onClick callback', error)
+        if (notification.onClick) {
+          try {
+            notification.onClick()
+          } catch (error) {
+            this.logger?.error('Error in notification onClick callback', error)
+          }
         }
       })
     }
@@ -735,7 +740,8 @@ export class NotificationManagerImpl implements NotificationManager {
   ): Promise<void> {
     if (!notification.element) return
 
-    const container = this.containers.get(notification.position!)
+    const position = notification.position || this.defaultPosition
+    const container = this.containers.get(position)
     if (!container) return
 
     try {
@@ -752,7 +758,7 @@ export class NotificationManagerImpl implements NotificationManager {
       const elementsToMove = this.getElementsToMove(
         allElements,
         elementIndex,
-        notification.position!
+        position
       )
 
       // 立即开始其他元素的移动动画
@@ -760,7 +766,7 @@ export class NotificationManagerImpl implements NotificationManager {
         this.startOtherElementsAnimation(
           elementsToMove,
           elementHeight,
-          notification.position!
+          position
         )
       }
 

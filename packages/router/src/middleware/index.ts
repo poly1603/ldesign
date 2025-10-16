@@ -5,6 +5,7 @@
  */
 
 import type { NavigationGuardNext, RouteLocationNormalized } from '../types'
+import { logger } from '../utils/logger'
 
 /**
  * 中间件函数类型
@@ -140,7 +141,7 @@ export class MiddlewareManager {
         await middleware.handler(to, from, executeNext, context)
       }
       catch (error) {
-        console.error(`中间件 "${middleware.name}" 执行失败:`, error)
+        logger.error(`中间件 "${middleware.name}" 执行失败:`, error)
         next(error as Error)
       }
     }
@@ -247,17 +248,17 @@ export const roleMiddleware: MiddlewareConfig = {
 export const loggingMiddleware: MiddlewareConfig = {
   name: 'logging',
   priority: 1,
-  handler: async (to, from, next, context) => {
+  handler: async (to, from, next, _context) => {
     const startTime = performance.now()
-
-    console.log(`[Router] 导航开始: ${from.path} -> ${to.path}`)
-
+    logger.info(`[Navigation] ${from.path} -> ${to.path}`)
+    
     // 继续执行
     next()
 
     // 记录导航完成时间
     const endTime = performance.now()
-    console.log(`[Router] 导航完成: ${to.path} (${(endTime - startTime).toFixed(2)}ms)`)
+    const duration = endTime - startTime
+    logger.info(`[Navigation Complete] ${to.path} (${duration.toFixed(2)}ms)`)
   },
 }
 
@@ -267,7 +268,7 @@ export const loggingMiddleware: MiddlewareConfig = {
 export const titleMiddleware: MiddlewareConfig = {
   name: 'title',
   priority: 90,
-  handler: async (to, from, next, context) => {
+  handler: async (to, from, next, _context) => {
     if (to.meta?.title) {
       document.title = typeof to.meta.title === 'function'
         ? to.meta.title(to)
@@ -284,7 +285,7 @@ export const titleMiddleware: MiddlewareConfig = {
 export const progressMiddleware: MiddlewareConfig = {
   name: 'progress',
   priority: 5,
-  handler: async (to, from, next, context) => {
+  handler: async (_to, _from, next, _context) => {
     // 显示进度条
     const progressBar = document.getElementById('router-progress')
     if (progressBar) {
@@ -355,7 +356,7 @@ export function createRateLimitMiddleware(options: {
   return {
     name: 'rateLimit',
     priority: 5,
-    handler: async (to, from, next, context) => {
+    handler: async (to, from, next, _context) => {
       const key = to.path
       const now = Date.now()
       const windowStart = now - options.windowMs
@@ -393,22 +394,22 @@ middlewareManager.registerMultiple([
 // ==================== 新增：Koa 风格中间件系统 ====================
 
 export {
-  MiddlewareComposer,
-  createMiddlewareComposer,
-  createRouteContext,
+  createAuthMiddleware as createAuthMiddlewareV2,
   // 内置中间件
   createLoggerMiddleware,
+  createMiddlewareComposer,
   createPerformanceMiddleware,
-  createAuthMiddleware as createAuthMiddlewareV2,
   createPermissionMiddleware,
-  createTitleMiddleware as createTitleMiddlewareV2,
   createProgressMiddleware as createProgressMiddlewareV2,
+  createRouteContext,
   createScrollMiddleware,
+  createTitleMiddleware as createTitleMiddlewareV2,
+  MiddlewareComposer,
 } from './route-middleware'
 
 export type {
-  RouteContext,
-  RouteMiddleware,
   MiddlewareConfig as MiddlewareConfigV2,
   MiddlewareWrapper,
+  RouteContext,
+  RouteMiddleware,
 } from './route-middleware'

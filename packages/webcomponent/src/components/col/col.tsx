@@ -16,7 +16,7 @@ export class LdesignCol {
   /** 占用的列数 */
   @Prop() span: number = 1;
 
-  @State() parentCols: number = 24;
+  @State() parentCols!: number = 24;
 
   private rowObserver?: MutationObserver;
   private gridObserver?: MutationObserver;

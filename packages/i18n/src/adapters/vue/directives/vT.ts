@@ -5,7 +5,6 @@
 
 import type { Directive, DirectiveBinding } from 'vue';
 import type { I18nInstance } from '../../../types';
-import { I18N_SYMBOL } from '../constants';
 
 interface VTBinding {
   key?: string;

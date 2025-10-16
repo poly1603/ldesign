@@ -6,10 +6,10 @@
 
 import type { DeviceDetector, DeviceType } from '@ldesign/device'
 import type { DeviceRouterPluginOptions, Router } from '../types'
+import type { TemplateRouteResolver } from './template'
 import { createDeviceDetector } from '@ldesign/device'
 import { DeviceRouteGuard } from './guard'
 import { DeviceComponentResolver } from './resolver'
-import { TemplateRouteResolver } from './template'
 
 /**
  * 设备路由插件类

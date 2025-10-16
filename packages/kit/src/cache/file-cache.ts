@@ -5,7 +5,6 @@
 
 import type { CacheEntry, CacheStats, CacheStore } from '../types'
 import { EventEmitter } from 'node:events'
-import { promises as fs } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { FileSystem } from '../filesystem'
 import { CryptoUtils } from '../utils'

@@ -102,8 +102,7 @@ export class ProxyConfigProcessor {
             console.error(`API 代理错误 (${pathPrefix}):`, err.message)
           })
           proxy.on('proxyReq', (proxyReq: any, req: any) => {
-            console.log(`API 代理请求: ${req.method} ${req.url} -> ${target}`)
-          })
+                      })
         }
       }
     }
@@ -284,8 +283,7 @@ export class ProxyConfigProcessor {
           rewrite: (path: string) => path.replace(/^\/api/, ''),
           configure: (proxy: any) => {
             proxy.on('error', (err: Error) => {
-              console.log('proxy error', err)
-            })
+                          })
           }
         },
         '/upload': {

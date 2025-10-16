@@ -8,7 +8,6 @@
  * @since 1.0.0
  */
 
-import { promises as fs } from 'fs'
 import { join, resolve } from 'path'
 import { Logger } from '../utils/logger'
 import { FileSystem } from '../utils/file-system'

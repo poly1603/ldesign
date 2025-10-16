@@ -1,6 +1,6 @@
 /**
  * @ldesign/router 路由版本控制系统
- * 
+ *
  * 提供路由配置的版本管理、备份和回滚功能
  */
 
@@ -120,7 +120,7 @@ export class RouteVersionControl {
     }
 
     // 设置自动保存
-    if (this.config.autoSave) {
+    if (this.config?.autoSave) {
       this.startAutoSave()
     }
 
@@ -134,32 +134,32 @@ export class RouteVersionControl {
   async createVersion(name: string, description?: string): Promise<RouteVersion> {
     const id = this.generateVersionId()
     const routes = this.captureCurrentRoutes()
-    
+
     const version: RouteVersion = {
       id,
       name,
       description,
       createdAt: new Date(),
-      routes: this.config.compression ? this.compressRoutes(routes) : routes,
+      routes: this.config?.compression ? this.compressRoutes(routes) : routes,
       metadata: this.analyzeRoutes(routes),
     }
 
     // 检查版本限制
-    if (this.versions.size >= this.config.maxVersions) {
+    if (this.versions.size >= this.config?.maxVersions) {
       this.removeOldestVersion()
     }
 
     this.versions.set(id, version)
     this.currentVersionId = id
-    
+
     // 更新状态
     this.updateState()
-    
+
     // 保存到存储
     await this.saveVersion(version)
-    
+
     this.state.isDirty = false
-    
+
     return version
   }
 
@@ -176,7 +176,7 @@ export class RouteVersionControl {
     this.state.isLoading = true
 
     try {
-      const routes = this.config.compression 
+      const routes = this.config?.compression
         ? this.decompressRoutes(version.routes)
         : version.routes
 
@@ -193,10 +193,12 @@ export class RouteVersionControl {
       this.state.isDirty = false
 
       return true
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to restore version:', error)
       return false
-    } finally {
+    }
+    finally {
       this.state.isLoading = false
     }
   }
@@ -211,7 +213,7 @@ export class RouteVersionControl {
     }
 
     const deleted = this.versions.delete(versionId)
-    
+
     if (deleted) {
       await this.removeFromStorage(versionId)
       this.updateState()
@@ -231,10 +233,10 @@ export class RouteVersionControl {
       return null
     }
 
-    const routes1 = this.config.compression 
+    const routes1 = this.config?.compression
       ? this.decompressRoutes(version1.routes)
       : version1.routes
-    const routes2 = this.config.compression
+    const routes2 = this.config?.compression
       ? this.decompressRoutes(version2.routes)
       : version2.routes
 
@@ -253,7 +255,8 @@ export class RouteVersionControl {
    * 获取当前版本
    */
   getCurrentVersion(): RouteVersion | null {
-    if (!this.currentVersionId) return null
+    if (!this.currentVersionId)
+      return null
     return this.versions.get(this.currentVersionId) || null
   }
 
@@ -262,7 +265,8 @@ export class RouteVersionControl {
    */
   exportVersion(versionId: string): string | null {
     const version = this.versions.get(versionId)
-    if (!version) return null
+    if (!version)
+      return null
 
     return JSON.stringify(version, null, 2)
   }
@@ -273,7 +277,7 @@ export class RouteVersionControl {
   async importVersion(data: string): Promise<boolean> {
     try {
       const version: RouteVersion = JSON.parse(data)
-      
+
       // 验证版本格式
       if (!this.validateVersion(version)) {
         throw new Error('Invalid version format')
@@ -288,7 +292,8 @@ export class RouteVersionControl {
       this.updateState()
 
       return true
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to import version:', error)
       return false
     }
@@ -299,10 +304,11 @@ export class RouteVersionControl {
    */
   async createBranch(
     baseVersionId: string,
-    branchName: string
+    branchName: string,
   ): Promise<RouteVersion | null> {
     const baseVersion = this.versions.get(baseVersionId)
-    if (!baseVersion) return null
+    if (!baseVersion)
+      return null
 
     const branchVersion: RouteVersion = {
       ...baseVersion,
@@ -325,17 +331,18 @@ export class RouteVersionControl {
   async mergeVersions(
     sourceId: string,
     targetId: string,
-    strategy: 'override' | 'merge' = 'merge'
+    strategy: 'override' | 'merge' = 'merge',
   ): Promise<RouteVersion | null> {
     const source = this.versions.get(sourceId)
     const target = this.versions.get(targetId)
 
-    if (!source || !target) return null
+    if (!source || !target)
+      return null
 
-    const sourceRoutes = this.config.compression
+    const sourceRoutes = this.config?.compression
       ? this.decompressRoutes(source.routes)
       : source.routes
-    const targetRoutes = this.config.compression
+    const targetRoutes = this.config?.compression
       ? this.decompressRoutes(target.routes)
       : target.routes
 
@@ -343,7 +350,8 @@ export class RouteVersionControl {
 
     if (strategy === 'override') {
       mergedRoutes = sourceRoutes
-    } else {
+    }
+    else {
       mergedRoutes = this.mergeRoutes(targetRoutes, sourceRoutes)
     }
 
@@ -352,7 +360,7 @@ export class RouteVersionControl {
       name: `Merge: ${source.name} -> ${target.name}`,
       description: `Merged ${source.name} into ${target.name}`,
       createdAt: new Date(),
-      routes: this.config.compression ? this.compressRoutes(mergedRoutes) : mergedRoutes,
+      routes: this.config?.compression ? this.compressRoutes(mergedRoutes) : mergedRoutes,
       metadata: this.analyzeRoutes(mergedRoutes),
     }
 
@@ -398,7 +406,7 @@ export class RouteVersionControl {
    */
   private clearCurrentRoutes(): void {
     const routes = this.router.getRoutes()
-    routes.forEach(route => {
+    routes.forEach((route) => {
       if (route.name) {
         this.router.removeRoute(route.name)
       }
@@ -417,7 +425,7 @@ export class RouteVersionControl {
         dynamicCount++
       }
       maxDepth = Math.max(maxDepth, depth)
-      
+
       route.children?.forEach(child => analyze(child, depth + 1))
     }
 
@@ -445,7 +453,8 @@ export class RouteVersionControl {
     for (const [path, route] of map2) {
       if (!map1.has(path)) {
         added.push(route)
-      } else {
+      }
+      else {
         const oldRoute = map1.get(path)!
         const changes = this.detectChanges(oldRoute, route)
         if (changes.length > 0) {
@@ -480,7 +489,7 @@ export class RouteVersionControl {
     const changes: string[] = []
 
     if (route1.name !== route2.name) {
-      changes.push(`name: ${route1.name} -> ${route2.name}`)
+      changes.push(`name: ${String(route1.name)} -> ${String(route2.name)}`)
     }
     if (JSON.stringify(route1.meta) !== JSON.stringify(route2.meta)) {
       changes.push('meta changed')
@@ -500,7 +509,7 @@ export class RouteVersionControl {
    */
   private mergeRoutes(
     target: RouteRecordRaw[],
-    source: RouteRecordRaw[]
+    source: RouteRecordRaw[],
   ): RouteRecordRaw[] {
     const merged = [...target]
     const targetPaths = new Set(target.map(r => r.path))
@@ -546,10 +555,10 @@ export class RouteVersionControl {
       if (this.state.isDirty) {
         this.createVersion(
           `auto_${new Date().toISOString()}`,
-          'Auto-saved version'
+          'Auto-saved version',
         )
       }
-    }, this.config.autoSaveInterval)
+    }, this.config?.autoSaveInterval)
   }
 
   /**
@@ -586,10 +595,10 @@ export class RouteVersionControl {
    */
   private validateVersion(version: any): boolean {
     return (
-      version &&
-      typeof version.id === 'string' &&
-      typeof version.name === 'string' &&
-      Array.isArray(version.routes)
+      version
+      && typeof version.id === 'string'
+      && typeof version.name === 'string'
+      && Array.isArray(version.routes)
     )
   }
 
@@ -599,16 +608,17 @@ export class RouteVersionControl {
    * 加载版本
    */
   private async loadVersions(): Promise<void> {
-    if (this.config.storage === 'localStorage') {
+    if (this.config?.storage === 'localStorage') {
       const data = localStorage.getItem('router_versions')
       if (data) {
         try {
           const versions: RouteVersion[] = JSON.parse(data)
-          versions.forEach(v => {
+          versions.forEach((v) => {
             v.createdAt = new Date(v.createdAt)
             this.versions.set(v.id, v)
           })
-        } catch (error) {
+        }
+        catch (error) {
           console.error('Failed to load versions:', error)
         }
       }
@@ -619,8 +629,8 @@ export class RouteVersionControl {
   /**
    * 保存版本
    */
-  private async saveVersion(version: RouteVersion): Promise<void> {
-    if (this.config.storage === 'localStorage') {
+  private async saveVersion(_version: RouteVersion): Promise<void> {
+    if (this.config?.storage === 'localStorage') {
       const versions = Array.from(this.versions.values())
       localStorage.setItem('router_versions', JSON.stringify(versions))
     }
@@ -631,7 +641,7 @@ export class RouteVersionControl {
    * 从存储中删除版本
    */
   private async removeFromStorage(versionId: string): Promise<void> {
-    if (this.config.storage === 'localStorage') {
+    if (this.config?.storage === 'localStorage') {
       const versions = Array.from(this.versions.values())
         .filter(v => v.id !== versionId)
       localStorage.setItem('router_versions', JSON.stringify(versions))
@@ -657,7 +667,7 @@ let defaultVersionControl: RouteVersionControl | null = null
  */
 export function setupRouteVersionControl(
   router: Router,
-  config?: VersionControlConfig
+  config?: VersionControlConfig,
 ): RouteVersionControl {
   if (!defaultVersionControl) {
     defaultVersionControl = new RouteVersionControl(router, config)

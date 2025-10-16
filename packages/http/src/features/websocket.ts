@@ -77,7 +77,7 @@ export type WebSocketEventListener<T = any> = (data?: T) => void
  *
  * // 监听消息
  * wsClient.on('message', (message) => {
- *   console.log('收到消息:', message)
+ *   
  * })
  *
  * // 连接
@@ -127,10 +127,10 @@ export class WebSocketClient {
 
     return new Promise((resolve, reject) => {
       this.status = WebSocketStatus.CONNECTING
-      this.log(`Connecting to ${this.config.url}`)
+      this.log(`Connecting to ${this.config?.url}`)
 
       try {
-        this.ws = new WebSocket(this.config.url, this.config.protocols)
+        this.ws = new WebSocket(this.config?.url, this.config?.protocols)
 
         // 连接超时处理
         this.connectionTimer = setTimeout(() => {
@@ -138,7 +138,7 @@ export class WebSocketClient {
             this.ws?.close()
             reject(new Error('Connection timeout'))
           }
-        }, this.config.connectionTimeout)
+        }, this.config?.connectionTimeout)
 
         this.ws.onopen = () => {
           if (this.connectionTimer) {
@@ -375,10 +375,10 @@ export class WebSocketClient {
     this.emit('close', { code, reason })
 
     // 自动重连
-    if (this.config.autoReconnect && this.reconnectAttempts < this.config.maxReconnectAttempts) {
+    if (this.config?.autoReconnect && this.reconnectAttempts < this.config?.maxReconnectAttempts) {
       this.reconnect()
     }
-    else if (this.reconnectAttempts >= this.config.maxReconnectAttempts) {
+    else if (this.reconnectAttempts >= this.config?.maxReconnectAttempts) {
       this.log('Max reconnect attempts reached')
       this.emit('reconnect_failed')
     }
@@ -389,7 +389,7 @@ export class WebSocketClient {
    */
   private reconnect(): void {
     this.reconnectAttempts++
-    this.log(`Reconnecting... (attempt ${this.reconnectAttempts}/${this.config.maxReconnectAttempts})`)
+    this.log(`Reconnecting... (attempt ${this.reconnectAttempts}/${this.config?.maxReconnectAttempts})`)
 
     this.emit('reconnecting', { attempts: this.reconnectAttempts })
 
@@ -403,23 +403,23 @@ export class WebSocketClient {
         this.log('Reconnect failed:', error)
         // handleDisconnection 会处理下一次重连
       }
-    }, this.config.reconnectDelay * this.reconnectAttempts)
+    }, this.config?.reconnectDelay * this.reconnectAttempts)
   }
 
   /**
    * 启动心跳
    */
   private startHeartbeat(): void {
-    if (this.config.heartbeatInterval <= 0) {
+    if (this.config?.heartbeatInterval <= 0) {
       return
     }
 
     this.heartbeatTimer = setInterval(() => {
       if (this.isConnected()) {
-        this.send(this.config.heartbeatMessage)
+        this.send(this.config?.heartbeatMessage)
         this.log('Heartbeat sent')
       }
-    }, this.config.heartbeatInterval)
+    }, this.config?.heartbeatInterval)
   }
 
   /**
@@ -453,8 +453,8 @@ export class WebSocketClient {
    * 日志输出
    */
   private log(...args: any[]): void {
-    if (this.config.debug) {
-      console.log('[WebSocket]', ...args)
+    if (this.config?.debug) {
+      
     }
   }
 }

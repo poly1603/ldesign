@@ -7,7 +7,6 @@
  * @since 1.0.0
  */
 
-import { promises as fs } from 'fs'
 import { resolve, basename } from 'path'
 import { Logger } from '../../utils/logger'
 import { FileSystem } from '../../utils/file-system'
@@ -338,41 +337,41 @@ export class InitCommand {
   ): void {
     this.logger.success('\n🎉 项目创建成功！')
 
-    console.log('\n📂 项目结构：')
-    console.log(`   ${projectName}/`)
-    console.log('   ├── src/')
-    console.log('   │   ├── components/')
-    console.log('   │   ├── App.vue (或 App.jsx)')
-    console.log('   │   └── main.js (或 main.ts)')
-    console.log('   ├── launcher.config.ts')
-    console.log('   ├── package.json')
-    console.log('   └── README.md')
+    
+    
+    
+    
+    ')
+    ')
+    
+    
+    
 
-    console.log('\n🚀 开始开发：')
+    
 
     if (projectDir !== '.') {
-      console.log(`   cd ${projectDir}`)
+      
     }
 
     if (skipInstall) {
       const pm = packageManager || 'npm'
-      console.log(`   ${pm} install`)
+      
     }
 
-    console.log('   npm run dev')
+    
 
-    console.log('\n📖 更多命令：')
-    console.log('   npm run build    # 构建生产版本')
-    console.log('   npm run preview  # 预览构建结果')
+    
+    
+    
 
-    console.log('\n📚 文档和帮助：')
-    console.log('   https://github.com/ldesign/launcher')
-    console.log('   launcher --help')
+    
+    
+    
 
-    console.log('\n💡 提示：')
-    console.log('   - 使用 launcher dev --debug 查看详细日志')
-    console.log('   - 编辑 launcher.config.ts 自定义配置')
-    console.log('   - 查看 .env 文件了解环境变量配置')
+    
+    
+    
+    
   }
 
   /**
@@ -393,17 +392,17 @@ export class InitCommand {
     }, {} as Record<string, typeof templates>)
 
     for (const [preset, presetTemplates] of Object.entries(groupedTemplates)) {
-      console.log(`\n🎯 ${preset.toUpperCase()}:`)
+      }:`)
       for (const template of presetTemplates) {
-        console.log(`   ${template.name}`)
-        console.log(`      ${template.description}`)
-        console.log(`      标签: ${template.tags.join(', ')}`)
+        
+        
+        }`)
       }
     }
 
-    console.log('\n使用示例:')
-    console.log('   launcher init my-project --template vue3-typescript-starter')
-    console.log('   launcher init my-app --preset react-ts')
-    console.log('   launcher init . --force  # 在当前目录初始化')
+    
+    
+    
+    
   }
 }

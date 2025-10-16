@@ -64,12 +64,12 @@ export class LdesignMenu {
   /** 纵向模式：顶层互斥展开（无论 inline 或 flyout），默认开启 */
   @Prop() topLevelExclusive: boolean = true;
 
-  @State() parsedItems: MenuItem[] = [];
+  @State() parsedItems!: MenuItem[] = [];
   @State() currentKey?: string;
-  @State() internalOpenKeys: string[] = [];
+  @State() internalOpenKeys!: string[] = [];
 
   // 横向溢出
-  @State() overflowKeys: string[] = [];
+  @State() overflowKeys!: string[] = [];
   private listRef?: HTMLUListElement;
   private topItemRefs: Map<string, HTMLLIElement> = new Map();
   private moreMeasureRef?: HTMLLIElement; // 用于测量“更多”宽度
@@ -80,7 +80,7 @@ export class LdesignMenu {
 
   private submenuRefs: Map<string, HTMLUListElement> = new Map();
   private didInitHeights = false;
-  @State() flyoutOpenMap: { [key: string]: boolean } = {};
+  @State() flyoutOpenMap!: { [key: string]: boolean } = {};
   private flyoutTimers: Map<string, number> = new Map();
   private flyChildrenRefs: Map<string, HTMLUListElement> = new Map();
   private downChildrenRefs: Map<string, HTMLUListElement> = new Map();

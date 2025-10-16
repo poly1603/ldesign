@@ -119,8 +119,8 @@ export class PerformanceManager {
     this.checkThresholds(metrics)
 
     // 调用回调
-    if (this.config.onMetrics) {
-      this.config.onMetrics(metrics)
+    if (this.config?.onMetrics) {
+      this.config?.onMetrics(metrics)
     }
 
     // 清理当前导航
@@ -135,7 +135,7 @@ export class PerformanceManager {
    * 记录事件
    */
   recordEvent(type: PerformanceEventType, data?: any): void {
-    if (!this.config.enabled)
+    if (!this.config?.enabled)
       return
 
     const event: any = {
@@ -206,10 +206,10 @@ export class PerformanceManager {
     )
     const averageTime = totalTime / completedNavigations.length
     const slowNavigations = completedNavigations.filter(
-      n => n.metrics!.totalTime > this.config.warningThreshold,
+      n => n.metrics!.totalTime > this.config?.warningThreshold,
     ).length
     const fastNavigations = completedNavigations.filter(
-      n => n.metrics!.totalTime < this.config.warningThreshold / 2,
+      n => n.metrics!.totalTime < this.config?.warningThreshold / 2,
     ).length
 
     return {
@@ -287,15 +287,15 @@ export class PerformanceManager {
    * 检查性能阈值
    */
   private checkThresholds(metrics: PerformanceMetrics): void {
-    if (metrics.totalTime > this.config.errorThreshold) {
+    if (metrics.totalTime > this.config?.errorThreshold) {
       console.error(
-        `路由导航性能严重超标: ${metrics.totalTime.toFixed(2)}ms (阈值: ${this.config.errorThreshold
+        `路由导航性能严重超标: ${metrics.totalTime.toFixed(2)}ms (阈值: ${this.config?.errorThreshold
         }ms)`,
       )
     }
-    else if (metrics.totalTime > this.config.warningThreshold) {
+    else if (metrics.totalTime > this.config?.warningThreshold) {
       console.warn(
-        `路由导航性能超标: ${metrics.totalTime.toFixed(2)}ms (阈值: ${this.config.warningThreshold
+        `路由导航性能超标: ${metrics.totalTime.toFixed(2)}ms (阈值: ${this.config?.warningThreshold
         }ms)`,
       )
     }

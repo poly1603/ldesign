@@ -8,7 +8,7 @@ import { DirectiveBase } from '../base/directive-base'
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface ThrottleOptions {
-  handler?: (...args: any[]) => void
+  handler?: (...args: unknown[]) => void
   delay?: number
   event?: string
   disabled?: boolean
@@ -29,7 +29,7 @@ export class ThrottleDirective extends DirectiveBase {
 
   public mounted(el: HTMLElement, binding: VueDirectiveBinding): void {
     const config = this.parseConfig(binding)
-    
+
     if (!config.handler || typeof config.handler !== 'function') {
       this.warn('Throttle directive requires a handler function')
       return
@@ -39,38 +39,40 @@ export class ThrottleDirective extends DirectiveBase {
     const event = config.event ?? 'click'
     const leading = config.leading ?? true
     const trailing = config.trailing ?? true
-    
+
     let lastTime = 0
     let timeoutId: NodeJS.Timeout | null = null
-    let lastArgs: any[] = []
-    
-    const throttledHandler = (...args: any[]) => {
+    let lastArgs: unknown[] = []
+
+    const throttledHandler = (...args: unknown[]) => {
       if (config.disabled) return
-      
+
       const now = Date.now()
       const remaining = delay - (now - lastTime)
-      
+
       lastArgs = args
-      
+
       const execute = () => {
-        config.handler!(...lastArgs)
+        if (config.handler) {
+          config.handler(...lastArgs)
+        }
         lastTime = Date.now()
         timeoutId = null
       }
-      
+
       if (remaining <= 0 || remaining > delay) {
         // If leading is enabled and enough time has passed
         if (timeoutId) {
           clearTimeout(timeoutId)
           timeoutId = null
         }
-        
+
         if (leading) {
           execute()
         } else {
           lastTime = now
         }
-        
+
         if (trailing && !timeoutId) {
           timeoutId = setTimeout(() => {
             execute()
@@ -119,19 +121,19 @@ export class ThrottleDirective extends DirectiveBase {
     const handler = directiveUtils.getData(el, 'throttle-handler')
     const event = directiveUtils.getData(el, 'throttle-event')
     const timeout = directiveUtils.getData(el, 'throttle-timeout')
-    
+
     if (handler && event) {
       el.removeEventListener(event as string, handler as EventListener)
     }
-    
+
     if (timeout) {
       clearTimeout(timeout as NodeJS.Timeout)
     }
-    
+
     directiveUtils.removeData(el, 'throttle-handler')
     directiveUtils.removeData(el, 'throttle-event')
     directiveUtils.removeData(el, 'throttle-timeout')
-    
+
     this.log(`Throttle directive unmounted from element`, el)
   }
 
@@ -140,7 +142,7 @@ export class ThrottleDirective extends DirectiveBase {
 
     // Handle function as handler
     if (typeof value === 'function') {
-      return { handler: value }
+      return { handler: value as (...args: unknown[]) => void }
     }
 
     // Handle object config
@@ -195,23 +197,23 @@ export class ThrottleDirective extends DirectiveBase {
 
 <script setup>
 const handleClick = () => {
-  console.log('Button clicked (throttled)')
+  ')
 }
 
 const handleScroll = (event) => {
-  console.log('Scrolling...', event.target.scrollTop)
+  
 }
 
 const handleInput = () => {
-  console.log('Input changed (throttled)')
+  ')
 }
 
 const handleKeyPress = (event) => {
-  console.log('Key pressed:', event.key)
+  
 }
 
 const saveProgress = () => {
-  console.log('Auto-saving...')
+  
 }
 </script>
     `

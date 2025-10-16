@@ -16,7 +16,7 @@
  * @example
  * ```typescript
  * const debouncedSearch = debounce((query: string) => {
- *   console.log('Searching:', query)
+ *   
  * }, 300)
  * 
  * // 只有最后一次调用会执行
@@ -55,7 +55,7 @@ export function debounce<T extends (...args: any[]) => any>(
  * @example
  * ```typescript
  * const throttledScroll = throttle(() => {
- *   console.log('Scrolling...')
+ *   
  * }, 100)
  * 
  * window.addEventListener('scroll', throttledScroll)
@@ -200,7 +200,7 @@ export function createBatchRequest<TInput, TOutput>(
  * @example
  * ```typescript
  * const initialize = once(() => {
- *   console.log('Initializing...')
+ *   
  *   return { initialized: true }
  * })
  * 
@@ -235,7 +235,7 @@ export function once<T extends (...args: any[]) => any>(
  * @example
  * ```typescript
  * const expensiveCalculation = memoize((a: number, b: number) => {
- *   console.log('Calculating...')
+ *   
  *   return a * b
  * })
  * 

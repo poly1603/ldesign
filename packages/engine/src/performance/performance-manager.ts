@@ -110,7 +110,7 @@ export interface PerformanceViolation {
   type: 'threshold' | 'memory_leak' | 'slow_operation'
   severity: 'low' | 'medium' | 'high' | 'critical'
   message: string
-  details: any
+  details: unknown
   timestamp: number
 }
 
@@ -163,7 +163,7 @@ class MemoryMonitor {
 
   start(
     callback: (memory: PerformanceMetrics['memory']) => void,
-    interval = 30000  // 增加采样间隔到30秒
+    interval = 30000 // 增加采样间隔到30秒
   ): void {
     this.callback = callback
 
@@ -189,7 +189,8 @@ class MemoryMonitor {
       typeof globalThis.performance !== 'undefined' &&
       'memory' in (globalThis.performance as Performance)
     ) {
-      const memory = (globalThis.performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory!
+      const memory = (globalThis.performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory
+      if (!memory) return undefined
       return {
         used: memory.usedJSHeapSize,
         total: memory.totalJSHeapSize,
@@ -256,7 +257,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
   private memoryMonitor = new MemoryMonitor()
   private engine?: Engine
   private eventIdCounter = 0
-  private maxEvents = 50  // 限制最大事件数量
+  private maxEvents = 50 // 限制最大事件数量
 
   constructor(thresholds: PerformanceThresholds = {}, engine?: Engine) {
     this.engine = engine
@@ -284,7 +285,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
     }
 
     this.events.set(id, event)
-    
+
     // 限制事件数量
     if (this.events.size > this.maxEvents) {
       const oldestKey = this.events.keys().next().value
@@ -292,7 +293,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
         this.events.delete(oldestKey)
       }
     }
-    
+
     return id
   }
 
@@ -350,7 +351,8 @@ export class PerformanceManagerImpl implements PerformanceManager {
       typeof globalThis.performance !== 'undefined' &&
       'memory' in (globalThis.performance as Performance)
     ) {
-      const memory = (globalThis.performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory!
+      const memory = (globalThis.performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory
+      if (!memory) return metrics
       metrics.memory = {
         used: memory.usedJSHeapSize,
         total: memory.totalJSHeapSize,
@@ -390,8 +392,8 @@ export class PerformanceManagerImpl implements PerformanceManager {
     this.metrics.push(fullMetrics)
 
     // 限制存储的指标数量，减少内存占用
-    if (this.metrics.length > 100) {  // 降低存储限制
-      this.metrics = this.metrics.slice(-50)  // 只保留最近50条
+    if (this.metrics.length > 100) { // 降低存储限制
+      this.metrics = this.metrics.slice(-50) // 只保留最近50条
     }
 
     // 检查指标违规
@@ -898,7 +900,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
         globalThis.performance.measure(name, startMark, endMark)
       } catch (error) {
         // 如果标记不存在，忽略错误
-        this.logger.warn(`Performance measure failed: ${error}`)
+        this.engine?.logger?.warn(`Performance measure failed: ${error}`)
       }
     }
   }

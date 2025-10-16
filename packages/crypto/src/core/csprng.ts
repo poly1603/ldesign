@@ -198,14 +198,14 @@ export class CSPRNG {
       ...config,
     }
 
-    this.seed = new Uint8Array(this.config.seedLength)
+    this.seed = new Uint8Array(this.config?.seedLength)
     this.entropyCollector = new EntropyCollector()
 
     // 初始化种子
     this.initializeSeed()
 
     // 开始收集熵
-    if (this.config.collectEntropy) {
+    if (this.config?.collectEntropy) {
       this.entropyCollector.startCollecting()
     }
   }
@@ -237,7 +237,7 @@ export class CSPRNG {
    * 初始化种子
    */
   private initializeSeed(): void {
-    switch (this.config.entropySource) {
+    switch (this.config?.entropySource) {
       case 'node':
         // Node.js crypto
         if (typeof require !== 'undefined') {
@@ -267,7 +267,7 @@ export class CSPRNG {
 
       case 'crypto': {
         // crypto-js
-        const wordArray = CryptoJS.lib.WordArray.random(this.config.seedLength)
+        const wordArray = CryptoJS.lib.WordArray.random(this.config?.seedLength)
         const words = wordArray.words
         for (let i = 0; i < this.seed.length; i++) {
           this.seed[i] = (words[Math.floor(i / 4)] >> ((3 - (i % 4)) * 8)) & 0xFF
@@ -280,7 +280,7 @@ export class CSPRNG {
     }
 
     // 混入收集的熵
-    if (this.config.collectEntropy) {
+    if (this.config?.collectEntropy) {
       const entropy = this.entropyCollector.getEntropy()
       for (let i = 0; i < Math.min(entropy.length, this.seed.length); i++) {
         this.seed[i] ^= entropy[i]
@@ -315,11 +315,11 @@ export class CSPRNG {
     const bytes = new Uint8Array(length)
 
     // 检查是否需要重新播种
-    if (this.counter - this.lastReseed > this.config.reseedInterval) {
+    if (this.counter - this.lastReseed > this.config?.reseedInterval) {
       this.reseed()
     }
 
-    switch (this.config.entropySource) {
+    switch (this.config?.entropySource) {
       case 'node':
         // Node.js crypto
         if (typeof require !== 'undefined') {
@@ -586,7 +586,7 @@ export class CSPRNG {
     }
 
     // 混入收集的熵
-    if (this.config.collectEntropy) {
+    if (this.config?.collectEntropy) {
       const entropy = this.entropyCollector.getEntropy()
       for (let i = 0; i < Math.min(entropy.length, this.seed.length); i++) {
         this.seed[i] ^= entropy[i]
@@ -615,7 +615,7 @@ export class CSPRNG {
    */
   destroy(): void {
     // 停止熵收集
-    if (this.config.collectEntropy) {
+    if (this.config?.collectEntropy) {
       this.entropyCollector.stopCollecting()
     }
 

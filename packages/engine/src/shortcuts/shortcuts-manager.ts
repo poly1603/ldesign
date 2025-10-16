@@ -47,7 +47,7 @@ function parseShortcut(key: string): {
   key: string
 } {
   const parts = key.toLowerCase().split('+').map(p => p.trim())
-  
+
   return {
     ctrl: parts.includes('ctrl') || parts.includes('control'),
     shift: parts.includes('shift'),
@@ -63,13 +63,13 @@ function parseShortcut(key: string): {
 function matchShortcut(event: KeyboardEvent, shortcut: string): boolean {
   const parsed = parseShortcut(shortcut)
   const eventKey = event.key.toLowerCase()
-  
+
   // 检查修饰键
   if (parsed.ctrl !== (event.ctrlKey || event.metaKey)) return false
   if (parsed.shift !== event.shiftKey) return false
   if (parsed.alt !== event.altKey) return false
   if (parsed.meta !== event.metaKey) return false
-  
+
   // 检查主键
   // 处理特殊键名
   const keyMap: Record<string, string[]> = {
@@ -93,10 +93,10 @@ function matchShortcut(event: KeyboardEvent, shortcut: string): boolean {
     '.': ['.', 'period'],
     ',': [',', 'comma'],
   }
-  
+
   const normalizedKey = parsed.key
   const possibleKeys = keyMap[normalizedKey] || [normalizedKey]
-  
+
   return possibleKeys.includes(eventKey)
 }
 
@@ -106,11 +106,11 @@ function matchShortcut(event: KeyboardEvent, shortcut: string): boolean {
 function isInInput(event: KeyboardEvent): boolean {
   const target = event.target as HTMLElement
   if (!target) return false
-  
+
   const tagName = target.tagName.toLowerCase()
   const isContentEditable = target.isContentEditable
   const isInput = tagName === 'input' || tagName === 'textarea' || tagName === 'select'
-  
+
   return isInput || isContentEditable
 }
 
@@ -131,11 +131,11 @@ export class ShortcutsManager {
    */
   private init(): void {
     this.listener = (event: KeyboardEvent) => this.handleKeyPress(event)
-    
+
     if (typeof window !== 'undefined') {
       window.addEventListener('keydown', this.listener)
     }
-    
+
     // 创建默认作用域
     this.scopes.set('global', {
       name: 'global',
@@ -157,10 +157,10 @@ export class ShortcutsManager {
       enabled: true,
       priority: 0
     }
-    
+
     const mergedOptions = { ...defaultOptions, ...options }
     const scopeName = mergedOptions.scope
-    
+
     // 检查冲突
     if (this.checkConflict(key, scopeName)) {
       if (this.conflictMode === 'error') {
@@ -169,17 +169,17 @@ export class ShortcutsManager {
         console.warn(`快捷键 ${key} 在作用域 ${scopeName} 中已存在，将被覆盖`)
       }
     }
-    
+
     const shortcut: Shortcut = {
       key,
       handler,
       options: mergedOptions
     }
-    
+
     // 添加到全局映射
     const fullKey = `${scopeName}:${key}`
     this.shortcuts.set(fullKey, shortcut)
-    
+
     // 添加到作用域组
     if (!this.scopes.has(scopeName)) {
       this.scopes.set(scopeName, {
@@ -187,9 +187,11 @@ export class ShortcutsManager {
         shortcuts: new Map()
       })
     }
-    
-    const scope = this.scopes.get(scopeName)!
-    scope.shortcuts.set(key, shortcut)
+
+    const scope = this.scopes.get(scopeName)
+    if (scope) {
+      scope.shortcuts.set(key, shortcut)
+    }
   }
 
   /**
@@ -221,12 +223,12 @@ export class ShortcutsManager {
   unregister(key: ShortcutKey, scope: ShortcutScope = 'global'): boolean {
     const fullKey = `${scope}:${key}`
     const deleted = this.shortcuts.delete(fullKey)
-    
+
     const scopeGroup = this.scopes.get(scope)
     if (scopeGroup) {
       scopeGroup.shortcuts.delete(key)
     }
-    
+
     return deleted
   }
 
@@ -303,16 +305,17 @@ export class ShortcutsManager {
    */
   getConflicts(): Map<ShortcutKey, ShortcutScope[]> {
     const conflicts = new Map<ShortcutKey, ShortcutScope[]>()
-    
+
     this.scopes.forEach((scopeGroup, scopeName) => {
       scopeGroup.shortcuts.forEach(shortcut => {
         if (!conflicts.has(shortcut.key)) {
           conflicts.set(shortcut.key, [])
         }
-        conflicts.get(shortcut.key)!.push(scopeName)
+        const scopes = conflicts.get(shortcut.key)
+        scopes?.push(scopeName)
       })
     })
-    
+
     // 过滤出有冲突的（出现在多个作用域）
     const realConflicts = new Map<ShortcutKey, ShortcutScope[]>()
     conflicts.forEach((scopes, key) => {
@@ -320,7 +323,7 @@ export class ShortcutsManager {
         realConflicts.set(key, scopes)
       }
     })
-    
+
     return realConflicts
   }
 
@@ -329,42 +332,42 @@ export class ShortcutsManager {
    */
   private handleKeyPress(event: KeyboardEvent): void {
     if (!this.enabled) return
-    
+
     // 收集所有匹配的快捷键
     const matches: Shortcut[] = []
-    
+
     this.activeScopes.forEach(scope => {
       this.shortcuts.forEach((shortcut, fullKey) => {
         if (!fullKey.startsWith(`${scope}:`)) return
         if (!shortcut.options.enabled) return
         if (!shortcut.options.allowInInput && isInInput(event)) return
-        
+
         if (matchShortcut(event, shortcut.key)) {
           matches.push(shortcut)
         }
       })
     })
-    
+
     // 按优先级排序
     matches.sort((a, b) => b.options.priority - a.options.priority)
-    
+
     // 执行最高优先级的快捷键
     if (matches.length > 0) {
       const shortcut = matches[0]
-      
+
       if (shortcut.options.preventDefault) {
         event.preventDefault()
       }
-      
+
       if (shortcut.options.stopPropagation) {
         event.stopPropagation()
       }
-      
+
       const result = shortcut.handler(event)
-      
+
       // 如果处理器返回 false，继续传播事件
       if (result === false) {
-        return
+        // 继续传播
       }
     }
   }
@@ -391,7 +394,7 @@ export class ShortcutsManager {
       const scopeGroup = this.scopes.get(scope)
       return scopeGroup ? Array.from(scopeGroup.shortcuts.values()) : []
     }
-    
+
     return Array.from(this.shortcuts.values())
   }
 
@@ -400,10 +403,10 @@ export class ShortcutsManager {
    */
   getShortcutHelp(): Map<ShortcutScope, Array<{ key: string; description: string }>> {
     const help = new Map<ShortcutScope, Array<{ key: string; description: string }>>()
-    
+
     this.scopes.forEach((scopeGroup, scopeName) => {
       const shortcuts: Array<{ key: string; description: string }> = []
-      
+
       scopeGroup.shortcuts.forEach(shortcut => {
         if (shortcut.options.description) {
           shortcuts.push({
@@ -412,12 +415,12 @@ export class ShortcutsManager {
           })
         }
       })
-      
+
       if (shortcuts.length > 0) {
         help.set(scopeName, shortcuts)
       }
     })
-    
+
     return help
   }
 
@@ -439,7 +442,7 @@ export class ShortcutsManager {
       description: string
       enabled: boolean
     }> = []
-    
+
     this.shortcuts.forEach((shortcut, fullKey) => {
       const [scope] = fullKey.split(':')
       shortcuts.push({
@@ -449,7 +452,7 @@ export class ShortcutsManager {
         enabled: shortcut.options.enabled
       })
     })
-    
+
     return {
       shortcuts,
       activeScopes: Array.from(this.activeScopes)
@@ -463,7 +466,7 @@ export class ShortcutsManager {
     if (this.listener && typeof window !== 'undefined') {
       window.removeEventListener('keydown', this.listener)
     }
-    
+
     this.shortcuts.clear()
     this.scopes.clear()
     this.activeScopes.clear()

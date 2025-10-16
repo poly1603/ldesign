@@ -67,9 +67,9 @@ export class LdesignPopup {
   @Prop() animation: PopupAnimation = 'scale';
 
   // ── State ──────────────────────────────────────────────────────
-  @State() isVisible: boolean = false;
-  @State() positioned: boolean = false; // 首帧定位前隐藏
-  @State() motion: 'closed' | 'opening' | 'open' | 'closing' = 'closed';
+  @State() isVisible!: boolean = false;
+  @State() positioned!: boolean = false; // 首帧定位前隐藏
+  @State() motion!: 'closed' | 'opening' | 'open' | 'closing' = 'closed';
 
   // ── Runtime ────────────────────────────────────────────────────
   private popupElement?: HTMLElement;
@@ -88,7 +88,7 @@ export class LdesignPopup {
   private autoCloseTimer?: number;
 
   // ── Events ─────────────────────────────────────────────────────
-  @Event() ldesignVisibleChange: EventEmitter<boolean>;
+  @Event() ldesignVisibleChange!: EventEmitter<boolean>;
 
   // ── Watchers ───────────────────────────────────────────────────
   @Watch('visible')
@@ -373,7 +373,7 @@ export class LdesignPopup {
         if (base === 'right') tipGap = ar.left - tr.right;
       }
       // eslint-disable-next-line no-console
-      console.log('[ldesign-popup][debug]', { uid: this.uid, placement: resolvedPlacement, offsetDistance: this.toNumber(this.offsetDistance, 8), mainAxisGap: Number(mainGap.toFixed(2)), arrowTipGap: tipGap != null ? Number(tipGap.toFixed(2)) : null, arrow: !!this.arrow });
+      , mainAxisGap: Number(mainGap.toFixed(2)), arrowTipGap: tipGap != null ? Number(tipGap.toFixed(2)) : null, arrow: !!this.arrow });
     } catch {}
   }
 

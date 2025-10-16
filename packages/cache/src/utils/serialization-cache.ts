@@ -59,7 +59,7 @@ export interface SerializationCacheConfig {
  * const serialized = cache.getOrSet('key', () => JSON.stringify(data))
  * 
  * // 获取统计信息
- * console.log(cache.getStats())
+ * )
  * ```
  */
 export class SerializationCache<T = string> {

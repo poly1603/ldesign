@@ -10,7 +10,7 @@ import type {
  */
 export const requestLoggerInterceptor: RequestInterceptor = (config) => {
   // eslint-disable-next-line no-console
-  console.log(`[HTTP Request] ${config.method?.toUpperCase()} ${config.url}`, {
+  } ${config.url}`, {
     headers: config.headers,
     data: config.data,
     params: config.params,
@@ -23,10 +23,7 @@ export const requestLoggerInterceptor: RequestInterceptor = (config) => {
  */
 export const responseLoggerInterceptor: ResponseInterceptor = (response) => {
   // eslint-disable-next-line no-console
-  console.log(`[HTTP Response] ${response.status} ${response.config.url}`, {
-    data: response.data,
-    headers: response.headers,
-  })
+  
   return response
 }
 
@@ -153,9 +150,7 @@ export function createResponseTimeInterceptor(): {
         const startTime = startTimes.get(requestId)!
         const duration = Date.now() - startTime
         // eslint-disable-next-line no-console
-        console.log(
-          `[HTTP Response Time] ${response.config.url}: ${duration}ms`,
-        )
+        
         startTimes.delete(requestId)
       }
       return response

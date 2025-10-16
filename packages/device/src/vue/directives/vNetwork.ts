@@ -199,7 +199,7 @@ function updateElementVisibility(
  * <!-- 带回调函数 -->
  * <div v-network="{
  *   status: 'online',
- *   callback: (networkInfo) => console.log('网络状态:', networkInfo)
+ *   callback: (networkInfo) => 
  * }">
  *   在线内容
  * </div>

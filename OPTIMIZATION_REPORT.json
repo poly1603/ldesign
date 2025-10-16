@@ -1,0 +1,18 @@
+{
+  "timestamp": "2025-10-16T04:29:02.381Z",
+  "results": {
+    "filesProcessed": 227,
+    "consoleLogs": 1083,
+    "debuggers": 29,
+    "todos": 31,
+    "duplicates": 241,
+    "unusedImports": 60
+  },
+  "recommendations": [
+    "1. 将重复的工具函数提取到 @ldesign/shared 包",
+    "2. 合并 http 和 api 包的功能",
+    "3. 统一日志和错误处理机制",
+    "4. 实现统一的缓存策略",
+    "5. 清理所有 TODO/FIXME 注释"
+  ]
+}

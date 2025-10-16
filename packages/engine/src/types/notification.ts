@@ -55,6 +55,7 @@ export interface NotificationOptions {
   icon?: string
   actions?: NotificationAction[]
   closable?: boolean
+  showClose?: boolean
   persistent?: boolean
   group?: string
   priority?: number

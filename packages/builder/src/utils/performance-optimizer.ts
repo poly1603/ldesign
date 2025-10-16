@@ -535,9 +535,9 @@ export function measure(target: any, propertyKey: string, descriptor: PropertyDe
       const duration = performance.now() - startTime
       const memDiff = process.memoryUsage().heapUsed - startMem.heapUsed
 
-      console.log(`[Performance] ${target.constructor.name}.${propertyKey}:`)
-      console.log(`  Duration: ${duration.toFixed(2)}ms`)
-      console.log(`  Memory: ${(memDiff / 1024 / 1024).toFixed(2)}MB`)
+      
+      }ms`)
+      .toFixed(2)}MB`)
 
       return result
     } catch (error) {

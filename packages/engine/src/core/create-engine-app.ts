@@ -4,19 +4,17 @@
  */
 
 import type { Component, App as VueApp } from 'vue'
-import type { Plugin } from '../types/plugin'
 import type { Middleware } from '../types/middleware'
-import { EngineImpl } from './engine'
+import type { Plugin } from '../types/plugin'
 import { commonDirectives } from '../directives/directive-manager'
-import { 
-  createQuickLogger,
+import { type PerformanceBudget, PerformanceBudgetManager, type PerformanceMetric } from '../performance/performance-budget'
+import { type ShortcutHandler, type ShortcutOptions, ShortcutsManager } from '../shortcuts/shortcuts-manager'
+import {
   createQuickCacheManager,
+  createQuickLogger,
   createQuickPerformanceManager
 } from '../utils/quick-setup'
-import { PerformanceBudgetManager, type PerformanceBudget, type PerformanceMetric } from '../performance/performance-budget'
-import { ShortcutsManager, type ShortcutHandler, type ShortcutOptions } from '../shortcuts/shortcuts-manager'
-import { ThemeManager, type ThemeManagerConfig } from '../theme/theme-manager'
-import type { Theme } from '../types/style'
+import { EngineImpl } from './engine'
 
 /**
  * 引擎应用配置选项
@@ -176,12 +174,12 @@ export interface EngineAppOptions {
 
 /**
  * 创建引擎应用
- * 
+ *
  * 这是引擎的唯一入口函数，通过配置项控制所有功能
- * 
+ *
  * @param options 引擎应用配置选项
  * @returns 引擎实例
- * 
+ *
  * @example
  * ```typescript
  * // 最简单的使用
@@ -189,7 +187,7 @@ export interface EngineAppOptions {
  *   rootComponent: App,
  *   mountElement: '#app'
  * })
- * 
+ *
  * // 完整配置示例
  * const engine = createEngineApp({
  *   rootComponent: App,
@@ -226,10 +224,10 @@ export interface EngineAppOptions {
  *     app.config.performance = true
  *   },
  *   onReady: async (engine) => {
- *     console.log('Engine ready!')
+ *     
  *   },
  *   onMounted: async (engine) => {
- *     console.log('App mounted!')
+ *     
  *   },
  *   onError: (error, context) => {
  *     console.error(`Error in ${context}:`, error)
@@ -289,7 +287,7 @@ export async function createEngineApp(options: EngineAppOptions = {}): Promise<E
         showContext: loggerOptions.showContext ?? false,
         prefix: loggerOptions.prefix
       })
-      
+
       // 替换默认日志器
       Object.defineProperty(engine, 'logger', {
         value: logger,
@@ -307,7 +305,7 @@ export async function createEngineApp(options: EngineAppOptions = {}): Promise<E
         enableMemoryLimit: cacheOptions.enableMemoryLimit ?? true,
         memoryLimit: cacheOptions.memoryLimit || 10
       })
-      
+
       // 将缓存管理器注入到引擎中
       Object.defineProperty(engine, 'cache', {
         value: cacheManager,
@@ -325,7 +323,7 @@ export async function createEngineApp(options: EngineAppOptions = {}): Promise<E
         monitorComponents: performanceOptions.monitorComponents ?? false,
         reportInterval: performanceOptions.reportInterval || 5000
       })
-      
+
       // 将性能管理器注入到引擎中
       Object.defineProperty(engine, 'performance', {
         value: performanceManager,
@@ -436,7 +434,7 @@ export async function createEngineApp(options: EngineAppOptions = {}): Promise<E
         // 自动挂载（如果提供了挂载元素）
         if (mountElement) {
           await engine.mount(mountElement)
-          
+
           // 触发挂载完成回调
           if (onMounted) {
             try {
@@ -454,7 +452,6 @@ export async function createEngineApp(options: EngineAppOptions = {}): Promise<E
 
     // 11. 返回引擎实例
     return engine
-
   } catch (error) {
     onError(error as Error, 'engine initialization')
     throw error
@@ -464,11 +461,11 @@ export async function createEngineApp(options: EngineAppOptions = {}): Promise<E
 /**
  * 创建引擎应用的简化版本
  * 自动挂载到 #app
- * 
+ *
  * @param rootComponent 根组件
  * @param options 配置选项（不包括rootComponent和mountElement）
  * @returns 引擎实例
- * 
+ *
  * @example
  * ```typescript
  * const engine = await createAndMountEngineApp(App, {

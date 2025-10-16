@@ -26,24 +26,28 @@
 
 // ==================== 核心导出 ====================
 // 统一的应用创建函数
-export { 
-  createEngineApp,
+export {
   createAndMountEngineApp,
-  type EngineAppOptions 
+  createEngineApp,
+  type EngineAppOptions
 } from './core/create-engine-app'
+
+// 配置类型
+export type {
+  ConfigManager,
+  EngineConfig
+} from './types/config'
 
 // ==================== 类型导出 ====================
 // 引擎核心类型
 export type { Engine } from './types/engine'
 
-// 插件系统类型
+// 日志类型
 export type {
-  Plugin,
-  PluginContext,
-  PluginMetadata,
-  PluginInfo,
-  PluginStatus
-} from './types/plugin'
+  LogEntry,
+  Logger,
+  LogLevel
+} from './types/logger'
 
 // 中间件类型
 export type {
@@ -54,40 +58,36 @@ export type {
   MiddlewareResponse
 } from './types/middleware'
 
-// 配置类型
+// 插件系统类型
 export type {
-  EngineConfig,
-  ConfigManager
-} from './types/config'
+  Plugin,
+  PluginContext,
+  PluginInfo,
+  PluginMetadata,
+  PluginStatus
+} from './types/plugin'
 
-// 日志类型
-export type {
-  LogLevel,
-  LogEntry,
-  Logger
-} from './types/logger'
+// 常用工具函数
+export {
+  debounce,
+  deepClone,
+  generateId,
+  throttle
+} from './utils/index'
 
 // ==================== 实用工具导出 ====================
 // Vue组合式 API
-export { 
-  useEngine,
-  useNotification,
-  useLogger,
+export {
   useCache,
-  useEvents,
-  usePerformance,
   useConfig,
+  useEngine,
   useErrorHandler,
-  usePlugins 
+  useEvents,
+  useLogger,
+  useNotification,
+  usePerformance,
+  usePlugins
 } from './vue/composables'
-
-// 常用工具函数
-export { 
-  debounce, 
-  throttle, 
-  deepClone, 
-  generateId 
-} from './utils/index'
 
 // ==================== 版本信息 ====================
 export const version = '1.0.0'

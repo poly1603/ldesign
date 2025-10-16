@@ -137,8 +137,8 @@ export class CacheManager {
     }
 
     // 创建存储实例
-    const prefix = this.config.prefix || 'ldesign_api_cache_'
-    switch (this.config.storage) {
+    const prefix = this.config?.prefix || 'ldesign_api_cache_'
+    switch (this.config?.storage) {
       case 'localStorage':
         this.storage = new WebStorageCacheStorage(localStorage, prefix)
         break
@@ -148,9 +148,9 @@ export class CacheManager {
       case 'lru':
         // 使用高性能LRU缓存
         this.lruCache = new LRUCache({
-          maxSize: this.config.maxSize,
-          defaultTTL: this.config.ttl,
-          enabled: this.config.enabled,
+          maxSize: this.config?.maxSize,
+          defaultTTL: this.config?.ttl,
+          enabled: this.config?.enabled,
         })
         this.storage = new MemoryCacheStorage() // 备用存储
         break
@@ -166,7 +166,7 @@ export class CacheManager {
    * 获取缓存数据
    */
   get<T = unknown>(key: string): T | null {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return null
     }
 
@@ -219,7 +219,7 @@ export class CacheManager {
    * 设置缓存数据
    */
   set<T = unknown>(key: string, data: T, ttl?: number): void {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return
     }
 
@@ -235,7 +235,7 @@ export class CacheManager {
       const item: CacheItem = {
         data,
         timestamp: now,
-        expireTime: now + (ttl || this.config.ttl),
+        expireTime: now + (ttl || this.config?.ttl),
         accessCount: 1,
         lastAccessTime: now,
       }
@@ -309,7 +309,7 @@ export class CacheManager {
    */
   private ensureCacheSize(): void {
     const keys = this.storage.keys()
-    if (keys.length >= this.config.maxSize) {
+    if (keys.length >= this.config?.maxSize) {
       // 使用 LRU 策略删除最少使用的缓存
       const items: Array<{ key: string, item: CacheItem }> = []
 
@@ -328,7 +328,7 @@ export class CacheManager {
 
       // 按最后访问时间排序，删除最旧的项
       items.sort((a, b) => a.item.lastAccessTime - b.item.lastAccessTime)
-      const toRemove = items.slice(0, Math.floor(this.config.maxSize * 0.1)) // 删除 10%
+      const toRemove = items.slice(0, Math.floor(this.config?.maxSize * 0.1)) // 删除 10%
       toRemove.forEach(({ key }) => this.storage.remove(key))
     }
   }

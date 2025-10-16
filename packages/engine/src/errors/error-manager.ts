@@ -83,7 +83,7 @@ export class ErrorManagerImpl implements ErrorManager {
       try {
         handler(errorInfo)
       } catch (handlerError) {
-        this.logger.error('Error in error handler:', handlerError)
+        this.logger?.error('Error in error handler:', handlerError)
       }
     }
   }
@@ -98,6 +98,11 @@ export class ErrorManagerImpl implements ErrorManager {
 
   clearErrors(): void {
     this.errors = []
+  }
+
+  // 处理错误（兼容方法）
+  handle(error: Error, context?: string): void {
+    this.captureError(error, undefined, context)
   }
 
   // 设置最大错误数量
@@ -374,24 +379,25 @@ export function createErrorManager(logger?: Logger): ErrorManager {
   return new ErrorManagerImpl(logger)
 }
 
-// 预定义的错误处理器
+  // 预定义的错误处理器
 export const errorHandlers = {
   // 控制台错误处理器
   console: (errorInfo: ErrorInfo) => {
-    const method =
-      errorInfo.level === 'error'
-        ? 'error'
-        : errorInfo.level === 'warn'
-          ? 'warn'
-          : 'info'
-
-    console[method]('Engine Error:', {
+    const errorData = {
       message: errorInfo.message,
       timestamp: new Date(errorInfo.timestamp).toISOString(),
       component: errorInfo.component,
       info: errorInfo.info,
       stack: errorInfo.stack,
-    })
+    }
+
+    if (errorInfo.level === 'error') {
+      console.error('Engine Error:', errorData)
+    } else if (errorInfo.level === 'warn') {
+      console.warn('Engine Warning:', errorData)
+    } else {
+      console.info('Engine Info:', errorData)
+    }
   },
 
   // 通知错误处理器
@@ -432,7 +438,7 @@ export const errorHandlers = {
             body: JSON.stringify(payload),
           })
         } catch (error) {
-          this.logger.error('Failed to report error to remote service:', error)
+          console.error('Failed to report error to remote service:', error)
         }
       },
 
@@ -453,7 +459,7 @@ export const errorHandlers = {
 
           localStorage.setItem(key, JSON.stringify(errors))
         } catch (error) {
-          this.logger.error('Failed to store error in localStorage:', error)
+          console.error('Failed to store error in localStorage:', error)
         }
       },
 }

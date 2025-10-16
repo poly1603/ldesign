@@ -4,7 +4,6 @@
  */
 
 import type { FileInfo, ScanOptions } from '../types'
-import { promises as fs } from 'node:fs'
 import { basename, dirname, extname, join } from 'node:path'
 import { glob } from 'glob'
 import { FileSystemError } from '../types'

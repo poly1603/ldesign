@@ -261,7 +261,7 @@ export class DeployCommand {
       
       if (options.dryRun) {
         this.logger.info('预览部署配置:')
-        console.log(JSON.stringify(config, null, 2))
+        )
         return
       }
 
@@ -315,20 +315,19 @@ export class DeployCommand {
     try {
       const config = await this.loadDeployConfig()
       
-      console.log(chalk.cyan('\n📊 部署状态\n'))
-      console.log(`${chalk.yellow('应用名称:')} ${config.appName}`)
-      console.log(`${chalk.yellow('部署平台:')} ${config.platform}`)
-      console.log(`${chalk.yellow('镜像名称:')} ${config.imageName}:${config.imageTag}`)
+      )
+      } ${config.appName}`)
+      } ${config.platform}`)
+      } ${config.imageName}:${config.imageTag}`)
 
       // 获取运行状态
       const status = await this.getAppStatus(config)
-      console.log(`${chalk.yellow('运行状态:')} ${status.running ? chalk.green('运行中') : chalk.red('已停止')}`)
+      } ${status.running ? chalk.green('运行中') : chalk.red('已停止')}`)
 
       if (status.running) {
-        console.log(`${chalk.yellow('端口映射:')}`)
+        }`)
         Object.entries(config.ports).forEach(([internal, external]) => {
-          console.log(`  ${internal} -> ${external}`)
-        })
+                  })
       }
 
       if (options.watch) {

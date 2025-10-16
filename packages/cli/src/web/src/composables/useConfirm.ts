@@ -3,7 +3,7 @@
  * 用于在任何组件中显示确认对话框
  * 
  * 使用方法：
- * import { useConfirm } from '@/composables/useConfirm'
+ * import { useConfirm } from '../composables/useConfirm'
  * 
  * const confirm = useConfirm()
  * const result = await confirm.show({

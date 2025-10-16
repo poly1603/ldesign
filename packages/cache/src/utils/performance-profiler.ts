@@ -92,7 +92,7 @@ export interface ProfilerConfig {
  * profiler.end(metric)
  * 
  * // 生成报告
- * console.log(profiler.generateReport())
+ * )
  * ```
  */
 export class PerformanceProfiler {
@@ -114,7 +114,7 @@ export class PerformanceProfiler {
       verbose: config.verbose ?? false,
     }
 
-    if (this.config.autoReport) {
+    if (this.config?.autoReport) {
       this.startAutoReport()
     }
   }
@@ -127,7 +127,7 @@ export class PerformanceProfiler {
    * @returns 性能度量对象
    */
   start(name: string, tags?: Record<string, string>): PerformanceMetric {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return { name, startTime: 0, count: 0 }
     }
 
@@ -148,7 +148,7 @@ export class PerformanceProfiler {
    * @param metric - 性能度量对象
    */
   end(metric: PerformanceMetric): void {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return
     }
 
@@ -173,7 +173,7 @@ export class PerformanceProfiler {
     records.push(metric)
 
     // 限制记录数
-    if (records.length > this.config.maxRecords) {
+    if (records.length > this.config?.maxRecords) {
       records.shift()
     }
   }
@@ -434,10 +434,10 @@ export class PerformanceProfiler {
     }
 
     this.reportTimer = setInterval(() => {
-      if (this.config.verbose) {
-        console.log(this.generateReport())
+      if (this.config?.verbose) {
+        )
       }
-    }, this.config.reportInterval)
+    }, this.config?.reportInterval)
   }
 
   /**
@@ -456,10 +456,10 @@ export class PerformanceProfiler {
   updateConfig(config: Partial<ProfilerConfig>): void {
     Object.assign(this.config, config)
 
-    if (this.config.autoReport && !this.reportTimer) {
+    if (this.config?.autoReport && !this.reportTimer) {
       this.startAutoReport()
     }
-    else if (!this.config.autoReport && this.reportTimer) {
+    else if (!this.config?.autoReport && this.reportTimer) {
       this.stopAutoReport()
     }
   }

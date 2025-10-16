@@ -57,10 +57,10 @@ export type {
 } from './debounce'
 
 export type {
+  DragConstraint,
+  DragEvent,
   DragOptions,
   DragState,
-  DragEvent,
-  DragConstraint,
 } from './drag'
 
 export type {

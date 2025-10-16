@@ -12,9 +12,13 @@
 
 ```vue
 <template>
-  <input v-debounce:input="onInput" />
-  <button v-throttle:click="onClick">提交</button>
-  <div v-click-outside="onOutside">内容</div>
+  <input v-debounce:input="onInput">
+  <button v-throttle:click="onClick">
+    提交
+  </button>
+  <div v-click-outside="onOutside">
+    内容
+  </div>
 </template>
 ```
 

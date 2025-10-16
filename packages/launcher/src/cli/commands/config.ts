@@ -194,7 +194,7 @@ export class ConfigCommand implements CliCommandDefinition {
       const config = configManager.getConfig()
 
       if (context.options.json) {
-        console.log(JSON.stringify(config, null, context.options.pretty ? 2 : 0))
+        )
       } else {
         logger.info('当前配置:')
         this.printConfig(config, '', logger)
@@ -205,7 +205,7 @@ export class ConfigCommand implements CliCommandDefinition {
       const config = configManager.getConfig()
 
       if (context.options.json) {
-        console.log(JSON.stringify(config, null, context.options.pretty ? 2 : 0))
+        )
       } else {
         logger.info('默认配置:')
         this.printConfig(config, '', logger)
@@ -234,7 +234,7 @@ export class ConfigCommand implements CliCommandDefinition {
       }
 
       if (context.options.json) {
-        console.log(JSON.stringify(value, null, context.options.pretty ? 2 : 0))
+        )
       } else {
         logger.info(`${key} = ${JSON.stringify(value)}`)
       }

@@ -52,7 +52,7 @@ export interface UseStateReturn<T> {
 /**
  * 异步操作返回类型
  */
-export interface UseAsyncReturn<T, Args extends any[] = []> {
+export interface UseAsyncReturn<T, Args extends unknown[] = []> {
   data: ComputedRef<T | null>
   loading: ComputedRef<boolean>
   error: ComputedRef<Error | null>
@@ -71,14 +71,14 @@ export interface UsePerformanceReturn {
   memoryUsage: ComputedRef<{ used: number; total: number }>
   startMeasure: (name: string) => void
   endMeasure: (name: string) => void
-  getReport: () => any
+  getReport: () => unknown
   clearMeasures: () => void
 }
 
 /**
  * 表单管理返回类型
  */
-export interface UseFormReturn<T extends Record<string, any>> {
+export interface UseFormReturn<T extends Record<string, unknown>> {
   values: T
   errors: ComputedRef<Record<keyof T, string | null>>
   touched: ComputedRef<Record<keyof T, boolean>>
@@ -101,12 +101,12 @@ export interface UseFormReturn<T extends Record<string, any>> {
  * 通知管理返回类型
  */
 export interface UseNotificationsReturn {
-  notifications: ComputedRef<any[]>
-  show: (message: string, options?: any) => string
-  success: (message: string, options?: any) => string
-  error: (message: string, options?: any) => string
-  warning: (message: string, options?: any) => string
-  info: (message: string, options?: any) => string
+  notifications: ComputedRef<unknown[]>
+  show: (message: string, options?: unknown) => string
+  success: (message: string, options?: unknown) => string
+  error: (message: string, options?: unknown) => string
+  warning: (message: string, options?: unknown) => string
+  info: (message: string, options?: unknown) => string
   remove: (id: string) => void
   clear: () => void
 }
@@ -115,10 +115,10 @@ export interface UseNotificationsReturn {
  * 对话框管理返回类型
  */
 export interface UseDialogReturn {
-  dialogs: ComputedRef<any[]>
-  show: (component: any, props?: Record<string, any>, options?: any) => Promise<any>
-  confirm: (message: string, options?: any) => Promise<boolean>
-  alert: (message: string, options?: any) => Promise<void>
+  dialogs: ComputedRef<unknown[]>
+  show: (component: unknown, props?: Record<string, unknown>, options?: unknown) => Promise<unknown>
+  confirm: (message: string, options?: unknown) => Promise<boolean>
+  alert: (message: string, options?: unknown) => Promise<void>
   close: (id: string) => void
   closeAll: () => void
 }
@@ -138,7 +138,7 @@ export interface UseThemeReturn {
  * 缓存管理返回类型
  */
 export interface UseCacheReturn {
-  stats: ComputedRef<any>
+  stats: ComputedRef<unknown>
   get: <T>(key: string, factory?: () => Promise<T> | T) => Promise<T | undefined>
   set: <T>(key: string, value: T, ttl?: number) => void
   has: (key: string) => boolean
@@ -150,8 +150,8 @@ export interface UseCacheReturn {
  * 内存管理返回类型
  */
 export interface UseMemoryManagerReturn {
-  stats: ComputedRef<any>
-  registerResource: (name: string, resource: any) => string
+  stats: ComputedRef<unknown>
+  registerResource: (name: string, resource: unknown) => string
   cleanup: (resourceId?: string) => void
   setTimeout: (callback: () => void, delay: number) => string
   addEventListener: (
@@ -236,7 +236,7 @@ export interface UsePromiseManagerReturn {
 /**
  * 重试机制返回类型
  */
-export interface UseRetryReturn<T, Args extends any[] = []> extends UseAsyncReturn<T, Args> {
+export interface UseRetryReturn<T, Args extends unknown[] = []> extends UseAsyncReturn<T, Args> {
   retryCount: ComputedRef<number>
   isRetrying: ComputedRef<boolean>
   maxRetries: number
@@ -245,7 +245,7 @@ export interface UseRetryReturn<T, Args extends any[] = []> extends UseAsyncRetu
 /**
  * 并发控制返回类型
  */
-export interface UseConcurrentAsyncReturn<T, Args extends any[] = []> {
+export interface UseConcurrentAsyncReturn<T, Args extends unknown[] = []> {
   execute: (...args: Args) => Promise<T>
   queue: ComputedRef<number>
   activeCount: ComputedRef<number>
@@ -289,9 +289,9 @@ export type UseThrottleReturn<T> = ComputedRef<T>
 /**
  * 防抖函数返回类型
  */
-export type UseDebounceFnReturn<T extends (...args: any[]) => any> = (...args: Parameters<T>) => void
+export type UseDebounceFnReturn<T extends (...args: unknown[]) => unknown> = (...args: Parameters<T>) => void
 
 /**
  * 节流函数返回类型
  */
-export type UseThrottleFnReturn<T extends (...args: any[]) => any> = (...args: Parameters<T>) => void
+export type UseThrottleFnReturn<T extends (...args: unknown[]) => unknown> = (...args: Parameters<T>) => void

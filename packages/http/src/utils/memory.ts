@@ -91,7 +91,7 @@ export class MemoryMonitor {
       onDanger: config.onDanger,
     }
 
-    if (this.config.enabled) {
+    if (this.config?.enabled) {
       this.start()
     }
   }
@@ -106,7 +106,7 @@ export class MemoryMonitor {
 
     this.monitorTimer = setInterval(() => {
       this.check()
-    }, this.config.interval)
+    }, this.config?.interval)
 
     // 立即执行一次检查
     this.check()
@@ -146,17 +146,17 @@ export class MemoryMonitor {
     this.stats.average = this.usageHistory.reduce((sum, u) => sum + u.used, 0) / this.usageHistory.length
 
     // 检查阈值
-    if (usage.used >= this.config.dangerThreshold) {
+    if (usage.used >= this.config?.dangerThreshold) {
       this.stats.dangerCount++
-      this.config.onDanger?.(usage)
+      this.config?.onDanger?.(usage)
       
-      if (this.config.autoCleanup) {
+      if (this.config?.autoCleanup) {
         this.cleanup()
       }
     }
-    else if (usage.used >= this.config.warningThreshold) {
+    else if (usage.used >= this.config?.warningThreshold) {
       this.stats.warningCount++
-      this.config.onWarning?.(usage)
+      this.config?.onWarning?.(usage)
     }
   }
 
@@ -193,7 +193,7 @@ export class MemoryMonitor {
    */
   private cleanup(): void {
     this.stats.cleanupCount++
-    this.config.onCleanup?.()
+    this.config?.onCleanup?.()
 
     // 触发垃圾回收（如果可用）
     if (typeof global !== 'undefined' && (global as any).gc) {

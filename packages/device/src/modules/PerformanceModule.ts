@@ -82,11 +82,7 @@ export interface PerformanceModuleEvents extends Record<string, unknown> {
  * const perfModule = await detector.loadModule<PerformanceModule>('performance')
  * const perfInfo = perfModule.getData()
  *
- * console.log(`设备性能评分: ${perfInfo.score}`)
- * console.log(`性能等级: ${perfInfo.tier}`)
- * console.log(`CPU 评分: ${perfInfo.metrics.cpu}`)
- * console.log(`存储评分: ${perfInfo.metrics.storage}`)
- *
+ *  *  *  *  *
  * // 根据性能等级调整应用配置
  * if (perfInfo.tier === 'low') {
  *   // 降低图形质量
@@ -95,7 +91,7 @@ export interface PerformanceModuleEvents extends Record<string, unknown> {
  * }
  *
  * // 查看性能建议
- * perfInfo.recommendations.forEach(rec => console.log(rec))
+ * perfInfo.recommendations.forEach(rec => )
  * ```
  */
 export class PerformanceModule

@@ -120,11 +120,6 @@
       "import": "./es/middleware/*.js",
       "require": "./lib/middleware/*.cjs"
     },
-    "./optimization/*": {
-      "types": "./es/optimization/*.d.ts",
-      "import": "./es/optimization/*.js",
-      "require": "./lib/optimization/*.cjs"
-    },
     "./plugins": {
       "types": "./es/plugins/index.d.ts",
       "import": "./es/plugins/index.js",
@@ -139,11 +134,6 @@
       "types": "./es/state/*.d.ts",
       "import": "./es/state/*.js",
       "require": "./lib/state/*.cjs"
-    },
-    "./testing/*": {
-      "types": "./es/testing/*.d.ts",
-      "import": "./es/testing/*.js",
-      "require": "./lib/testing/*.cjs"
     },
     "./types": {
       "types": "./es/types/index.d.ts",
@@ -182,27 +172,13 @@
   "scripts": {
     "build": "ldesign-builder build",
     "build:watch": "ldesign-builder build --watch",
-    "dev": "rollup -c -w",
-    "type-check": "vue-tsc --noEmit",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:performance": "node scripts/performance-test.js",
     "benchmark": "node scripts/performance-benchmark.js",
     "benchmark:regression": "node scripts/performance-regression.js",
-    "benchmark:baseline": "node scripts/performance-regression.js --create-baseline",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "clean": "rimraf esm cjs dist types lib coverage .nyc_output",
-    "size-check": "size-limit",
-    "analyze": "rollup -c --bundleConfigAsCjs --environment ANALYZE",
-    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
+    "benchmark:comparison": "node scripts/performance-comparison.js",
+    "clean": "rimraf es lib dist",
+    "prepublishOnly": "pnpm run clean && pnpm run build",
     "build:check": "pnpm run build && node ../../tools/scripts/build/bundle-validator.js",
     "build:analyze": "pnpm run build && node ../../tools/scripts/build/bundle-analyzer.js",
     "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",

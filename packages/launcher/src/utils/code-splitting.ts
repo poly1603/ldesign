@@ -45,13 +45,13 @@ export class CodeSplittingManager {
    * 生成 manualChunks 配置
    */
   generateManualChunks(): ManualChunksOption | undefined {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return undefined
     }
 
     return (id: string): string | undefined => {
       // 处理自定义分割规则
-      for (const [chunkName, patterns] of Object.entries(this.config.customChunks)) {
+      for (const [chunkName, patterns] of Object.entries(this.config?.customChunks)) {
         if (patterns.some(pattern => id.includes(pattern))) {
           return chunkName
         }
@@ -209,9 +209,9 @@ export class CodeSplittingManager {
       sum + (c.code?.length || 0), 0
     )
 
-    if (vendorSize > this.config.maxVendorSize * 1024) {
+    if (vendorSize > this.config?.maxVendorSize * 1024) {
       recommendations.push(
-        `vendor chunks 总大小 ${Math.round(vendorSize / 1024)}KB，超过限制 ${this.config.maxVendorSize}KB`
+        `vendor chunks 总大小 ${Math.round(vendorSize / 1024)}KB，超过限制 ${this.config?.maxVendorSize}KB`
       )
       recommendations.push('建议：')
       recommendations.push('  1. 使用动态导入延迟加载大型库')

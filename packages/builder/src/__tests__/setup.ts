@@ -3,7 +3,6 @@
  */
 
 import { beforeAll, afterAll, beforeEach, afterEach } from 'vitest'
-import { promises as fs } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 
@@ -31,7 +30,7 @@ beforeAll(async () => {
   // 初始化清理函数数组
   global.__TEST_CLEANUP_FUNCTIONS__ = []
   
-  console.log(`Test temp directory: ${global.__TEST_TEMP_DIR__}`)
+  
 })
 
 // 全局清理

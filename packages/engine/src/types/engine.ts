@@ -5,7 +5,7 @@
 
 import type { App, Component } from '@vue/runtime-dom'
 // 使用实现定义以保证与实际工厂函数一致
-import type { CacheManager } from '../cache/cache-manager'
+import type { CacheManager } from '../cache/unified-cache-manager'
 import type { EnvironmentManager } from '../environment/environment-manager'
 import type { LifecycleManager } from '../lifecycle/lifecycle-manager'
 import type { PerformanceManager } from '../performance/performance-manager'
@@ -21,7 +21,7 @@ import type { DirectiveManager } from './directive'
 import type { ErrorManager } from './error'
 import type { EventManager } from './event'
 import type { Logger } from './logger'
-import type { Middleware, MiddlewareManager } from './middleware'
+import type { MiddlewareManager } from './middleware'
 import type { NotificationManager } from './notification'
 import type { Plugin, PluginManager } from './plugin'
 import type { StateManager } from './state'
@@ -77,7 +77,6 @@ export interface Engine {
   getManagerStats: () => Record<string, unknown>
   validateManagers: () => { valid: boolean; errors: string[] }
 }
-
 
 // 引擎状态
 export type EngineStatus =

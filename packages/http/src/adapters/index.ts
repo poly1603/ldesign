@@ -1,4 +1,4 @@
-import type { HttpAdapter } from '@/types'
+import type { HttpAdapter } from '../types'
 import { AlovaAdapter } from './alova'
 import { AxiosAdapter } from './axios'
 import { FetchAdapter } from './fetch'

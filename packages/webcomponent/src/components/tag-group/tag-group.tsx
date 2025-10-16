@@ -57,31 +57,31 @@ export class LdesignTagGroup {
   @Prop() disabled: boolean = false;
 
   /** 内部状态：隐藏的元素文本 */
-  @State() hiddenTexts: string[] = [];
+  @State() hiddenTexts!: string[] = [];
 
   /** 是否显示输入框 */
-  @State() showInput: boolean = false;
+  @State() showInput!: boolean = false;
 
   /** 输入框值 */
-  @State() inputValue: string = '';
+  @State() inputValue!: string = '';
 
   /** 拖拽中的标签索引 */
-  @State() draggedIndex: number = -1;
+  @State() draggedIndex!: number = -1;
 
   /** 拖拽悬停的目标索引 */
-  @State() dragOverIndex: number = -1;
+  @State() dragOverIndex!: number = -1;
 
   /** 新添加的标签ID（用于动画） */
-  @State() newlyAddedId: string = '';
+  @State() newlyAddedId!: string = '';
 
   /** 标签添加事件 */
-  @Event() ldesignAdd: EventEmitter<{ label: string; id: string }>;
+  @Event() ldesignAdd!: EventEmitter<{ label: string; id: string }>;
 
   /** 标签删除事件 */
-  @Event() ldesignRemove: EventEmitter<{ tag: TagData; index: number }>;
+  @Event() ldesignRemove!: EventEmitter<{ tag: TagData; index: number }>;
 
   /** 标签顺序改变事件 */
-  @Event() ldesignChange: EventEmitter<TagData[]>;
+  @Event() ldesignChange!: EventEmitter<TagData[]>;
 
   private slotEl?: HTMLSlotElement;
   private inputRef?: HTMLInputElement;

@@ -12,7 +12,7 @@ export class DirectiveManagerImpl implements DirectiveManager {
 
   register(name: string, directive: unknown): void {
     if (this.directives.has(name)) {
-      this.logger.warn(
+      this.logger?.warn(
         `Directive "${name}" is already registered. It will be replaced.`
       )
     }
@@ -173,7 +173,7 @@ export const commonDirectives = {
             el.classList.remove('copy-success')
           }, 1000)
         } catch (error) {
-          this.logger.error('Failed to copy text:', error)
+          console.error('Failed to copy text:', error)
 
           const val = binding.value as { callback?: (e: unknown) => void } | undefined
           const cb = val && typeof val.callback === 'function' ? val.callback : undefined

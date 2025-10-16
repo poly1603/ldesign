@@ -26,7 +26,6 @@
 
 import type { EncryptResult, DecryptResult, EncryptionAlgorithm } from '../types'
 import { aes } from '../algorithms'
-import { ErrorUtils } from './index'
 
 /**
  * 密钥信息

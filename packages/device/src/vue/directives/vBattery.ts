@@ -245,7 +245,7 @@ function updateElementVisibility(
  * <!-- 带回调函数 -->
  * <div v-battery="{
  *   condition: 'charging',
- *   callback: (battery) => console.log('电池状态:', battery)
+ *   callback: (battery) => 
  * }">
  *   充电中
  * </div>

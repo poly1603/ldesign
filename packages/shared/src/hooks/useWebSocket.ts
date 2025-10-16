@@ -77,7 +77,7 @@ export interface WebSocketMessage {
  *         heartbeatInterval: 30000,
  *         messageFormat: 'json',
  *         onMessage: (data) => {
- *           console.log('收到消息:', data)
+ *           
  *         }
  *       }
  *     )
@@ -309,7 +309,7 @@ export function useWebSocket(
     const delay = reconnectDelay * Math.pow(2, reconnectCount.value - 1) // 指数退避
     
     reconnectTimer = setTimeout(() => {
-      console.log(`Reconnecting... (attempt ${reconnectCount.value})`)
+      `)
       connect()
     }, delay)
   }

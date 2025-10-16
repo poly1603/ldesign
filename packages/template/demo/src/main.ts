@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
 import { createTemplatePlugin } from '@ldesign/template'
+// 导入样式 - 用户只需要这样导入即可
+import '@ldesign/template/index.css'
 import App from './App.vue'
 
 // 创建 Vue 应用

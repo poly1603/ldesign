@@ -71,12 +71,13 @@ export class AutoRouteGenerator {
 
   // 从文件系统生成路由
   async generateFromFileSystem(): Promise<RouteRecordRaw[]> {
-    if (!this.config.enabled)
+    if (!this.config?.enabled)
       return []
 
     // 在实际环境中，这里会读取文件系统
     // 这里使用模拟数据展示功能
-    const files = await this.scanDirectory(this.config.pagesDir!)
+    const pagesDir = this.config?.pagesDir || 'src/pages'
+    const files = await this.scanDirectory(pagesDir)
 
     for (const file of files) {
       const route = this.fileToRoute(file)
@@ -96,7 +97,7 @@ export class AutoRouteGenerator {
   }
 
   // 扫描目录（模拟实现）
-  private async scanDirectory(dir: string): Promise<string[]> {
+  private async scanDirectory(_dir: string): Promise<string[]> {
     // 实际实现中，这里会使用 fs 或 glob 扫描文件
     // 这里返回模拟数据
     return [
@@ -115,13 +116,13 @@ export class AutoRouteGenerator {
   // 文件路径转路由
   private fileToRoute(file: string): RouteRecordRaw | null {
     // 检查是否需要排除
-    if (this.config.excludes?.some(exc => file.includes(exc))) {
+    if (this.config?.excludes?.some(exc => file.includes(exc))) {
       return null
     }
 
     // 解析文件路径
     const relativePath = file
-      .replace(`${this.config.pagesDir}/`, '')
+      .replace(`${this.config?.pagesDir}/`, '')
       .replace(/\.(vue|tsx?|jsx?)$/, '')
 
     // 转换为路由路径
@@ -140,9 +141,8 @@ export class AutoRouteGenerator {
       .replace(/[[\].]/g, '')
 
     // 生成组件导入
-    const component = this.config.importMode === 'async'
-      ? () => import(/* @vite-ignore */ file)
-      : require(file).default
+    // 注意：同步模式需要在应用层级提供组件
+    const component = () => import(/* @vite-ignore */ file)
 
     return {
       path,
@@ -182,7 +182,7 @@ export class AutoRouteGenerator {
             parent.children = []
 
           // 调整子路由路径
-          route.path = segments[segments.length - 1]
+          route.path = segments[segments.length - 1] || ''
           parent.children.push(route)
         }
         else {
@@ -204,7 +204,7 @@ export class AutoRouteGenerator {
       // 确定使用的布局
       const layoutName = this.determineLayout(route)
 
-      if (layoutName && this.config.layouts?.[layoutName]) {
+      if (layoutName && this.config?.layouts?.[layoutName]) {
         if (!layoutGroups.has(layoutName)) {
           layoutGroups.set(layoutName, [])
         }
@@ -218,7 +218,7 @@ export class AutoRouteGenerator {
     for (const [layoutName, groupRoutes] of layoutGroups) {
       result.push({
         path: '',
-        component: this.config.layouts![layoutName],
+        component: this.config?.layouts![layoutName],
         children: groupRoutes,
       })
     }
@@ -284,11 +284,11 @@ export class DynamicRouteLoader {
 
   // 动态加载路由
   async loadRoute(path: string): Promise<RouteRecordRaw | null> {
-    if (!this.config.enabled || !this.config.loader)
+    if (!this.config?.enabled || !this.config?.loader)
       return null
 
     // 检查缓存
-    if (this.config.cache && this.loadedRoutes.has(path)) {
+    if (this.config?.cache && this.loadedRoutes.has(path)) {
       return this.loadedRoutes.get(path)!
     }
 
@@ -305,7 +305,7 @@ export class DynamicRouteLoader {
       const route = await loadPromise
 
       // 缓存路由
-      if (this.config.cache) {
+      if (this.config?.cache) {
         this.loadedRoutes.set(path, route)
       }
 
@@ -331,7 +331,10 @@ export class DynamicRouteLoader {
   // 创建加载 Promise
   private async createLoadPromise(path: string): Promise<RouteRecordRaw> {
     try {
-      const route = await this.config.loader!(path)
+      const route = await this.config?.loader!(path)
+      if (!route) {
+        throw new Error(`Route loader returned null for path: ${path}`)
+      }
       return route
     }
     catch (error) {
@@ -343,7 +346,7 @@ export class DynamicRouteLoader {
   // 判断是否应该重试
   private shouldRetry(path: string): boolean {
     const count = this.retryCount.get(path) || 0
-    return count < (this.config.retry || 3)
+    return count < (this.config?.retry || 3)
   }
 
   // 批量加载路由
@@ -390,7 +393,7 @@ export class NestedRouteOptimizer {
 
   // 优化嵌套路由
   optimizeRoutes(routes: RouteRecordRaw[]): RouteRecordRaw[] {
-    if (!this.config.enabled)
+    if (!this.config?.enabled)
       return routes
 
     return routes.map(route => this.optimizeRoute(route))
@@ -399,7 +402,7 @@ export class NestedRouteOptimizer {
   // 优化单个路由
   private optimizeRoute(route: RouteRecordRaw, depth = 0): RouteRecordRaw {
     // 检查深度限制
-    if (depth >= (this.config.maxDepth || 5)) {
+    if (depth >= (this.config?.maxDepth || 5)) {
       console.warn(`Route nesting depth exceeded: ${route.path}`)
       return route
     }
@@ -409,15 +412,15 @@ export class NestedRouteOptimizer {
     // 优化子路由
     if (optimized.children && optimized.children.length > 0) {
       // 扁平化只有一个子路由的情况
-      if (this.config.flattenSingleChild && optimized.children.length === 1) {
+      if (this.config?.flattenSingleChild && optimized.children.length === 1) {
         const child = optimized.children[0]
 
         // 如果父路由没有自己的组件，可以扁平化
-        if (!optimized.component || optimized.component === child.component) {
+        if (!optimized.component || optimized.component === child?.component) {
           return {
             ...child,
-            path: this.combinePaths(optimized.path, child.path),
-            meta: { ...optimized.meta, ...child.meta },
+            path: this.combinePaths(optimized.path, child?.path || ''),
+            meta: { ...optimized.meta, ...child?.meta },
           }
         }
       }
@@ -428,7 +431,7 @@ export class NestedRouteOptimizer {
       )
 
       // 合并参数
-      if (this.config.mergeParams) {
+      if (this.config?.mergeParams) {
         optimized.children = this.mergeChildParams(optimized, optimized.children)
       }
     }
@@ -496,7 +499,7 @@ export class RouteGroupManager {
     }
 
     // 初始化分组
-    this.config.groups?.forEach((group) => {
+    this.config?.groups?.forEach((group) => {
       this.addGroup(group)
     })
   }
@@ -548,7 +551,7 @@ export class RouteGroupManager {
       }
     }
 
-    return this.config.defaultGroup || 'default'
+    return this.config?.defaultGroup || 'default'
   }
 
   // 检查路由是否匹配分组

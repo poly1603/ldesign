@@ -3,9 +3,9 @@
  * 展示引擎的所有核心功能
  */
 
+import type { Plugin } from '@ldesign/engine'
 import { createEngineApp } from '@ldesign/engine'
 import { defineComponent, h } from 'vue'
-import type { Plugin } from '@ldesign/engine'
 
 // ==================== 1. 定义插件 ====================
 const myPlugin: Plugin = {

@@ -86,7 +86,7 @@ export class MessageManager {
       width: '100%',
       height: '100%',
       pointerEvents: 'none',
-      zIndex: this.config.zIndex?.toString(),
+      zIndex: this.config?.zIndex?.toString(),
     })
 
     document.body.appendChild(this.container)
@@ -202,7 +202,7 @@ export class MessageManager {
    * 检查消息数量限制
    */
   private checkMaxCount(): void {
-    const maxCount = this.config.maxCount!
+    const maxCount = this.config?.maxCount ?? 10
     if (this.instances.size >= maxCount) {
       // 关闭最早的消息
       const firstInstance = this.instances.values().next().value
@@ -225,9 +225,9 @@ export class MessageManager {
   private createInstance(id: string, options: MessageOptions): MessageInstance {
     const mergedOptions: MessageOptions = {
       type: 'info',
-      duration: this.config.defaultDuration,
-      position: this.config.defaultPosition,
-      offset: this.config.defaultOffset,
+      duration: this.config?.defaultDuration,
+      position: this.config?.defaultPosition,
+      offset: this.config?.defaultOffset,
       showClose: true,
       html: false,
       ...options,
@@ -264,7 +264,7 @@ export class MessageManager {
       display: 'flex',
       alignItems: 'flex-start',
       padding: '12px 16px',
-      margin: `${this.config.gap! / 2}px 0`,
+      margin: `${(this.config?.gap ?? 16) / 2}px 0`,
       borderRadius: '4px',
       boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.1)',
       fontSize: '14px',
@@ -279,10 +279,10 @@ export class MessageManager {
     })
 
     // 设置主题样式
-    this.applyThemeStyles(messageEl, options.type!)
+    this.applyThemeStyles(messageEl, options.type ?? 'info')
 
     // 创建图标
-    const iconEl = this.createIcon(options.type!)
+    const iconEl = this.createIcon(options.type ?? 'info')
     messageEl.appendChild(iconEl)
 
     // 创建内容区域
@@ -447,7 +447,9 @@ export class MessageManager {
     }
 
     // 添加到容器
-    this.container!.appendChild(instance.element)
+    if (this.container) {
+      this.container.appendChild(instance.element)
+    }
 
     // 设置位置
     this.positionInstance(instance)
@@ -476,14 +478,14 @@ export class MessageManager {
    * 设置消息位置
    */
   private positionInstance(instance: MessageInstance): void {
-    const position = instance.options.position!
-    const offset = instance.options.offset!
+    const position = instance.options.position ?? 'top'
+    const offset = instance.options.offset ?? 20
 
     Object.assign(instance.element.style, {
       position: 'fixed',
       left: '50%',
       transform: 'translateX(-50%)',
-      zIndex: (this.config.zIndex! + 1).toString(),
+      zIndex: ((this.config?.zIndex ?? 1000) + 1).toString(),
     })
 
     switch (position) {
@@ -516,9 +518,9 @@ export class MessageManager {
       })
 
     visibleInstances.forEach((instance, index) => {
-      const position = instance.options.position!
-      const offset = instance.options.offset!
-      const gap = this.config.gap!
+      const position = instance.options.position ?? 'top'
+      const offset = instance.options.offset ?? 20
+      const gap = this.config?.gap ?? 16
 
       if (position === 'top') {
         const totalOffset =

@@ -16,12 +16,7 @@ createServer({ port, host, debug: true })
   .then(({ server, wss }) => {
     server.listen(port, host, () => {
       serverLogger.success(`服务器已启动`)
-      console.log()
-      console.log(`  本地访问:   http://localhost:${port}`)
-      console.log()
-      console.log('  按 Ctrl+C 停止服务器')
-      console.log()
-    })
+                                  })
 
     server.on('error', (error: any) => {
       if (error.code === 'EADDRINUSE') {

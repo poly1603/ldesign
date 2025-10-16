@@ -123,7 +123,7 @@ export class PerformanceBenchmark {
 
     for (const test of tests) {
       // eslint-disable-next-line no-console
-      console.log(`Running benchmark: ${test.name}...`)
+      
       const result = await this.run(test.fn, {
         name: test.name,
         ...test.config,
@@ -398,7 +398,7 @@ export async function runStandardBenchmarks(cache: CacheManager): Promise<void> 
   const benchmark = createBenchmark(cache)
 
   // eslint-disable-next-line no-console
-  console.log('\n开始运行标准基准测试套件...\n')
+  
 
   // 运行所有测试
   await benchmark.runSuite(standardBenchmarks.basicOperations)
@@ -408,7 +408,7 @@ export async function runStandardBenchmarks(cache: CacheManager): Promise<void> 
 
   // 生成报告
   // eslint-disable-next-line no-console
-  console.log('\n')
+  
   // eslint-disable-next-line no-console
-  console.log(benchmark.generateReport())
+  )
 }

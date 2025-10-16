@@ -80,7 +80,7 @@ export function useDebounceValue<T>(value: Ref<T>, delay: number): Ref<T> {
  *   setup() {
  *     const [debouncedSave, cancelSave] = useDebounceFunction(
  *       (data: any) => {
- *         console.log('Saving data:', data)
+ *         
  *         // 执行保存逻辑
  *       },
  *       1000
@@ -215,7 +215,7 @@ export function useThrottleValue<T>(value: Ref<T>, delay: number): Ref<T> {
  *   setup() {
  *     const throttledScroll = useThrottleFunction(
  *       (event: Event) => {
- *         console.log('Scroll event:', event)
+ *         
  *         // 处理滚动事件
  *       },
  *       100

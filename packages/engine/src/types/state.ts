@@ -35,6 +35,11 @@ export interface StateManager<TState extends StateMap = StateMap> {
 
   keys: () => string[]
   namespace: (name: string) => StateManager
+
+  // 获取整个状态对象
+  getState: () => TState
+  // 设置整个状态对象
+  setState: (state: Partial<TState>) => void
 }
 
 // 状态快照

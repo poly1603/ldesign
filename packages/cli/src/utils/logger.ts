@@ -52,7 +52,7 @@ class Logger {
    */
   debug(message: string, ...args: any[]): void {
     if (!this.shouldLog('debug')) return
-    console.log(chalk.gray(`[${this.getTimestamp()}] [DEBUG]`), message, ...args)
+    }] [DEBUG]`), message, ...args)
   }
 
   /**
@@ -60,7 +60,7 @@ class Logger {
    */
   info(message: string, ...args: any[]): void {
     if (!this.shouldLog('info')) return
-    console.log(chalk.blue(`[${this.getTimestamp()}] [INFO]`), message, ...args)
+    }] [INFO]`), message, ...args)
   }
 
   /**
@@ -84,7 +84,7 @@ class Logger {
    */
   success(message: string, ...args: any[]): void {
     if (!this.shouldLog('info')) return
-    console.log(chalk.green(`[${this.getTimestamp()}] [SUCCESS]`), message, ...args)
+    }] [SUCCESS]`), message, ...args)
   }
 
   /**

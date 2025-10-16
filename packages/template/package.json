@@ -35,6 +35,26 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
+    "./components": {
+      "types": "./es/components/index.d.ts",
+      "import": "./es/components/index.js",
+      "require": "./lib/components/index.cjs"
+    },
+    "./components/*": {
+      "types": "./es/components/*.d.ts",
+      "import": "./es/components/*.js",
+      "require": "./lib/components/*.cjs"
+    },
+    "./composables": {
+      "types": "./es/composables/index.d.ts",
+      "import": "./es/composables/index.js",
+      "require": "./lib/composables/index.cjs"
+    },
+    "./composables/*": {
+      "types": "./es/composables/*.d.ts",
+      "import": "./es/composables/*.js",
+      "require": "./lib/composables/*.cjs"
+    },
     "./core": {
       "types": "./es/core/index.d.ts",
       "import": "./es/core/index.js",
@@ -45,35 +65,15 @@
       "import": "./es/core/*.js",
       "require": "./lib/core/*.cjs"
     },
-    "./plugins": {
-      "types": "./es/plugins/index.d.ts",
-      "import": "./es/plugins/index.js",
-      "require": "./lib/plugins/index.cjs"
+    "./plugin": {
+      "types": "./es/plugin/index.d.ts",
+      "import": "./es/plugin/index.js",
+      "require": "./lib/plugin/index.cjs"
     },
-    "./plugins/*": {
-      "types": "./es/plugins/*.d.ts",
-      "import": "./es/plugins/*.js",
-      "require": "./lib/plugins/*.cjs"
-    },
-    "./runtime": {
-      "types": "./es/runtime/index.d.ts",
-      "import": "./es/runtime/index.js",
-      "require": "./lib/runtime/index.cjs"
-    },
-    "./runtime/*": {
-      "types": "./es/runtime/*.d.ts",
-      "import": "./es/runtime/*.js",
-      "require": "./lib/runtime/*.cjs"
-    },
-    "./templates": {
-      "types": "./es/templates/index.d.ts",
-      "import": "./es/templates/index.js",
-      "require": "./lib/templates/index.cjs"
-    },
-    "./templates/*": {
-      "types": "./es/templates/*.d.ts",
-      "import": "./es/templates/*.js",
-      "require": "./lib/templates/*.cjs"
+    "./plugin/*": {
+      "types": "./es/plugin/*.d.ts",
+      "import": "./es/plugin/*.js",
+      "require": "./lib/plugin/*.cjs"
     },
     "./types": {
       "types": "./es/types/index.d.ts",
@@ -85,60 +85,39 @@
       "import": "./es/types/*.js",
       "require": "./lib/types/*.cjs"
     },
-    "./utils": {
-      "types": "./es/utils/index.d.ts",
-      "import": "./es/utils/index.js",
-      "require": "./lib/utils/index.cjs"
-    },
-    "./utils/*": {
-      "types": "./es/utils/*.d.ts",
-      "import": "./es/utils/*.js",
-      "require": "./lib/utils/*.cjs"
-    },
-    "./vue": {
-      "types": "./es/vue/index.d.ts",
-      "import": "./es/vue/index.js",
-      "require": "./lib/vue/index.cjs"
-    },
-    "./vue/*": {
-      "types": "./es/vue/*.d.ts",
-      "import": "./es/vue/*.js",
-      "require": "./lib/vue/*.cjs"
-    },
+    "./index.css": "./es/index.css",
+    "./style.css": "./es/index.css",
+    "./styles": "./es/index.css",
+    "./es/components/TemplateRenderer.vue.css": "./es/components/TemplateRenderer.vue.css",
+    "./es/components/TemplateSelector.vue.css": "./es/components/TemplateSelector.vue.css",
     "./es/index.css": "./es/index.css",
     "./es/templates/dashboard/desktop/default/index.vue.css": "./es/templates/dashboard/desktop/default/index.vue.css",
     "./es/templates/dashboard/desktop/sidebar/index.vue.css": "./es/templates/dashboard/desktop/sidebar/index.vue.css",
-    "./es/templates/dashboard/mobile/simple/index.vue.css": "./es/templates/dashboard/mobile/simple/index.vue.css",
+    "./es/templates/dashboard/mobile/default/index.vue.css": "./es/templates/dashboard/mobile/default/index.vue.css",
     "./es/templates/dashboard/mobile/tabs/index.vue.css": "./es/templates/dashboard/mobile/tabs/index.vue.css",
+    "./es/templates/dashboard/tablet/default/index.vue.css": "./es/templates/dashboard/tablet/default/index.vue.css",
     "./es/templates/dashboard/tablet/grid/index.vue.css": "./es/templates/dashboard/tablet/grid/index.vue.css",
-    "./es/templates/dashboard/tablet/simple/index.vue.css": "./es/templates/dashboard/tablet/simple/index.vue.css",
     "./es/templates/login/desktop/default/index.vue.css": "./es/templates/login/desktop/default/index.vue.css",
     "./es/templates/login/desktop/split/index.vue.css": "./es/templates/login/desktop/split/index.vue.css",
     "./es/templates/login/mobile/card/index.vue.css": "./es/templates/login/mobile/card/index.vue.css",
     "./es/templates/login/mobile/default/index.vue.css": "./es/templates/login/mobile/default/index.vue.css",
-    "./es/templates/login/tablet/landscape/index.vue.css": "./es/templates/login/tablet/landscape/index.vue.css",
+    "./es/templates/login/tablet/default/index.vue.css": "./es/templates/login/tablet/default/index.vue.css",
     "./es/templates/login/tablet/simple/index.vue.css": "./es/templates/login/tablet/simple/index.vue.css",
-    "./es/vue/components/EnhancedTemplateSwitcher.vue.css": "./es/vue/components/EnhancedTemplateSwitcher.vue.css",
-    "./es/vue/components/TemplateRenderer.vue.css": "./es/vue/components/TemplateRenderer.vue.css",
-    "./es/vue/components/TemplateSelector.vue.css": "./es/vue/components/TemplateSelector.vue.css",
-    "./es/vue/components/TemplateSwitcher.vue.css": "./es/vue/components/TemplateSwitcher.vue.css",
+    "./lib/components/TemplateRenderer.vue.css": "./lib/components/TemplateRenderer.vue.css",
+    "./lib/components/TemplateSelector.vue.css": "./lib/components/TemplateSelector.vue.css",
     "./lib/index.css": "./lib/index.css",
     "./lib/templates/dashboard/desktop/default/index.vue.css": "./lib/templates/dashboard/desktop/default/index.vue.css",
     "./lib/templates/dashboard/desktop/sidebar/index.vue.css": "./lib/templates/dashboard/desktop/sidebar/index.vue.css",
-    "./lib/templates/dashboard/mobile/simple/index.vue.css": "./lib/templates/dashboard/mobile/simple/index.vue.css",
+    "./lib/templates/dashboard/mobile/default/index.vue.css": "./lib/templates/dashboard/mobile/default/index.vue.css",
     "./lib/templates/dashboard/mobile/tabs/index.vue.css": "./lib/templates/dashboard/mobile/tabs/index.vue.css",
+    "./lib/templates/dashboard/tablet/default/index.vue.css": "./lib/templates/dashboard/tablet/default/index.vue.css",
     "./lib/templates/dashboard/tablet/grid/index.vue.css": "./lib/templates/dashboard/tablet/grid/index.vue.css",
-    "./lib/templates/dashboard/tablet/simple/index.vue.css": "./lib/templates/dashboard/tablet/simple/index.vue.css",
     "./lib/templates/login/desktop/default/index.vue.css": "./lib/templates/login/desktop/default/index.vue.css",
     "./lib/templates/login/desktop/split/index.vue.css": "./lib/templates/login/desktop/split/index.vue.css",
     "./lib/templates/login/mobile/card/index.vue.css": "./lib/templates/login/mobile/card/index.vue.css",
     "./lib/templates/login/mobile/default/index.vue.css": "./lib/templates/login/mobile/default/index.vue.css",
-    "./lib/templates/login/tablet/landscape/index.vue.css": "./lib/templates/login/tablet/landscape/index.vue.css",
+    "./lib/templates/login/tablet/default/index.vue.css": "./lib/templates/login/tablet/default/index.vue.css",
     "./lib/templates/login/tablet/simple/index.vue.css": "./lib/templates/login/tablet/simple/index.vue.css",
-    "./lib/vue/components/EnhancedTemplateSwitcher.vue.css": "./lib/vue/components/EnhancedTemplateSwitcher.vue.css",
-    "./lib/vue/components/TemplateRenderer.vue.css": "./lib/vue/components/TemplateRenderer.vue.css",
-    "./lib/vue/components/TemplateSelector.vue.css": "./lib/vue/components/TemplateSelector.vue.css",
-    "./lib/vue/components/TemplateSwitcher.vue.css": "./lib/vue/components/TemplateSwitcher.vue.css",
     "./dist/index.css": "./dist/index.css",
     "./dist/index.min.css": "./dist/index.min.css"
   },

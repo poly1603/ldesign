@@ -38,7 +38,7 @@ export function createLoggingPlugin(options: LoggingPluginOptions = {}): ApiPlug
 
     switch (logLevel) {
       case 'debug':
-        console.debug(prefix, ...args)
+        
         break
       case 'warn':
         console.warn(prefix, ...args)

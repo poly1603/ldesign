@@ -187,7 +187,7 @@ function updateElementVisibility(
  * <!-- 带回调函数 -->
  * <div v-orientation="{
  *   orientation: 'portrait',
- *   callback: (orientation) => console.log('方向变化:', orientation)
+ *   callback: (orientation) => 
  * }">
  *   竖屏内容
  * </div>

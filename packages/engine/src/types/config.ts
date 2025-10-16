@@ -11,6 +11,9 @@ import type {
   ValidationResult,
 } from './base'
 
+// 重新导出基础配置类型
+export type { EngineConfig } from './base'
+
 // 严格类型的配置接口
 export interface StrictEngineConfig {
   readonly app: {
@@ -132,6 +135,7 @@ export interface ConfigManager<TConfig = Record<string, unknown>> {
   // 配置监听
   watch: (path: string, callback: ConfigWatcher) => UnwatchFunction
   unwatch: (path: string, callback?: ConfigWatcher) => void
+  on: (event: string, callback: (...args: unknown[]) => void) => () => void
 
   // 持久化
   save: () => Promise<void>

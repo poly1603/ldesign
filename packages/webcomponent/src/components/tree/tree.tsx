@@ -98,16 +98,16 @@ export class LdesignTree {
   /** 键盘重排事件（与 drop 事件区分来源） */
   @Event() ldesignMove!: EventEmitter<{ dragKey: string; dropKey: string; position: 'before' | 'after' | 'inside'; items: TreeNode[] }>;
 
-  @State() parsedItems: TreeNode[] = [];
-  @State() internalSelectedKeys: string[] = [];
-  @State() internalExpandedKeys: string[] = [];
-  @State() internalCheckedKeys: string[] = [];
-  @State() halfCheckedKeys: string[] = [];
+  @State() parsedItems!: TreeNode[] = [];
+  @State() internalSelectedKeys!: string[] = [];
+  @State() internalExpandedKeys!: string[] = [];
+  @State() internalCheckedKeys!: string[] = [];
+  @State() halfCheckedKeys!: string[] = [];
   @State() draggingKey?: string;
   @State() overKey?: string;
   @State() overPos?: 'before' | 'after' | 'inside';
   @State() overAllowed?: boolean;
-  @State() loadingKeys: string[] = [];
+  @State() loadingKeys!: string[] = [];
   private dragTimers: Map<string, number> = new Map();
 
   private keyNodeMap = new Map<string, TreeNode>();

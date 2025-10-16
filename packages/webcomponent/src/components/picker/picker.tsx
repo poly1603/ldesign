@@ -101,13 +101,13 @@ export class LdesignPicker {
   /** 选择过程事件（滚动/拖拽中也会触发） */
   @Event() ldesignPick!: EventEmitter<{ value: string | undefined; option?: PickerOption; context: { trigger: 'click' | 'scroll' | 'touch' | 'wheel' | 'keyboard' } }>;
 
-  @State() parsed: PickerOption[] = [];
-  @State() current: string | undefined; // 最终值
-  @State() visual: string | undefined;  // 交互过程显示值
-  @State() searchValue: string = '';
-  @State() filteredOptions: PickerOption[] = [];
-  @State() isSearching: boolean = false;
-  @State() quickJumpBuffer: string = '';
+  @State() parsed!: PickerOption[] = [];
+  @State() current!: string | undefined; // 最终值
+  @State() visual!: string | undefined;  // 交互过程显示值
+  @State() searchValue!: string = '';
+  @State() filteredOptions!: PickerOption[] = [];
+  @State() isSearching!: boolean = false;
+  @State() quickJumpBuffer!: string = '';
   @State() quickJumpTimer?: number;
 
   private listEl?: HTMLElement;     // 作为 transform 轨道的元素（ul）

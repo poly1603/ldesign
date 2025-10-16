@@ -51,10 +51,10 @@ export interface DevToolsConfig {
  * devtools.attach(client)
  *
  * // 查看请求记录
- * console.log(devtools.getRecords())
+ * )
  *
  * // 查看统计
- * console.log(devtools.getStats())
+ * )
  *
  * // 导出数据
  * devtools.export()
@@ -76,7 +76,7 @@ export class HttpDevTools {
     }
 
     // 在浏览器中暴露到window
-    if (typeof window !== 'undefined' && this.config.enabled) {
+    if (typeof window !== 'undefined' && this.config?.enabled) {
       ;(window as any).__HTTP_DEVTOOLS__ = this
     }
   }
@@ -85,7 +85,7 @@ export class HttpDevTools {
    * 附加到HTTP客户端
    */
   attach(client: HttpClient): void {
-    if (!this.config.enabled || this.client) {
+    if (!this.config?.enabled || this.client) {
       return
     }
 
@@ -111,7 +111,7 @@ export class HttpDevTools {
       error: -1,
     }
 
-    if (this.config.logToConsole) {
+    if (this.config?.logToConsole) {
       logger.info('DevTools attached to HTTP client')
     }
   }
@@ -130,7 +130,7 @@ export class HttpDevTools {
     this.client = null
     this.interceptorIds = null
 
-    if (this.config.logToConsole) {
+    if (this.config?.logToConsole) {
       logger.info('DevTools detached from HTTP client')
     }
   }
@@ -152,7 +152,7 @@ export class HttpDevTools {
 
     this.addRecord(record)
 
-    if (this.config.logToConsole) {
+    if (this.config?.logToConsole) {
       logger.group(`➡️ ${config.method?.toUpperCase()} ${config.url}`)
       logger.debug('Config:', config)
       logger.groupEnd()
@@ -173,8 +173,8 @@ export class HttpDevTools {
     record.response = response
     record.status = 'success'
 
-    if (this.config.logToConsole) {
-      const isSlow = record.duration > this.config.performanceThreshold
+    if (this.config?.logToConsole) {
+      const isSlow = record.duration > this.config?.performanceThreshold
       const emoji = isSlow ? '🐌' : '✅'
 
       logger.group(
@@ -203,7 +203,7 @@ export class HttpDevTools {
     record.error = error
     record.status = 'error'
 
-    if (this.config.logToConsole) {
+    if (this.config?.logToConsole) {
       logger.group(
         `❌ ${error.config?.method?.toUpperCase()} ${error.config?.url} (${record.duration}ms)`,
       )
@@ -220,8 +220,8 @@ export class HttpDevTools {
     this.records.unshift(record)
 
     // 限制记录数量
-    if (this.records.length > this.config.maxRecords) {
-      this.records = this.records.slice(0, this.config.maxRecords)
+    if (this.records.length > this.config?.maxRecords) {
+      this.records = this.records.slice(0, this.config?.maxRecords)
     }
   }
 
@@ -258,7 +258,7 @@ export class HttpDevTools {
    */
   getSlowRequests(): RequestRecord[] {
     return this.records.filter(
-      r => r.duration && r.duration > this.config.performanceThreshold,
+      r => r.duration && r.duration > this.config?.performanceThreshold,
     )
   }
 
@@ -286,7 +286,7 @@ export class HttpDevTools {
         totalDuration += record.duration
         completedCount++
 
-        if (record.duration > this.config.performanceThreshold) {
+        if (record.duration > this.config?.performanceThreshold) {
           stats.slowRequests++
         }
       }
@@ -304,7 +304,7 @@ export class HttpDevTools {
    */
   clear(): void {
     this.records = []
-    if (this.config.logToConsole) {
+    if (this.config?.logToConsole) {
       logger.info('DevTools records cleared')
     }
   }
@@ -348,16 +348,16 @@ export class HttpDevTools {
   printStats(): void {
     const stats = this.getStats()
 
-    console.log('╔═══════════════════════════════════════╗')
-    console.log('║   HTTP DevTools 统计信息    ║')
-    console.log('╠═══════════════════════════════════════╣')
-    console.log(`║ 总请求数:    ${stats.total.toString().padEnd(20)} ║`)
-    console.log(`║ 成功:      ${stats.success.toString().padEnd(20)} ║`)
-    console.log(`║ 失败:      ${stats.error.toString().padEnd(20)} ║`)
-    console.log(`║ 进行中:     ${stats.pending.toString().padEnd(20)} ║`)
-    console.log(`║ 平均耗时:    ${stats.averageDuration}ms${('').padEnd(17 - stats.averageDuration.toString().length)} ║`)
-    console.log(`║ 慢请求:     ${stats.slowRequests.toString().padEnd(20)} ║`)
-    console.log('╚═══════════════════════════════════════╝')
+    
+    
+    
+    .padEnd(20)} ║`)
+    .padEnd(20)} ║`)
+    .padEnd(20)} ║`)
+    .padEnd(20)} ║`)
+    .padEnd(17 - stats.averageDuration.toString().length)} ║`)
+    .padEnd(20)} ║`)
+    
   }
 }
 

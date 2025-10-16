@@ -295,7 +295,7 @@ export const usePerformanceStore = defineStore('performance', {
       this.dataItems.push(...newItems)
 
       const endTime = performance.now()
-      console.log(`批量操作 ${count} 项耗时: ${endTime - startTime}ms`)
+      
 
       this.loading = false
     },

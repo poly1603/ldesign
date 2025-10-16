@@ -178,7 +178,7 @@ cat tests/performance/benchmark-results.json
 ### 错误监控
 
 ```typescript
-import { logger, ErrorTracker } from '@ldesign/engine'
+import { ErrorTracker, logger } from '@ldesign/engine'
 
 // 获取错误追踪器
 const errorTracker = logger.getErrorTracker()
@@ -205,9 +205,9 @@ const reports = errorTracker.getReports({
 ```typescript
 import { 
   logger, 
-  MemoryLogHandler, 
-  RemoteLogHandler,
-  LogLevel 
+  LogLevel, 
+  MemoryLogHandler,
+  RemoteLogHandler 
 } from '@ldesign/engine'
 
 // 添加内存日志处理器

@@ -3,11 +3,11 @@
  * 🚀 提供简化的API，让使用更简单
  */
 
+import type { CacheConfig } from '../cache/unified-cache-manager'
+import type { LogConfig } from '../logger/logger'
 import { createUnifiedCacheManager } from '../cache/unified-cache-manager'
 import { createUnifiedLogger } from '../logger/logger'
 import { createPerformanceManager } from '../performance/performance-manager'
-import type { CacheConfig } from '../cache/unified-cache-manager'
-import type { LogConfig } from '../logger/logger'
 
 /**
  * 快速创建缓存管理器 - 使用优化的默认配置
@@ -20,17 +20,19 @@ export function quickCache<T = unknown>(options?: {
   const config: CacheConfig<T> = {
     maxSize: options?.maxSize ?? 50, // 更小的默认缓存
     defaultTTL: options?.ttl ?? 5 * 60 * 1000, // 5分钟TTL
-    strategy: 'lru' as any,
+    strategy: 'lru' as CacheConfig<T>['strategy'],
     enableStats: false, // 默认关闭统计
     maxMemory: 5 * 1024 * 1024, // 5MB内存限制
     cleanupInterval: 30000, // 30秒清理
-    layers: options?.persistent ? {
-      localStorage: {
-        enabled: true,
-        prefix: 'qc_',
-        maxSize: 2 * 1024 * 1024 // 2MB
-      }
-    } : {}
+    layers: options?.persistent
+      ? {
+          localStorage: {
+            enabled: true,
+            prefix: 'qc_',
+            maxSize: 2 * 1024 * 1024 // 2MB
+          }
+        }
+      : {}
   }
 
   return createUnifiedCacheManager<T>(config)
@@ -59,21 +61,21 @@ export function quickLogger(options?: {
   }
 
   const logger = createUnifiedLogger(config)
-  
+
   // 添加前缀支持
   if (options?.prefix) {
     const originalDebug = logger.debug.bind(logger)
     const originalInfo = logger.info.bind(logger)
     const originalWarn = logger.warn.bind(logger)
     const originalError = logger.error.bind(logger)
-    
+
     logger.debug = (msg: string, ...args: unknown[]) => originalDebug(`[${options.prefix}] ${msg}`, ...args)
     logger.info = (msg: string, ...args: unknown[]) => originalInfo(`[${options.prefix}] ${msg}`, ...args)
     logger.warn = (msg: string, ...args: unknown[]) => originalWarn(`[${options.prefix}] ${msg}`, ...args)
-    logger.error = (msg: string, error?: unknown, ...args: unknown[]) => 
+    logger.error = (msg: string, error?: unknown, ...args: unknown[]) =>
       originalError(`[${options.prefix}] ${msg}`, error, ...args)
   }
-  
+
   return logger
 }
 
@@ -91,7 +93,7 @@ export function quickPerformance(options?: {
     memory: { warning: 50, critical: 100 }, // MB
     bundleSize: { warning: 250, critical: 500 } // KB
   })
-  
+
   // 根据选项启动监控
   if (options?.monitoring) {
     // 延迟启动以避免初始化时的性能影响
@@ -99,7 +101,7 @@ export function quickPerformance(options?: {
       perf.startMonitoring()
     }, 1000)
   }
-  
+
   return perf
 }
 
@@ -121,7 +123,7 @@ export function quickSetup(options?: {
   const cache = quickCache(options?.cache)
   const logger = quickLogger(options?.logger)
   const performance = quickPerformance(options?.performance)
-  
+
   // 提供统一的清理方法
   const cleanup = () => {
     cache.clear()
@@ -133,7 +135,7 @@ export function quickSetup(options?: {
     logger.clear()
     logger.destroy()
   }
-  
+
   return {
     cache,
     logger,

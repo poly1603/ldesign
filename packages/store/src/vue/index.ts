@@ -66,4 +66,4 @@ export type {
   StateHookReturn,
   StoreHookReturn,
   UseStoreOptions,
-} from '@/types/hooks'
+} from '../types/hooks'

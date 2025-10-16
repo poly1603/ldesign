@@ -131,12 +131,12 @@ export class CodeQualityChecker {
 
         const checkNaming = (routes: RouteRecordRaw[]): void => {
           for (const route of routes) {
-            if (route.name && !namePattern.test(route.name)) {
+            if (route.name && !namePattern.test(String(route.name))) {
               issues.push({
                 id: `route-naming-${Date.now()}`,
                 type: QualityIssueType.BEST_PRACTICE,
                 severity: IssueSeverity.INFO,
-                message: `路由名称不符合规范: ${route.name}`,
+                message: `路由名称不符合规范: ${String(route.name)}`,
                 description: '路由名称应该使用 kebab-case 格式',
                 suggestion: '使用小写字母、数字和连字符组成路由名称',
                 route: route.path,
@@ -258,19 +258,19 @@ export class CodeQualityChecker {
 
             // 检查名称重复
             if (route.name) {
-              if (nameSet.has(route.name)) {
+              if (nameSet.has(String(route.name))) {
                 issues.push({
                   id: `duplicate-name-${Date.now()}`,
                   type: QualityIssueType.MAINTAINABILITY,
                   severity: IssueSeverity.ERROR,
-                  message: `重复的路由名称: ${route.name}`,
+                  message: `重复的路由名称: ${String(route.name)}`,
                   description: '存在相同的路由名称，可能导致导航错误',
                   suggestion: '确保每个路由名称都是唯一的',
                   route: fullPath,
                 })
               }
               else {
-                nameSet.add(route.name)
+                nameSet.add(String(route.name))
               }
             }
 

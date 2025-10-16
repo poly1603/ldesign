@@ -150,9 +150,7 @@ export class CacheManager implements ICacheManager {
       // 调试输出策略选择结果
       if (this.options.debug) {
         // eslint-disable-next-line no-console
-        console.log(
-          `[CacheManager] Strategy selected engine: ${result.engine}, reason: ${result.reason}, confidence: ${result.confidence}`,
-        )
+        
       }
 
       const engine = this.engines.get(result.engine)
@@ -544,7 +542,7 @@ export class CacheManager implements ICacheManager {
 
     if (this.options.debug) {
       // eslint-disable-next-line no-console
-      console.log(`[CacheManager] ${type}:`, event)
+      
     }
   }
 
@@ -576,7 +574,7 @@ export class CacheManager implements ICacheManager {
 
     if (this.options.debug) {
       // eslint-disable-next-line no-console
-      console.log('[CacheManager] strategy:', event)
+      
     }
   }
 
@@ -655,7 +653,7 @@ export class CacheManager implements ICacheManager {
    * // 获取对象值
    * const user = await cache.get<User>('user:123')
    * if (user) {
-   *   console.log(user.name, user.age)
+   *   
    * }
    *
    * // 处理不存在的键

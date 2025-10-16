@@ -18,7 +18,6 @@ export const vTPlural: Directive = {
     const i18n = vnode.appContext?.app.config.globalProperties.$i18n as I18nInstance;
     
     if (!i18n) {
-      console.warn('[v-t-plural] i18n instance not found');
       return;
     }
 
@@ -42,19 +41,16 @@ function updatePlural(
   i18n: I18nInstance
 ) {
   if (!binding.value) {
-    console.warn('[v-t-plural] binding value is required');
     return;
   }
 
   const { key, count, params, locale } = binding.value;
 
   if (!key) {
-    console.warn('[v-t-plural] translation key is required');
     return;
   }
 
   if (count === undefined) {
-    console.warn('[v-t-plural] count is required');
     return;
   }
 

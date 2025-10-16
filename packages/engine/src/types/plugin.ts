@@ -105,6 +105,15 @@ export interface PluginManager<TEngine = Engine> extends BaseManager {
   findByKeyword: (keyword: string) => Plugin<TEngine>[]
   findByAuthor: (author: string) => Plugin<TEngine>[]
   findByDependency: (dependency: string) => Plugin<TEngine>[]
+
+  // 额外的方法（兼容性）
+  getInstalledPlugins: () => Plugin<TEngine>[]
+  isInstalled: (name: string) => boolean
+  getPlugin: (name: string) => Plugin<TEngine> | undefined
+  getPluginStatus: (name: string) => PluginStatus | undefined
+
+  // 初始化所有插件（兼容方法）
+  initializeAll: () => Promise<void>
 }
 
 // 插件加载器接口

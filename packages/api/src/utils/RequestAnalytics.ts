@@ -94,7 +94,7 @@ export class RequestAnalytics {
       ...config,
     }
 
-    if (this.config.enabled && this.config.cleanupInterval > 0) {
+    if (this.config?.enabled && this.config?.cleanupInterval > 0) {
       this.startCleanup()
     }
   }
@@ -103,7 +103,7 @@ export class RequestAnalytics {
    * 开始记录请求
    */
   startRequest(id: string, methodName: string): void {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return
     }
 
@@ -114,11 +114,11 @@ export class RequestAnalytics {
       status: 'pending',
     }
 
-    if (this.config.recordDetails) {
+    if (this.config?.recordDetails) {
       this.records.push(record)
 
       // 限制记录数量
-      if (this.records.length > this.config.maxRecords) {
+      if (this.records.length > this.config?.maxRecords) {
         this.records.shift()
       }
     }
@@ -157,7 +157,7 @@ export class RequestAnalytics {
       responseSize?: number
     } = {},
   ): void {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return
     }
 
@@ -195,7 +195,7 @@ export class RequestAnalytics {
    * 结束请求（失败）
    */
   endRequestWithError(id: string, error: string): void {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return
     }
 
@@ -224,7 +224,7 @@ export class RequestAnalytics {
    * 取消请求
    */
   cancelRequest(id: string): void {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return
     }
 
@@ -378,7 +378,7 @@ export class RequestAnalytics {
   private startCleanup(): void {
     this.cleanupTimer = setInterval(() => {
       this.cleanup()
-    }, this.config.cleanupInterval)
+    }, this.config?.cleanupInterval)
   }
 
   /**
@@ -386,7 +386,7 @@ export class RequestAnalytics {
    */
   private cleanup(): void {
     const now = Date.now()
-    const threshold = now - this.config.recordRetention
+    const threshold = now - this.config?.recordRetention
 
     this.records = this.records.filter(r => r.startTime >= threshold)
   }

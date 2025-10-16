@@ -16,12 +16,12 @@
  *   key: 'my-secret-key',
  *   options: { keySize: 256, mode: 'CBC' },
  *   onProgress: (progress) => {
- *     console.log(`Progress: ${progress.percentage.toFixed(2)}%`)
- *     console.log(`Speed: ${(progress.speed / 1024 / 1024).toFixed(2)} MB/s`)
+ *     }%`)
+ *     .toFixed(2)} MB/s`)
  *   }
  * })
  * 
- * console.log(`Encrypted ${result.bytesProcessed} bytes in ${result.duration}ms`)
+ * 
  * 
  * // 解密文件
  * const decResult = await decryptFile({

@@ -2,18 +2,18 @@
  * 缓存管理系统单元测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  LRUCache,
-  ObjectPool,
-  MemoryMonitor,
   CacheManager,
+  cacheResult,
   createCache,
   createObjectPool,
-  cacheResult,
+  LRUCache,
+  MemoryMonitor,
+  ObjectPool,
 } from '../../src/utils/cache-manager'
 
-describe('LRUCache', () => {
+describe('lRUCache', () => {
   let cache: LRUCache<any>
 
   beforeEach(() => {
@@ -157,7 +157,7 @@ describe('LRUCache', () => {
   })
 })
 
-describe('ObjectPool', () => {
+describe('objectPool', () => {
   interface Point {
     x: number
     y: number
@@ -286,7 +286,7 @@ describe('ObjectPool', () => {
   })
 })
 
-describe('MemoryMonitor', () => {
+describe('memoryMonitor', () => {
   let monitor: MemoryMonitor
 
   afterEach(() => {
@@ -358,7 +358,7 @@ describe('MemoryMonitor', () => {
   })
 })
 
-describe('CacheManager', () => {
+describe('cacheManager', () => {
   let manager: CacheManager
 
   beforeEach(() => {
@@ -558,7 +558,7 @@ describe('cacheResult 装饰器', () => {
 })
 
 describe('性能测试', () => {
-  it('LRUCache 大量操作性能', () => {
+  it('lRUCache 大量操作性能', () => {
     const cache = new LRUCache({ maxSize: 10000 })
 
     const start = Date.now()
@@ -580,7 +580,7 @@ describe('性能测试', () => {
     cache.destroy()
   })
 
-  it('ObjectPool 大量获取和归还性能', () => {
+  it('objectPool 大量获取和归还性能', () => {
     const pool = createObjectPool({
       factory: () => ({ x: 0, y: 0, z: 0 }),
       reset: (obj) => {

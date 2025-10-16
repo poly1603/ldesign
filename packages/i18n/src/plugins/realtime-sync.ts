@@ -117,7 +117,7 @@ export class RealtimeSync extends EventEmitter {
       }
 
       try {
-        this.ws = new WebSocket(this.config.url);
+        this.ws = new WebSocket(this.config?.url);
         
         this.ws.onopen = () => {
           this.handleConnect();
@@ -143,7 +143,9 @@ export class RealtimeSync extends EventEmitter {
   }
 
   disconnect(): void {
-    this.config.autoReconnect = false;
+    if (this.config) {
+      this.config.autoReconnect = false;
+    }
     
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
@@ -179,7 +181,7 @@ export class RealtimeSync extends EventEmitter {
     this.startHeartbeat();
 
     // Process offline queue
-    if (this.config.enableOfflineQueue && this.offlineQueue.length > 0) {
+    if (this.config?.enableOfflineQueue && this.offlineQueue.length > 0) {
       this.flushOfflineQueue();
     }
 
@@ -195,7 +197,7 @@ export class RealtimeSync extends EventEmitter {
       this.heartbeatTimer = null;
     }
 
-    if (this.config.autoReconnect && this.reconnectAttempts < this.config.maxReconnectAttempts) {
+    if (this.config?.autoReconnect && this.reconnectAttempts < this.config?.maxReconnectAttempts) {
       this.scheduleReconnect();
     }
 
@@ -310,7 +312,7 @@ export class RealtimeSync extends EventEmitter {
     this.state.conflicts = this.conflictQueue.length;
     
     // Auto-resolve if configured
-    if (this.config.conflictResolution !== 'manual') {
+    if (this.config?.conflictResolution !== 'manual') {
       this.autoResolveConflict(conflict);
     } else {
       this.emit('conflict', conflict);
@@ -344,7 +346,7 @@ export class RealtimeSync extends EventEmitter {
     if (this.state.connected) {
       this.send('update', update);
       this.versionMap.set(`${locale}:${key}`, update.version);
-    } else if (this.config.enableOfflineQueue) {
+    } else if (this.config?.enableOfflineQueue) {
       this.offlineQueue.push(update);
       this.state.pendingUpdates = this.offlineQueue.length;
     }
@@ -405,7 +407,7 @@ export class RealtimeSync extends EventEmitter {
     let resolution: 'local' | 'remote' | 'merged' = 'remote';
     let mergedValue: string | undefined;
 
-    switch (this.config.conflictResolution) {
+    switch (this.config?.conflictResolution) {
       case 'latest':
         resolution = conflict.local.timestamp > conflict.remote.timestamp ? 'local' : 'remote';
         break;
@@ -531,7 +533,7 @@ export class RealtimeSync extends EventEmitter {
   private scheduleReconnect(): void {
     this.reconnectAttempts++;
     const delay = Math.min(
-      this.config.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1),
+      this.config?.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1),
       30000
     );
 
@@ -547,12 +549,12 @@ export class RealtimeSync extends EventEmitter {
       if (this.state.connected) {
         this.send('heartbeat', { timestamp: Date.now() });
       }
-    }, this.config.heartbeatInterval);
+    }, this.config?.heartbeatInterval);
   }
 
   private send(type: string, data: any): void {
     if (!this.ws || !this.state.connected) {
-      if (this.config.enableOfflineQueue && type === 'update') {
+      if (this.config?.enableOfflineQueue && type === 'update') {
         this.offlineQueue.push(data);
         this.state.pendingUpdates = this.offlineQueue.length;
       }

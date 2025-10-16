@@ -507,15 +507,6 @@ export default {
 export type * from '../types/enhanced-types'
 
 export {
-  ComponentCacheOptimizer,
-  componentCacheOptimizer,
-  // 缓存优化
-  LRUCache,
-  SmartRouteCache,
-  smartRouteCache,
-} from './cache-optimizer'
-
-export {
   CodeQualityChecker,
   codeQualityChecker,
   IssueSeverity,
@@ -523,76 +514,30 @@ export {
   QualityIssueType,
 } from './code-quality'
 
+// 错误管理系统
 export {
-  createRouterError,
-  RouterErrorHandler,
-  routerErrorHandler,
-  // 错误处理
-  RouterErrorType,
-} from './error-handler'
+  addErrorListener,
+  type ErrorDetails,
+  type ErrorListener,
+  errorManager,
+  ErrorManager,
+  type ErrorManagerConfig,
+  type ErrorRecoveryStrategy,
+  ErrorSeverity,
+  ErrorType,
+  getErrorHistory,
+  getErrorStatistics,
+  handleError
+} from './error-manager'
 
-export {
-  // 性能监控
-  getPerformanceStats,
-  memoryOptimizer,
-  MemoryOptimizer,
-  routePrewarmer,
-  RoutePrewarmer,
-} from './performance'
-
-// ==================== 新增实用工具 ====================
-
-export {
-  RoutePerformanceMonitor,
-  createRoutePerformanceMonitor,
-  createPerformanceMonitorPlugin,
-  getPerformanceMonitor,
-} from './route-performance-monitor'
-
-export type {
-  RoutePerformanceMetric,
-  PerformanceMonitorConfig,
-} from './route-performance-monitor'
-
-export {
-  RouteCacheWarmer,
-  createRouteCacheWarmer,
-  warmupRoutes,
-} from './route-cache-warmer'
-
-export type {
-  WarmupConfig,
-  WarmupResult,
-} from './route-cache-warmer'
-
-// ==================== 导航优化工具 ====================
-
-export {
-  NavigationThrottler,
-  NavigationDebouncer,
-  NavigationPerformanceMonitor,
-  GuardExecutionTimer,
-  ParallelGuardExecutor,
-  NavigationQueueManager,
-  createNavigationOptimizer,
-} from './navigation-optimizer'
-
-export type {
-  NavigationThrottlerOptions,
-  NavigationMetrics,
-} from './navigation-optimizer'
-
-// ==================== 高级内存管理 ====================
-
-export {
-  TieredCacheManager,
-  WeakRefCache,
-  SmartMemoryReclaimer,
-  CachePriority,
-  MemoryPressure,
-  createAdvancedMemoryManager,
-} from './advanced-memory-manager'
-
-export type {
-  TieredCacheConfig,
-} from './advanced-memory-manager'
+// 日志系统
+export { 
+  analyticsLogger,
+  debugLogger,
+  logger,
+  Logger,
+  type LoggerConfig,
+  type LogLevel,
+  performanceLogger,
+  securityLogger
+} from './logger'

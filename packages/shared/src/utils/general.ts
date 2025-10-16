@@ -22,7 +22,7 @@ const { hasOwnProperty } = Object.prototype
  * const obj = { name: 'John', age: 30 }
  *
  * if (hasOwn(obj, 'name')) {
- *   console.log(obj.name) // TypeScript 知道 name 属性存在
+ *    // TypeScript 知道 name 属性存在
  * }
  * ```
  */
@@ -107,7 +107,7 @@ export function isPromise<T = any>(val: unknown): val is Promise<T> {
  *
  * const cloned = deepClone(original)
  * cloned.address.city = 'Boston'
- * console.log(original.address.city) // 'New York' (原对象未被修改)
+ *  // 'New York' (原对象未被修改)
  * ```
  */
 export function deepClone<T>(obj: T): T {
@@ -188,7 +188,7 @@ export function deepMerge<T extends object>(target: T, ...sources: Partial<T>[])
  * @example
  * ```typescript
  * const debouncedSearch = debounce((query: string) => {
- *   console.log('Searching for:', query)
+ *   
  * }, 300)
  *
  * // 只有在停止输入 300ms 后才会执行搜索
@@ -228,7 +228,7 @@ export function debounce<T extends (...args: any[]) => any>(
  * @example
  * ```typescript
  * const throttledScroll = throttle(() => {
- *   console.log('Scroll event handled')
+ *   
  * }, 100)
  *
  * window.addEventListener('scroll', throttledScroll)
@@ -292,9 +292,9 @@ export function generateUUID(): string {
  * @example
  * ```typescript
  * async function example() {
- *   console.log('Start')
+ *   
  *   await delay(1000)
- *   console.log('After 1 second')
+ *   
  * }
  * ```
  */

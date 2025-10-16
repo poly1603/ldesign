@@ -242,7 +242,8 @@ export class ConfigManagerImpl implements ConfigManager {
       this.watchers.set(path, [])
     }
 
-    this.watchers.get(path)!.push(callback)
+    const watchers = this.watchers.get(path)
+    watchers?.push(callback)
 
     return () => {
       this.unwatch(path, callback)
@@ -265,6 +266,12 @@ export class ConfigManagerImpl implements ConfigManager {
     } else {
       this.watchers.delete(path)
     }
+  }
+
+  // 事件监听（兼容方法）
+  on(event: string, callback: (...args: unknown[]) => void): () => void {
+    // 使用 watch 方法实现事件监听
+    return this.watch(event, callback as ConfigWatcher)
   }
 
   // 持久化
@@ -875,6 +882,11 @@ export class NamespacedConfigManager implements ConfigManager {
 
   unwatch(key: string, callback?: ConfigWatcher): void {
     this.parent.unwatch(this.getKey(key), callback)
+  }
+
+  // 事件监听（兼容方法）
+  on(event: string, callback: (...args: unknown[]) => void): () => void {
+    return this.parent.on(this.getKey(event), callback)
   }
 
   // 持久化

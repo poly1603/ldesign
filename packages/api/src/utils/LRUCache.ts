@@ -84,7 +84,7 @@ export class LRUCache<T = unknown> {
     this.tail.prev = this.head
 
     // 启动定期清理
-    if (this.config.cleanupInterval > 0) {
+    if (this.config?.cleanupInterval > 0) {
       this.startCleanup()
     }
   }
@@ -93,7 +93,7 @@ export class LRUCache<T = unknown> {
    * 获取缓存值
    */
   get(key: string): T | null {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return null
     }
 
@@ -122,11 +122,11 @@ export class LRUCache<T = unknown> {
    * 设置缓存值
    */
   set(key: string, value: T, ttl?: number): void {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return
     }
 
-    const expireTime = Date.now() + (ttl ?? this.config.defaultTTL)
+    const expireTime = Date.now() + (ttl ?? this.config?.defaultTTL)
     const existingNode = this.cache.get(key)
 
     if (existingNode) {
@@ -140,7 +140,7 @@ export class LRUCache<T = unknown> {
       const newNode = new LRUNode(key, value, expireTime)
 
       // 检查容量限制
-      if (this.cache.size >= this.config.maxSize) {
+      if (this.cache.size >= this.config?.maxSize) {
         this.evictLRU()
       }
 
@@ -223,7 +223,7 @@ export class LRUCache<T = unknown> {
       hits: this.stats.hits,
       misses: this.stats.misses,
       size: this.cache.size,
-      maxSize: this.config.maxSize,
+      maxSize: this.config?.maxSize,
       hitRate: total > 0 ? this.stats.hits / total : 0,
       evictions: this.stats.evictions,
       memoryUsage: this.stats.memoryUsage,
@@ -356,7 +356,7 @@ export class LRUCache<T = unknown> {
   private startCleanup(): void {
     this.cleanupTimer = setInterval(() => {
       this.cleanupExpired()
-    }, this.config.cleanupInterval)
+    }, this.config?.cleanupInterval)
   }
 
   /**

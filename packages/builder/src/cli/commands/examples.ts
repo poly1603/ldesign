@@ -5,9 +5,7 @@
 import { Command } from 'commander'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { promises as fs } from 'fs'
 import { spawn } from 'child_process'
-import chalk from 'chalk'
 
 // ES 模块下的 __dirname，兼容 CJS
 const getFilename = (): string => {
@@ -49,11 +47,11 @@ export const examplesCommand = new Command('examples')
       : examples
 
     if (selected.length === 0) {
-      console.log(chalk.yellow(`未找到示例项目，root: ${root}`))
+      )
       return
     }
 
-    console.log(chalk.cyan(`即将构建 ${selected.length} 个示例项目...`))
+    )
 
     // 使用绝对路径到 bin 文件（dist/cli -> ../../bin）
     const binPath = join(__dirname, '../../bin/ldesign-builder.js')
@@ -75,7 +73,7 @@ export const examplesCommand = new Command('examples')
 
     await Promise.all(running)
 
-    console.log(chalk.green('全部示例构建完成'))
+    )
   })
 
 export async function findExampleProjects(root: string): Promise<Array<{ name: string; path: string }>> {
@@ -107,7 +105,7 @@ export async function findExampleProjects(root: string): Promise<Array<{ name: s
 }
 
 export async function runExample(binPath: string, cwd: string): Promise<void> {
-  console.log(chalk.gray(`\n[example] ${cwd}`))
+  )
   await new Promise<void>((resolve, reject) => {
     const child = spawn(process.execPath, [binPath, 'build'], {
       cwd,

@@ -18,8 +18,8 @@ yarn add @ldesign/engine
 ## 🎯 基础使用
 
 ```typescript
-import { createApp } from 'vue'
 import { createEngine } from '@ldesign/engine'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 // 创建引擎

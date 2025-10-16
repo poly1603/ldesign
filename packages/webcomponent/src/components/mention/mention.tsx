@@ -86,11 +86,11 @@ export class LdesignMention {
   @Event() ldesignFocus!: EventEmitter<FocusEvent>;
   @Event() ldesignBlur!: EventEmitter<FocusEvent>;
 
-  @State() parsedOptions: MentionItem[] = [];
-  @State() parsedTriggerConfigs: MentionTriggerConfig[] = [];
-  @State() open: boolean = false;
-  @State() highlightIndex: number = -1;
-  @State() searchText: string = '';
+  @State() parsedOptions!: MentionItem[] = [];
+  @State() parsedTriggerConfigs!: MentionTriggerConfig[] = [];
+  @State() open!: boolean = false;
+  @State() highlightIndex!: number = -1;
+  @State() searchText!: string = '';
 
   private editableMinH = 0; // px
   private editableMaxH: number | null = null; // px
@@ -104,9 +104,9 @@ export class LdesignMention {
 
   @Watch('options') 
   watchOptions(val: string | MentionItem[], oldVal?: string | MentionItem[]) { 
-    console.log('[Mention] Watch options triggered, new:', val, 'old:', oldVal);
+    
     this.parsedOptions = this.parseOptions(val);
-    console.log('[Mention] Options parsed:', this.parsedOptions.length, 'items');
+    
     // 如果当前有打开的弹窗，刷新选项列表
     if (this.open && this.triggerCtx) {
       this.openIfNeeded(this.searchText);
@@ -134,7 +134,7 @@ export class LdesignMention {
   componentWillLoad() {
     this.parsedOptions = this.parseOptions(this.options);
     this.parsedTriggerConfigs = this.parseTriggerConfigs(this.triggerConfigs as any);
-    console.log('[Mention] componentWillLoad - initial options:', this.parsedOptions.length, 'items');
+    
     // valueFormat 已作为 @Prop，保持默认或外部传值
     if ((this.value == null || this.value === '') && this.defaultValue) this.value = this.defaultValue;
   }
@@ -238,7 +238,7 @@ export class LdesignMention {
   // 公共方法：手动设置选项（解决属性监听问题）
   @Method()
   async setOptions(options: MentionItem[]) {
-    console.log('[Mention] setOptions called with', options.length, 'items');
+    
     this.options = options;
     this.parsedOptions = this.parseOptions(options);
     // 如果当前有打开的弹窗，刷新选项列表
@@ -544,14 +544,14 @@ export class LdesignMention {
     let offset: number = caret.startOffset;
     let query = '';
 
-    console.log('[Mention] findTriggerFromCaret - starting search from node:', node, 'offset:', offset, 'nodeType:', node.nodeType);
+    
 
     // 创建 walker 以遍历文本节点
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
     
     // 如果当前不是文本节点，找到光标位置之前的最后一个文本节点
     if (node.nodeType !== 3) {
-      console.log('[Mention] Caret is in element node, finding text node...');
+      
       
       // 处理特殊情况：光标在元素末尾（常见于初始值设置后）
       if (node === root) {
@@ -567,7 +567,7 @@ export class LdesignMention {
           }
         }
         
-        console.log('[Mention] Found', textNodes.length, 'text nodes');
+        
         
         if (textNodes.length > 0) {
           // 根据 offset 找到对应的文本节点
@@ -577,7 +577,7 @@ export class LdesignMention {
             if (lastTextNode) {
               node = lastTextNode;
               offset = lastTextNode.textContent?.length || 0;
-              console.log('[Mention] Using last text node:', node.textContent);
+              
             }
           } else if (offset > 0 && offset <= node.childNodes.length) {
             // 光标在某个子节点位置
@@ -586,7 +586,7 @@ export class LdesignMention {
             if (childBefore && childBefore.nodeType === 3) {
               node = childBefore;
               offset = childBefore.textContent?.length || 0;
-              console.log('[Mention] Using previous text node:', node.textContent);
+              
             } else {
               // 查找该位置之前的最后一个文本节点
               for (let i = textNodes.length - 1; i >= 0; i--) {
@@ -594,7 +594,7 @@ export class LdesignMention {
                 if (childBefore && (childBefore === tn || childBefore.contains(tn))) {
                   node = tn;
                   offset = tn.textContent?.length || 0;
-                  console.log('[Mention] Found text node in child:', node.textContent);
+                  
                   break;
                 }
               }
@@ -605,7 +605,7 @@ export class LdesignMention {
       
       // 如果还不是文本节点，无法处理
       if (node.nodeType !== 3) {
-        console.log('[Mention] findTriggerFromCaret - no text node found, cannot search for trigger');
+        
         return null;
       }
     }
@@ -613,7 +613,7 @@ export class LdesignMention {
     // 现在 node 应该是一个文本节点
     walker.currentNode = node;
 
-    console.log('[Mention] findTriggerFromCaret - searching from text node:', node.textContent, 'offset:', offset);
+    
 
     let examineNode = node as Text;
     let withinToken = (n: Node | null) => !!(n && (n as HTMLElement).closest && (n as HTMLElement).closest('.ldesign-mention__token'));
@@ -623,14 +623,14 @@ export class LdesignMention {
 
     while (examineNode) {
       if (withinToken(examineNode)) {
-        console.log('[Mention] findTriggerFromCaret - hit token, stopping');
+        
         return null; // 光标前为 token，则不激活
       }
       
       const text = examineNode.nodeValue || '';
       const end = examineNode === node ? offset : text.length;
       
-      console.log('[Mention] findTriggerFromCaret - examining text:', text, 'from 0 to', end);
+      
       
       for (let i = end - 1; i >= 0; i--) {
         const ch = text[i];
@@ -644,7 +644,7 @@ export class LdesignMention {
             // 简单的邮箱保护：字母/数字/._- 紧挨 @ 且后面也为字母数字时，视为邮箱并跳过
             const likelyEmail = /[A-Za-z0-9._-]/.test(prev) && /[A-Za-z0-9]/.test(next);
             if (likelyEmail) {
-              console.log('[Mention] findTriggerFromCaret - skipping @ as likely email');
+              
               skip = true;
             }
           }
@@ -666,7 +666,7 @@ export class LdesignMention {
             r.setStart(examineNode, i);
             r.setEnd(caret.endContainer, caret.endOffset);
             
-            console.log('[Mention] findTriggerFromCaret - found trigger:', ch, 'at position', i, 'query:', query);
+            
             return { range: r, query, char: ch };
           }
           // 否则继续向左查找更早的触发字符
@@ -675,7 +675,7 @@ export class LdesignMention {
         
         if (/\s/.test(ch)) {
           // 在找到 @ 前遇到空白，失败
-          console.log('[Mention] findTriggerFromCaret - hit whitespace, stopping');
+          
           return null;
         }
         
@@ -692,7 +692,7 @@ export class LdesignMention {
       
       const prevText = walker.previousNode() as Text | null;
       if (!prevText) {
-        console.log('[Mention] findTriggerFromCaret - no more text nodes');
+        
         break;
       }
       
@@ -700,7 +700,7 @@ export class LdesignMention {
       examineNode = prevText;
     }
     
-    console.log('[Mention] findTriggerFromCaret - no trigger found');
+    
     return null;
   }
 
@@ -708,13 +708,13 @@ export class LdesignMention {
     const list = this.getFilteredOptions(q);
     this.highlightIndex = list.length ? 0 : -1;
     this.open = !!(this.loading || list.length);
-    console.log('[Mention] openIfNeeded - query:', q, 'filtered options:', list.length, 'open:', this.open);
+    
   }
 
   private getFilteredOptions(q: string): MentionItem[] {
     const ch = this.currentTriggerChar || this.getTriggers()[0] || '@';
     const src = this.getOptionsFor(ch);
-    console.log('[Mention] getFilteredOptions - trigger:', ch, 'source options:', src.length, 'query:', q);
+    
     if (!q) return src.filter(o => !o.disabled);
     const lower = q.toLowerCase();
     return src.filter(o => !o.disabled && (this.filterOption ? this.filterOption(q, o) : (o.label?.toLowerCase().includes(lower) || String(o.value).toLowerCase().includes(lower))));
@@ -840,7 +840,7 @@ export class LdesignMention {
   private onBeforeInput = (e: Event) => {
     if (this.disabled || this.readonly) return;
     const inputEvent = e as InputEvent;
-    console.log('[Mention] beforeInput event:', inputEvent.inputType, 'data:', inputEvent.data);
+    
     
     // Note: We don't handle trigger detection here anymore - let onInput handle it
     // This avoids timing issues and ensures consistent behavior
@@ -855,7 +855,7 @@ export class LdesignMention {
     // 总是检查是否有触发符（从光标向后回溯）
     const found = this.findTriggerFromCaret();
     
-    console.log('[Mention] onInput - found trigger:', found ? `${found.char} with query "${found.query}"` : 'none');
+    
     
     if (found) {
       // 找到触发符
@@ -866,7 +866,7 @@ export class LdesignMention {
       
       if (isNewTrigger) {
         // 新的触发符或位置变化
-        console.log('[Mention] New trigger detected:', found.char, 'query:', found.query);
+        
         this.triggerCtx = { range: found.range, char: found.char };
         this.currentTriggerChar = found.char;
         this.searchText = found.query;
@@ -875,7 +875,7 @@ export class LdesignMention {
         this.openIfNeeded(this.searchText);
       } else {
         // 更新查询字符串
-        console.log('[Mention] Updating query for existing trigger:', found.query);
+        
         this.searchText = found.query;
         this.updateAnchorPosition();
         this.ldesignSearch.emit({ value: this.searchText, trigger: found.char });
@@ -884,7 +884,7 @@ export class LdesignMention {
     } else {
       // 没有找到触发符
       if (this.triggerCtx) {
-        console.log('[Mention] Trigger lost, closing popup');
+        
         this.triggerCtx = null;
         this.currentTriggerChar = '';
         this.open = false;
@@ -921,7 +921,7 @@ export class LdesignMention {
     try {
       // 获取要替换的文本内容（用于调试）
       const replacedText = r.toString();
-      console.log('[Mention] Replacing:', replacedText, 'with token:', ch + it.label);
+      
       
       // 删除范围内容
       r.deleteContents();

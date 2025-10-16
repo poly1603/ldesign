@@ -22,11 +22,6 @@ export { useI18nAsync } from './composables/useI18nAsync';
 export { default as I18nProvider } from './components/I18nProvider.vue';
 export { default as I18nText } from './components/I18nText.vue';
 export { default as I18nTranslate } from './components/I18nTranslate.vue';
-export { default as I18nNumber } from './components/I18nNumber.vue';
-export { default as I18nDate } from './components/I18nDate.vue';
-// export { default as I18nTime } from './components/I18nTime.vue';
-// export { default as I18nPlural } from './components/I18nPlural.vue';
-// export { default as I18nSwitch } from './components/I18nSwitch.vue';
 export { default as LocaleSwitcher } from './components/LocaleSwitcher.vue';
 
 // Export directives

@@ -8,7 +8,7 @@ import type {
   StateHookReturn,
   StoreHookReturn,
   UseStoreOptions,
-} from '@/types'
+} from '../types'
 import { computed, inject, onUnmounted, ref, watch } from 'vue'
 import { STORE_PROVIDER_KEY } from '../types/provider'
 

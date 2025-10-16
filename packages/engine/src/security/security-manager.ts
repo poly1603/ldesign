@@ -63,7 +63,7 @@ export enum SecurityEventType {
 export interface SecurityEvent {
   type: SecurityEventType
   message: string
-  details: any
+  details: unknown
   timestamp: number
   userAgent?: string
   ip?: string
@@ -389,12 +389,12 @@ export class SecurityManagerImpl implements SecurityManager {
       },
     }
 
-    this.xssProtector = new XSSProtector(this.config.xss)
-    this.csrfProtector = new CSRFProtector(this.config.csrf)
+    this.xssProtector = new XSSProtector(this.config?.xss)
+    this.csrfProtector = new CSRFProtector(this.config?.csrf)
   }
 
   sanitizeHTML(html: string): XSSResult {
-    if (!this.config.xss.enabled) {
+    if (!this.config?.xss.enabled) {
       return {
         safe: true,
         sanitized: html,
@@ -447,7 +447,7 @@ export class SecurityManagerImpl implements SecurityManager {
   }
 
   generateCSRFToken(): CSRFToken {
-    if (!this.config.csrf.enabled) {
+    if (!this.config?.csrf.enabled) {
       throw new Error('CSRF protection is disabled')
     }
 
@@ -455,7 +455,7 @@ export class SecurityManagerImpl implements SecurityManager {
   }
 
   validateCSRFToken(token: string): boolean {
-    if (!this.config.csrf.enabled) {
+    if (!this.config?.csrf.enabled) {
       return true
     }
 
@@ -474,14 +474,14 @@ export class SecurityManagerImpl implements SecurityManager {
   }
 
   getCSRFToken(): string | null {
-    if (!this.config.csrf.enabled) {
+    if (!this.config?.csrf.enabled) {
       return null
     }
 
     // 尝试从cookie或meta标签获取
     if (typeof document !== 'undefined') {
       const meta = document.querySelector(
-        `meta[name="${this.config.csrf.tokenName}"]`
+        `meta[name="${this.config?.csrf.tokenName}"]`
       )
       if (meta) {
         return meta.getAttribute('content')
@@ -492,15 +492,15 @@ export class SecurityManagerImpl implements SecurityManager {
   }
 
   generateCSPHeader(): string {
-    if (!this.config.csp.enabled) {
+    if (!this.config?.csp.enabled) {
       return ''
     }
 
-    const directives = Object.entries(this.config.csp.directives || {})
+    const directives = Object.entries(this.config?.csp.directives || {})
       .map(([key, values]) => `${key} ${values.join(' ')}`)
       .join('; ')
 
-    const headerName = this.config.csp.reportOnly
+    const headerName = this.config?.csp.reportOnly
       ? 'Content-Security-Policy-Report-Only'
       : 'Content-Security-Policy'
 
@@ -520,7 +520,7 @@ export class SecurityManagerImpl implements SecurityManager {
     const headers: Record<string, string> = {}
 
     // CSP头
-    if (this.config.csp.enabled) {
+    if (this.config?.csp.enabled) {
       const cspHeader = this.generateCSPHeader()
       if (cspHeader) {
         const [headerName, headerValue] = cspHeader.split(': ', 2)
@@ -529,8 +529,8 @@ export class SecurityManagerImpl implements SecurityManager {
     }
 
     // 点击劫持防护
-    if (this.config.clickjacking.enabled) {
-      switch (this.config.clickjacking.policy) {
+    if (this.config?.clickjacking.enabled) {
+      switch (this.config?.clickjacking.policy) {
         case 'deny':
           headers['X-Frame-Options'] = 'DENY'
           break
@@ -538,17 +538,17 @@ export class SecurityManagerImpl implements SecurityManager {
           headers['X-Frame-Options'] = 'SAMEORIGIN'
           break
         case 'allow-from':
-          if (this.config.clickjacking.allowFrom) {
+          if (this.config?.clickjacking.allowFrom) {
             headers['X-Frame-Options'] =
-              `ALLOW-FROM ${this.config.clickjacking.allowFrom}`
+              `ALLOW-FROM ${this.config?.clickjacking.allowFrom}`
           }
           break
       }
     }
 
     // HTTPS相关头
-    if (this.config.https.enabled) {
-      const { hsts } = this.config.https
+    if (this.config?.https.enabled) {
+      const { hsts } = this.config?.https
       if (hsts) {
         let hstsValue = `max-age=${hsts.maxAge}`
         if (hsts.includeSubDomains) {
@@ -600,16 +600,16 @@ export class SecurityManagerImpl implements SecurityManager {
     this.config = {
       ...this.config,
       ...config,
-      xss: { ...this.config.xss, ...config.xss },
-      csrf: { ...this.config.csrf, ...config.csrf },
-      csp: { ...this.config.csp, ...config.csp },
-      clickjacking: { ...this.config.clickjacking, ...config.clickjacking },
-      https: { ...this.config.https, ...config.https },
+      xss: { ...this.config?.xss, ...config.xss },
+      csrf: { ...this.config?.csrf, ...config.csrf },
+      csp: { ...this.config?.csp, ...config.csp },
+      clickjacking: { ...this.config?.clickjacking, ...config.clickjacking },
+      https: { ...this.config?.https, ...config.https },
     }
 
     // 重新初始化保护器
-    this.xssProtector = new XSSProtector(this.config.xss)
-    this.csrfProtector = new CSRFProtector(this.config.csrf)
+    this.xssProtector = new XSSProtector(this.config?.xss)
+    this.csrfProtector = new CSRFProtector(this.config?.csrf)
   }
 
   getConfig(): SecurityConfig {

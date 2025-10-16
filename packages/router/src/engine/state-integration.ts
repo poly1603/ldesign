@@ -91,7 +91,7 @@ export class RouterStateManager {
     this.stateManager.set('router', initialState)
 
     // 如果启用持久化，尝试恢复状态
-    if (this.config.persistent) {
+    if (this.config?.persistent) {
       this.restorePersistedState()
     }
   }
@@ -104,7 +104,7 @@ export class RouterStateManager {
     const unsubscribeRoute = this.router.afterEach((to, from) => {
       this.updateCurrentRoute(to)
 
-      if (this.config.enableHistory) {
+      if (this.config?.enableHistory) {
         this.addToHistory(from)
       }
 
@@ -135,11 +135,11 @@ export class RouterStateManager {
    * 设置状态同步
    */
   private setupStateSync(): void {
-    if (!this.config.enableSync)
+    if (!this.config?.enableSync)
       return
 
     // 监听状态变化并持久化
-    if (this.config.persistent) {
+    if (this.config?.persistent) {
       const unsubscribe = this.stateManager.subscribe(
         'router',
         (newState: RouterState) => {
@@ -165,8 +165,9 @@ export class RouterStateManager {
     const newHistory = [route, ...currentHistory]
 
     // 限制历史记录长度
-    if (newHistory.length > this.config.maxHistoryLength!) {
-      newHistory.splice(this.config.maxHistoryLength!)
+    const maxLength = this.config?.maxHistoryLength
+    if (maxLength && newHistory.length > maxLength) {
+      newHistory.splice(maxLength)
     }
 
     this.stateManager.set('router.history', newHistory)
@@ -214,10 +215,10 @@ export class RouterStateManager {
         timestamp: Date.now(),
       }
 
-      localStorage.setItem(
-        this.config.persistentKey!,
-        JSON.stringify(persistentData),
-      )
+      const persistentKey = this.config?.persistentKey
+      if (persistentKey) {
+        localStorage.setItem(persistentKey, JSON.stringify(persistentData))
+      }
     }
     catch (error) {
       console.warn('Failed to persist router state:', error)
@@ -229,7 +230,9 @@ export class RouterStateManager {
    */
   private restorePersistedState(): void {
     try {
-      const persistentData = localStorage.getItem(this.config.persistentKey!)
+      const persistentKey = this.config?.persistentKey
+      if (!persistentKey) return
+      const persistentData = localStorage.getItem(persistentKey)
       if (!persistentData)
         return
 
@@ -238,7 +241,9 @@ export class RouterStateManager {
 
       // 检查数据是否过期（24小时）
       if (now - data.timestamp > 24 * 60 * 60 * 1000) {
-        localStorage.removeItem(this.config.persistentKey!)
+        if (persistentKey) {
+          localStorage.removeItem(persistentKey)
+        }
         return
       }
 
@@ -249,7 +254,10 @@ export class RouterStateManager {
     }
     catch (error) {
       console.warn('Failed to restore router state:', error)
-      localStorage.removeItem(this.config.persistentKey!)
+      const persistentKey = this.config?.persistentKey
+      if (persistentKey) {
+        localStorage.removeItem(persistentKey)
+      }
     }
   }
 

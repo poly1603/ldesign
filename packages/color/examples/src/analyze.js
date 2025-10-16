@@ -108,6 +108,6 @@ export function analyzeColors(primaryColor = '#1890ff') {
 // Display results in console
 export function runAnalysis() {
   const results = analyzeColors('#1890ff')
-  console.log(results.join('\n'))
+  )
   return results
 }

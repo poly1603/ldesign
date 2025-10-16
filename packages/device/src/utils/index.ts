@@ -687,7 +687,7 @@ function isObject(item: unknown): item is Record<string, any> {
  *     delay: 1000,
  *     backoff: 2,
  *     onRetry: (error, attempt) => {
- *       console.log(`Retry attempt ${attempt}:`, error)
+ *       
  *     }
  *   }
  * )

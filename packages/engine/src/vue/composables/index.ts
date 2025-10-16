@@ -14,12 +14,12 @@ export {
 
 // 功能特性组合式函数
 export {
-  useNotification,
-  useLogger,
   useCache,
-  useEvents,
-  usePerformance,
   useConfig,
   useErrorHandler,
+  useEvents,
+  useLogger,
+  useNotification,
+  usePerformance,
   usePlugins,
 } from './useEngineFeatures'

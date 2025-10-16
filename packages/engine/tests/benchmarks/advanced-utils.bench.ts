@@ -5,14 +5,14 @@
 
 import { bench, describe } from 'vitest'
 import {
-  retryWithBackoff,
-  fp,
-  Validator,
   AsyncQueue,
-  TypedEventEmitter,
-  Lazy,
-  TimeFormatter,
   ColorUtils,
+  fp,
+  Lazy,
+  retryWithBackoff,
+  TimeFormatter,
+  TypedEventEmitter,
+  Validator,
 } from '../../src/utils/advanced-utils'
 
 describe('性能基准测试', () => {
@@ -62,7 +62,7 @@ describe('性能基准测试', () => {
     })
   })
 
-  describe('Validator 性能', () => {
+  describe('validator 性能', () => {
     const emails = [
       'user@example.com',
       'test@domain.co.uk',
@@ -83,7 +83,7 @@ describe('性能基准测试', () => {
       'invalid-url',
     ]
 
-    bench('URL验证 - 1000次', () => {
+    bench('uRL验证 - 1000次', () => {
       for (let i = 0; i < 1000; i++) {
         urls.forEach(url => Validator.isURL(url))
       }
@@ -115,8 +115,8 @@ describe('性能基准测试', () => {
     })
   })
 
-  describe('AsyncQueue 并发控制性能', () => {
-    bench('AsyncQueue(5) - 100个任务', async () => {
+  describe('asyncQueue 并发控制性能', () => {
+    bench('asyncQueue(5) - 100个任务', async () => {
       const queue = new AsyncQueue(5)
       const tasks = Array.from({ length: 100 }, (_, i) => 
         queue.add(async () => {
@@ -127,7 +127,7 @@ describe('性能基准测试', () => {
       await Promise.all(tasks)
     })
 
-    bench('Promise.all - 100个任务 (无限并发)', async () => {
+    bench('promise.all - 100个任务 (无限并发)', async () => {
       const tasks = Array.from({ length: 100 }, (_, i) => 
         (async () => {
           await new Promise(resolve => setTimeout(resolve, 1))
@@ -138,7 +138,7 @@ describe('性能基准测试', () => {
     })
   })
 
-  describe('TypedEventEmitter 性能', () => {
+  describe('typedEventEmitter 性能', () => {
     interface TestEvents {
       'test': { value: number }
     }
@@ -175,7 +175,7 @@ describe('性能基准测试', () => {
     })
   })
 
-  describe('Lazy 延迟加载性能', () => {
+  describe('lazy 延迟加载性能', () => {
     function expensiveOperation() {
       let sum = 0
       for (let i = 0; i < 1000; i++) {
@@ -192,7 +192,7 @@ describe('性能基准测试', () => {
       }
     })
 
-    bench('Lazy 初始化 - 1000次', () => {
+    bench('lazy 初始化 - 1000次', () => {
       for (let i = 0; i < 1000; i++) {
         const lazy = new Lazy(expensiveOperation)
         const value = lazy.value
@@ -202,7 +202,7 @@ describe('性能基准测试', () => {
     })
   })
 
-  describe('ColorUtils 颜色处理性能', () => {
+  describe('colorUtils 颜色处理性能', () => {
     bench('hexToRgb - 1000次', () => {
       for (let i = 0; i < 1000; i++) {
         ColorUtils.hexToRgb('#FF5733')
@@ -275,7 +275,7 @@ describe('性能基准测试', () => {
     })
   })
 
-  describe('TimeFormatter 性能', () => {
+  describe('timeFormatter 性能', () => {
     const now = Date.now()
     const pastDate = now - 3600000 // 1小时前
 
@@ -354,7 +354,7 @@ describe('性能基准测试', () => {
 
     bench('字符串拼接 - 1000次', () => {
       testStrings.forEach(s => {
-        const result = s + '-suffix'
+        const result = `${s  }-suffix`
         void result
       })
     })

@@ -536,7 +536,7 @@ export function exportCSV(
  * @example
  * ```typescript
  * const base64 = await getFileBase64(file)
- * console.log(base64) // 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...'
+ *  // 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...'
  * ```
  */
 export function getFileBase64(file: File): Promise<string> {

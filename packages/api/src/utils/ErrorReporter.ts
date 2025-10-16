@@ -127,19 +127,19 @@ export class ErrorReporter {
    * 判断是否应该报告错误
    */
   private shouldReport(error: ApiError): boolean {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return false
     }
 
-    if (!this.config.enableInDevelopment && this.isDevelopment()) {
+    if (!this.config?.enableInDevelopment && this.isDevelopment()) {
       return false
     }
 
-    if (Math.random() > this.config.sampleRate) {
+    if (Math.random() > this.config?.sampleRate) {
       return false
     }
 
-    return this.config.filter(error)
+    return this.config?.filter(error)
   }
 
   /**
@@ -168,8 +168,8 @@ export class ErrorReporter {
    */
   private addToCache(error: ApiError): void {
     this.errorCache.unshift(error)
-    if (this.errorCache.length > this.config.maxCacheSize) {
-      this.errorCache = this.errorCache.slice(0, this.config.maxCacheSize)
+    if (this.errorCache.length > this.config?.maxCacheSize) {
+      this.errorCache = this.errorCache.slice(0, this.config?.maxCacheSize)
     }
   }
 
@@ -233,20 +233,20 @@ export class ErrorReporter {
 
     this.batchTimer = setInterval(() => {
       this.flushCache()
-    }, this.config.batchInterval)
+    }, this.config?.batchInterval)
   }
 
   /**
    * 刷新缓存，发送错误报告
    */
   private async flushCache(): Promise<void> {
-    if (this.errorCache.length === 0 || !this.config.endpoint) {
+    if (this.errorCache.length === 0 || !this.config?.endpoint) {
       return
     }
 
     const errors = this.errorCache.splice(0)
     const payload = {
-      errors: errors.map(error => this.config.transform(error)),
+      errors: errors.map(error => this.config?.transform(error)),
       stats: this.stats,
       timestamp: Date.now(),
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Node.js',
@@ -266,11 +266,11 @@ export class ErrorReporter {
    * 发送报告
    */
   private async sendReport(payload: any): Promise<void> {
-    const response = await fetch(this.config.endpoint, {
+    const response = await fetch(this.config?.endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(this.config.apiKey && { Authorization: `Bearer ${this.config.apiKey}` }),
+        ...(this.config?.apiKey && { Authorization: `Bearer ${this.config?.apiKey}` }),
       },
       body: JSON.stringify(payload),
     })

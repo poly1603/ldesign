@@ -204,8 +204,8 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
 
     try {
       // 执行验证前钩子
-      if (this.config.hooks?.beforeValidation) {
-        await this.config.hooks.beforeValidation(context)
+      if (this.config?.hooks?.beforeValidation) {
+        await this.config?.hooks.beforeValidation(context)
       }
 
       // 创建验证统计
@@ -229,40 +229,40 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
 
       // 2. 验证导出一致性
       let exportComparison: FunctionalityComparison | undefined
-      if (this.config.compareExports) {
+      if (this.config?.compareExports) {
         exportComparison = await this.compareExports(context, testEnvironment)
-        if (!exportComparison.identical && this.config.strict) {
+        if (!exportComparison.identical && this.config?.strict) {
           throw new Error(`导出不一致: ${exportComparison.differences.exports.join(', ')}`)
         }
       }
 
       // 3. 验证导入一致性
       let importComparison: FunctionalityComparison | undefined
-      if (this.config.compareImports) {
+      if (this.config?.compareImports) {
         importComparison = await this.compareImports(context, testEnvironment)
-        if (!importComparison.identical && this.config.strict) {
+        if (!importComparison.identical && this.config?.strict) {
           throw new Error(`导入不一致: ${importComparison.differences.imports.join(', ')}`)
         }
       }
 
       // 4. 验证行为一致性
       let behaviorComparison: FunctionalityComparison | undefined
-      if (this.config.compareBehavior) {
+      if (this.config?.compareBehavior) {
         behaviorComparison = await this.compareBehavior(context, testEnvironment)
-        if (!behaviorComparison.identical && this.config.strict) {
+        if (!behaviorComparison.identical && this.config?.strict) {
           throw new Error(`行为不一致: ${behaviorComparison.differences.behavior.join(', ')}`)
         }
       }
 
       // 5. 运行时验证
       let runtimeValidation: RuntimeValidation | undefined
-      if (this.config.runtimeValidation) {
+      if (this.config?.runtimeValidation) {
         const testStartTime = Date.now()
         runtimeValidation = await this.performRuntimeValidation(context, testEnvironment)
         stats.testDuration = Date.now() - testStartTime
         stats.totalTests = runtimeValidation.tests.length
         
-        if (!runtimeValidation.success && this.config.failOnError) {
+        if (!runtimeValidation.success && this.config?.failOnError) {
           const failedTests = runtimeValidation.tests
             .filter(t => !t.passed)
             .map(t => t.name)
@@ -272,28 +272,28 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
 
       // 6. API 兼容性检查
       let apiCompatibility: APICompatibility | undefined
-      if (this.config.apiCompatibility) {
+      if (this.config?.apiCompatibility) {
         apiCompatibility = await this.checkAPICompatibility(context, testEnvironment)
-        if (!apiCompatibility.compatible && this.config.strict) {
+        if (!apiCompatibility.compatible && this.config?.strict) {
           throw new Error(`API 不兼容: ${apiCompatibility.breaking.join(', ')}`)
         }
       }
 
       // 7. 性能对比
       let performanceComparison: any | undefined
-      if (this.config.comparePerformance) {
+      if (this.config?.comparePerformance) {
         performanceComparison = await this.comparePerformance(context, testEnvironment)
       }
 
       // 8. 集成测试
       let integrationResults: any | undefined
-      if (this.config.integrationTests) {
+      if (this.config?.integrationTests) {
         integrationResults = await this.runIntegrationTests(context, testEnvironment)
       }
 
       // 9. 快照测试
       let snapshotResults: any | undefined
-      if (this.config.snapshotTesting) {
+      if (this.config?.snapshotTesting) {
         snapshotResults = await this.runSnapshotTests(context, testEnvironment)
       }
 
@@ -364,8 +364,8 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
       stats.cleanupDuration = Date.now() - cleanupStartTime
 
       // 执行验证后钩子
-      if (this.config.hooks?.afterValidation) {
-        await this.config.hooks.afterValidation(context, validationResult)
+      if (this.config?.hooks?.afterValidation) {
+        await this.config?.hooks.afterValidation(context, validationResult)
       }
 
       // 缓存结果
@@ -825,7 +825,7 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
   private async setupEnhancedEnvironment(context: ValidationContext): Promise<any> {
     const tempDir = path.join(
       process.cwd(),
-      this.config.environment?.tempDir || '.validation-temp',
+      this.config?.environment?.tempDir || '.validation-temp',
       context.validationId
     )
 
@@ -839,7 +839,7 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
     await this.createTestProject(tempDir, context)
 
     // 安装依赖
-    if (this.config.environment?.installDependencies) {
+    if (this.config?.environment?.installDependencies) {
       await this.installDependencies(tempDir)
     }
 
@@ -847,7 +847,7 @@ export class EnhancedPostBuildValidator extends EventEmitter implements IPostBui
       path: tempDir,
       distDir,
       cleanup: async () => {
-        if (!this.config.environment?.keepTempFiles) {
+        if (!this.config?.environment?.keepTempFiles) {
           await fs.remove(tempDir)
         }
       }
@@ -1272,7 +1272,7 @@ describe('Runtime Validation', () => {
    * 安装依赖
    */
   private async installDependencies(projectPath: string): Promise<void> {
-    const packageManager = this.config.environment?.packageManager || 'npm'
+    const packageManager = this.config?.environment?.packageManager || 'npm'
     const command = `${packageManager} install`
     
     try {
@@ -1504,8 +1504,8 @@ describe('Runtime Validation', () => {
    * 输出增强报告
    */
   private async outputEnhancedReport(result: ValidationResult): Promise<void> {
-    const format = this.config.reporting?.format || 'console'
-    const outputPath = this.config.reporting?.outputPath || 'validation-report'
+    const format = this.config?.reporting?.format || 'console'
+    const outputPath = this.config?.reporting?.outputPath || 'validation-report'
 
     if (format === 'console') {
       this.outputToConsole(result)
@@ -1529,25 +1529,25 @@ describe('Runtime Validation', () => {
    * 输出到控制台
    */
   private outputToConsole(result: ValidationResult): void {
-    console.log('\n═══════════════════════════════════════')
-    console.log('      增强验证报告')
-    console.log('═══════════════════════════════════════\n')
+    
+    
+    
 
-    console.log(`状态: ${result.success ? '✅ 通过' : '❌ 失败'}`)
-    console.log(`耗时: ${result.duration}ms`)
-    console.log(`测试: ${result.testResult.passedTests}/${result.testResult.totalTests} 通过`)
+    
+    
+    
 
     if (result.errors.length > 0) {
-      console.log('\n错误:')
-      result.errors.forEach(e => console.log(`  - ${e}`))
+      
+      result.errors.forEach(e => )
     }
 
     if (result.warnings.length > 0) {
-      console.log('\n警告:')
-      result.warnings.forEach(w => console.log(`  - ${w}`))
+      
+      result.warnings.forEach(w => )
     }
 
-    console.log('\n═══════════════════════════════════════\n')
+    
   }
 
   /**

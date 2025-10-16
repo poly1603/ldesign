@@ -51,10 +51,10 @@ export class LdesignRate {
   @Prop() controlled: boolean = false;
 
   /** 悬浮中的临时值（仅视觉） */
-  @State() hoverValue: number | null = null;
+  @State() hoverValue!: number | null = null;
 
   /** 是否存在自定义字符插槽 */
-  @State() hasCharacterSlot: boolean = false;
+  @State() hasCharacterSlot!: boolean = false;
 
   /** hover 变化事件（返回悬浮值） */
   @Event() ldesignHoverChange!: EventEmitter<number>;

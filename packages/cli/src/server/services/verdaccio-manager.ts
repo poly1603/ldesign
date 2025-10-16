@@ -91,9 +91,9 @@ class VerdaccioManager {
       verdaccioLogger.info(`创建配置目录: ${this.configDir}`)
     }
 
-    if (!existsSync(this.config.storage)) {
-      mkdirSync(this.config.storage, { recursive: true })
-      verdaccioLogger.info(`创建存储目录: ${this.config.storage}`)
+    if (!existsSync(this.config?.storage)) {
+      mkdirSync(this.config?.storage, { recursive: true })
+      verdaccioLogger.info(`创建存储目录: ${this.config?.storage}`)
     }
   }
 
@@ -106,7 +106,7 @@ class VerdaccioManager {
 # 详细配置说明: https://verdaccio.org/docs/configuration
 
 # 存储路径
-storage: ${this.config.storage}
+storage: ${this.config?.storage}
 
 # Web UI 配置
 web:
@@ -167,10 +167,10 @@ logs:
 
 # 监听配置
 listen:
-  - ${this.config.host}:${this.config.port}
+  - ${this.config?.host}:${this.config?.port}
 
 # 最大上传大小
-max_body_size: ${this.config.maxBodySize || '100mb'}
+max_body_size: ${this.config?.maxBodySize || '100mb'}
 
 # 通知配置
 notify:
@@ -215,20 +215,20 @@ notify:
       }
 
       // 检查端口是否已被占用
-      const portInUse = await this.isPortInUse(this.config.port)
+      const portInUse = await this.isPortInUse(this.config?.port)
       if (portInUse) {
-        verdaccioLogger.warn(`端口 ${this.config.port} 已被占用，可能有 Verdaccio 实例正在运行`)
+        verdaccioLogger.warn(`端口 ${this.config?.port} 已被占用，可能有 Verdaccio 实例正在运行`)
         // 返回一个虚拟的状态，表示服务已在运行
         return {
           success: true,
-          message: `Verdaccio 服务已在端口 ${this.config.port} 运行（外部启动）`,
+          message: `Verdaccio 服务已在端口 ${this.config?.port} 运行（外部启动）`,
           data: {
             isRunning: true,
-            port: this.config.port,
-            host: this.config.host,
-            url: `http://${this.config.host}:${this.config.port}`,
+            port: this.config?.port,
+            host: this.config?.host,
+            url: `http://${this.config?.host}:${this.config?.port}`,
             configPath: this.configPath,
-            storageePath: this.config.storage
+            storageePath: this.config?.storage
           }
         }
       }
@@ -239,7 +239,7 @@ notify:
 
       verdaccioLogger.info(`正在启动 Verdaccio 服务...`)
       verdaccioLogger.info(`配置文件: ${this.configPath}`)
-      verdaccioLogger.info(`监听地址: http://${this.config.host}:${this.config.port}`)
+      verdaccioLogger.info(`监听地址: http://${this.config?.host}:${this.config?.port}`)
 
       // 使用 spawn 启动 Verdaccio
       // 注意：需要使用 npx 或者直接调用 node_modules 中的 verdaccio
@@ -247,7 +247,7 @@ notify:
       
       this.process = spawn(verdaccioPath, [
         '--config', this.configPath,
-        '--listen', `${this.config.host}:${this.config.port}`
+        '--listen', `${this.config?.host}:${this.config?.port}`
       ], {
         stdio: ['ignore', 'pipe', 'pipe'],
         detached: false,
@@ -322,7 +322,7 @@ notify:
       
       return {
         success: true,
-        message: `Verdaccio 服务已启动，访问地址: http://${this.config.host}:${this.config.port}`,
+        message: `Verdaccio 服务已启动，访问地址: http://${this.config?.host}:${this.config?.port}`,
         data: status
       }
     } catch (error) {
@@ -414,26 +414,26 @@ notify:
     const status: VerdaccioStatus = {
       isRunning,
       configPath: this.configPath,
-      storageePath: this.config.storage
+      storageePath: this.config?.storage
     }
 
     if (isRunning) {
       status.pid = this.process!.pid
-      status.port = this.config.port
-      status.host = this.config.host
-      status.url = `http://${this.config.host}:${this.config.port}`
+      status.port = this.config?.port
+      status.host = this.config?.host
+      status.url = `http://${this.config?.host}:${this.config?.port}`
       
       if (this.startTime) {
         status.uptime = Date.now() - this.startTime
       }
     } else {
       // 如果本地进程不存在，检查端口是否被占用（可能是外部启动的 Verdaccio）
-      const portInUse = await this.isPortInUse(this.config.port)
+      const portInUse = await this.isPortInUse(this.config?.port)
       if (portInUse) {
         status.isRunning = true
-        status.port = this.config.port
-        status.host = this.config.host
-        status.url = `http://${this.config.host}:${this.config.port}`
+        status.port = this.config?.port
+        status.host = this.config?.host
+        status.url = `http://${this.config?.host}:${this.config?.port}`
         // 注意：外部进程我们无法获取 PID 和 uptime
       }
     }
@@ -503,7 +503,7 @@ notify:
     modified: number
   }> {
     try {
-      const storageDir = this.config.storage
+      const storageDir = this.config?.storage
       if (!existsSync(storageDir)) {
         return []
       }
@@ -560,7 +560,7 @@ notify:
    */
   getPackageInfo(packageName: string): any | null {
     try {
-      const packageDir = join(this.config.storage, packageName)
+      const packageDir = join(this.config?.storage, packageName)
       if (!existsSync(packageDir)) {
         return null
       }
@@ -604,7 +604,7 @@ notify:
    */
   deletePackage(packageName: string): { success: boolean; message: string } {
     try {
-      const packageDir = join(this.config.storage, packageName)
+      const packageDir = join(this.config?.storage, packageName)
       if (!existsSync(packageDir)) {
         return {
           success: false,
@@ -635,7 +635,7 @@ notify:
    */
   deletePackageVersion(packageName: string, version: string): { success: boolean; message: string } {
     try {
-      const packageDir = join(this.config.storage, packageName)
+      const packageDir = join(this.config?.storage, packageName)
       if (!existsSync(packageDir)) {
         return {
           success: false,

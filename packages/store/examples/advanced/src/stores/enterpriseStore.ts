@@ -85,25 +85,25 @@ export class EnterpriseStore extends BaseStore {
   @Action()
   viewUsers(): void {
     this.requirePermission('users:read')
-    console.log('查看用户列表')
+    
   }
 
   @Action()
   createUser(): void {
     this.requirePermission('users:create')
-    console.log('创建用户')
+    
   }
 
   @Action()
   deleteUser(): void {
     this.requirePermission('users:delete')
-    console.log('删除用户')
+    
   }
 
   @Action()
   viewSystemSettings(): void {
     this.requirePermission('system:admin')
-    console.log('查看系统设置')
+    
   }
 
   // 数据验证

@@ -65,7 +65,9 @@ export class ClickOutsideDirective extends DirectiveBase {
       }
 
       // Trigger the handler
-      config.handler(event)
+      if (config.handler) {
+        config.handler(event)
+      }
     }
 
     // Store handler for cleanup
@@ -79,7 +81,6 @@ export class ClickOutsideDirective extends DirectiveBase {
   }
 
   public updated(el: HTMLElement, binding: VueDirectiveBinding): void {
-    const config = this.parseConfig(binding)
     const oldHandler = directiveUtils.getData(el, 'click-outside-handler')
 
     // Remove old handler if exists
@@ -94,7 +95,7 @@ export class ClickOutsideDirective extends DirectiveBase {
     this.log(`Directive updated on element`, el)
   }
 
-  public unmounted(el: HTMLElement, binding: VueDirectiveBinding): void {
+  public unmounted(el: HTMLElement): void {
     const handler = directiveUtils.getData(el, 'click-outside-handler')
 
     if (handler) {
@@ -112,15 +113,16 @@ export class ClickOutsideDirective extends DirectiveBase {
 
     // Handle different binding formats
     if (typeof value === 'function') {
-      return { handler: value }
+      return { handler: value as (event: Event) => void }
     }
 
     if (typeof value === 'object' && value !== null) {
+      const v = value as Partial<ClickOutsideOptions>
       return {
-        handler: value.handler,
-        exclude: value.exclude,
-        capture: value.capture,
-        disabled: value.disabled,
+        handler: v.handler as (event: Event) => void,
+        exclude: v.exclude,
+        capture: v.capture,
+        disabled: v.disabled,
       }
     }
 
@@ -146,7 +148,7 @@ export class ClickOutsideDirective extends DirectiveBase {
 
 <script setup>
 const handleClickOutside = (event) => {
-  console.log('Clicked outside!', event)
+  
   // Close dropdown, modal, etc.
 }
 </script>

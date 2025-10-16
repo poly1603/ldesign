@@ -199,7 +199,7 @@ export class ConfigManager extends EventEmitter {
               throw new Error('JavaScript 配置文件不存在')
             }
           } catch (jsError) {
-            console.log('🔧 JavaScript 配置文件加载失败详细错误:', jsError)
+            
             this.logger.warn('JavaScript 配置文件加载失败，尝试使用 TS 转译后动态导入', {
               error: (jsError as Error).message,
               stack: (jsError as Error).stack

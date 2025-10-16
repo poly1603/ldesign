@@ -771,9 +771,9 @@ createManagedPromise<T>(
 ```typescript
 interface ManagedPromise<T> {
   promise: Promise<T>
-  cancel(): void
-  isCancelled(): boolean
-  onCancel(callback: () => void): void
+  cancel: () => void
+  isCancelled: () => boolean
+  onCancel: (callback: () => void) => void
 }
 ```
 

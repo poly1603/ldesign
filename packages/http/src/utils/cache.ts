@@ -242,14 +242,14 @@ export class CacheManager {
       storage: config.storage ?? new MemoryCacheStorage(),
     }
 
-    this.storage = this.config.storage
+    this.storage = this.config?.storage
   }
 
   /**
    * 获取缓存
    */
   async get<T = any>(config: RequestConfig): Promise<ResponseData<T> | null> {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return null
     }
 
@@ -278,7 +278,7 @@ export class CacheManager {
     config: RequestConfig,
     response: ResponseData<T>,
   ): Promise<void> {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return
     }
 
@@ -292,7 +292,7 @@ export class CacheManager {
     }
 
     const key = this.getCachedKey(config)
-    await this.storage.set(key, response, this.config.ttl)
+    await this.storage.set(key, response, this.config?.ttl)
   }
 
   /**
@@ -349,7 +349,7 @@ export class CacheManager {
       return this.keyCache.get(configId)!
     }
 
-    const key = this.config.keyGenerator(config)
+    const key = this.config?.keyGenerator(config)
 
     // 限制缓存大小，避免内存泄漏
     if (this.keyCache.size > 1000) {
@@ -512,7 +512,7 @@ export class AdvancedCacheManager extends CacheManager {
   async get<T = any>(config: RequestConfig): Promise<ResponseData<T> | null> {
     if (!this.advancedConfig.stats) {
       // 如果统计被禁用，直接从存储获取，不进行任何统计
-      if (!this.config.enabled) {
+      if (!this.config?.enabled) {
         return null
       }
       const key = this.getCachedKey(config)

@@ -147,18 +147,18 @@ export class LdesignButton {
   /**
    * 内部加载状态
    */
-  @State() innerLoading: boolean = false;
+  @State() innerLoading!: boolean = false;
 
   /**
    * 是否包含两个中文字符
    */
-  @State() hasTwoCNChar: boolean = false;
+  @State() hasTwoCNChar!: boolean = false;
 
   // ==================== Events ====================
   /**
    * 点击事件
    */
-  @Event() ldesignClick: EventEmitter<MouseEvent>;
+  @Event() ldesignClick!: EventEmitter<MouseEvent>;
 
   // ==================== Private Properties ====================
   private loadingDelayTimer?: ReturnType<typeof setTimeout>;

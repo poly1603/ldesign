@@ -64,16 +64,16 @@ export class LdesignImagePreview {
   @Prop() transitionDuration: number = 300;
 
   // ── Events ────────────────────────────────────────────
-  @Event() ldesignPreviewOpen: EventEmitter<{ images: string[], index: number }>;
-  @Event() ldesignPreviewClose: EventEmitter<void>;
-  @Event() ldesignPreviewChange: EventEmitter<{ index: number, image: string }>;
-  @Event() ldesignPreviewError: EventEmitter<{ index: number, image: string }>;
+  @Event() ldesignPreviewOpen!: EventEmitter<{ images: string[], index: number }>;
+  @Event() ldesignPreviewClose!: EventEmitter<void>;
+  @Event() ldesignPreviewChange!: EventEmitter<{ index: number, image: string }>;
+  @Event() ldesignPreviewError!: EventEmitter<{ index: number, image: string }>;
 
   // ── State ─────────────────────────────────────────────
-  @State() isAnimating: boolean = false;
-  @State() currentSrc: string = '';
-  @State() isLoading: boolean = false;
-  @State() hasError: boolean = false;
+  @State() isAnimating!: boolean = false;
+  @State() currentSrc!: string = '';
+  @State() isLoading!: boolean = false;
+  @State() hasError!: boolean = false;
 
   private draggableRef?: any;
   private overlayRef?: HTMLElement;

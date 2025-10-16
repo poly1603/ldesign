@@ -9,11 +9,8 @@
 
 import type { Plugin, ViteDevServer } from 'vite'
 import { Logger } from '../utils/logger'
-import fs from 'node:fs/promises'
 import path from 'node:path'
 import { watch } from 'chokidar'
-import { execSync } from 'node:child_process'
-import chalk from 'chalk'
 
 export interface DevEnhancementOptions {
   /** 是否启用自动重启 */
@@ -289,7 +286,7 @@ export class DevEnhancementManager {
       res.end = function(...args: any[]) {
         const duration = Date.now() - start
         if (duration > 1000) { // 超过1秒的请求
-          console.log(chalk.yellow(`⚠️  慢请求: ${req.url} (${duration}ms)`))
+          `))
         }
         return originalEnd(...args)
       }
@@ -437,7 +434,7 @@ export class DevEnhancementManager {
    * 显示变更通知
    */
   private showChangeNotification(message: string): void {
-    console.log(chalk.blue(`\n📢 ${message}\n`))
+    )
   }
 
   /**
@@ -480,7 +477,7 @@ export function createDevEnhancementPlugin(options: DevEnhancementOptions = {}):
       // 在构建开始时显示性能指标
       const metrics = manager.getMetrics()
       if (metrics.memoryUsage > 0) {
-        console.log(chalk.gray(`📊 内存使用: ${metrics.memoryUsage.toFixed(2)}MB`))
+        }MB`))
       }
     }
   }

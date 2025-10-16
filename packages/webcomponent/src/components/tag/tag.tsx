@@ -104,12 +104,12 @@ export class LdesignTag {
   /**
    * 关闭事件
    */
-  @Event() ldesignClose: EventEmitter<MouseEvent>;
+  @Event() ldesignClose!: EventEmitter<MouseEvent>;
 
   /**
    * 选中状态变化事件（仅当 checkable 为 true 时触发）
    */
-  @Event() ldesignChange: EventEmitter<boolean>;
+  @Event() ldesignChange!: EventEmitter<boolean>;
 
   @Watch('customColor')
   @Watch('variant')

@@ -53,11 +53,11 @@ config.set(key, value)
 ```typescript
 // 旧代码
 import { InputValidator } from '@ldesign/engine'
-const validator = new InputValidator()
-validator.validate(input, rules)
 
 // 新代码 - 使用第三方库或自定义验证
-import { z } from 'zod' // 推荐使用 zod
+import { z } from 'zod'
+const validator = new InputValidator()
+validator.validate(input, rules) // 推荐使用 zod
 const schema = z.object({
   name: z.string().min(1),
   age: z.number().positive()
@@ -138,8 +138,8 @@ npm install @ldesign/engine@^1.0.0-alpha.1
 // 旧的导入方式
 import Engine from '@ldesign/engine'
 import { 
-  NotificationManager,
   DialogManager,
+  NotificationManager,
   PerformanceManager,
   // ...所有管理器
 } from '@ldesign/engine'
@@ -147,9 +147,9 @@ import {
 // 新的导入方式 - 核心引擎
 import Engine from '@ldesign/engine'
 
+import { createDialogManager } from '@ldesign/engine/dialog'
 // 按需导入额外模块
 import { createNotificationManager } from '@ldesign/engine/notifications'
-import { createDialogManager } from '@ldesign/engine/dialog'
 import { PerformanceAnalyzer } from '@ldesign/engine/performance'
 ```
 
@@ -193,7 +193,7 @@ async function setupOptionalFeatures() {
 
 ```typescript
 // 旧代码
-import { typedOn, typedEmit } from '@ldesign/engine'
+import { typedEmit, typedOn } from '@ldesign/engine'
 
 typedOn(engine, 'ready', (data: ReadyEvent) => {
   console.log('Engine ready', data)
@@ -251,13 +251,13 @@ describe('Engine', () => {
 
 #### 旧版本代码
 ```typescript
-import Engine from '@ldesign/engine'
-import { 
-  typedOn, 
-  typedEmit,
+import Engine, { 
+  getTypedConfig, 
   InputValidator,
-  getTypedConfig 
+  typedEmit,
+  typedOn 
 } from '@ldesign/engine'
+
 
 class MyApp {
   private engine: Engine

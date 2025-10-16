@@ -7,7 +7,6 @@ import { Router } from 'express'
 import type { IRouter } from 'express'
 import { execSync, spawn } from 'child_process'
 import https from 'https'
-import { createWriteStream } from 'fs'
 import { logger } from '../../utils/logger.js'
 import { connectionManager } from '../websocket.js'
 

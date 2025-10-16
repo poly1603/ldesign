@@ -66,7 +66,7 @@ export class PackageUpdater {
       customExports: config.customExports || {},
       logger: config.logger || new Logger()
     }
-    this.logger = this.config.logger
+    this.logger = this.config?.logger
   }
 
   /**
@@ -76,18 +76,18 @@ export class PackageUpdater {
     try {
       this.logger.info('开始更新 package.json...')
 
-      const packageJsonPath = path.join(this.config.projectRoot, 'package.json')
+      const packageJsonPath = path.join(this.config?.projectRoot, 'package.json')
       const packageJson = await this.readPackageJson(packageJsonPath)
 
-      if (this.config.autoExports) {
+      if (this.config?.autoExports) {
         packageJson.exports = await this.generateExports()
       }
 
-      if (this.config.updateEntryPoints) {
+      if (this.config?.updateEntryPoints) {
         this.updateEntryPoints(packageJson)
       }
 
-      if (this.config.updateFiles) {
+      if (this.config?.updateFiles) {
         packageJson.files = await this.generateFiles()
       }
 
@@ -107,7 +107,7 @@ export class PackageUpdater {
    * 扫描 src 目录并生成 exports 配置
    */
   private async generateExports(): Promise<Record<string, any>> {
-    const srcPath = path.join(this.config.projectRoot, this.config.srcDir)
+    const srcPath = path.join(this.config?.projectRoot, this.config?.srcDir)
     const exports: Record<string, any> = {}
 
     // 主入口
@@ -139,14 +139,14 @@ export class PackageUpdater {
     await this.addCssExports(exports)
 
     // 合并自定义 exports
-    return { ...exports, ...this.config.customExports }
+    return { ...exports, ...this.config?.customExports }
   }
 
   /**
    * 创建单个 export 条目
    */
   private createExportEntry(relativePath: string): Record<string, string> {
-    const { esm, cjs, types } = this.config.outputDirs
+    const { esm, cjs, types } = this.config?.outputDirs
     const entry: Record<string, string> = {}
 
     // 类型声明 - 使用 types 目录配置
@@ -171,7 +171,7 @@ export class PackageUpdater {
    * 创建通配符 export 条目（支持 package/utils/* 导入）
    */
   private createWildcardExportEntry(dirName: string): Record<string, string> {
-    const { esm, cjs, types } = this.config.outputDirs
+    const { esm, cjs, types } = this.config?.outputDirs
     const entry: Record<string, string> = {}
 
     // 类型声明 - 使用 types 目录配置
@@ -259,7 +259,7 @@ export class PackageUpdater {
    * 更新入口点字段
    */
   private updateEntryPoints(packageJson: any): void {
-    const { esm, cjs, umd, types } = this.config.outputDirs
+    const { esm, cjs, umd, types } = this.config?.outputDirs
 
     // 主入口点 - CJS 格式
     if (cjs) {
@@ -282,8 +282,8 @@ export class PackageUpdater {
       const minifiedPath = `./${umd}/index.min.js`
       const regularPath = `./${umd}/index.js`
 
-      const minifiedFullPath = path.join(this.config.projectRoot, umd, 'index.min.js')
-      const regularFullPath = path.join(this.config.projectRoot, umd, 'index.js')
+      const minifiedFullPath = path.join(this.config?.projectRoot, umd, 'index.min.js')
+      const regularFullPath = path.join(this.config?.projectRoot, umd, 'index.js')
 
       // 优先使用压缩版本，如果不存在则使用常规版本
       if (this.fileExistsSync(minifiedFullPath)) {
@@ -308,12 +308,12 @@ export class PackageUpdater {
    */
   private async generateFiles(): Promise<string[]> {
     const files = ['README.md', 'LICENSE', 'package.json']
-    const { esm, cjs, umd, types } = this.config.outputDirs
+    const { esm, cjs, umd, types } = this.config?.outputDirs
 
     // 检查输出目录是否存在
     for (const dir of [esm, cjs, umd, types]) {
       if (dir) {
-        const dirPath = path.join(this.config.projectRoot, dir)
+        const dirPath = path.join(this.config?.projectRoot, dir)
         try {
           await fs.access(dirPath)
           if (!files.includes(dir)) {
@@ -437,7 +437,7 @@ export class PackageUpdater {
    * 检测并添加CSS文件exports
    */
   private async addCssExports(exports: Record<string, any>): Promise<void> {
-    const { esm, cjs, umd } = this.config.outputDirs
+    const { esm, cjs, umd } = this.config?.outputDirs
     const fs = await import('fs')
     const path = await import('path')
 
@@ -446,7 +446,7 @@ export class PackageUpdater {
 
     // 检查ESM目录
     if (esm) {
-      const esmDir = path.join(this.config.projectRoot, esm)
+      const esmDir = path.join(this.config?.projectRoot, esm)
       if (fs.existsSync(esmDir)) {
         await this.findCssFiles(esmDir, cssFiles, esm)
       }
@@ -454,7 +454,7 @@ export class PackageUpdater {
 
     // 检查CJS目录
     if (cjs) {
-      const cjsDir = path.join(this.config.projectRoot, cjs)
+      const cjsDir = path.join(this.config?.projectRoot, cjs)
       if (fs.existsSync(cjsDir)) {
         await this.findCssFiles(cjsDir, cssFiles, cjs)
       }
@@ -462,7 +462,7 @@ export class PackageUpdater {
 
     // 检查UMD目录
     if (umd) {
-      const umdDir = path.join(this.config.projectRoot, umd)
+      const umdDir = path.join(this.config?.projectRoot, umd)
       if (fs.existsSync(umdDir)) {
         await this.findCssFiles(umdDir, cssFiles, umd)
       }

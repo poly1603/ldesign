@@ -6,7 +6,6 @@
 import { Router } from 'express'
 import type { IRouter } from 'express'
 import { execSync, spawn, ChildProcess } from 'child_process'
-import os from 'os'
 import { resolve, join, dirname } from 'path'
 import https from 'https'
 import { createWriteStream, existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'

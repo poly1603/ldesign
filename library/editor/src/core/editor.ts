@@ -293,7 +293,7 @@ export class Editor {
     // 动态导入插件
     switch(name) {
       case 'image':
-        import('../plugins/image').then(module => {
+        import('../plugins/media/image').then(module => {
           this.plugins.register(module.ImagePlugin)
         })
         break

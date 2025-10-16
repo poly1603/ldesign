@@ -1,0 +1,1955 @@
+{
+  "100000": {
+    "name": "中华人民共和国",
+    "status": "completed",
+    "filePath": "maps\\china.json",
+    "downloadTime": "2025-10-15T01:18:08.029Z",
+    "fileSize": 632859
+  },
+  "110000": {
+    "name": "北京市",
+    "status": "completed",
+    "filePath": "maps\\province\\110000.json",
+    "downloadTime": "2025-07-17T10:24:03.737Z",
+    "fileSize": 377080
+  },
+  "110101": {
+    "name": "东城区",
+    "status": "completed",
+    "filePath": "maps\\district\\110101.json",
+    "downloadTime": "2025-07-17T10:24:04.539Z",
+    "fileSize": 26593
+  },
+  "110102": {
+    "name": "西城区",
+    "status": "completed",
+    "filePath": "maps\\district\\110102.json",
+    "downloadTime": "2025-07-17T10:24:05.268Z",
+    "fileSize": 22003
+  },
+  "110105": {
+    "name": "朝阳区",
+    "status": "completed",
+    "filePath": "maps\\district\\110105.json",
+    "downloadTime": "2025-07-17T10:24:05.952Z",
+    "fileSize": 67760
+  },
+  "110106": {
+    "name": "丰台区",
+    "status": "completed",
+    "filePath": "maps\\district\\110106.json",
+    "downloadTime": "2025-07-17T10:24:06.824Z",
+    "fileSize": 83199
+  },
+  "110107": {
+    "name": "石景山区",
+    "status": "completed",
+    "filePath": "maps\\district\\110107.json",
+    "downloadTime": "2025-07-17T10:24:07.672Z",
+    "fileSize": 28251
+  },
+  "110108": {
+    "name": "海淀区",
+    "status": "completed",
+    "filePath": "maps\\district\\110108.json",
+    "downloadTime": "2025-07-17T10:24:08.337Z",
+    "fileSize": 65033
+  },
+  "110109": {
+    "name": "门头沟区",
+    "status": "completed",
+    "filePath": "maps\\district\\110109.json",
+    "downloadTime": "2025-07-17T10:24:08.973Z",
+    "fileSize": 115002
+  },
+  "110111": {
+    "name": "房山区",
+    "status": "completed",
+    "filePath": "maps\\district\\110111.json",
+    "downloadTime": "2025-07-17T10:24:09.624Z",
+    "fileSize": 104611
+  },
+  "110112": {
+    "name": "通州区",
+    "status": "completed",
+    "filePath": "maps\\district\\110112.json",
+    "downloadTime": "2025-07-17T10:24:10.261Z",
+    "fileSize": 62351
+  },
+  "110113": {
+    "name": "顺义区",
+    "status": "completed",
+    "filePath": "maps\\district\\110113.json",
+    "downloadTime": "2025-07-17T10:24:10.897Z",
+    "fileSize": 104479
+  },
+  "110114": {
+    "name": "昌平区",
+    "status": "completed",
+    "filePath": "maps\\district\\110114.json",
+    "downloadTime": "2025-07-17T10:24:11.606Z",
+    "fileSize": 155162
+  },
+  "110115": {
+    "name": "大兴区",
+    "status": "completed",
+    "filePath": "maps\\district\\110115.json",
+    "downloadTime": "2025-07-17T10:24:12.367Z",
+    "fileSize": 79186
+  },
+  "110116": {
+    "name": "怀柔区",
+    "status": "completed",
+    "filePath": "maps\\district\\110116.json",
+    "downloadTime": "2025-07-17T10:24:13.024Z",
+    "fileSize": 89931
+  },
+  "110117": {
+    "name": "平谷区",
+    "status": "completed",
+    "filePath": "maps\\district\\110117.json",
+    "downloadTime": "2025-07-17T10:24:13.652Z",
+    "fileSize": 130570
+  },
+  "110118": {
+    "name": "密云区",
+    "status": "completed",
+    "filePath": "maps\\district\\110118.json",
+    "downloadTime": "2025-07-17T10:24:14.286Z",
+    "fileSize": 134655
+  },
+  "110119": {
+    "name": "延庆区",
+    "status": "completed",
+    "filePath": "maps\\district\\110119.json",
+    "downloadTime": "2025-07-17T10:24:14.916Z",
+    "fileSize": 124896
+  },
+  "120000": {
+    "name": "天津市",
+    "status": "completed",
+    "filePath": "maps\\province\\120000.json",
+    "downloadTime": "2025-10-15T01:18:08.894Z",
+    "fileSize": 257799
+  },
+  "130000": {
+    "name": "河北省",
+    "status": "completed",
+    "filePath": "maps\\province\\130000.json",
+    "downloadTime": "2025-10-15T01:18:09.590Z",
+    "fileSize": 274316
+  },
+  "140000": {
+    "name": "山西省",
+    "status": "completed",
+    "filePath": "maps\\province\\140000.json",
+    "downloadTime": "2025-10-15T01:18:10.240Z",
+    "fileSize": 226520
+  },
+  "150000": {
+    "name": "内蒙古自治区",
+    "status": "completed",
+    "filePath": "maps\\province\\150000.json",
+    "downloadTime": "2025-10-15T01:18:10.890Z",
+    "fileSize": 290741
+  },
+  "210000": {
+    "name": "辽宁省",
+    "status": "completed",
+    "filePath": "maps\\province\\210000.json",
+    "downloadTime": "2025-10-15T01:18:11.777Z",
+    "fileSize": 609014
+  },
+  "220000": {
+    "name": "吉林省",
+    "status": "completed",
+    "filePath": "maps\\province\\220000.json",
+    "downloadTime": "2025-10-15T01:18:12.507Z",
+    "fileSize": 556671
+  },
+  "230000": {
+    "name": "黑龙江省",
+    "status": "completed",
+    "filePath": "maps\\province\\230000.json",
+    "downloadTime": "2025-10-15T01:18:13.203Z",
+    "fileSize": 552589
+  },
+  "310000": {
+    "name": "上海市",
+    "status": "completed",
+    "filePath": "maps\\province\\310000.json",
+    "downloadTime": "2025-10-15T01:18:13.841Z",
+    "fileSize": 309339
+  },
+  "320000": {
+    "name": "江苏省",
+    "status": "completed",
+    "filePath": "maps\\province\\320000.json",
+    "downloadTime": "2025-10-15T01:18:14.492Z",
+    "fileSize": 365056
+  },
+  "330000": {
+    "name": "浙江省",
+    "status": "completed",
+    "filePath": "maps\\province\\330000.json",
+    "downloadTime": "2025-10-15T01:18:15.681Z",
+    "fileSize": 458719
+  },
+  "340000": {
+    "name": "安徽省",
+    "status": "completed",
+    "filePath": "maps\\province\\340000.json",
+    "downloadTime": "2025-10-15T01:18:16.405Z",
+    "fileSize": 466911
+  },
+  "350000": {
+    "name": "福建省",
+    "status": "completed",
+    "filePath": "maps\\province\\350000.json",
+    "downloadTime": "2025-10-15T01:18:17.303Z",
+    "fileSize": 433359
+  },
+  "360000": {
+    "name": "江西省",
+    "status": "completed",
+    "filePath": "maps\\province\\360000.json",
+    "downloadTime": "2025-10-15T01:18:18.047Z",
+    "fileSize": 458220
+  },
+  "370000": {
+    "name": "山东省",
+    "status": "completed",
+    "filePath": "maps\\province\\370000.json",
+    "downloadTime": "2025-10-15T01:18:18.986Z",
+    "fileSize": 632523
+  },
+  "410000": {
+    "name": "河南省",
+    "status": "completed",
+    "filePath": "maps\\province\\410000.json",
+    "downloadTime": "2025-10-15T01:18:19.765Z",
+    "fileSize": 576939
+  },
+  "420000": {
+    "name": "湖北省",
+    "status": "completed",
+    "filePath": "maps\\province\\420000.json",
+    "downloadTime": "2025-10-15T01:18:21.005Z",
+    "fileSize": 585940
+  },
+  "430000": {
+    "name": "湖南省",
+    "status": "completed",
+    "filePath": "maps\\province\\430000.json",
+    "downloadTime": "2025-10-15T01:18:22.103Z",
+    "fileSize": 662229
+  },
+  "440000": {
+    "name": "广东省",
+    "status": "completed",
+    "filePath": "maps\\province\\440000.json",
+    "downloadTime": "2025-07-17T09:07:46.168Z",
+    "fileSize": 727097
+  },
+  "440100": {
+    "name": "广州市",
+    "status": "completed",
+    "filePath": "maps\\city\\440100.json",
+    "downloadTime": "2025-07-17T09:07:46.840Z",
+    "fileSize": 236141
+  },
+  "440103": {
+    "name": "荔湾区",
+    "status": "completed",
+    "filePath": "maps\\district\\440103.json",
+    "downloadTime": "2025-07-17T09:08:01.666Z",
+    "fileSize": 19863
+  },
+  "440104": {
+    "name": "越秀区",
+    "status": "completed",
+    "filePath": "maps\\district\\440104.json",
+    "downloadTime": "2025-07-17T09:08:02.328Z",
+    "fileSize": 28285
+  },
+  "440105": {
+    "name": "海珠区",
+    "status": "completed",
+    "filePath": "maps\\district\\440105.json",
+    "downloadTime": "2025-07-17T09:08:02.986Z",
+    "fileSize": 16993
+  },
+  "440106": {
+    "name": "天河区",
+    "status": "completed",
+    "filePath": "maps\\district\\440106.json",
+    "downloadTime": "2025-07-17T09:08:03.626Z",
+    "fileSize": 34433
+  },
+  "440111": {
+    "name": "白云区",
+    "status": "completed",
+    "filePath": "maps\\district\\440111.json",
+    "downloadTime": "2025-07-17T09:08:04.274Z",
+    "fileSize": 70601
+  },
+  "440112": {
+    "name": "黄埔区",
+    "status": "completed",
+    "filePath": "maps\\district\\440112.json",
+    "downloadTime": "2025-07-17T09:08:04.874Z",
+    "fileSize": 66343
+  },
+  "440113": {
+    "name": "番禺区",
+    "status": "completed",
+    "filePath": "maps\\district\\440113.json",
+    "downloadTime": "2025-07-17T09:08:05.517Z",
+    "fileSize": 22374
+  },
+  "440114": {
+    "name": "花都区",
+    "status": "completed",
+    "filePath": "maps\\district\\440114.json",
+    "downloadTime": "2025-07-17T09:08:06.097Z",
+    "fileSize": 67305
+  },
+  "440115": {
+    "name": "南沙区",
+    "status": "completed",
+    "filePath": "maps\\district\\440115.json",
+    "downloadTime": "2025-07-17T09:08:06.712Z",
+    "fileSize": 17167
+  },
+  "440117": {
+    "name": "从化区",
+    "status": "completed",
+    "filePath": "maps\\district\\440117.json",
+    "downloadTime": "2025-07-17T09:08:07.325Z",
+    "fileSize": 71298
+  },
+  "440118": {
+    "name": "增城区",
+    "status": "completed",
+    "filePath": "maps\\district\\440118.json",
+    "downloadTime": "2025-07-17T09:08:07.976Z",
+    "fileSize": 57584
+  },
+  "440200": {
+    "name": "韶关市",
+    "status": "completed",
+    "filePath": "maps\\city\\440200.json",
+    "downloadTime": "2025-07-17T09:07:47.444Z",
+    "fileSize": 428012
+  },
+  "440203": {
+    "name": "武江区",
+    "status": "completed",
+    "filePath": "maps\\district\\440203.json",
+    "downloadTime": "2025-07-17T09:08:08.638Z",
+    "fileSize": 62631
+  },
+  "440204": {
+    "name": "浈江区",
+    "status": "completed",
+    "filePath": "maps\\district\\440204.json",
+    "downloadTime": "2025-07-17T09:08:09.245Z",
+    "fileSize": 50915
+  },
+  "440205": {
+    "name": "曲江区",
+    "status": "completed",
+    "filePath": "maps\\district\\440205.json",
+    "downloadTime": "2025-07-17T09:08:09.937Z",
+    "fileSize": 85093
+  },
+  "440222": {
+    "name": "始兴县",
+    "status": "completed",
+    "filePath": "maps\\district\\440222.json",
+    "downloadTime": "2025-07-17T09:08:10.703Z",
+    "fileSize": 50916
+  },
+  "440224": {
+    "name": "仁化县",
+    "status": "completed",
+    "filePath": "maps\\district\\440224.json",
+    "downloadTime": "2025-07-17T09:08:11.358Z",
+    "fileSize": 71740
+  },
+  "440229": {
+    "name": "翁源县",
+    "status": "completed",
+    "filePath": "maps\\district\\440229.json",
+    "downloadTime": "2025-07-17T09:08:11.964Z",
+    "fileSize": 61496
+  },
+  "440232": {
+    "name": "乳源瑶族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\440232.json",
+    "downloadTime": "2025-07-17T09:08:12.561Z",
+    "fileSize": 74693
+  },
+  "440233": {
+    "name": "新丰县",
+    "status": "completed",
+    "filePath": "maps\\district\\440233.json",
+    "downloadTime": "2025-07-17T09:08:13.490Z",
+    "fileSize": 101325
+  },
+  "440281": {
+    "name": "乐昌市",
+    "status": "completed",
+    "filePath": "maps\\district\\440281.json",
+    "downloadTime": "2025-07-17T09:08:14.072Z",
+    "fileSize": 81562
+  },
+  "440282": {
+    "name": "南雄市",
+    "status": "completed",
+    "filePath": "maps\\district\\440282.json",
+    "downloadTime": "2025-07-17T09:08:14.733Z",
+    "fileSize": 71670
+  },
+  "440300": {
+    "name": "深圳市",
+    "status": "completed",
+    "filePath": "maps\\city\\440300.json",
+    "downloadTime": "2025-07-17T09:07:48.104Z",
+    "fileSize": 258692
+  },
+  "440303": {
+    "name": "罗湖区",
+    "status": "completed",
+    "filePath": "maps\\district\\440303.json",
+    "downloadTime": "2025-07-17T09:08:15.395Z",
+    "fileSize": 47207
+  },
+  "440304": {
+    "name": "福田区",
+    "status": "completed",
+    "filePath": "maps\\district\\440304.json",
+    "downloadTime": "2025-07-17T09:08:15.939Z",
+    "fileSize": 29136
+  },
+  "440305": {
+    "name": "南山区",
+    "status": "completed",
+    "filePath": "maps\\district\\440305.json",
+    "downloadTime": "2025-07-17T09:08:16.534Z",
+    "fileSize": 30761
+  },
+  "440306": {
+    "name": "宝安区",
+    "status": "completed",
+    "filePath": "maps\\district\\440306.json",
+    "downloadTime": "2025-07-17T09:08:17.195Z",
+    "fileSize": 74485
+  },
+  "440307": {
+    "name": "龙岗区",
+    "status": "completed",
+    "filePath": "maps\\district\\440307.json",
+    "downloadTime": "2025-07-17T09:08:17.798Z",
+    "fileSize": 106230
+  },
+  "440308": {
+    "name": "盐田区",
+    "status": "completed",
+    "filePath": "maps\\district\\440308.json",
+    "downloadTime": "2025-07-17T09:08:18.472Z",
+    "fileSize": 26267
+  },
+  "440309": {
+    "name": "龙华区",
+    "status": "completed",
+    "filePath": "maps\\district\\440309.json",
+    "downloadTime": "2025-07-17T09:08:19.024Z",
+    "fileSize": 62210
+  },
+  "440310": {
+    "name": "坪山区",
+    "status": "completed",
+    "filePath": "maps\\district\\440310.json",
+    "downloadTime": "2025-07-17T09:08:19.696Z",
+    "fileSize": 56304
+  },
+  "440311": {
+    "name": "光明区",
+    "status": "completed",
+    "filePath": "maps\\district\\440311.json",
+    "downloadTime": "2025-07-17T09:08:20.309Z",
+    "fileSize": 69824
+  },
+  "440400": {
+    "name": "珠海市",
+    "status": "completed",
+    "filePath": "maps\\city\\440400.json",
+    "downloadTime": "2025-07-17T09:07:48.798Z",
+    "fileSize": 178098
+  },
+  "440402": {
+    "name": "香洲区",
+    "status": "completed",
+    "filePath": "maps\\district\\440402.json",
+    "downloadTime": "2025-07-17T09:08:20.945Z",
+    "fileSize": 131686
+  },
+  "440403": {
+    "name": "斗门区",
+    "status": "completed",
+    "filePath": "maps\\district\\440403.json",
+    "downloadTime": "2025-07-17T09:08:21.535Z",
+    "fileSize": 23799
+  },
+  "440404": {
+    "name": "金湾区",
+    "status": "completed",
+    "filePath": "maps\\district\\440404.json",
+    "downloadTime": "2025-07-17T09:08:22.202Z",
+    "fileSize": 29830
+  },
+  "440500": {
+    "name": "汕头市",
+    "status": "completed",
+    "filePath": "maps\\city\\440500.json",
+    "downloadTime": "2025-07-17T09:07:49.454Z",
+    "fileSize": 155972
+  },
+  "440507": {
+    "name": "龙湖区",
+    "status": "completed",
+    "filePath": "maps\\district\\440507.json",
+    "downloadTime": "2025-07-17T09:08:22.782Z",
+    "fileSize": 10826
+  },
+  "440511": {
+    "name": "金平区",
+    "status": "completed",
+    "filePath": "maps\\district\\440511.json",
+    "downloadTime": "2025-07-17T09:08:23.361Z",
+    "fileSize": 20641
+  },
+  "440512": {
+    "name": "濠江区",
+    "status": "completed",
+    "filePath": "maps\\district\\440512.json",
+    "downloadTime": "2025-07-17T09:08:23.972Z",
+    "fileSize": 18949
+  },
+  "440513": {
+    "name": "潮阳区",
+    "status": "completed",
+    "filePath": "maps\\district\\440513.json",
+    "downloadTime": "2025-07-17T09:08:24.579Z",
+    "fileSize": 45020
+  },
+  "440514": {
+    "name": "潮南区",
+    "status": "completed",
+    "filePath": "maps\\district\\440514.json",
+    "downloadTime": "2025-07-17T09:08:25.262Z",
+    "fileSize": 49682
+  },
+  "440515": {
+    "name": "澄海区",
+    "status": "completed",
+    "filePath": "maps\\district\\440515.json",
+    "downloadTime": "2025-07-17T09:08:25.900Z",
+    "fileSize": 27086
+  },
+  "440523": {
+    "name": "南澳县",
+    "status": "completed",
+    "filePath": "maps\\district\\440523.json",
+    "downloadTime": "2025-07-17T09:08:26.517Z",
+    "fileSize": 46004
+  },
+  "440600": {
+    "name": "佛山市",
+    "status": "completed",
+    "filePath": "maps\\city\\440600.json",
+    "downloadTime": "2025-07-17T09:07:50.089Z",
+    "fileSize": 169480
+  },
+  "440604": {
+    "name": "禅城区",
+    "status": "completed",
+    "filePath": "maps\\district\\440604.json",
+    "downloadTime": "2025-07-17T09:08:27.114Z",
+    "fileSize": 29996
+  },
+  "440605": {
+    "name": "南海区",
+    "status": "completed",
+    "filePath": "maps\\district\\440605.json",
+    "downloadTime": "2025-07-17T09:08:27.735Z",
+    "fileSize": 67072
+  },
+  "440606": {
+    "name": "顺德区",
+    "status": "completed",
+    "filePath": "maps\\district\\440606.json",
+    "downloadTime": "2025-07-17T09:08:28.381Z",
+    "fileSize": 55240
+  },
+  "440607": {
+    "name": "三水区",
+    "status": "completed",
+    "filePath": "maps\\district\\440607.json",
+    "downloadTime": "2025-07-17T09:08:28.991Z",
+    "fileSize": 54392
+  },
+  "440608": {
+    "name": "高明区",
+    "status": "completed",
+    "filePath": "maps\\district\\440608.json",
+    "downloadTime": "2025-07-17T09:08:29.583Z",
+    "fileSize": 138354
+  },
+  "440700": {
+    "name": "江门市",
+    "status": "completed",
+    "filePath": "maps\\city\\440700.json",
+    "downloadTime": "2025-07-17T09:07:50.761Z",
+    "fileSize": 357347
+  },
+  "440703": {
+    "name": "蓬江区",
+    "status": "completed",
+    "filePath": "maps\\district\\440703.json",
+    "downloadTime": "2025-07-17T09:08:30.185Z",
+    "fileSize": 50478
+  },
+  "440704": {
+    "name": "江海区",
+    "status": "completed",
+    "filePath": "maps\\district\\440704.json",
+    "downloadTime": "2025-07-17T09:08:30.956Z",
+    "fileSize": 11870
+  },
+  "440705": {
+    "name": "新会区",
+    "status": "completed",
+    "filePath": "maps\\district\\440705.json",
+    "downloadTime": "2025-07-17T09:08:31.557Z",
+    "fileSize": 56644
+  },
+  "440781": {
+    "name": "台山市",
+    "status": "completed",
+    "filePath": "maps\\district\\440781.json",
+    "downloadTime": "2025-07-17T09:08:32.160Z",
+    "fileSize": 104787
+  },
+  "440783": {
+    "name": "开平市",
+    "status": "completed",
+    "filePath": "maps\\district\\440783.json",
+    "downloadTime": "2025-07-17T09:08:32.788Z",
+    "fileSize": 142207
+  },
+  "440784": {
+    "name": "鹤山市",
+    "status": "completed",
+    "filePath": "maps\\district\\440784.json",
+    "downloadTime": "2025-07-17T09:08:33.487Z",
+    "fileSize": 189600
+  },
+  "440785": {
+    "name": "恩平市",
+    "status": "completed",
+    "filePath": "maps\\district\\440785.json",
+    "downloadTime": "2025-07-17T09:08:34.166Z",
+    "fileSize": 83042
+  },
+  "440800": {
+    "name": "湛江市",
+    "status": "completed",
+    "filePath": "maps\\city\\440800.json",
+    "downloadTime": "2025-07-17T09:07:51.579Z",
+    "fileSize": 400080
+  },
+  "440802": {
+    "name": "赤坎区",
+    "status": "completed",
+    "filePath": "maps\\district\\440802.json",
+    "downloadTime": "2025-07-17T09:08:34.765Z",
+    "fileSize": 36336
+  },
+  "440803": {
+    "name": "霞山区",
+    "status": "completed",
+    "filePath": "maps\\district\\440803.json",
+    "downloadTime": "2025-07-17T09:08:35.421Z",
+    "fileSize": 28408
+  },
+  "440804": {
+    "name": "坡头区",
+    "status": "completed",
+    "filePath": "maps\\district\\440804.json",
+    "downloadTime": "2025-07-17T09:08:36.025Z",
+    "fileSize": 73281
+  },
+  "440811": {
+    "name": "麻章区",
+    "status": "completed",
+    "filePath": "maps\\district\\440811.json",
+    "downloadTime": "2025-07-17T09:08:36.699Z",
+    "fileSize": 87181
+  },
+  "440823": {
+    "name": "遂溪县",
+    "status": "completed",
+    "filePath": "maps\\district\\440823.json",
+    "downloadTime": "2025-07-17T09:08:37.295Z",
+    "fileSize": 145394
+  },
+  "440825": {
+    "name": "徐闻县",
+    "status": "completed",
+    "filePath": "maps\\district\\440825.json",
+    "downloadTime": "2025-07-17T09:08:37.957Z",
+    "fileSize": 46408
+  },
+  "440881": {
+    "name": "廉江市",
+    "status": "completed",
+    "filePath": "maps\\district\\440881.json",
+    "downloadTime": "2025-07-17T09:08:38.659Z",
+    "fileSize": 190320
+  },
+  "440882": {
+    "name": "雷州市",
+    "status": "completed",
+    "filePath": "maps\\district\\440882.json",
+    "downloadTime": "2025-07-17T09:08:39.274Z",
+    "fileSize": 85187
+  },
+  "440883": {
+    "name": "吴川市",
+    "status": "completed",
+    "filePath": "maps\\district\\440883.json",
+    "downloadTime": "2025-07-17T09:08:39.879Z",
+    "fileSize": 139466
+  },
+  "440900": {
+    "name": "茂名市",
+    "status": "completed",
+    "filePath": "maps\\city\\440900.json",
+    "downloadTime": "2025-07-17T09:07:52.213Z",
+    "fileSize": 305806
+  },
+  "440902": {
+    "name": "茂南区",
+    "status": "completed",
+    "filePath": "maps\\district\\440902.json",
+    "downloadTime": "2025-07-17T09:08:40.542Z",
+    "fileSize": 66986
+  },
+  "440904": {
+    "name": "电白区",
+    "status": "completed",
+    "filePath": "maps\\district\\440904.json",
+    "downloadTime": "2025-07-17T09:08:41.230Z",
+    "fileSize": 76439
+  },
+  "440981": {
+    "name": "高州市",
+    "status": "completed",
+    "filePath": "maps\\district\\440981.json",
+    "downloadTime": "2025-07-17T09:08:41.913Z",
+    "fileSize": 109838
+  },
+  "440982": {
+    "name": "化州市",
+    "status": "completed",
+    "filePath": "maps\\district\\440982.json",
+    "downloadTime": "2025-07-17T09:08:42.531Z",
+    "fileSize": 181911
+  },
+  "440983": {
+    "name": "信宜市",
+    "status": "completed",
+    "filePath": "maps\\district\\440983.json",
+    "downloadTime": "2025-07-17T09:08:43.148Z",
+    "fileSize": 110858
+  },
+  "441200": {
+    "name": "肇庆市",
+    "status": "completed",
+    "filePath": "maps\\city\\441200.json",
+    "downloadTime": "2025-07-17T09:07:52.950Z",
+    "fileSize": 357602
+  },
+  "441202": {
+    "name": "端州区",
+    "status": "completed",
+    "filePath": "maps\\district\\441202.json",
+    "downloadTime": "2025-07-17T09:08:43.835Z",
+    "fileSize": 19579
+  },
+  "441203": {
+    "name": "鼎湖区",
+    "status": "completed",
+    "filePath": "maps\\district\\441203.json",
+    "downloadTime": "2025-07-17T09:08:44.477Z",
+    "fileSize": 39191
+  },
+  "441204": {
+    "name": "高要区",
+    "status": "completed",
+    "filePath": "maps\\district\\441204.json",
+    "downloadTime": "2025-07-17T09:08:45.163Z",
+    "fileSize": 112120
+  },
+  "441223": {
+    "name": "广宁县",
+    "status": "completed",
+    "filePath": "maps\\district\\441223.json",
+    "downloadTime": "2025-07-17T09:08:45.781Z",
+    "fileSize": 66363
+  },
+  "441224": {
+    "name": "怀集县",
+    "status": "completed",
+    "filePath": "maps\\district\\441224.json",
+    "downloadTime": "2025-07-17T09:08:46.393Z",
+    "fileSize": 61412
+  },
+  "441225": {
+    "name": "封开县",
+    "status": "completed",
+    "filePath": "maps\\district\\441225.json",
+    "downloadTime": "2025-07-17T09:08:47.013Z",
+    "fileSize": 88475
+  },
+  "441226": {
+    "name": "德庆县",
+    "status": "completed",
+    "filePath": "maps\\district\\441226.json",
+    "downloadTime": "2025-07-17T09:08:47.648Z",
+    "fileSize": 64756
+  },
+  "441284": {
+    "name": "四会市",
+    "status": "completed",
+    "filePath": "maps\\district\\441284.json",
+    "downloadTime": "2025-07-17T09:08:48.402Z",
+    "fileSize": 52907
+  },
+  "441300": {
+    "name": "惠州市",
+    "status": "completed",
+    "filePath": "maps\\city\\441300.json",
+    "downloadTime": "2025-07-17T09:07:54.018Z",
+    "fileSize": 308634
+  },
+  "441302": {
+    "name": "惠城区",
+    "status": "completed",
+    "filePath": "maps\\district\\441302.json",
+    "downloadTime": "2025-07-17T09:08:49.010Z",
+    "fileSize": 99692
+  },
+  "441303": {
+    "name": "惠阳区",
+    "status": "completed",
+    "filePath": "maps\\district\\441303.json",
+    "downloadTime": "2025-07-17T09:08:49.627Z",
+    "fileSize": 116474
+  },
+  "441322": {
+    "name": "博罗县",
+    "status": "completed",
+    "filePath": "maps\\district\\441322.json",
+    "downloadTime": "2025-07-17T09:08:50.334Z",
+    "fileSize": 83601
+  },
+  "441323": {
+    "name": "惠东县",
+    "status": "completed",
+    "filePath": "maps\\district\\441323.json",
+    "downloadTime": "2025-07-17T09:08:50.942Z",
+    "fileSize": 133841
+  },
+  "441324": {
+    "name": "龙门县",
+    "status": "completed",
+    "filePath": "maps\\district\\441324.json",
+    "downloadTime": "2025-07-17T09:08:51.565Z",
+    "fileSize": 67752
+  },
+  "441400": {
+    "name": "梅州市",
+    "status": "completed",
+    "filePath": "maps\\city\\441400.json",
+    "downloadTime": "2025-07-17T09:07:54.723Z",
+    "fileSize": 378954
+  },
+  "441402": {
+    "name": "梅江区",
+    "status": "completed",
+    "filePath": "maps\\district\\441402.json",
+    "downloadTime": "2025-07-17T09:08:52.247Z",
+    "fileSize": 33204
+  },
+  "441403": {
+    "name": "梅县区",
+    "status": "completed",
+    "filePath": "maps\\district\\441403.json",
+    "downloadTime": "2025-07-17T09:08:52.859Z",
+    "fileSize": 110826
+  },
+  "441422": {
+    "name": "大埔县",
+    "status": "completed",
+    "filePath": "maps\\district\\441422.json",
+    "downloadTime": "2025-07-17T09:08:53.896Z",
+    "fileSize": 66964
+  },
+  "441423": {
+    "name": "丰顺县",
+    "status": "completed",
+    "filePath": "maps\\district\\441423.json",
+    "downloadTime": "2025-07-17T09:08:54.528Z",
+    "fileSize": 85976
+  },
+  "441424": {
+    "name": "五华县",
+    "status": "completed",
+    "filePath": "maps\\district\\441424.json",
+    "downloadTime": "2025-07-17T09:08:55.190Z",
+    "fileSize": 101556
+  },
+  "441426": {
+    "name": "平远县",
+    "status": "completed",
+    "filePath": "maps\\district\\441426.json",
+    "downloadTime": "2025-07-17T09:08:55.791Z",
+    "fileSize": 58027
+  },
+  "441427": {
+    "name": "蕉岭县",
+    "status": "completed",
+    "filePath": "maps\\district\\441427.json",
+    "downloadTime": "2025-07-17T09:08:56.399Z",
+    "fileSize": 51964
+  },
+  "441481": {
+    "name": "兴宁市",
+    "status": "completed",
+    "filePath": "maps\\district\\441481.json",
+    "downloadTime": "2025-07-17T09:08:57.009Z",
+    "fileSize": 85095
+  },
+  "441500": {
+    "name": "汕尾市",
+    "status": "completed",
+    "filePath": "maps\\city\\441500.json",
+    "downloadTime": "2025-07-17T09:07:55.409Z",
+    "fileSize": 89756
+  },
+  "441502": {
+    "name": "城区",
+    "status": "completed",
+    "filePath": "maps\\district\\441502.json",
+    "downloadTime": "2025-07-17T09:08:57.684Z",
+    "fileSize": 20007
+  },
+  "441521": {
+    "name": "海丰县",
+    "status": "completed",
+    "filePath": "maps\\district\\441521.json",
+    "downloadTime": "2025-07-17T09:08:58.346Z",
+    "fileSize": 73409
+  },
+  "441523": {
+    "name": "陆河县",
+    "status": "completed",
+    "filePath": "maps\\district\\441523.json",
+    "downloadTime": "2025-07-17T09:08:59.012Z",
+    "fileSize": 54976
+  },
+  "441581": {
+    "name": "陆丰市",
+    "status": "completed",
+    "filePath": "maps\\district\\441581.json",
+    "downloadTime": "2025-07-17T09:08:59.668Z",
+    "fileSize": 72906
+  },
+  "441600": {
+    "name": "河源市",
+    "status": "completed",
+    "filePath": "maps\\city\\441600.json",
+    "downloadTime": "2025-07-17T09:07:56.133Z",
+    "fileSize": 328431
+  },
+  "441602": {
+    "name": "源城区",
+    "status": "completed",
+    "filePath": "maps\\district\\441602.json",
+    "downloadTime": "2025-07-17T09:09:00.381Z",
+    "fileSize": 35302
+  },
+  "441621": {
+    "name": "紫金县",
+    "status": "completed",
+    "filePath": "maps\\district\\441621.json",
+    "downloadTime": "2025-07-17T09:09:00.994Z",
+    "fileSize": 123121
+  },
+  "441622": {
+    "name": "龙川县",
+    "status": "completed",
+    "filePath": "maps\\district\\441622.json",
+    "downloadTime": "2025-07-17T09:09:01.621Z",
+    "fileSize": 65127
+  },
+  "441623": {
+    "name": "连平县",
+    "status": "completed",
+    "filePath": "maps\\district\\441623.json",
+    "downloadTime": "2025-07-17T09:09:02.289Z",
+    "fileSize": 71489
+  },
+  "441624": {
+    "name": "和平县",
+    "status": "completed",
+    "filePath": "maps\\district\\441624.json",
+    "downloadTime": "2025-07-17T09:09:03.050Z",
+    "fileSize": 62983
+  },
+  "441625": {
+    "name": "东源县",
+    "status": "completed",
+    "filePath": "maps\\district\\441625.json",
+    "downloadTime": "2025-07-17T09:09:03.742Z",
+    "fileSize": 112025
+  },
+  "441700": {
+    "name": "阳江市",
+    "status": "completed",
+    "filePath": "maps\\city\\441700.json",
+    "downloadTime": "2025-07-17T09:07:56.835Z",
+    "fileSize": 183639
+  },
+  "441702": {
+    "name": "江城区",
+    "status": "completed",
+    "filePath": "maps\\district\\441702.json",
+    "downloadTime": "2025-07-17T09:09:04.355Z",
+    "fileSize": 63138
+  },
+  "441704": {
+    "name": "阳东区",
+    "status": "completed",
+    "filePath": "maps\\district\\441704.json",
+    "downloadTime": "2025-07-17T09:09:04.968Z",
+    "fileSize": 73446
+  },
+  "441721": {
+    "name": "阳西县",
+    "status": "completed",
+    "filePath": "maps\\district\\441721.json",
+    "downloadTime": "2025-07-17T09:09:05.573Z",
+    "fileSize": 64656
+  },
+  "441781": {
+    "name": "阳春市",
+    "status": "completed",
+    "filePath": "maps\\district\\441781.json",
+    "downloadTime": "2025-07-17T09:09:06.246Z",
+    "fileSize": 127176
+  },
+  "441800": {
+    "name": "清远市",
+    "status": "completed",
+    "filePath": "maps\\city\\441800.json",
+    "downloadTime": "2025-07-17T09:07:57.542Z",
+    "fileSize": 354253
+  },
+  "441802": {
+    "name": "清城区",
+    "status": "completed",
+    "filePath": "maps\\district\\441802.json",
+    "downloadTime": "2025-07-17T09:09:06.838Z",
+    "fileSize": 50399
+  },
+  "441803": {
+    "name": "清新区",
+    "status": "completed",
+    "filePath": "maps\\district\\441803.json",
+    "downloadTime": "2025-07-17T09:09:07.448Z",
+    "fileSize": 66364
+  },
+  "441821": {
+    "name": "佛冈县",
+    "status": "completed",
+    "filePath": "maps\\district\\441821.json",
+    "downloadTime": "2025-07-17T09:09:08.047Z",
+    "fileSize": 46231
+  },
+  "441823": {
+    "name": "阳山县",
+    "status": "completed",
+    "filePath": "maps\\district\\441823.json",
+    "downloadTime": "2025-07-17T09:09:08.704Z",
+    "fileSize": 58813
+  },
+  "441825": {
+    "name": "连山壮族瑶族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\441825.json",
+    "downloadTime": "2025-07-17T09:09:09.365Z",
+    "fileSize": 63256
+  },
+  "441826": {
+    "name": "连南瑶族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\441826.json",
+    "downloadTime": "2025-07-17T09:09:10.075Z",
+    "fileSize": 63249
+  },
+  "441881": {
+    "name": "英德市",
+    "status": "completed",
+    "filePath": "maps\\district\\441881.json",
+    "downloadTime": "2025-07-17T09:09:10.679Z",
+    "fileSize": 102552
+  },
+  "441882": {
+    "name": "连州市",
+    "status": "completed",
+    "filePath": "maps\\district\\441882.json",
+    "downloadTime": "2025-07-17T09:09:11.261Z",
+    "fileSize": 53954
+  },
+  "441900": {
+    "name": "东莞市",
+    "status": "completed",
+    "filePath": "maps\\city\\441900.json",
+    "downloadTime": "2025-07-17T09:07:58.327Z",
+    "fileSize": 78404
+  },
+  "442000": {
+    "name": "中山市",
+    "status": "completed",
+    "filePath": "maps\\city\\442000.json",
+    "downloadTime": "2025-07-17T09:07:59.064Z",
+    "fileSize": 30662
+  },
+  "445100": {
+    "name": "潮州市",
+    "status": "completed",
+    "filePath": "maps\\city\\445100.json",
+    "downloadTime": "2025-07-17T09:07:59.822Z",
+    "fileSize": 153654
+  },
+  "445102": {
+    "name": "湘桥区",
+    "status": "completed",
+    "filePath": "maps\\district\\445102.json",
+    "downloadTime": "2025-07-17T09:09:11.916Z",
+    "fileSize": 39038
+  },
+  "445103": {
+    "name": "潮安区",
+    "status": "completed",
+    "filePath": "maps\\district\\445103.json",
+    "downloadTime": "2025-07-17T09:09:12.512Z",
+    "fileSize": 63508
+  },
+  "445122": {
+    "name": "饶平县",
+    "status": "completed",
+    "filePath": "maps\\district\\445122.json",
+    "downloadTime": "2025-07-17T09:09:13.096Z",
+    "fileSize": 63775
+  },
+  "445200": {
+    "name": "揭阳市",
+    "status": "completed",
+    "filePath": "maps\\city\\445200.json",
+    "downloadTime": "2025-07-17T09:08:00.462Z",
+    "fileSize": 244234
+  },
+  "445202": {
+    "name": "榕城区",
+    "status": "completed",
+    "filePath": "maps\\district\\445202.json",
+    "downloadTime": "2025-07-17T09:09:13.669Z",
+    "fileSize": 43720
+  },
+  "445203": {
+    "name": "揭东区",
+    "status": "completed",
+    "filePath": "maps\\district\\445203.json",
+    "downloadTime": "2025-07-17T09:09:14.247Z",
+    "fileSize": 58570
+  },
+  "445222": {
+    "name": "揭西县",
+    "status": "completed",
+    "filePath": "maps\\district\\445222.json",
+    "downloadTime": "2025-07-17T09:09:14.849Z",
+    "fileSize": 69731
+  },
+  "445224": {
+    "name": "惠来县",
+    "status": "completed",
+    "filePath": "maps\\district\\445224.json",
+    "downloadTime": "2025-07-17T09:09:15.448Z",
+    "fileSize": 78229
+  },
+  "445281": {
+    "name": "普宁市",
+    "status": "completed",
+    "filePath": "maps\\district\\445281.json",
+    "downloadTime": "2025-07-17T09:09:16.114Z",
+    "fileSize": 69036
+  },
+  "445300": {
+    "name": "云浮市",
+    "status": "completed",
+    "filePath": "maps\\city\\445300.json",
+    "downloadTime": "2025-07-17T09:08:01.050Z",
+    "fileSize": 283224
+  },
+  "445302": {
+    "name": "云城区",
+    "status": "completed",
+    "filePath": "maps\\district\\445302.json",
+    "downloadTime": "2025-07-17T09:09:16.791Z",
+    "fileSize": 95604
+  },
+  "445303": {
+    "name": "云安区",
+    "status": "completed",
+    "filePath": "maps\\district\\445303.json",
+    "downloadTime": "2025-07-17T09:09:17.399Z",
+    "fileSize": 109495
+  },
+  "445321": {
+    "name": "新兴县",
+    "status": "completed",
+    "filePath": "maps\\district\\445321.json",
+    "downloadTime": "2025-07-17T09:09:18.032Z",
+    "fileSize": 86918
+  },
+  "445322": {
+    "name": "郁南县",
+    "status": "completed",
+    "filePath": "maps\\district\\445322.json",
+    "downloadTime": "2025-07-17T09:09:18.695Z",
+    "fileSize": 84408
+  },
+  "445381": {
+    "name": "罗定市",
+    "status": "completed",
+    "filePath": "maps\\district\\445381.json",
+    "downloadTime": "2025-07-17T09:09:19.376Z",
+    "fileSize": 124055
+  },
+  "450000": {
+    "name": "广西壮族自治区",
+    "status": "completed",
+    "filePath": "maps\\province\\450000.json",
+    "downloadTime": "2025-10-15T01:18:23.033Z",
+    "fileSize": 632949
+  },
+  "460000": {
+    "name": "海南省",
+    "status": "completed",
+    "filePath": "maps\\province\\460000.json",
+    "downloadTime": "2025-10-15T01:18:23.641Z",
+    "fileSize": 125201
+  },
+  "500000": {
+    "name": "重庆市",
+    "status": "completed",
+    "filePath": "maps\\province\\500000.json",
+    "downloadTime": "2025-10-15T01:18:24.386Z",
+    "fileSize": 597938
+  },
+  "510000": {
+    "name": "四川省",
+    "status": "completed",
+    "filePath": "maps\\province\\510000.json",
+    "downloadTime": "2025-10-15T01:18:25.154Z",
+    "fileSize": 620413
+  },
+  "520000": {
+    "name": "贵州省",
+    "status": "completed",
+    "filePath": "maps\\province\\520000.json",
+    "downloadTime": "2025-10-15T01:18:25.872Z",
+    "fileSize": 491397
+  },
+  "530000": {
+    "name": "云南省",
+    "status": "completed",
+    "filePath": "maps\\province\\530000.json",
+    "downloadTime": "2025-10-15T01:18:26.652Z",
+    "fileSize": 462943
+  },
+  "530100": {
+    "name": "昆明市",
+    "status": "completed",
+    "filePath": "maps\\city\\530100.json",
+    "downloadTime": "2025-10-15T01:20:15.824Z",
+    "fileSize": 314816
+  },
+  "530102": {
+    "name": "五华区",
+    "status": "completed",
+    "filePath": "maps\\district\\530102.json",
+    "downloadTime": "2025-10-15T01:20:28.603Z",
+    "fileSize": 35987
+  },
+  "530103": {
+    "name": "盘龙区",
+    "status": "completed",
+    "filePath": "maps\\district\\530103.json",
+    "downloadTime": "2025-10-15T01:20:29.332Z",
+    "fileSize": 46132
+  },
+  "530111": {
+    "name": "官渡区",
+    "status": "completed",
+    "filePath": "maps\\district\\530111.json",
+    "downloadTime": "2025-10-15T01:20:30.011Z",
+    "fileSize": 35904
+  },
+  "530112": {
+    "name": "西山区",
+    "status": "completed",
+    "filePath": "maps\\district\\530112.json",
+    "downloadTime": "2025-10-15T01:20:30.665Z",
+    "fileSize": 40799
+  },
+  "530113": {
+    "name": "东川区",
+    "status": "completed",
+    "filePath": "maps\\district\\530113.json",
+    "downloadTime": "2025-10-15T01:20:31.332Z",
+    "fileSize": 68962
+  },
+  "530114": {
+    "name": "呈贡区",
+    "status": "completed",
+    "filePath": "maps\\district\\530114.json",
+    "downloadTime": "2025-10-15T01:20:31.974Z",
+    "fileSize": 31643
+  },
+  "530115": {
+    "name": "晋宁区",
+    "status": "completed",
+    "filePath": "maps\\district\\530115.json",
+    "downloadTime": "2025-10-15T01:20:32.631Z",
+    "fileSize": 62619
+  },
+  "530124": {
+    "name": "富民县",
+    "status": "completed",
+    "filePath": "maps\\district\\530124.json",
+    "downloadTime": "2025-10-15T01:20:33.252Z",
+    "fileSize": 53558
+  },
+  "530125": {
+    "name": "宜良县",
+    "status": "completed",
+    "filePath": "maps\\district\\530125.json",
+    "downloadTime": "2025-10-15T01:20:33.891Z",
+    "fileSize": 86941
+  },
+  "530126": {
+    "name": "石林彝族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530126.json",
+    "downloadTime": "2025-10-15T01:20:34.575Z",
+    "fileSize": 63944
+  },
+  "530127": {
+    "name": "嵩明县",
+    "status": "completed",
+    "filePath": "maps\\district\\530127.json",
+    "downloadTime": "2025-10-15T01:20:35.253Z",
+    "fileSize": 42073
+  },
+  "530128": {
+    "name": "禄劝彝族苗族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530128.json",
+    "downloadTime": "2025-10-15T01:20:36.064Z",
+    "fileSize": 53437
+  },
+  "530129": {
+    "name": "寻甸回族彝族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530129.json",
+    "downloadTime": "2025-10-15T01:20:36.772Z",
+    "fileSize": 94406
+  },
+  "530181": {
+    "name": "安宁市",
+    "status": "completed",
+    "filePath": "maps\\district\\530181.json",
+    "downloadTime": "2025-10-15T01:20:37.491Z",
+    "fileSize": 54430
+  },
+  "530300": {
+    "name": "曲靖市",
+    "status": "completed",
+    "filePath": "maps\\city\\530300.json",
+    "downloadTime": "2025-10-15T01:20:16.749Z",
+    "fileSize": 307315
+  },
+  "530302": {
+    "name": "麒麟区",
+    "status": "completed",
+    "filePath": "maps\\district\\530302.json",
+    "downloadTime": "2025-10-15T01:20:38.126Z",
+    "fileSize": 62207
+  },
+  "530303": {
+    "name": "沾益区",
+    "status": "completed",
+    "filePath": "maps\\district\\530303.json",
+    "downloadTime": "2025-10-15T01:20:38.794Z",
+    "fileSize": 90557
+  },
+  "530304": {
+    "name": "马龙区",
+    "status": "completed",
+    "filePath": "maps\\district\\530304.json",
+    "downloadTime": "2025-10-15T01:20:39.702Z",
+    "fileSize": 53871
+  },
+  "530322": {
+    "name": "陆良县",
+    "status": "completed",
+    "filePath": "maps\\district\\530322.json",
+    "downloadTime": "2025-10-15T01:20:40.311Z",
+    "fileSize": 58119
+  },
+  "530323": {
+    "name": "师宗县",
+    "status": "completed",
+    "filePath": "maps\\district\\530323.json",
+    "downloadTime": "2025-10-15T01:20:41.126Z",
+    "fileSize": 80162
+  },
+  "530324": {
+    "name": "罗平县",
+    "status": "completed",
+    "filePath": "maps\\district\\530324.json",
+    "downloadTime": "2025-10-15T01:20:41.793Z",
+    "fileSize": 61405
+  },
+  "530325": {
+    "name": "富源县",
+    "status": "completed",
+    "filePath": "maps\\district\\530325.json",
+    "downloadTime": "2025-10-15T01:20:42.545Z",
+    "fileSize": 74131
+  },
+  "530326": {
+    "name": "会泽县",
+    "status": "completed",
+    "filePath": "maps\\district\\530326.json",
+    "downloadTime": "2025-10-15T01:20:43.295Z",
+    "fileSize": 83692
+  },
+  "530381": {
+    "name": "宣威市",
+    "status": "completed",
+    "filePath": "maps\\district\\530381.json",
+    "downloadTime": "2025-10-15T01:20:44.025Z",
+    "fileSize": 116863
+  },
+  "530400": {
+    "name": "玉溪市",
+    "status": "completed",
+    "filePath": "maps\\city\\530400.json",
+    "downloadTime": "2025-10-15T01:20:17.663Z",
+    "fileSize": 361228
+  },
+  "530402": {
+    "name": "红塔区",
+    "status": "completed",
+    "filePath": "maps\\district\\530402.json",
+    "downloadTime": "2025-10-15T01:20:44.642Z",
+    "fileSize": 47441
+  },
+  "530403": {
+    "name": "江川区",
+    "status": "completed",
+    "filePath": "maps\\district\\530403.json",
+    "downloadTime": "2025-10-15T01:20:45.405Z",
+    "fileSize": 34509
+  },
+  "530423": {
+    "name": "通海县",
+    "status": "completed",
+    "filePath": "maps\\district\\530423.json",
+    "downloadTime": "2025-10-15T01:20:46.052Z",
+    "fileSize": 50150
+  },
+  "530424": {
+    "name": "华宁县",
+    "status": "completed",
+    "filePath": "maps\\district\\530424.json",
+    "downloadTime": "2025-10-15T01:20:46.735Z",
+    "fileSize": 57534
+  },
+  "530425": {
+    "name": "易门县",
+    "status": "completed",
+    "filePath": "maps\\district\\530425.json",
+    "downloadTime": "2025-10-15T01:20:47.372Z",
+    "fileSize": 58201
+  },
+  "530426": {
+    "name": "峨山彝族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530426.json",
+    "downloadTime": "2025-10-15T01:20:48.018Z",
+    "fileSize": 72971
+  },
+  "530427": {
+    "name": "新平彝族傣族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530427.json",
+    "downloadTime": "2025-10-15T01:20:49.318Z",
+    "fileSize": 134505
+  },
+  "530428": {
+    "name": "元江哈尼族彝族傣族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530428.json",
+    "downloadTime": "2025-10-15T01:20:50.015Z",
+    "fileSize": 87026
+  },
+  "530481": {
+    "name": "澄江市",
+    "status": "completed",
+    "filePath": "maps\\district\\530481.json",
+    "downloadTime": "2025-10-15T01:20:50.645Z",
+    "fileSize": 55945
+  },
+  "530500": {
+    "name": "保山市",
+    "status": "completed",
+    "filePath": "maps\\city\\530500.json",
+    "downloadTime": "2025-10-15T01:20:18.334Z",
+    "fileSize": 236939
+  },
+  "530502": {
+    "name": "隆阳区",
+    "status": "completed",
+    "filePath": "maps\\district\\530502.json",
+    "downloadTime": "2025-10-15T01:20:51.365Z",
+    "fileSize": 95108
+  },
+  "530521": {
+    "name": "施甸县",
+    "status": "completed",
+    "filePath": "maps\\district\\530521.json",
+    "downloadTime": "2025-10-15T01:20:52.054Z",
+    "fileSize": 46322
+  },
+  "530523": {
+    "name": "龙陵县",
+    "status": "completed",
+    "filePath": "maps\\district\\530523.json",
+    "downloadTime": "2025-10-15T01:20:52.754Z",
+    "fileSize": 62861
+  },
+  "530524": {
+    "name": "昌宁县",
+    "status": "completed",
+    "filePath": "maps\\district\\530524.json",
+    "downloadTime": "2025-10-15T01:20:53.833Z",
+    "fileSize": 46590
+  },
+  "530581": {
+    "name": "腾冲市",
+    "status": "completed",
+    "filePath": "maps\\district\\530581.json",
+    "downloadTime": "2025-10-15T01:20:54.494Z",
+    "fileSize": 54624
+  },
+  "530600": {
+    "name": "昭通市",
+    "status": "completed",
+    "filePath": "maps\\city\\530600.json",
+    "downloadTime": "2025-10-15T01:20:19.115Z",
+    "fileSize": 299318
+  },
+  "530602": {
+    "name": "昭阳区",
+    "status": "completed",
+    "filePath": "maps\\district\\530602.json",
+    "downloadTime": "2025-10-15T01:20:55.236Z",
+    "fileSize": 98806
+  },
+  "530621": {
+    "name": "鲁甸县",
+    "status": "completed",
+    "filePath": "maps\\district\\530621.json",
+    "downloadTime": "2025-10-15T01:20:55.995Z",
+    "fileSize": 71917
+  },
+  "530622": {
+    "name": "巧家县",
+    "status": "completed",
+    "filePath": "maps\\district\\530622.json",
+    "downloadTime": "2025-10-15T01:20:56.716Z",
+    "fileSize": 47933
+  },
+  "530623": {
+    "name": "盐津县",
+    "status": "completed",
+    "filePath": "maps\\district\\530623.json",
+    "downloadTime": "2025-10-15T01:20:57.487Z",
+    "fileSize": 72253
+  },
+  "530624": {
+    "name": "大关县",
+    "status": "completed",
+    "filePath": "maps\\district\\530624.json",
+    "downloadTime": "2025-10-15T01:20:58.283Z",
+    "fileSize": 68855
+  },
+  "530625": {
+    "name": "永善县",
+    "status": "completed",
+    "filePath": "maps\\district\\530625.json",
+    "downloadTime": "2025-10-15T01:20:59.063Z",
+    "fileSize": 64539
+  },
+  "530626": {
+    "name": "绥江县",
+    "status": "completed",
+    "filePath": "maps\\district\\530626.json",
+    "downloadTime": "2025-10-15T01:20:59.673Z",
+    "fileSize": 49095
+  },
+  "530627": {
+    "name": "镇雄县",
+    "status": "completed",
+    "filePath": "maps\\district\\530627.json",
+    "downloadTime": "2025-10-15T01:21:00.363Z",
+    "fileSize": 100274
+  },
+  "530628": {
+    "name": "彝良县",
+    "status": "completed",
+    "filePath": "maps\\district\\530628.json",
+    "downloadTime": "2025-10-15T01:21:01.044Z",
+    "fileSize": 106101
+  },
+  "530629": {
+    "name": "威信县",
+    "status": "completed",
+    "filePath": "maps\\district\\530629.json",
+    "downloadTime": "2025-10-15T01:21:01.723Z",
+    "fileSize": 98019
+  },
+  "530681": {
+    "name": "水富市",
+    "status": "completed",
+    "filePath": "maps\\district\\530681.json",
+    "downloadTime": "2025-10-15T01:21:02.365Z",
+    "fileSize": 39291
+  },
+  "530700": {
+    "name": "丽江市",
+    "status": "completed",
+    "filePath": "maps\\city\\530700.json",
+    "downloadTime": "2025-10-15T01:20:19.834Z",
+    "fileSize": 208258
+  },
+  "530702": {
+    "name": "古城区",
+    "status": "completed",
+    "filePath": "maps\\district\\530702.json",
+    "downloadTime": "2025-10-15T01:21:03.003Z",
+    "fileSize": 57042
+  },
+  "530721": {
+    "name": "玉龙纳西族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530721.json",
+    "downloadTime": "2025-10-15T01:21:03.664Z",
+    "fileSize": 87809
+  },
+  "530722": {
+    "name": "永胜县",
+    "status": "completed",
+    "filePath": "maps\\district\\530722.json",
+    "downloadTime": "2025-10-15T01:21:04.328Z",
+    "fileSize": 77100
+  },
+  "530723": {
+    "name": "华坪县",
+    "status": "completed",
+    "filePath": "maps\\district\\530723.json",
+    "downloadTime": "2025-10-15T01:21:04.976Z",
+    "fileSize": 78874
+  },
+  "530724": {
+    "name": "宁蒗彝族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530724.json",
+    "downloadTime": "2025-10-15T01:21:05.576Z",
+    "fileSize": 99119
+  },
+  "530800": {
+    "name": "普洱市",
+    "status": "completed",
+    "filePath": "maps\\city\\530800.json",
+    "downloadTime": "2025-10-15T01:20:20.906Z",
+    "fileSize": 304677
+  },
+  "530802": {
+    "name": "思茅区",
+    "status": "completed",
+    "filePath": "maps\\district\\530802.json",
+    "downloadTime": "2025-10-15T01:21:06.352Z",
+    "fileSize": 103334
+  },
+  "530821": {
+    "name": "宁洱哈尼族彝族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530821.json",
+    "downloadTime": "2025-10-15T01:21:06.996Z",
+    "fileSize": 41385
+  },
+  "530822": {
+    "name": "墨江哈尼族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530822.json",
+    "downloadTime": "2025-10-15T01:21:07.665Z",
+    "fileSize": 66625
+  },
+  "530823": {
+    "name": "景东彝族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530823.json",
+    "downloadTime": "2025-10-15T01:21:08.300Z",
+    "fileSize": 64642
+  },
+  "530824": {
+    "name": "景谷傣族彝族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530824.json",
+    "downloadTime": "2025-10-15T01:21:08.933Z",
+    "fileSize": 40512
+  },
+  "530825": {
+    "name": "镇沅彝族哈尼族拉祜族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530825.json",
+    "downloadTime": "2025-10-15T01:21:09.607Z",
+    "fileSize": 80532
+  },
+  "530826": {
+    "name": "江城哈尼族彝族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530826.json",
+    "downloadTime": "2025-10-15T01:21:10.283Z",
+    "fileSize": 78699
+  },
+  "530827": {
+    "name": "孟连傣族拉祜族佤族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530827.json",
+    "downloadTime": "2025-10-15T01:21:10.918Z",
+    "fileSize": 65948
+  },
+  "530828": {
+    "name": "澜沧拉祜族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530828.json",
+    "downloadTime": "2025-10-15T01:21:11.575Z",
+    "fileSize": 63658
+  },
+  "530829": {
+    "name": "西盟佤族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530829.json",
+    "downloadTime": "2025-10-15T01:21:12.230Z",
+    "fileSize": 43461
+  },
+  "530900": {
+    "name": "临沧市",
+    "status": "completed",
+    "filePath": "maps\\city\\530900.json",
+    "downloadTime": "2025-10-15T01:20:21.605Z",
+    "fileSize": 193828
+  },
+  "530902": {
+    "name": "临翔区",
+    "status": "completed",
+    "filePath": "maps\\district\\530902.json",
+    "downloadTime": "2025-10-15T01:21:12.891Z",
+    "fileSize": 61548
+  },
+  "530921": {
+    "name": "凤庆县",
+    "status": "completed",
+    "filePath": "maps\\district\\530921.json",
+    "downloadTime": "2025-10-15T01:21:13.807Z",
+    "fileSize": 67651
+  },
+  "530922": {
+    "name": "云县",
+    "status": "completed",
+    "filePath": "maps\\district\\530922.json",
+    "downloadTime": "2025-10-15T01:21:14.510Z",
+    "fileSize": 75804
+  },
+  "530923": {
+    "name": "永德县",
+    "status": "completed",
+    "filePath": "maps\\district\\530923.json",
+    "downloadTime": "2025-10-15T01:21:15.196Z",
+    "fileSize": 48942
+  },
+  "530924": {
+    "name": "镇康县",
+    "status": "completed",
+    "filePath": "maps\\district\\530924.json",
+    "downloadTime": "2025-10-15T01:21:15.823Z",
+    "fileSize": 52717
+  },
+  "530925": {
+    "name": "双江拉祜族佤族布朗族傣族自治县",
+    "status": "completed",
+    "filePath": "maps\\district\\530925.json",
+    "downloadTime": "2025-10-15T01:21:16.573Z",
+    "fileSize": 27339
+  },
+  "532300": {
+    "name": "楚雄彝族自治州",
+    "status": "completed",
+    "filePath": "maps\\city\\532300.json",
+    "downloadTime": "2025-10-15T01:20:22.566Z",
+    "fileSize": 353262
+  },
+  "532500": {
+    "name": "红河哈尼族彝族自治州",
+    "status": "completed",
+    "filePath": "maps\\city\\532500.json",
+    "downloadTime": "2025-10-15T01:20:23.617Z",
+    "fileSize": 366592
+  },
+  "532600": {
+    "name": "文山壮族苗族自治州",
+    "status": "completed",
+    "filePath": "maps\\city\\532600.json",
+    "downloadTime": "2025-10-15T01:20:24.374Z",
+    "fileSize": 235572
+  },
+  "532800": {
+    "name": "西双版纳傣族自治州",
+    "status": "completed",
+    "filePath": "maps\\city\\532800.json",
+    "downloadTime": "2025-10-15T01:20:25.156Z",
+    "fileSize": 196924
+  },
+  "532900": {
+    "name": "大理白族自治州",
+    "status": "completed",
+    "filePath": "maps\\city\\532900.json",
+    "downloadTime": "2025-10-15T01:20:25.962Z",
+    "fileSize": 340706
+  },
+  "533100": {
+    "name": "德宏傣族景颇族自治州",
+    "status": "completed",
+    "filePath": "maps\\city\\533100.json",
+    "downloadTime": "2025-10-15T01:20:26.663Z",
+    "fileSize": 200560
+  },
+  "533300": {
+    "name": "怒江傈僳族自治州",
+    "status": "completed",
+    "filePath": "maps\\city\\533300.json",
+    "downloadTime": "2025-10-15T01:20:27.274Z",
+    "fileSize": 127715
+  },
+  "533400": {
+    "name": "迪庆藏族自治州",
+    "status": "completed",
+    "filePath": "maps\\city\\533400.json",
+    "downloadTime": "2025-10-15T01:20:27.957Z",
+    "fileSize": 149194
+  },
+  "540000": {
+    "name": "西藏自治区",
+    "status": "completed",
+    "filePath": "maps\\province\\540000.json",
+    "downloadTime": "2025-10-15T01:18:27.464Z",
+    "fileSize": 526110
+  },
+  "610000": {
+    "name": "陕西省",
+    "status": "completed",
+    "filePath": "maps\\province\\610000.json",
+    "downloadTime": "2025-10-15T01:18:28.101Z",
+    "fileSize": 268316
+  },
+  "620000": {
+    "name": "甘肃省",
+    "status": "completed",
+    "filePath": "maps\\province\\620000.json",
+    "downloadTime": "2025-10-15T01:18:28.803Z",
+    "fileSize": 397327
+  },
+  "630000": {
+    "name": "青海省",
+    "status": "completed",
+    "filePath": "maps\\province\\630000.json",
+    "downloadTime": "2025-10-15T01:18:29.494Z",
+    "fileSize": 376744
+  },
+  "640000": {
+    "name": "宁夏回族自治区",
+    "status": "completed",
+    "filePath": "maps\\province\\640000.json",
+    "downloadTime": "2025-10-15T01:18:30.153Z",
+    "fileSize": 186117
+  },
+  "650000": {
+    "name": "新疆维吾尔自治区",
+    "status": "completed",
+    "filePath": "maps\\province\\650000.json",
+    "downloadTime": "2025-10-15T01:18:30.905Z",
+    "fileSize": 457645
+  },
+  "710000": {
+    "name": "台湾省",
+    "status": "completed",
+    "filePath": "maps\\province\\710000.json",
+    "downloadTime": "2025-10-15T01:18:31.741Z",
+    "fileSize": 15928
+  },
+  "810000": {
+    "name": "香港特别行政区",
+    "status": "completed",
+    "filePath": "maps\\province\\810000.json",
+    "downloadTime": "2025-10-15T01:18:32.753Z",
+    "fileSize": 501289
+  },
+  "820000": {
+    "name": "澳门特别行政区",
+    "status": "completed",
+    "filePath": "maps\\province\\820000.json",
+    "downloadTime": "2025-10-15T01:18:33.299Z",
+    "fileSize": 46770
+  }
+}

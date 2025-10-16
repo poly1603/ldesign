@@ -2,8 +2,8 @@
  * 替换所有console语句为统一的日志系统
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // 要排除的目录
 const excludeDirs = ['node_modules', '.git', 'dist', 'lib', 'es', 'coverage', 'examples'];
@@ -96,7 +96,7 @@ function processFile(filePath) {
       if (content.includes('class ') && !content.includes('private logger')) {
         // 在类定义后添加logger属性
         content = content.replace(
-          /(class\s+\w+.*{)/,
+          /(class\s+\w.*\{)/,
           '$1\n  private logger?: Logger;'
         );
         
@@ -106,12 +106,12 @@ function processFile(filePath) {
           const importMatch = content.match(/^import /m);
           if (importMatch) {
             const importIndex = content.indexOf(importMatch[0]);
-            content = content.slice(0, importIndex) + 
-                     "import type { Logger } from '../types/logger'\n" +
-                     content.slice(importIndex);
+            content = `${content.slice(0, importIndex)  
+                     }import type { Logger } from '../types/logger'\n${ 
+                     content.slice(importIndex)}`;
           } else {
             // 如果没有import，添加在文件开头
-            content = "import type { Logger } from '../types/logger'\n\n" + content;
+            content = `import type { Logger } from '../types/logger'\n\n${  content}`;
           }
         }
       }

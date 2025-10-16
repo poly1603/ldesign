@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>简化版地图测试</title>
+  <style>
+    body { margin: 0; padding: 0; font-family: sans-serif; }
+    #map { width: 100vw; height: 100vh; background: #f0f0f0; }
+    .info { position: fixed; top: 10px; left: 10px; background: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div class="info">简化版 deck.gl 地图测试</div>
+  
+  <script type="module">
+    import { Deck } from '@deck.gl/core';
+    import { GeoJsonLayer, ScatterplotLayer } from '@deck.gl/layers';
+    
+    // 简单的测试数据
+    const testData = {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: { name: "广州市" },
+          geometry: {
+            type: "Polygon",
+            coordinates: [[
+              [113.0, 22.8],
+              [113.6, 22.8],
+              [113.6, 23.5],
+              [113.0, 23.5],
+              [113.0, 22.8]
+            ]]
+          }
+        },
+        {
+          type: "Feature",
+          properties: { name: "深圳市" },
+          geometry: {
+            type: "Polygon",
+            coordinates: [[
+              [113.7, 22.3],
+              [114.4, 22.3],
+              [114.4, 22.8],
+              [113.7, 22.8],
+              [113.7, 22.3]
+            ]]
+          }
+        }
+      ]
+    };
+    
+    // 城市点
+    const cities = [
+      { name: '广州', coordinates: [113.3, 23.15], color: [255, 0, 0] },
+      { name: '深圳', coordinates: [114.05, 22.55], color: [0, 255, 0] }
+    ];
+    
+    console.log('Initializing deck.gl...');
+    
+    const deck = new Deck({
+      container: 'map',
+      initialViewState: {
+        longitude: 113.5,
+        latitude: 23.0,
+        zoom: 7,
+        pitch: 0,
+        bearing: 0
+      },
+      controller: true,
+      onViewStateChange: ({viewState}) => {
+        console.log('View changed:', viewState);
+      },
+      layers: [
+        new GeoJsonLayer({
+          id: 'polygons',
+          data: testData,
+          filled: true,
+          stroked: true,
+          getFillColor: [160, 160, 180, 100],
+          getLineColor: [255, 255, 255],
+          getLineWidth: 2,
+          lineWidthMinPixels: 2
+        }),
+        new ScatterplotLayer({
+          id: 'points',
+          data: cities,
+          getPosition: d => d.coordinates,
+          getFillColor: d => d.color,
+          getRadius: 10000,
+          radiusMinPixels: 5,
+          radiusMaxPixels: 20
+        })
+      ],
+      onError: (error) => {
+        console.error('Deck.gl error:', error);
+      }
+    });
+    
+    deck.setProps({
+      onAfterRender: () => {
+        console.log('Render completed');
+      }
+    });
+    
+    console.log('Deck instance:', deck);
+  </script>
+</body>
+</html>

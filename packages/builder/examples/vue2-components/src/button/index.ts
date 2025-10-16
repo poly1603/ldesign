@@ -65,8 +65,7 @@ export const BUTTON_COMPONENT_NAME = 'LButton'
  *   },
  *   methods: {
  *     handleClick(event) {
- *       console.log('按钮被点击了', event)
- *     }
+ *        *     }
  *   }
  * }
  * </script>

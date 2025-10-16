@@ -321,7 +321,7 @@ export function getEasingFunction(name: EasingName): EasingFunction {
  * const cancelAnimation = animate(0, 100, 1000, 'easeInOutCubic', (value) => {
  *   element.style.left = `${value}px`
  * }, () => {
- *   console.log('Animation completed')
+ *   
  * })
  *
  * // 如需取消动画

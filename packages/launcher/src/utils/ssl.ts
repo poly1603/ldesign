@@ -7,11 +7,9 @@
  * @since 2.0.0
  */
 
-import { promises as fs } from 'node:fs'
 import { join } from 'node:path'
 import { execSync } from 'node:child_process'
 import { Logger } from './logger'
-import { PathUtils } from './path-utils'
 import { FileSystem } from './file-system'
 
 /**

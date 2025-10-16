@@ -377,7 +377,7 @@ export class LdesignRipple {
       oscillator.stop(this.audioContext.currentTime + 0.1);
     } catch (error) {
       // 静默处理音频错误
-      console.debug('Audio playback failed:', error);
+      
     }
   }
 

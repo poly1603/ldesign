@@ -16,6 +16,8 @@ export interface ErrorManager {
   getErrors: () => ErrorInfo[]
   hasErrors: () => boolean
   clearErrors: () => void
+  // 处理错误（兼容方法）
+  handle: (error: Error, context?: string) => void
 }
 
 // 错误边界接口

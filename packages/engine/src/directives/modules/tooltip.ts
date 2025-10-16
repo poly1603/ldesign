@@ -31,11 +31,11 @@ export class TooltipDirective extends DirectiveBase {
 
   public mounted(el: HTMLElement, binding: VueDirectiveBinding): void {
     const config = this.parseConfig(binding)
-    
+
     if (config.disabled || !config.content) {
       return
     }
-    
+
     this.setupTooltip(el, config)
     this.log('Tooltip directive mounted', el)
   }
@@ -55,43 +55,43 @@ export class TooltipDirective extends DirectiveBase {
     const delay = config.delay || 0
     let showTimer: number | null = null
     let hideTimer: number | null = null
-    
+
     const showTooltip = (): void => {
       if (hideTimer) {
         clearTimeout(hideTimer)
         hideTimer = null
       }
-      
+
       showTimer = window.setTimeout(() => {
         const tooltip = this.createTooltip(config)
         this.positionTooltip(el, tooltip, config.placement || 'top', config.offset || 8)
         document.body.appendChild(tooltip)
         directiveUtils.storeData(el, 'tooltip-element', tooltip)
-        
+
         // Add show animation
         requestAnimationFrame(() => {
           tooltip.style.opacity = '1'
           tooltip.style.transform = 'scale(1)'
         })
       }, delay)
-      
+
       directiveUtils.storeData(el, 'tooltip-show-timer', showTimer)
     }
-    
+
     const hideTooltip = (): void => {
       if (showTimer) {
         clearTimeout(showTimer)
         showTimer = null
         directiveUtils.removeData(el, 'tooltip-show-timer')
       }
-      
+
       const tooltip = directiveUtils.getData(el, 'tooltip-element') as HTMLElement
       if (!tooltip) return
-      
+
       hideTimer = window.setTimeout(() => {
         tooltip.style.opacity = '0'
         tooltip.style.transform = 'scale(0.95)'
-        
+
         setTimeout(() => {
           if (tooltip.parentNode) {
             tooltip.parentNode.removeChild(tooltip)
@@ -99,15 +99,15 @@ export class TooltipDirective extends DirectiveBase {
           directiveUtils.removeData(el, 'tooltip-element')
         }, 200)
       }, 100)
-      
+
       directiveUtils.storeData(el, 'tooltip-hide-timer', hideTimer)
     }
-    
+
     const handlers = {
       show: showTooltip,
       hide: hideTooltip,
     }
-    
+
     if (trigger === 'hover') {
       el.addEventListener('mouseenter', handlers.show)
       el.addEventListener('mouseleave', handlers.hide)
@@ -121,36 +121,36 @@ export class TooltipDirective extends DirectiveBase {
           e.stopPropagation()
         }
       })
-      
+
       document.addEventListener('click', handlers.hide)
     } else if (trigger === 'focus') {
       el.addEventListener('focus', handlers.show)
       el.addEventListener('blur', handlers.hide)
     }
-    
+
     directiveUtils.storeData(el, 'tooltip-handlers', handlers)
     directiveUtils.storeData(el, 'tooltip-trigger', trigger)
   }
 
   private cleanupTooltip(el: HTMLElement): void {
-    const handlers = directiveUtils.getData(el, 'tooltip-handlers') as any
+    const handlers = directiveUtils.getData(el, 'tooltip-handlers') as { show: () => void; hide: () => void } | undefined
     const trigger = directiveUtils.getData(el, 'tooltip-trigger') as string
     const tooltip = directiveUtils.getData(el, 'tooltip-element') as HTMLElement
     const showTimer = directiveUtils.getData(el, 'tooltip-show-timer') as number
     const hideTimer = directiveUtils.getData(el, 'tooltip-hide-timer') as number
-    
+
     if (showTimer) {
       clearTimeout(showTimer)
     }
-    
+
     if (hideTimer) {
       clearTimeout(hideTimer)
     }
-    
+
     if (tooltip && tooltip.parentNode) {
       tooltip.parentNode.removeChild(tooltip)
     }
-    
+
     if (handlers) {
       if (trigger === 'hover') {
         el.removeEventListener('mouseenter', handlers.show)
@@ -162,7 +162,7 @@ export class TooltipDirective extends DirectiveBase {
         el.removeEventListener('blur', handlers.hide)
       }
     }
-    
+
     directiveUtils.removeData(el, 'tooltip-element')
     directiveUtils.removeData(el, 'tooltip-handlers')
     directiveUtils.removeData(el, 'tooltip-trigger')
@@ -173,13 +173,13 @@ export class TooltipDirective extends DirectiveBase {
   private createTooltip(config: TooltipOptions): HTMLElement {
     const tooltip = document.createElement('div')
     tooltip.className = `v-tooltip ${config.className || ''}`
-    
+
     if (config.html) {
       tooltip.innerHTML = config.content || ''
     } else {
       tooltip.textContent = config.content || ''
     }
-    
+
     // Default styles
     tooltip.style.position = 'fixed'
     tooltip.style.zIndex = '10000'
@@ -195,7 +195,7 @@ export class TooltipDirective extends DirectiveBase {
     tooltip.style.maxWidth = '300px'
     tooltip.style.wordWrap = 'break-word'
     tooltip.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)'
-    
+
     return tooltip
   }
 
@@ -210,27 +210,27 @@ export class TooltipDirective extends DirectiveBase {
       width: tooltip.offsetWidth || 100,
       height: tooltip.offsetHeight || 30,
     }
-    
+
     let top = 0
     let left = 0
-    
+
     if (placement === 'auto') {
       const viewportHeight = window.innerHeight
       const viewportWidth = window.innerWidth
-      
+
       if (rect.top > viewportHeight / 2) {
         placement = 'top'
       } else {
         placement = 'bottom'
       }
-      
+
       if (rect.left < 100) {
         placement = 'right'
       } else if (rect.right > viewportWidth - 100) {
         placement = 'left'
       }
     }
-    
+
     switch (placement) {
       case 'top':
         top = rect.top - tooltipRect.height - offset
@@ -249,27 +249,27 @@ export class TooltipDirective extends DirectiveBase {
         left = rect.right + offset
         break
     }
-    
+
     // Keep tooltip within viewport
     const margin = 10
     left = Math.max(margin, Math.min(left, window.innerWidth - tooltipRect.width - margin))
     top = Math.max(margin, Math.min(top, window.innerHeight - tooltipRect.height - margin))
-    
+
     tooltip.style.top = `${top}px`
     tooltip.style.left = `${left}px`
   }
 
   private parseConfig(binding: VueDirectiveBinding): TooltipOptions {
     const value = binding.value
-    
+
     if (typeof value === 'string') {
       return { content: value }
     }
-    
+
     if (typeof value === 'object' && value !== null) {
       return value as TooltipOptions
     }
-    
+
     return {}
   }
 

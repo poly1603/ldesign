@@ -191,7 +191,7 @@ export class StreamCipher {
     const result = new TextEncoder().encode(combinedEncrypted)
 
     const _endTime = performance.now()
-    // console.log(`Encrypted ${totalSize} bytes in ${endTime - startTime}ms`)
+    // 
 
     return {
       data: result.buffer,
@@ -257,7 +257,7 @@ export class StreamCipher {
     }
 
     const _endTime = performance.now()
-    // console.log(`Decrypted ${totalSize} bytes in ${endTime - startTime}ms`)
+    // 
 
     return result.buffer
   }
@@ -446,7 +446,7 @@ export class FileEncryptor {
     result.set(new Uint8Array(data), 4 + metadataBytes.length)
 
     const _endTime = performance.now()
-    // console.log(`File encrypted in ${endTime - startTime}ms`)
+    // 
 
     return {
       blob: new Blob([result], { type: 'application/octet-stream' }),
@@ -498,7 +498,7 @@ export class FileEncryptor {
     )
 
     const _endTime = performance.now()
-    // console.log(`File decrypted in ${endTime - startTime}ms`)
+    // 
 
     return {
       blob: new Blob([decryptedData], { type: metadata.mimeType }),

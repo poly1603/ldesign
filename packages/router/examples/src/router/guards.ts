@@ -28,16 +28,14 @@ const userPermissions = ['read', 'write']
 export function setupGuards(router: Router) {
   // 全局前置守卫
   router.beforeEach(async (to, from, next) => {
-    console.log(`🔒 路由守卫: ${from.path} → ${to.path}`)
-
+    
     // 显示加载状态
     setLoading(true)
 
     try {
       // 1. 检查路由是否需要认证
       if (to.meta?.requiresAuth && !isAuthenticated) {
-        console.log('❌ 需要认证，重定向到登录页')
-        next('/login')
+                next('/login')
         return
       }
 
@@ -49,8 +47,7 @@ export function setupGuards(router: Router) {
         )
 
         if (!hasPermission) {
-          console.log('❌ 权限不足，重定向到无权限页面')
-          next('/error/403')
+                    next('/error/403')
           return
         }
       }
@@ -61,8 +58,7 @@ export function setupGuards(router: Router) {
         const currentDevice = getCurrentDevice()
         
         if (!supportedDevices.includes(currentDevice)) {
-          console.log(`❌ 设备不支持，当前设备: ${currentDevice}`)
-          const message = to.meta.unsupportedMessage || '当前设备不支持此功能'
+                    const message = to.meta.unsupportedMessage || '当前设备不支持此功能'
           next({
             path: '/device-unsupported',
             query: {
@@ -92,8 +88,7 @@ export function setupGuards(router: Router) {
   // 全局解析守卫
   router.beforeResolve(async (to, from, next) => {
     // 在导航被确认之前，同时在所有组件内守卫和异步路由组件被解析之后调用
-    console.log(`🔍 路由解析: ${to.path}`)
-    
+        
     // 可以在这里进行最后的检查
     next()
   })
@@ -108,8 +103,7 @@ export function setupGuards(router: Router) {
       return
     }
 
-    console.log(`✅ 路由导航成功: ${to.path}`)
-
+    
     // 设置页面标题
     updatePageTitle(to)
 
@@ -130,12 +124,10 @@ export function setupGuards(router: Router) {
     // 根据错误类型进行处理
     if (error.message.includes('Loading chunk')) {
       // 代码分割加载失败，通常是网络问题
-      console.log('🔄 代码块加载失败，尝试重新加载')
-      window.location.reload()
+            window.location.reload()
     } else if (error.message.includes('Failed to fetch')) {
       // 网络错误
-      console.log('🌐 网络错误，显示离线页面')
-      router.push('/error/offline')
+            router.push('/error/offline')
     } else {
       // 其他错误
       router.push('/error/500')
@@ -185,11 +177,10 @@ function updatePageTitle(to: any) {
  */
 function trackPageView(to: any) {
   // 模拟发送统计数据
-  if (import.meta.env.PROD) {
-    console.log('📊 页面浏览统计:', {
+  if (import.meta.env?.PROD) {
+    // 这里可以发送统计数据
+    console.log('Page viewed:', {
       path: to.path,
-      name: to.name,
-      title: to.meta?.title,
       timestamp: new Date().toISOString()
     })
   }

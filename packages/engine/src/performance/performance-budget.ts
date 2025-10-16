@@ -190,7 +190,7 @@ export class PerformanceBudgetManager {
 
       resources.forEach(resource => {
         if ('transferSize' in resource) {
-          totalSize += (resource as any).transferSize
+          totalSize += (resource as unknown as { transferSize: number }).transferSize
         }
       })
 
@@ -211,7 +211,7 @@ export class PerformanceBudgetManager {
       const checkMemory = () => {
         if (!this.monitoring) return
 
-        const memory = (performance as any).memory
+        const memory = (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory
         if (memory && this.metrics.has('memoryUsage')) {
           this.updateMetric('memoryUsage', memory.usedJSHeapSize)
         }
@@ -246,13 +246,15 @@ export class PerformanceBudgetManager {
         lastTime = currentTime
 
         if (this.metrics.has('fps')) {
-          const metric = this.metrics.get('fps')!
-          metric.value = fps
-          metric.exceeded = fps < metric.limit
-          metric.percentage = (fps / 60) * 100
+          const metric = this.metrics.get('fps')
+          if (metric) {
+            metric.value = fps
+            metric.exceeded = fps < metric.limit
+            metric.percentage = (fps / 60) * 100
 
-          if (metric.exceeded && this.onExceeded) {
-            this.onExceeded(metric)
+            if (metric.exceeded && this.onExceeded) {
+              this.onExceeded(metric)
+            }
           }
         }
       }
@@ -300,9 +302,9 @@ export class PerformanceBudgetManager {
         for (const entry of list.getEntries()) {
           if (entry.entryType === 'resource') {
             requestCount++
-            
+
             if ('transferSize' in entry) {
-              totalSize += (entry as any).transferSize
+              totalSize += (entry as unknown as { transferSize: number }).transferSize
             }
 
             if (this.metrics.has('networkRequests')) {
@@ -329,10 +331,10 @@ export class PerformanceBudgetManager {
 
     metric.value = value
     metric.percentage = (value / metric.limit) * 100
-    
+
     const wasExceeded = metric.exceeded
-    metric.exceeded = metric.name === 'FPS' 
-      ? value < metric.limit 
+    metric.exceeded = metric.name === 'FPS'
+      ? value < metric.limit
       : value > metric.limit
 
     // 如果首次超出预算，触发回调
@@ -348,7 +350,7 @@ export class PerformanceBudgetManager {
     if (!this.metrics.has(name)) return null
 
     this.updateMetric(name, value)
-    return this.metrics.get(name)!
+    return this.metrics.get(name) || null
   }
 
   /**

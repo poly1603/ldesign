@@ -2,7 +2,7 @@
  * 颜色选择器
  */
 
-import { PRESET_COLORS } from '../plugins/color'
+import { PRESET_COLORS } from '../plugins/formatting/color'
 
 export interface ColorPickerOptions {
   onSelect: (color: string) => void

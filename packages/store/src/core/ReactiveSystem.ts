@@ -413,7 +413,7 @@ export class MemoryManager {
   private registry = typeof (globalThis as any).FinalizationRegistry !== 'undefined'
     ? new (globalThis as any).FinalizationRegistry((heldValue: any) => {
         // 清理回调
-        console.debug('Cleaning up reactive object:', heldValue)
+        
       })
     : null
 
@@ -473,7 +473,7 @@ export class MemoryManager {
    */
   private performCleanup(id: string): void {
     // 检查并清理未使用的对象
-    console.debug(`Performing cleanup for: ${id}`)
+    
   }
 
   /**

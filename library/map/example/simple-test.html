@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Simple Map Test</title>
+  <style>
+    body { margin: 0; padding: 0; }
+    #container { 
+      width: 100vw; 
+      height: 100vh; 
+      background: #333;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+  
+  <script type="module">
+    import { Deck } from '@deck.gl/core';
+    import { GeoJsonLayer } from '@deck.gl/layers';
+    
+    // 获取容器
+    const container = document.getElementById('container');
+    
+    // 创建 canvas
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'absolute';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    container.appendChild(canvas);
+    
+    // 测试数据
+    const data = {
+      type: "FeatureCollection",
+      features: [{
+        type: "Feature",
+        geometry: {
+          type: "Polygon",
+          coordinates: [[
+            [113, 23],
+            [114, 23],
+            [114, 24],
+            [113, 24],
+            [113, 23]
+          ]]
+        }
+      }]
+    };
+    
+    // 初始化 Deck
+    const deck = new Deck({
+      canvas: canvas,
+      initialViewState: {
+        longitude: 113.5,
+        latitude: 23.5,
+        zoom: 8
+      },
+      controller: true,
+      layers: [
+        new GeoJsonLayer({
+          id: 'test',
+          data: data,
+          filled: true,
+          getFillColor: [255, 0, 0, 200],
+          getLineColor: [255, 255, 255, 255],
+          lineWidthMinPixels: 2
+        })
+      ]
+    });
+    
+    console.log('Deck initialized with canvas:', canvas);
+  </script>
+</body>
+</html>

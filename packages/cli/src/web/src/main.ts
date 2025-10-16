@@ -64,8 +64,7 @@ app.config.warnHandler = (msg, instance, trace) => {
  * 清除所有进程状态
  */
 function clearAllProcessStates() {
-  console.log('🧹 清除所有进程状态...')
-
+  
   // 获取所有 localStorage 的键
   const keys = Object.keys(localStorage)
 
@@ -73,12 +72,10 @@ function clearAllProcessStates() {
   keys.forEach(key => {
     if (key.startsWith('process-')) {
       localStorage.removeItem(key)
-      console.log(`  - 已清除: ${key}`)
-    }
+          }
   })
 
-  console.log('✅ 进程状态清除完成')
-}
+  }
 
 /**
  * 应用初始化
@@ -91,15 +88,13 @@ async function initApp() {
     // 监听服务器关闭事件
     const { subscribe } = useWebSocket()
     subscribe('server-shutdown', (data) => {
-      console.log('🔴 服务器正在关闭:', data)
-      clearAllProcessStates()
+            clearAllProcessStates()
     })
 
     // 挂载应用
     app.mount('#app')
 
-    console.log('✅ LDesign UI 应用已启动')
-  } catch (error) {
+      } catch (error) {
     console.error('❌ 应用启动失败:', error)
 
     // 显示错误信息

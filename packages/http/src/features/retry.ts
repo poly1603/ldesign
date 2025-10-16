@@ -105,7 +105,7 @@ export class RetryExecutor {
       startTime: Date.now(),
     }
 
-    while (state.attempt <= this.config.maxRetries) {
+    while (state.attempt <= this.config?.maxRetries) {
       state.attempt++
 
       try {
@@ -121,9 +121,9 @@ export class RetryExecutor {
 
         // 检查是否应该重试
         const shouldRetry
-          = this.config.shouldRetry?.(error, state.attempt) ?? true
+          = this.config?.shouldRetry?.(error, state.attempt) ?? true
 
-        if (state.attempt > this.config.maxRetries || !shouldRetry) {
+        if (state.attempt > this.config?.maxRetries || !shouldRetry) {
           return {
             success: false,
             error,

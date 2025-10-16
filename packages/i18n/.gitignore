@@ -1,5 +1,23 @@
-esm
+# Build outputs
+es
 lib
 dist
+
+# Dependencies
 node_modules
-types/**/*.d.ts
+
+# Test coverage
+coverage
+.nyc_output
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Temp files
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

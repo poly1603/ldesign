@@ -314,10 +314,10 @@ export default defineEnhancedConfig({
   // 构建钩子
   hooks: {
     beforeBuild: async (config) => {
-      console.log('开始构建...')
+      
     },
     afterBuild: async (result) => {
-      console.log('构建完成!')
+      
     },
     onError: async (error) => {
       console.error('构建失败:', error.message)

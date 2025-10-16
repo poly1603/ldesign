@@ -110,8 +110,7 @@ const copyTextLegacy = (text: string): Promise<void> => {
  *       showSuccessMessage: true,
  *       successMessage: '复制成功！',
  *       onSuccess: (text) => {
- *         console.log('复制的内容:', text)
- *       }
+ *          *       }
  *     })
  *     
  *     const textToCopy = ref('Hello, World!')
@@ -122,8 +121,7 @@ const copyTextLegacy = (text: string): Promise<void> => {
  *     
  *     const handleRead = async () => {
  *       const text = await read()
- *       console.log('剪贴板内容:', text)
- *     }
+ *        *     }
  *     
  *     return {
  *       state,
@@ -209,8 +207,7 @@ export function useClipboard(config: ClipboardConfig = {}) {
 
       // 显示成功消息
       if (showSuccessMessage) {
-        console.log(successMessage)
-      }
+              }
 
       return true
     } catch (error) {
@@ -317,7 +314,7 @@ export function useClipboard(config: ClipboardConfig = {}) {
  * 
  * // 带配置的复制
  * const success = await copyToClipboard('Hello, World!', {
- *   onSuccess: () => console.log('复制成功'),
+ *   onSuccess: () => ,
  *   onError: (error) => console.error('复制失败', error)
  * })
  * ```
@@ -338,8 +335,7 @@ export const copyToClipboard = async (
  * @example
  * ```typescript
  * const clipboardText = await readFromClipboard()
- * console.log('剪贴板内容:', clipboardText)
- * ```
+ *  * ```
  */
 export const readFromClipboard = async (): Promise<string> => {
   const { read } = useClipboard()
@@ -354,9 +350,7 @@ export const readFromClipboard = async (): Promise<string> => {
  * @example
  * ```typescript
  * const support = checkClipboardSupport()
- * console.log('是否支持复制:', support.copy)
- * console.log('是否支持读取:', support.read)
- * ```
+ *  *  * ```
  */
 export const checkClipboardSupport = () => {
   return {

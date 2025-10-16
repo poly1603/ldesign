@@ -5,6 +5,7 @@
 import type { Component } from 'vue'
 import type { TemplateFilter, TemplateLoadOptions, TemplateMetadata } from '../types'
 import { getScanner } from './scanner'
+import { loadComponentStyle } from './style-loader'
 
 /**
  * 模板加载器类
@@ -45,6 +46,9 @@ export class TemplateLoader {
       options?.onError?.(error)
       throw error
     }
+
+    // 加载组件样式
+    loadComponentStyle(category, device, name, template.componentPath)
 
     // 创建加载 Promise
     const loadPromise = this._loadWithOptions(template.loader, key, options)

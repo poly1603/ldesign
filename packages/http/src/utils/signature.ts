@@ -88,9 +88,9 @@ export class SignatureManager {
     // 添加签名头
     const headers = {
       ...config.headers,
-      [this.config.headerName]: signature,
-      [this.config.timestampHeaderName]: timestamp.toString(),
-      [this.config.nonceHeaderName]: nonce,
+      [this.config?.headerName]: signature,
+      [this.config?.timestampHeaderName]: timestamp.toString(),
+      [this.config?.nonceHeaderName]: nonce,
     }
 
     return {
@@ -103,9 +103,9 @@ export class SignatureManager {
    * 验证请求签名
    */
   async verify(config: RequestConfig): Promise<boolean> {
-    const signature = config.headers?.[this.config.headerName]
-    const timestamp = config.headers?.[this.config.timestampHeaderName]
-    const nonce = config.headers?.[this.config.nonceHeaderName]
+    const signature = config.headers?.[this.config?.headerName]
+    const timestamp = config.headers?.[this.config?.timestampHeaderName]
+    const nonce = config.headers?.[this.config?.nonceHeaderName]
 
     if (!signature || !timestamp || !nonce) {
       return false
@@ -114,7 +114,7 @@ export class SignatureManager {
     // 检查时间戳是否过期
     const now = Date.now()
     const requestTime = Number.parseInt(timestamp, 10)
-    if (now - requestTime > this.config.expiresIn * 1000) {
+    if (now - requestTime > this.config?.expiresIn * 1000) {
       return false
     }
 
@@ -152,13 +152,13 @@ export class SignatureManager {
     ]
 
     // 包含查询参数
-    if (this.config.includeParams && config.params) {
+    if (this.config?.includeParams && config.params) {
       const sortedParams = this.sortObject(config.params)
       parts.push(JSON.stringify(sortedParams))
     }
 
     // 包含请求体
-    if (this.config.includeBody && config.data) {
+    if (this.config?.includeBody && config.data) {
       if (typeof config.data === 'string') {
         parts.push(config.data)
       }
@@ -175,12 +175,12 @@ export class SignatureManager {
    */
   private async generateSignature(data: string): Promise<string> {
     // 如果有自定义生成器，使用自定义生成器
-    if (this.config.customGenerator) {
-      return this.config.customGenerator(data, this.config.secret)
+    if (this.config?.customGenerator) {
+      return this.config?.customGenerator(data, this.config?.secret)
     }
 
     // 使用内置算法
-    return this.hash(data + this.config.secret, this.config.algorithm)
+    return this.hash(data + this.config?.secret, this.config?.algorithm)
   }
 
   /**

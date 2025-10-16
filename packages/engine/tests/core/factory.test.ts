@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import type { CreateEngineOptions, Middleware, Plugin } from '../../src/types'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createEngine } from '../../src/core/factory'
-import type { CreateEngineOptions, Plugin, Middleware } from '../../src/types'
 
 // Mock Vue
 vi.mock('vue', () => ({
@@ -194,7 +194,7 @@ describe('createEngine', () => {
     })
   })
 
-  describe('Vue应用集成', () => {
+  describe('vue应用集成', () => {
     it('应该创建Vue应用当提供根组件时', () => {
       const rootComponent = { template: '<div>Root Component</div>' }
       

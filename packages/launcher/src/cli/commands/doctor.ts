@@ -9,7 +9,6 @@
 
 import { Command } from 'commander'
 import { Logger } from '../../utils/logger'
-import chalk from 'chalk'
 import ora from 'ora'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -449,28 +448,27 @@ export class DoctorCommand {
    */
   private displayResults(options: DoctorCommandOptions): void {
     if (options.format === 'json') {
-      console.log(JSON.stringify(this.results, null, 2))
+      )
       return
     }
 
-    console.log(chalk.blue('\n🔍 项目健康检查结果:\n'))
+    )
 
     for (const result of this.results) {
       const icon = this.getStatusIcon(result.status)
       const color = this.getStatusColor(result.status)
       
-      console.log(`${icon} ${chalk[color](result.name)}: ${result.message}`)
+      }: ${result.message}`)
       
       if (options.verbose && result.details) {
-        console.log(`   ${chalk.gray(result.details)}`)
+        }`)
       }
       
       if (result.suggestion) {
-        console.log(`   ${chalk.yellow('💡 ' + result.suggestion)}`)
+        }`)
       }
       
-      console.log()
-    }
+          }
   }
 
   /**
@@ -482,18 +480,15 @@ export class DoctorCommand {
     const failed = this.results.filter(r => r.status === 'fail').length
     const total = this.results.length
 
-    console.log(chalk.blue('📊 检查总结:'))
-    console.log(`   ✅ 通过: ${passed}/${total}`)
-    console.log(`   ⚠️  警告: ${warned}/${total}`)
-    console.log(`   ❌ 失败: ${failed}/${total}`)
-
+    )
+            
     if (failed > 0) {
-      console.log(chalk.red('\n❌ 发现严重问题，建议修复后再继续开发'))
+      )
       process.exit(1)
     } else if (warned > 0) {
-      console.log(chalk.yellow('\n⚠️  发现一些警告，建议查看并优化'))
+      )
     } else {
-      console.log(chalk.green('\n✅ 项目健康状况良好！'))
+      )
     }
   }
 

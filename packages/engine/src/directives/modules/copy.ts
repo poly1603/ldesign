@@ -37,11 +37,11 @@ export class CopyDirective extends DirectiveBase {
       try {
         const textToCopy = this.getText(config, el)
         await this.copyToClipboard(textToCopy)
-        
+
         if (config.onSuccess) {
           config.onSuccess(textToCopy)
         }
-        
+
         this.log(`Copied to clipboard: ${textToCopy}`)
       } catch (error) {
         const err = error as Error
@@ -57,7 +57,7 @@ export class CopyDirective extends DirectiveBase {
 
     // Add click listener
     el.addEventListener('click', handleClick)
-    
+
     // Add cursor style
     el.style.cursor = 'pointer'
 
@@ -84,7 +84,7 @@ export class CopyDirective extends DirectiveBase {
 
   public unmounted(el: HTMLElement): void {
     const handler = directiveUtils.getData(el, 'copy-handler')
-    
+
     if (handler) {
       el.removeEventListener('click', handler as EventListener)
       directiveUtils.removeData(el, 'copy-handler')
@@ -100,13 +100,13 @@ export class CopyDirective extends DirectiveBase {
     if (config.text) {
       return typeof config.text === 'function' ? config.text() : config.text
     }
-    
+
     // Try to get text from element
     const input = el as HTMLInputElement
     if (input.value !== undefined) {
       return input.value
     }
-    
+
     return el.textContent || ''
   }
 
@@ -123,10 +123,10 @@ export class CopyDirective extends DirectiveBase {
     textarea.style.position = 'fixed'
     textarea.style.opacity = '0'
     textarea.style.left = '-999999px'
-    
+
     document.body.appendChild(textarea)
     textarea.select()
-    
+
     try {
       const successful = document.execCommand('copy')
       if (!successful) {
@@ -145,7 +145,7 @@ export class CopyDirective extends DirectiveBase {
     }
 
     if (typeof value === 'function') {
-      return { text: value }
+      return { text: value as () => string }
     }
 
     if (typeof value === 'object' && value !== null) {
@@ -173,7 +173,7 @@ export class CopyDirective extends DirectiveBase {
 <!-- With options -->
 <button v-copy="{
   text: 'Custom text to copy',
-  onSuccess: (text) => console.log('Copied:', text),
+  onSuccess: (text) => ,
   onError: (error) => console.error('Failed:', error),
   disabled: false
 }">

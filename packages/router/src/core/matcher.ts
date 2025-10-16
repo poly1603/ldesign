@@ -90,12 +90,12 @@ class LRUCache {
   private cache: Map<string, LRUNode>
   private head: LRUNode
   private tail: LRUNode
-  
+
   // 性能指标
   private hits: number = 0
   private misses: number = 0
   private lastOptimizeTime: number = Date.now()
-  
+
   // 动态容量配置
   private readonly minCapacity: number = 50
   private readonly maxCapacity: number = 500
@@ -212,7 +212,7 @@ class LRUCache {
       misses: this.misses,
     }
   }
-  
+
   /**
    * 尝试优化缓存容量（基于命中率动态调整）
    */
@@ -222,34 +222,34 @@ class LRUCache {
     if (now - this.lastOptimizeTime < this.optimizeInterval) {
       return
     }
-    
+
     this.lastOptimizeTime = now
     const total = this.hits + this.misses
-    
+
     // 需要至少100次访问才进行优化
     if (total < 100) {
       return
     }
-    
+
     const hitRate = this.hits / total
-    
+
     // 命中率低于70%且未达到最大容量，增加容量
     if (hitRate < 0.7 && this.capacity < this.maxCapacity) {
       const newCapacity = Math.min(
         Math.floor(this.capacity * 1.5),
-        this.maxCapacity
+        this.maxCapacity,
       )
       this.capacity = newCapacity
-      // console.log(`LRU缓存容量增加至: ${newCapacity}, 命中率: ${(hitRate * 100).toFixed(2)}%`)
+      // .toFixed(2)}%`)
     }
     // 命中率高于95%且超过最小容量，减少容量
     else if (hitRate > 0.95 && this.capacity > this.minCapacity) {
       const newCapacity = Math.max(
         Math.floor(this.capacity * 0.8),
-        this.minCapacity
+        this.minCapacity,
       )
       this.capacity = newCapacity
-      
+
       // 如果缓存项超过新容量，需要清理
       while (this.size > this.capacity) {
         const removed = this.removeTail()
@@ -258,9 +258,9 @@ class LRUCache {
           this.size--
         }
       }
-      // console.log(`LRU缓存容量减少至: ${newCapacity}, 命中率: ${(hitRate * 100).toFixed(2)}%`)
+      // .toFixed(2)}%`)
     }
-    
+
     // 重置统计数据
     this.hits = 0
     this.misses = 0

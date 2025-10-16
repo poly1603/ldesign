@@ -1,63 +1,68 @@
 /**
- * 插件导出
+ * 插件导出 - 优化后的结构
  */
 
+// 格式化插件
 export * from './formatting'
-export * from './heading'
-export * from './list'
-export * from './blockquote'
-// export * from './codeblock'
-export * from './codeblock-codemirror'
-export * from './link'
-export * from './image'
+
+// 媒体插件
+export * from './media'
+
+// 文本结构插件
+export * from './text'
+
+// 表格插件
 export * from './table'
-export * from './history'
-export * from './align'
-export * from './color'
-export * from './font'
-export * from './script'
-export * from './horizontal-rule'
-export * from './indent'
-export * from './fullscreen'
-export * from './line-height'
-export * from './text-transform'
-export * from './find-replace'
-export * from './word-count'
-export * from './export-markdown'
-export * from './media-dialog'
-export * from './media-context-menu'
-export * from './image-resize'
-export * from './emoji'
 
-// 导出右键菜单插件
-import ContextMenuPlugin from './context-menu'
-export { ContextMenuPlugin }
+// 工具插件
+export * from './utils'
 
+// 聚合导出所有插件集合
+import { formattingPlugins } from './formatting'
+import { mediaPlugins } from './media'
+import { textPlugins } from './text'
+import { tablePlugins } from './table'
+import { utilPlugins } from './utils'
 
-// 默认插件集合
-export { BoldPlugin, ItalicPlugin, UnderlinePlugin, StrikePlugin, InlineCodePlugin, CodePlugin, ClearFormatPlugin } from './formatting'
-export { HeadingPlugin } from './heading'
-export { BulletListPlugin, OrderedListPlugin, TaskListPlugin } from './list'
-export { BlockquotePlugin } from './blockquote'
-// export { CodeBlockPlugin } from './codeblock'
-export { CodeBlockCodeMirrorPlugin as CodeBlockPlugin } from './codeblock-codemirror'
-export { LinkPlugin } from './link'
-export { ImagePlugin } from './image'
-export { TablePlugin } from './table'
-export { HistoryPlugin } from './history'
-export { AlignPlugin } from './align'
-export { TextColorPlugin, BackgroundColorPlugin, PRESET_COLORS } from './color'
-export { FontSizePlugin, FontFamilyPlugin, FONT_SIZES, FONT_FAMILIES } from './font'
-export { SuperscriptPlugin, SubscriptPlugin } from './script'
-export { HorizontalRulePlugin } from './horizontal-rule'
-export { IndentPlugin } from './indent'
-export { FullscreenPlugin } from './fullscreen'
-export { LineHeightPlugin, LINE_HEIGHTS } from './line-height'
-export { TextTransformPlugin, UpperCasePlugin, LowerCasePlugin, CapitalizePlugin } from './text-transform'
-export { FindReplacePlugin } from './find-replace'
-export { WordCountPlugin, getWordCount, showWordCountDialog } from './word-count'
-export { ExportMarkdownPlugin, htmlToMarkdown } from './export-markdown'
-export { MediaDialogPlugin } from './media-dialog'
-export { MediaContextMenuPlugin } from './media-context-menu'
-export { ImageResizePlugin } from './image-resize'
-export { EmojiPlugin } from './emoji'
+export const allPlugins = [
+  ...formattingPlugins,
+  ...mediaPlugins,
+  ...textPlugins,
+  ...tablePlugins,
+  ...utilPlugins
+]
+
+// 默认插件集合（保持向后兼容）
+export const defaultPlugins = [
+  'FormattingPlugin',
+  'HeadingPlugin',
+  'ListPlugin',
+  'BlockquotePlugin',
+  'LinkPlugin',
+  'ImagePlugin',
+  'TablePlugin',
+  'HistoryPlugin',
+  'AlignPlugin',
+  'ColorPlugin',
+  'FontPlugin',
+  'IndentPlugin',
+  'FindReplacePlugin'
+]
+
+// 扩展插件集合
+export const extendedPlugins = [
+  ...defaultPlugins,
+  'CodeBlockPlugin',
+  'HorizontalRulePlugin',
+  'ScriptPlugin',
+  'LineHeightPlugin',
+  'TextTransformPlugin',
+  'FullscreenPlugin',
+  'WordCountPlugin',
+  'ExportMarkdownPlugin',
+  'MediaDialogPlugin',
+  'MediaContextMenuPlugin',
+  'ImageResizePlugin',
+  'EmojiPlugin',
+  'ContextMenuPlugin'
+]

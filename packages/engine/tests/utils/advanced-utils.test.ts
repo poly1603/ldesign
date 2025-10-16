@@ -3,18 +3,17 @@
  * 🧪 全面测试所有工具函数的功能
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  retryWithBackoff,
-  fp,
-  Validator,
-  measurePerformance,
-  cached,
   AsyncQueue,
-  TypedEventEmitter,
-  Lazy,
-  TimeFormatter,
   ColorUtils,
+  fp,
+  Lazy,
+  measurePerformance,
+  retryWithBackoff,
+  TimeFormatter,
+  TypedEventEmitter,
+  Validator,
 } from '../../src/utils/advanced-utils'
 
 describe('retryWithBackoff', () => {
@@ -182,7 +181,7 @@ describe('fp - 函数式编程工具', () => {
   })
 })
 
-describe('Validator - 数据验证工具', () => {
+describe('validator - 数据验证工具', () => {
   describe('isEmail', () => {
     it('应该验证有效邮箱', () => {
       expect(Validator.isEmail('user@example.com')).toBe(true)
@@ -286,7 +285,7 @@ describe('Validator - 数据验证工具', () => {
   })
 })
 
-describe('AsyncQueue - 异步队列', () => {
+describe('asyncQueue - 异步队列', () => {
   it('应该控制并发数', async () => {
     const queue = new AsyncQueue(2)
     let concurrent = 0
@@ -329,7 +328,7 @@ describe('AsyncQueue - 异步队列', () => {
   })
 })
 
-describe('TypedEventEmitter - 类型安全事件发射器', () => {
+describe('typedEventEmitter - 类型安全事件发射器', () => {
   interface TestEvents {
     'test': { value: number }
     'message': { text: string }
@@ -396,7 +395,7 @@ describe('TypedEventEmitter - 类型安全事件发射器', () => {
   })
 })
 
-describe('Lazy - 延迟加载', () => {
+describe('lazy - 延迟加载', () => {
   it('应该延迟初始化', () => {
     const factory = vi.fn(() => 'value')
     const lazy = new Lazy(factory)
@@ -437,7 +436,7 @@ describe('Lazy - 延迟加载', () => {
   })
 })
 
-describe('TimeFormatter - 时间格式化', () => {
+describe('timeFormatter - 时间格式化', () => {
   describe('relative', () => {
     it('应该格式化相对时间', () => {
       const now = Date.now()
@@ -471,7 +470,7 @@ describe('TimeFormatter - 时间格式化', () => {
   })
 })
 
-describe('ColorUtils - 颜色工具', () => {
+describe('colorUtils - 颜色工具', () => {
   describe('hexToRgb', () => {
     it('应该转换十六进制到RGB', () => {
       const rgb = ColorUtils.hexToRgb('#FF5733')

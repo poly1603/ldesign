@@ -23,7 +23,7 @@ export type EventListener<T = unknown> = (event: T) => void
  *
  * // 添加监听器
  * emitter.on('test', (event) => {
- *   console.log(event.type, event.data) // TypeScript 会提供类型提示
+ *    // TypeScript 会提供类型提示
  * })
  *
  * // 触发事件
@@ -42,7 +42,7 @@ export class EventEmitter<T = unknown> {
    *
    * @example
    * ```typescript
-   * emitter.on('data', (event) => console.log(event))
+   * emitter.on('data', (event) => )
    * ```
    */
   on(event: string, listener: EventListener<T>): void {
@@ -60,7 +60,7 @@ export class EventEmitter<T = unknown> {
    *
    * @example
    * ```typescript
-   * const handler = (event) => console.log(event)
+   * const handler = (event) => 
    * emitter.on('data', handler)
    * emitter.off('data', handler) // 移除特定监听器
    * ```
@@ -86,7 +86,7 @@ export class EventEmitter<T = unknown> {
    * @example
    * ```typescript
    * emitter.once('init', (event) => {
-   *   console.log('初始化完成:', event)
+   *   
    *   // 这个监听器只会执行一次
    * })
    * ```
@@ -158,7 +158,7 @@ export class EventEmitter<T = unknown> {
    * @example
    * ```typescript
    * const count = emitter.listenerCount('data')
-   * console.log(`data 事件有 ${count} 个监听器`)
+   * 
    * ```
    */
   listenerCount(event: string): number {
@@ -174,7 +174,7 @@ export class EventEmitter<T = unknown> {
    * @example
    * ```typescript
    * const events = emitter.eventNames()
-   * console.log('已注册的事件:', events)
+   * 
    * ```
    */
   eventNames(): readonly string[] {
@@ -191,12 +191,12 @@ export class EventEmitter<T = unknown> {
    * ```typescript
    * // 检查特定事件是否有监听器
    * if (emitter.hasListeners('data')) {
-   *   console.log('data 事件有监听器')
+   *   
    * }
    *
    * // 检查是否有任何监听器
    * if (emitter.hasListeners()) {
-   *   console.log('事件发射器有监听器')
+   *   
    * }
    * ```
    */
@@ -216,7 +216,7 @@ export class EventEmitter<T = unknown> {
    * @example
    * ```typescript
    * const listeners = emitter.getListeners('data')
-   * console.log(`data 事件有 ${listeners.length} 个监听器`)
+   * 
    * ```
    */
   getListeners(event: string): readonly EventListener<T>[] {
@@ -232,7 +232,7 @@ export class EventEmitter<T = unknown> {
    * @example
    * ```typescript
    * const stats = emitter.getStats()
-   * console.log(`总事件数: ${stats.eventCount}, 总监听器数: ${stats.listenerCount}`)
+   * 
    * ```
    */
   getStats(): { eventCount: number, listenerCount: number, events: Record<string, number> } {

@@ -42,7 +42,7 @@ export class LazyDirective extends DirectiveBase {
 
   public mounted(el: HTMLElement, binding: VueDirectiveBinding): void {
     const config = this.parseConfig(binding)
-    
+
     // Setup element
     this.setupElement(el, config)
 
@@ -57,7 +57,7 @@ export class LazyDirective extends DirectiveBase {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           this.loadElement(el, config, entry)
-          
+
           if (config.once !== false) {
             observer.unobserve(el)
             this.observers.delete(el)
@@ -143,7 +143,7 @@ export class LazyDirective extends DirectiveBase {
       // For non-image elements, just mark as loaded
       directiveUtils.storeData(el, 'lazy-loaded', true)
       this.updateClasses(el, config, 'loaded')
-      
+
       if (config.onLoad) {
         config.onLoad(el)
       }
@@ -151,10 +151,14 @@ export class LazyDirective extends DirectiveBase {
   }
 
   private loadImage(img: HTMLImageElement, config: LazyOptions): void {
+    if (!config.src) return
+
     const tempImg = new Image()
 
     tempImg.onload = () => {
-      img.src = config.src!
+      if (config.src) {
+        img.src = config.src
+      }
       directiveUtils.storeData(img, 'lazy-loaded', true)
       directiveUtils.removeData(img, 'lazy-loading')
       this.updateClasses(img, config, 'loaded')
@@ -166,9 +170,9 @@ export class LazyDirective extends DirectiveBase {
       this.log(`Image loaded successfully: ${config.src}`)
     }
 
-    tempImg.onerror = (event) => {
+    tempImg.onerror = (_event) => {
       const error = new Error(`Failed to load image: ${config.src}`)
-      
+
       if (config.error) {
         img.src = config.error
       } else {
@@ -186,7 +190,9 @@ export class LazyDirective extends DirectiveBase {
       this.warn(`Failed to load image: ${config.src}`)
     }
 
-    tempImg.src = config.src!
+    if (config.src) {
+      tempImg.src = config.src
+    }
   }
 
   private updateClasses(el: HTMLElement, config: LazyOptions, state: 'loading' | 'loaded' | 'error'): void {
@@ -224,7 +230,7 @@ export class LazyDirective extends DirectiveBase {
 
     // Handle function as callback
     if (typeof value === 'function') {
-      return { callback: value }
+      return { callback: value as (el: HTMLElement, entry: IntersectionObserverEntry) => void }
     }
 
     return {}
@@ -247,7 +253,7 @@ export class LazyDirective extends DirectiveBase {
 <!-- With callbacks -->
 <img v-lazy="{
   src: '/path/to/image.jpg',
-  onLoad: (el) => console.log('Loaded!', el),
+  onLoad: (el) => ,
   onError: (el, error) => console.error('Failed!', error),
   loadingClass: 'loading',
   loadedClass: 'loaded',

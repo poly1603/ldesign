@@ -216,6 +216,7 @@ export interface LogEntry {
   timestamp: number
   data?: unknown
   context?: Record<string, unknown>
+  metadata?: Record<string, unknown>
 }
 
 // 日志级别类型

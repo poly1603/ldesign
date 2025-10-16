@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { CacheManagerImpl } from '../../src/cache/cache-manager'
 
 describe('缓存管理器功能增强', () => {

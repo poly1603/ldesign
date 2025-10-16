@@ -3,7 +3,6 @@
  */
 
 import { DatabaseManager } from '../DatabaseManager'
-import { v4 as uuidv4 } from 'uuid'
 
 export interface Project {
   id: string

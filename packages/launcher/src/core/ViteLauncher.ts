@@ -25,7 +25,6 @@ import { PathUtils } from '../utils/path-utils'
 import { ConfigManager } from './ConfigManager'
 import { SmartPluginManager } from './SmartPluginManager'
 import { createConfigInjectionPlugin, getClientConfigUtils } from '../plugins/config-injection'
-import { environmentManager } from '../utils/env'
 import { createSSLManager, type SSLConfig } from '../utils/ssl'
 import { AliasManager } from './AliasManager'
 import { getPreferredLocalIP } from '../utils/network.js'
@@ -149,7 +148,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       process.argv.includes('-s')
 
     this.logger = new Logger('ViteLauncher', {
-      level: isSilent ? 'silent' : (this.config.launcher?.logLevel || DEFAULT_LOG_LEVEL),
+      level: isSilent ? 'silent' : (this.config?.launcher?.logLevel || DEFAULT_LOG_LEVEL),
       colors: true,
       timestamp: isDebug, // 只在 debug 模式显示时间戳
       compact: !isDebug   // 非 debug 模式使用简洁输出
@@ -169,11 +168,11 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       compact: !isDebug
     })
     // 确定配置文件路径
-    const configFile = this.config.launcher?.configFile ||
+    const configFile = this.config?.launcher?.configFile ||
       PathUtils.resolve(this.cwd, '.ldesign', `launcher.${this.environment}.config.ts`)
 
     // 只在dev模式下启用文件监听，build和preview模式不需要监听
-    const shouldWatch = (this.config.launcher?.autoRestart || false) &&
+    const shouldWatch = (this.config?.launcher?.autoRestart || false) &&
       (this.environment === 'development' ||
         (process.env.NODE_ENV === 'development' && this.environment !== 'production'))
 
@@ -246,7 +245,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
     try {
       // 优先使用显式指定的配置文件，其次自动查找
-      const specified = this.config.launcher?.configFile
+      const specified = this.config?.launcher?.configFile
 
       // 只在debug模式下输出详细信息
       if (this.logger.getLevel() === 'debug') {
@@ -840,18 +839,18 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       }
 
       // 更新配置中的插件列表
-      if (!this.config.plugins) {
-        this.config.plugins = []
+      if (!this.config?.plugins) {
+        this.config?.plugins = []
       }
 
       // 确保插件在配置中
-      const configPluginIndex = this.config.plugins.findIndex(p =>
+      const configPluginIndex = this.config?.plugins.findIndex(p =>
         p && typeof p === 'object' && 'name' in p && p.name === plugin.name
       )
       if (configPluginIndex >= 0) {
-        this.config.plugins[configPluginIndex] = plugin
+        this.config?.plugins[configPluginIndex] = plugin
       } else {
-        this.config.plugins.push(plugin)
+        this.config?.plugins.push(plugin)
       }
 
     } catch (error) {
@@ -873,12 +872,12 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
         this.logger.info('插件已移除', { name: pluginName })
 
         // 从配置中移除
-        if (this.config.plugins) {
-          const configIndex = this.config.plugins.findIndex(p =>
+        if (this.config?.plugins) {
+          const configIndex = this.config?.plugins.findIndex(p =>
             p && typeof p === 'object' && 'name' in p && p.name === pluginName
           )
           if (configIndex >= 0) {
-            this.config.plugins.splice(configIndex, 1)
+            this.config?.plugins.splice(configIndex, 1)
           }
         }
       } else {
@@ -994,7 +993,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       }
     }
 
-    const resolvedHost = getResolvedHost(this.config.server?.host)
+    const resolvedHost = getResolvedHost(this.config?.server?.host)
 
     return {
       type: ServerType.DEV,
@@ -1003,13 +1002,13 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       config: {
         type: ServerType.DEV,
         host: resolvedHost,
-        port: this.config.server?.port || DEFAULT_PORT,
-        https: typeof this.config.server?.https === 'boolean' ? this.config.server.https : false
+        port: this.config?.server?.port || DEFAULT_PORT,
+        https: typeof this.config?.server?.https === 'boolean' ? this.config?.server.https : false
       },
       url: this.getServerUrl(this.devServer),
       host: resolvedHost,
-      port: this.config.server?.port || DEFAULT_PORT,
-      https: typeof this.config.server?.https === 'boolean' ? this.config.server.https : false,
+      port: this.config?.server?.port || DEFAULT_PORT,
+      https: typeof this.config?.server?.https === 'boolean' ? this.config?.server.https : false,
       startTime: this.startTime
     }
   }
@@ -1043,7 +1042,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
    */
   private async executeHook(hookName: keyof LauncherHooks): Promise<void> {
     try {
-      const hook = this.config.launcher?.hooks?.[hookName]
+      const hook = this.config?.launcher?.hooks?.[hookName]
       if (hook && typeof hook === 'function') {
         await Promise.resolve((hook as () => void | Promise<void>)())
         this.logger.debug('生命周期钩子执行完成', { hook: hookName })
@@ -1174,9 +1173,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       })
 
       // 合并到当前配置
-      const oldAliasCount = this.config.resolve?.alias?.length || 0
+      const oldAliasCount = this.config?.resolve?.alias?.length || 0
       this.config = this.mergeConfig(this.config, loadedConfig)
-      const newAliasCount = this.config.resolve?.alias?.length || 0
+      const newAliasCount = this.config?.resolve?.alias?.length || 0
 
       // 只在debug模式下输出详细信息
       if (this.logger.getLevel() === 'debug') {
@@ -1212,9 +1211,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       }
 
       // 回退到手动构建 URL
-      const host = this.config.server?.host || DEFAULT_HOST
-      const port = this.config.server?.port || DEFAULT_PORT
-      const protocol = this.config.server?.https ? 'https' : 'http'
+      const host = this.config?.server?.host || DEFAULT_HOST
+      const port = this.config?.server?.port || DEFAULT_PORT
+      const protocol = this.config?.server?.https ? 'https' : 'http'
 
       return `${protocol}://${host}:${port}`
     } catch (error) {
@@ -1236,9 +1235,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       }
 
       // 回退到手动构建 URL
-      const host = this.config.preview?.host || DEFAULT_HOST
-      const port = this.config.preview?.port || 4173
-      const protocol = this.config.preview?.https ? 'https' : 'http'
+      const host = this.config?.preview?.host || DEFAULT_HOST
+      const port = this.config?.preview?.port || 4173
+      const protocol = this.config?.preview?.https ? 'https' : 'http'
 
       return `${protocol}://${host}:${port}`
     } catch (error) {
@@ -1357,12 +1356,12 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       if (Array.isArray(config.resolve.alias)) {
         userAliases = [...config.resolve.alias]
         if (this.logger.getLevel() === 'debug') {
-          console.log('🔧 用户别名（数组格式）调试:')
-          console.log('  总数:', userAliases.length)
+          
+          
           const ldesignAliases = userAliases.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
-          console.log('  @ldesign别名数量:', ldesignAliases.length)
-          console.log('  当前阶段:', stage)
-          console.log('  @ldesign别名详情:', JSON.stringify(ldesignAliases.slice(0, 5), null, 2))
+          
+          
+          , null, 2))
 
           this.logger.debug('用户别名（数组格式）', {
             count: userAliases.length,
@@ -1597,10 +1596,10 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     }
 
     // 输出简化的服务器信息
-    console.log('\n' + '🚀 服务器已重启')
-    console.log('📍 本地地址: ' + localUrl)
+    
+    
     if (networkUrl) {
-      console.log('🌐 网络地址: ' + networkUrl)
+      
     }
 
     // 生成二维码 - 优先使用网络地址
@@ -1628,9 +1627,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
         if (terminalQR && typeof terminalQR === 'string') {
           this.logger.info('二维码（扫码在手机上打开）：')
-          console.log()
-          console.log(terminalQR)
-          console.log()
+          
+          
+          
           return
         }
       } catch (e1) {
@@ -1671,7 +1670,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     })
 
     this.logger.info('二维码（扫码在手机上打开）：')
-    console.log()
+    
 
     // 创建简洁的边框效果
     const borderWidth = maxWidth + 4
@@ -1680,18 +1679,18 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     const emptyLine = '│' + ' '.repeat(borderWidth - 2) + '│'
 
     // 上边框
-    console.log(topBorder)
-    console.log(emptyLine)
+    
+    
 
     // 二维码内容
     normalizedLines.forEach(line => {
-      console.log('│ ' + line + ' │')
+      
     })
 
     // 下边框
-    console.log(emptyLine)
-    console.log(bottomBorder)
-    console.log()
+    
+    
+    
   }
 
   /**
@@ -1721,20 +1720,20 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
         }
       } catch (error) {
         // 如果URL解析失败，手动构建网络地址
-        const protocol = this.config.preview?.https ? 'https' : 'http'
-        const port = this.config.preview?.port || 4173
+        const protocol = this.config?.preview?.https ? 'https' : 'http'
+        const port = this.config?.preview?.port || 4173
         networkUrl = `${protocol}://${localIP}:${port}/`
       }
 
       // 输出服务器信息框
-      console.log('\n' + '┌────────────────────────────────────┐')
-      console.log('│ ✔ 预览服务器已启动                │')
-      console.log(`│ • 本地: ${localUrl.padEnd(22)} │`)
+      
+      
+      } │`)
       if (networkUrl) {
-        console.log(`│ • 网络: ${networkUrl.padEnd(22)} │`)
+        } │`)
       }
-      console.log('│ • 提示: 按 Ctrl+C 停止服务器      │')
-      console.log('└────────────────────────────────────┘')
+      
+      
 
       // 生成二维码 - 优先使用网络地址
       const qrTarget = networkUrl || localUrl

@@ -348,7 +348,8 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
       this.featureListeners.set(feature, [])
     }
 
-    this.featureListeners.get(feature)!.push(callback)
+    const listeners = this.featureListeners.get(feature)
+    listeners?.push(callback)
 
     return () => {
       const listeners = this.featureListeners.get(feature)
@@ -569,7 +570,8 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
 
     // Memory information
     if (typeof performance !== 'undefined' && 'memory' in performance) {
-      const memory = (performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory!
+      const memory = (performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory
+      if (!memory) return info
       info.memory = {
         used: memory.usedJSHeapSize,
         total: memory.totalJSHeapSize,
@@ -579,7 +581,8 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
 
     // Network information
     if (typeof navigator !== 'undefined' && 'connection' in navigator) {
-      const connection = (navigator as Navigator & { connection?: { effectiveType?: string; downlink?: number; rtt?: number; saveData?: boolean } }).connection!
+      const connection = (navigator as Navigator & { connection?: { effectiveType?: string; downlink?: number; rtt?: number; saveData?: boolean } }).connection
+      if (!connection) return info
       info.connection = {
         effectiveType: connection.effectiveType || 'unknown',
         downlink: connection.downlink || 0,

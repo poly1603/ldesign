@@ -6,7 +6,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { DatabaseManager } from './DatabaseManager'
-import { v4 as uuidv4 } from 'uuid'
 
 export class MigrationService {
   private dbManager: DatabaseManager
@@ -30,7 +29,7 @@ export class MigrationService {
     }
     errors: string[]
   }> {
-    console.log('[MigrationService] 开始数据迁移...')
+    
     
     const errors: string[] = []
     const migrated = {
@@ -44,7 +43,7 @@ export class MigrationService {
       // 1. 迁移项目数据
       try {
         migrated.projects = await this.migrateProjects()
-        console.log(`[MigrationService] 已迁移 ${migrated.projects} 个项目`)
+        
       } catch (error) {
         const msg = `项目迁移失败: ${error}`
         errors.push(msg)
@@ -54,7 +53,7 @@ export class MigrationService {
       // 2. 迁移 NPM 源数据
       try {
         migrated.npmSources = await this.migrateNpmSources()
-        console.log(`[MigrationService] 已迁移 ${migrated.npmSources} 个 NPM 源`)
+        
       } catch (error) {
         const msg = `NPM 源迁移失败: ${error}`
         errors.push(msg)
@@ -64,7 +63,7 @@ export class MigrationService {
       // 3. 迁移 AI 配置数据
       try {
         migrated.aiConfigs = await this.migrateAIConfigs()
-        console.log(`[MigrationService] 已迁移 ${migrated.aiConfigs} 个 AI 配置`)
+        
       } catch (error) {
         const msg = `AI 配置迁移失败: ${error}`
         errors.push(msg)
@@ -74,14 +73,14 @@ export class MigrationService {
       // 4. 迁移用户设置
       try {
         migrated.userSettings = await this.migrateUserSettings()
-        console.log(`[MigrationService] 已迁移 ${migrated.userSettings} 个用户设置`)
+        
       } catch (error) {
         const msg = `用户设置迁移失败: ${error}`
         errors.push(msg)
         console.error(`[MigrationService] ${msg}`)
       }
 
-      console.log('[MigrationService] 数据迁移完成')
+      
       
       return {
         success: errors.length === 0,
@@ -105,7 +104,7 @@ export class MigrationService {
     const projectsFile = path.join(this.dataDir, 'projects.json')
     
     if (!fs.existsSync(projectsFile)) {
-      console.log('[MigrationService] 未找到 projects.json，跳过项目迁移')
+      
       return 0
     }
 
@@ -155,7 +154,7 @@ export class MigrationService {
     const npmSourcesFile = path.join(this.dataDir, 'npm-sources.json')
     
     if (!fs.existsSync(npmSourcesFile)) {
-      console.log('[MigrationService] 未找到 npm-sources.json，跳过 NPM 源迁移')
+      
       return 0
     }
 
@@ -206,7 +205,7 @@ export class MigrationService {
     const aiConfigFile = path.join(this.dataDir, 'ai-configs.json')
     
     if (!fs.existsSync(aiConfigFile)) {
-      console.log('[MigrationService] 未找到 ai-configs.json，跳过 AI 配置迁移')
+      
       return 0
     }
 
@@ -255,7 +254,7 @@ export class MigrationService {
     const settingsFile = path.join(this.dataDir, 'user-settings.json')
     
     if (!fs.existsSync(settingsFile)) {
-      console.log('[MigrationService] 未找到 user-settings.json，跳过用户设置迁移')
+      
       return 0
     }
 
@@ -322,7 +321,7 @@ export class MigrationService {
       }
     }
 
-    console.log(`[MigrationService] 数据文件已备份到: ${backupDir}`)
+    
   }
 
   /**

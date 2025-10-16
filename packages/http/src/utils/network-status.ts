@@ -76,13 +76,13 @@ export interface NetworkMonitorConfig {
  * const monitor = new NetworkMonitor({
  *  enabled: true,
  *  onStatusChange: (status, info) => {
- *   console.log('网络状态:', status, info)
+ *   
  *  },
  *  onOffline: () => {
- *   console.log('网络已离线')
+ *   
  *  },
  *  onOnline: () => {
- *   console.log('网络已恢复')
+ *   
  *  },
  * })
  *
@@ -90,7 +90,7 @@ export interface NetworkMonitorConfig {
  *
  * // 获取当前状态
  * const info = monitor.getNetworkInfo()
- * console.log('当前网络:', info)
+ * 
  * ```
  */
 export class NetworkMonitor {
@@ -117,7 +117,7 @@ export class NetworkMonitor {
   * 开始监听
   */
  start(): void {
-  if (!this.config.enabled || this.isMonitoring) {
+  if (!this.config?.enabled || this.isMonitoring) {
    return
   }
 
@@ -130,13 +130,13 @@ export class NetworkMonitor {
   // 监听online事件
   const handleOnline = () => {
    this.handleStatusChange(NetworkStatus.ONLINE)
-   this.config.onOnline?.()
+   this.config?.onOnline?.()
   }
 
   // 监听offline事件
   const handleOffline = () => {
    this.handleStatusChange(NetworkStatus.OFFLINE)
-   this.config.onOffline?.()
+   this.config?.onOffline?.()
   }
 
   window.addEventListener('online', handleOnline)
@@ -252,7 +252,7 @@ export class NetworkMonitor {
   const info = this.getNetworkInfo()
 
   // 触发回调
-  this.config.onStatusChange?.(newStatus, info)
+  this.config?.onStatusChange?.(newStatus, info)
  }
 
  /**

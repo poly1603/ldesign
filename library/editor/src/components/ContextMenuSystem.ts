@@ -3,7 +3,7 @@
  * 支持无限层级、动态菜单项、快捷键、图标、分隔符等功能
  */
 
-import { getLucideIcon } from '../utils/icons'
+import { getLucideIcon } from '../ui/icons/lucide'
 
 export interface MenuItem {
   id?: string

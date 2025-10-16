@@ -62,17 +62,17 @@ export class LdesignDraggable {
   @Prop() disableContextMenu: boolean = true;
 
   // ── Events ────────────────────────────────────────────
-  @Event() ldesignTransformChange: EventEmitter<{ scale: number; rotate: number; offsetX: number; offsetY: number }>;
-  @Event() ldesignGestureStart: EventEmitter<void>;
-  @Event() ldesignGestureEnd: EventEmitter<void>;
+  @Event() ldesignTransformChange!: EventEmitter<{ scale: number; rotate: number; offsetX: number; offsetY: number }>;
+  @Event() ldesignGestureStart!: EventEmitter<void>;
+  @Event() ldesignGestureEnd!: EventEmitter<void>;
 
   // ── State ─────────────────────────────────────────────
-  @State() scale: number = 1;
-  @State() rotate: number = 0;
-  @State() offsetX: number = 0;
-  @State() offsetY: number = 0;
-  @State() dragging: boolean = false;
-  @State() gesturing: boolean = false;
+  @State() scale!: number = 1;
+  @State() rotate!: number = 0;
+  @State() offsetX!: number = 0;
+  @State() offsetY!: number = 0;
+  @State() dragging!: boolean = false;
+  @State() gesturing!: boolean = false;
 
   // 控件栏相关
   @Prop() showControls: boolean = false;

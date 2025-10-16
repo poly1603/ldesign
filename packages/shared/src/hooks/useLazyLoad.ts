@@ -242,9 +242,8 @@ export function useLazyLoad(
  *   setup() {
  *     const { imageRef, state, setSrc } = useImageLazyLoad({
  *       placeholder: '/placeholder.jpg',
- *       onLoad: () => console.log('图片加载完成'),
- *       onError: () => console.log('图片加载失败')
- *     })
+ *       onLoad: () => ,
+ *       onError: () =>  *     })
  *     
  *     onMounted(() => {
  *       setSrc('https://example.com/image.jpg')
@@ -376,8 +375,7 @@ export function useImageLazyLoad(config: {
  *     const { states, getRef } = useBatchLazyLoad(items, {
  *       rootMargin: '100px',
  *       onItemEnter: (item, index) => {
- *         console.log(`Item ${index} entered:`, item)
- *       }
+ *          *       }
  *     })
  *     
  *     return {

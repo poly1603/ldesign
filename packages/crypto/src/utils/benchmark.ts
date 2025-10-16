@@ -15,7 +15,7 @@
  * 
  * const benchmark = createBenchmark()
  * const results = await benchmark.runAll()
- * console.log(benchmark.generateReport(results))
+ * )
  * ```
  */
 
@@ -408,7 +408,7 @@ export class Benchmark {
    */
   private log(message: string): void {
     if (this.options.verbose) {
-      console.log(message)
+      
     }
   }
 }
@@ -432,7 +432,7 @@ export async function quickBenchmark(): Promise<BenchmarkSuite> {
   })
 
   const results = await benchmark.runAll()
-  console.log(benchmark.generateReport(results))
+  )
   return results
 }
 

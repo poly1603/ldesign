@@ -7,8 +7,8 @@ LDesign Engine 为 Vue 3 提供了全面的集成支持，包括丰富的组合�
 ### 1. 基础安装
 
 ```typescript
-import { createApp } from 'vue'
 import { createVueEnginePlugin } from '@ldesign/engine'
+import { createApp } from 'vue'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -73,14 +73,22 @@ function toggleTheme() {
 <template>
   <div>
     <p>计数: {{ count }}</p>
-    <button @click="increment">+1</button>
+    <button @click="increment">
+      +1
+    </button>
     
     <p>主题: {{ theme }}</p>
-    <button @click="toggleTheme">切换主题</button>
+    <button @click="toggleTheme">
+      切换主题
+    </button>
     
     <div>
-      <button @click="undo" :disabled="!canUndo">撤销</button>
-      <button @click="redo" :disabled="!canRedo">重做</button>
+      <button :disabled="!canUndo" @click="undo">
+        撤销
+      </button>
+      <button :disabled="!canRedo" @click="redo">
+        重做
+      </button>
     </div>
   </div>
 </template>
@@ -90,7 +98,7 @@ function toggleTheme() {
 
 ```vue
 <script setup>
-import { useAsyncOperation, useRetry, useDebouncedAsync } from '@ldesign/engine'
+import { useAsyncOperation, useDebouncedAsync, useRetry } from '@ldesign/engine'
 
 // 基础异步操作
 const { data: user, loading, error, execute: loadUser } = useAsyncOperation(
@@ -129,13 +137,21 @@ function handleSearch(query: string) {
 
 <template>
   <div>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">错误: {{ error.message }}</div>
-    <div v-else-if="user">用户: {{ user.name }}</div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      错误: {{ error.message }}
+    </div>
+    <div v-else-if="user">
+      用户: {{ user.name }}
+    </div>
     
-    <input @input="handleSearch($event.target.value)" placeholder="搜索..." />
+    <input placeholder="搜索..." @input="handleSearch($event.target.value)">
     
-    <div v-if="retryCount > 0">重试次数: {{ retryCount }}</div>
+    <div v-if="retryCount > 0">
+      重试次数: {{ retryCount }}
+    </div>
   </div>
 </template>
 ```
@@ -157,7 +173,7 @@ const { values, errors, touched, setFieldTouched, validate, handleSubmit, valid 
   ],
   email: [
     { required: true, message: '邮箱不能为空' },
-    { pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: '邮箱格式不正确' }
+    { pattern: /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/, message: '邮箱格式不正确' }
   ],
   password: [
     { required: true, message: '密码不能为空' },
@@ -176,9 +192,9 @@ const onSubmit = handleSubmit(async (values) => {
     <div>
       <input 
         v-model="values.username"
-        @blur="() => setFieldTouched('username', true)"
         placeholder="用户名"
-      />
+        @blur="() => setFieldTouched('username', true)"
+      >
       <span v-if="touched.username && errors.username" class="error">
         {{ errors.username }}
       </span>
@@ -187,9 +203,9 @@ const onSubmit = handleSubmit(async (values) => {
     <div>
       <input 
         v-model="values.email"
-        @blur="() => setFieldTouched('email', true)"
         placeholder="邮箱"
-      />
+        @blur="() => setFieldTouched('email', true)"
+      >
       <span v-if="touched.email && errors.email" class="error">
         {{ errors.email }}
       </span>
@@ -198,16 +214,18 @@ const onSubmit = handleSubmit(async (values) => {
     <div>
       <input 
         v-model="values.password"
-        @blur="() => setFieldTouched('password', true)"
         type="password"
         placeholder="密码"
-      />
+        @blur="() => setFieldTouched('password', true)"
+      >
       <span v-if="touched.password && errors.password" class="error">
         {{ errors.password }}
       </span>
     </div>
     
-    <button type="submit" :disabled="!valid">提交</button>
+    <button type="submit" :disabled="!valid">
+      提交
+    </button>
   </form>
 </template>
 ```
@@ -217,10 +235,10 @@ const onSubmit = handleSubmit(async (values) => {
 ```vue
 <script setup>
 import { 
-  useNotifications, 
-  useDialog, 
   useClipboard, 
-  useLocalStorage 
+  useDialog, 
+  useLocalStorage, 
+  useNotifications 
 } from '@ldesign/engine'
 
 // 通知管理
@@ -261,11 +279,15 @@ function showNotifications() {
 
 <template>
   <div>
-    <button @click="handleDelete">删除</button>
+    <button @click="handleDelete">
+      删除
+    </button>
     <button @click="handleCopy">
       {{ copied ? '已复制' : '复制文本' }}
     </button>
-    <button @click="showNotifications">显示通知</button>
+    <button @click="showNotifications">
+      显示通知
+    </button>
     
     <p>语言设置: {{ settings.lang }}</p>
     <button @click="setSettings({ ...settings, lang: settings.lang === 'zh' ? 'en' : 'zh' })">
@@ -279,7 +301,7 @@ function showNotifications() {
 
 ```vue
 <script setup>
-import { usePerformance, useComponentPerformance, useMemoryManager } from '@ldesign/engine'
+import { useComponentPerformance, useMemoryManager, usePerformance } from '@ldesign/engine'
 
 // 全局性能监控
 const { metrics, fps, memoryUsage, startMeasure, endMeasure } = usePerformance()
@@ -316,8 +338,12 @@ onMounted(() => {
     <div>渲染时间: {{ renderTime }}ms</div>
     <div>更新次数: {{ updateCount }}</div>
     
-    <button @click="performHeavyTask">执行重任务</button>
-    <button @click="trackUpdate">跟踪更新</button>
+    <button @click="performHeavyTask">
+      执行重任务
+    </button>
+    <button @click="trackUpdate">
+      跟踪更新
+    </button>
   </div>
 </template>
 ```
@@ -327,13 +353,13 @@ onMounted(() => {
 ```vue
 <script setup>
 import { 
-  useDebounce, 
-  useThrottle, 
+  useArray, 
   useCounter, 
-  useToggle, 
-  useArray,
+  useDebounce, 
+  useRelativeTime, 
+  useThrottle,
   useTimeFormat,
-  useRelativeTime
+  useToggle
 } from '@ldesign/engine'
 
 // 防抖和节流
@@ -369,26 +395,42 @@ function addItem() {
 
 <template>
   <div>
-    <input v-model="searchQuery" placeholder="搜索..." />
+    <input v-model="searchQuery" placeholder="搜索...">
     <p>防抖查询: {{ debouncedQuery }}</p>
     
     <div>
-      <button @click="decrement">-</button>
+      <button @click="decrement">
+        -
+      </button>
       <span>{{ count }}</span>
-      <button @click="increment">+</button>
-      <button @click="reset">重置</button>
+      <button @click="increment">
+        +
+      </button>
+      <button @click="reset">
+        重置
+      </button>
     </div>
     
-    <button @click="toggle">{{ isVisible ? '隐藏' : '显示' }}</button>
-    <div v-if="isVisible">内容</div>
+    <button @click="toggle">
+      {{ isVisible ? '隐藏' : '显示' }}
+    </button>
+    <div v-if="isVisible">
+      内容
+    </div>
     
     <div>
-      <button @click="addItem">添加项目</button>
-      <button @click="clear">清空</button>
+      <button @click="addItem">
+        添加项目
+      </button>
+      <button @click="clear">
+        清空
+      </button>
       <ul>
         <li v-for="item in items" :key="item">
           {{ item }}
-          <button @click="remove(item)">删除</button>
+          <button @click="remove(item)">
+            删除
+          </button>
         </li>
       </ul>
     </div>
@@ -407,8 +449,8 @@ function addItem() {
 
 ```typescript
 import type { 
-  UseEngineReturn,
   UseAsyncReturn,
+  UseEngineReturn,
   UseFormReturn,
   UsePerformanceReturn 
 } from '@ldesign/engine'

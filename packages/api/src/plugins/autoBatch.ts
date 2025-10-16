@@ -44,11 +44,11 @@ class BatchManager {
   * 判断方法是否可批处理
   */
  isBatchable(methodName: string): boolean {
-  if (!this.config.batchableMethods || this.config.batchableMethods.length === 0) {
+  if (!this.config?.batchableMethods || this.config?.batchableMethods.length === 0) {
    return true
   }
 
-  return this.config.batchableMethods.some((pattern) => {
+  return this.config?.batchableMethods.some((pattern) => {
    if (pattern instanceof RegExp) {
     return pattern.test(methodName)
    }
@@ -60,7 +60,7 @@ class BatchManager {
   * 添加到批处理队列
   */
  enqueue(call: BatchCall): void {
-  if (!this.config.enabled) {
+  if (!this.config?.enabled) {
    // 不批处理，直接执行
    this.executeSingle(call)
    return
@@ -75,7 +75,7 @@ class BatchManager {
   this.queue.push(call)
 
   // 如果达到最大批处理大小，立即执行
-  if (this.queue.length >= this.config.maxBatchSize) {
+  if (this.queue.length >= this.config?.maxBatchSize) {
    this.flush()
    return
   }
@@ -84,7 +84,7 @@ class BatchManager {
   if (!this.timer) {
    this.timer = setTimeout(() => {
     this.flush()
-   }, this.config.batchInterval)
+   }, this.config?.batchInterval)
   }
  }
 
@@ -124,8 +124,8 @@ class BatchManager {
 
   try {
    // 构建批量请求
-   const batchRequest = this.config.transformRequest
-    ? this.config.transformRequest(calls)
+   const batchRequest = this.config?.transformRequest
+    ? this.config?.transformRequest(calls)
     : calls.map(call => ({
       method: call.methodName,
       params: call.params,
@@ -133,14 +133,14 @@ class BatchManager {
 
    // 发送批量请求
    const response = await this.httpClient.request({
-    url: this.config.batchEndpoint,
+    url: this.config?.batchEndpoint,
     method: 'POST',
     data: batchRequest,
    })
 
    // 解析响应
-   const results = this.config.transformResponse
-    ? this.config.transformResponse(response.data)
+   const results = this.config?.transformResponse
+    ? this.config?.transformResponse(response.data)
     : response.data
 
    // 分发结果

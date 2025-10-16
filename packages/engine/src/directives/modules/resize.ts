@@ -27,15 +27,15 @@ export class ResizeDirective extends DirectiveBase {
 
   public mounted(el: HTMLElement, binding: VueDirectiveBinding): void {
     const config = this.parseConfig(binding)
-    
+
     if (config.disabled) {
       return
     }
-    
+
     const observer = this.createObserver(el, config)
     directiveUtils.storeData(el, 'resize-observer', observer)
     directiveUtils.storeData(el, 'resize-config', config)
-    
+
     observer.observe(el)
     this.log('Resize observer attached', el)
   }
@@ -43,13 +43,13 @@ export class ResizeDirective extends DirectiveBase {
   public updated(el: HTMLElement, binding: VueDirectiveBinding): void {
     const newConfig = this.parseConfig(binding)
     const oldConfig = directiveUtils.getData(el, 'resize-config') as ResizeOptions
-    
+
     if (JSON.stringify(newConfig) === JSON.stringify(oldConfig)) {
       return
     }
-    
+
     this.unmounted(el)
-    
+
     if (!newConfig.disabled) {
       this.mounted(el, binding)
     }
@@ -58,38 +58,38 @@ export class ResizeDirective extends DirectiveBase {
   public unmounted(el: HTMLElement): void {
     const observer = directiveUtils.getData(el, 'resize-observer') as ResizeObserver
     const timer = directiveUtils.getData(el, 'resize-timer') as number
-    
+
     if (timer) {
       clearTimeout(timer)
       directiveUtils.removeData(el, 'resize-timer')
     }
-    
+
     if (observer) {
       observer.disconnect()
       directiveUtils.removeData(el, 'resize-observer')
     }
-    
+
     directiveUtils.removeData(el, 'resize-config')
     this.log('Resize observer detached', el)
   }
 
   private createObserver(el: HTMLElement, config: ResizeOptions): ResizeObserver {
     let isFirstCall = true
-    
+
     const callback = (entries: ResizeObserverEntry[]): void => {
       if (!config.immediate && isFirstCall) {
         isFirstCall = false
         return
       }
       isFirstCall = false
-      
+
       for (const entry of entries) {
         if (config.debounce && config.debounce > 0) {
           const timer = directiveUtils.getData(el, 'resize-timer') as number
           if (timer) {
             clearTimeout(timer)
           }
-          
+
           const newTimer = window.setTimeout(() => {
             config.callback?.(entry)
             this.emitEvent(el, 'resize', {
@@ -98,7 +98,7 @@ export class ResizeDirective extends DirectiveBase {
               entry,
             })
           }, config.debounce)
-          
+
           directiveUtils.storeData(el, 'resize-timer', newTimer)
         } else {
           config.callback?.(entry)
@@ -110,25 +110,25 @@ export class ResizeDirective extends DirectiveBase {
         }
       }
     }
-    
+
     return new ResizeObserver(callback)
   }
 
   private parseConfig(binding: VueDirectiveBinding): ResizeOptions {
     const value = binding.value
-    
+
     if (typeof value === 'function') {
-      return { callback: value }
+      return { callback: value as (entry: ResizeObserverEntry) => void }
     }
-    
+
     if (typeof value === 'object' && value !== null) {
       return value as ResizeOptions
     }
-    
+
     return {}
   }
 
-  private emitEvent(el: HTMLElement, eventName: string, detail: any): void {
+  private emitEvent(el: HTMLElement, eventName: string, detail: unknown): void {
     el.dispatchEvent(
       new CustomEvent(eventName, {
         detail,
@@ -183,19 +183,16 @@ import { ref } from 'vue'
 const isMonitoring = ref(true)
 
 const onResize = (entry) => {
-  console.log('Element resized:', {
-    width: entry.contentRect.width,
-    height: entry.contentRect.height
-  })
+  
 }
 
 const handleResize = (entry) => {
   const { width, height } = entry.contentRect
-  console.log(\`New size: \${width}x\${height}\`)
+  
 }
 
 const onResizeEvent = (event) => {
-  console.log('Resize event:', event.detail)
+  
 }
 </script>
 

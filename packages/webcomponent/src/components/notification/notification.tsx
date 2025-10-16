@@ -46,7 +46,7 @@ export class LdesignNotification {
   @State() private isClosing = false;
 
   /** 关闭事件 */
-  @Event() ldesignClose: EventEmitter<void>;
+  @Event() ldesignClose!: EventEmitter<void>;
 
   private closeTimer?: number;
 

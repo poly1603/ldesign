@@ -58,25 +58,22 @@ class WebSocketManager {
 
       // 获取服务器配置以确定实际端口
       let wsUrl: string
-      const isDev = import.meta.env.DEV
+      const isDev = import.meta.env?.DEV
 
       if (isDev) {
         // 开发模式：通过 Vite 代理连接到后端 WebSocket 服务器
         // 使用 /ws 路径，Vite 会将其代理到 ws://localhost:3000
         const host = window.location.host // 使用当前 Vite 服务器的 host
         wsUrl = `${protocol}//${host}/ws`
-        console.log('开发模式：通过 Vite 代理连接 WebSocket')
-      } else {
+              } else {
         // 生产模式：连接到当前主机
         wsUrl = `${protocol}//${window.location.host}`
       }
 
-      console.log(`连接 WebSocket: ${wsUrl}`)
-      this.ws = new WebSocket(wsUrl)
+            this.ws = new WebSocket(wsUrl)
 
       this.ws.onopen = () => {
-        console.log('WebSocket 连接已建立')
-        this.state.connected = true
+                this.state.connected = true
         this.state.connecting = false
         this.state.error = null
         this.reconnectAttempts = 0
@@ -98,8 +95,7 @@ class WebSocketManager {
       }
 
       this.ws.onclose = (event) => {
-        console.log('WebSocket 连接已关闭:', event.code, event.reason)
-        this.state.connected = false
+                this.state.connected = false
         this.state.connecting = false
 
         // 自动重连
@@ -204,8 +200,7 @@ class WebSocketManager {
     this.reconnectAttempts++
     const delay = this.reconnectInterval * Math.pow(2, this.reconnectAttempts - 1)
 
-    console.log(`${delay}ms 后尝试第 ${this.reconnectAttempts} 次重连...`)
-
+    
     this.reconnectTimer = window.setTimeout(() => {
       this.connect()
     }, delay)

@@ -136,7 +136,7 @@ export class PerformanceMonitorEnhanced extends PerformanceMonitor {
       cpuUsage: 0
     }
 
-    if (this.config.enableMemoryPressureMonitoring) {
+    if (this.config?.enableMemoryPressureMonitoring) {
       this.startMemoryPressureMonitoring()
     }
   }
@@ -204,7 +204,7 @@ export class PerformanceMonitorEnhanced extends PerformanceMonitor {
       
       // 更新实时数据
       this.realtimeData.memoryUsage = pressure
-    }, this.config.memoryPressureCheckInterval)
+    }, this.config?.memoryPressureCheckInterval)
   }
 
   /**
@@ -225,7 +225,7 @@ export class PerformanceMonitorEnhanced extends PerformanceMonitor {
     this.historicalData.timestamps.push(Date.now())
     
     // 限制历史数据数量
-    if (this.historicalData.memorySnapshots.length > this.config.historyLimit) {
+    if (this.historicalData.memorySnapshots.length > this.config?.historyLimit) {
       this.historicalData.memorySnapshots.shift()
       this.historicalData.timestamps.shift()
     }
@@ -238,7 +238,7 @@ export class PerformanceMonitorEnhanced extends PerformanceMonitor {
     this.historicalData.buildTimes.push(duration)
     this.realtimeData.lastBuildTime = duration
     
-    if (this.historicalData.buildTimes.length > this.config.historyLimit) {
+    if (this.historicalData.buildTimes.length > this.config?.historyLimit) {
       this.historicalData.buildTimes.shift()
     }
   }
@@ -250,7 +250,7 @@ export class PerformanceMonitorEnhanced extends PerformanceMonitor {
     this.historicalData.startupTimes.push(duration)
     this.realtimeData.lastStartupTime = duration
     
-    if (this.historicalData.startupTimes.length > this.config.historyLimit) {
+    if (this.historicalData.startupTimes.length > this.config?.historyLimit) {
       this.historicalData.startupTimes.shift()
     }
   }

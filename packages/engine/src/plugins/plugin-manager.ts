@@ -143,7 +143,7 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   getAll(): Plugin[] {
-    return this.loadOrder.map(name => this.plugins.get(name)!)
+    return this.loadOrder.map(name => this.plugins.get(name)).filter(Boolean) as Plugin[]
   }
 
   isRegistered(name: string): boolean {
@@ -282,8 +282,8 @@ export class PluginManagerImpl implements PluginManager {
    */
   getAllInfo(): PluginInfo<Engine>[] {
     return Array.from(this.plugins.keys())
-      .map(name => this.getInfo(name)!)
-      .filter(Boolean)
+      .map(name => this.getInfo(name))
+      .filter(Boolean) as PluginInfo<Engine>[]
   }
 
   // 获取插件状态
@@ -338,16 +338,16 @@ export class PluginManagerImpl implements PluginManager {
   destroy(): void {
     // 卸载所有插件
     for (const plugin of this.plugins.values()) {
-      if (plugin.uninstall) {
+      if (plugin.uninstall && this.engine) {
         try {
           plugin.uninstall({
-            engine: this.engine!,
-            logger: this.engine!.logger,
-            config: this.engine!.config,
-            events: this.engine!.events,
+            engine: this.engine,
+            logger: this.engine.logger,
+            config: this.engine.config,
+            events: this.engine.events,
           } as PluginContext<Engine>)
         } catch (error) {
-          this.logger.error(`Error uninstalling plugin ${plugin.name}:`, error)
+          this.engine?.logger?.error(`Error uninstalling plugin ${plugin.name}:`, error)
         }
       }
     }
@@ -362,17 +362,51 @@ export class PluginManagerImpl implements PluginManager {
     // 这里可以添加具体的缓存清理逻辑
   }
 
+  // 实现接口需要的额外方法
+  getInstalledPlugins(): Plugin[] {
+    return this.getAll()
+  }
+
+  isInstalled(name: string): boolean {
+    return this.isRegistered(name)
+  }
+
+  getPlugin(name: string): Plugin | undefined {
+    return this.get(name)
+  }
+
+  getPluginStatus(name: string): PluginStatus | undefined {
+    return this.getStatus(name)
+  }
+
+  async initializeAll(): Promise<void> {
+    // 初始化所有已注册的插件
+    for (const plugin of this.plugins.values()) {
+      try {
+        if (this.engine && plugin.install) {
+          const context = this.createPluginContext()
+          await plugin.install(context)
+        }
+      } catch (error) {
+        this.engine?.logger?.error(`Failed to initialize plugin ${plugin.name}:`, error)
+      }
+    }
+  }
+
   // 新增的辅助方法
 
   /**
    * 抽取创建上下文的逻辑
    */
   private createPluginContext(): PluginContext<Engine> {
+    if (!this.engine) {
+      throw new Error('Engine is not initialized')
+    }
     return {
-      engine: this.engine!,
-      logger: this.engine!.logger,
-      config: this.engine!.config,
-      events: this.engine!.events,
+      engine: this.engine,
+      logger: this.engine.logger,
+      config: this.engine.config,
+      events: this.engine.events,
     }
   }
 

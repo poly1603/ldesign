@@ -123,13 +123,13 @@ export class SmartProxyProcessor {
           })
 
           if (isVerbose) {
-            console.log(`🔄 [${environment.toUpperCase()}] ${serviceName}:`, req.method, req.url)
+            }] ${serviceName}:`, req.method, req.url)
           }
         })
 
         if (isVerbose) {
           proxy.on('proxyRes', (proxyRes: any, req: any) => {
-            console.log(`✅ [${environment.toUpperCase()}] ${serviceName}:`, req.url, '->', proxyRes.statusCode)
+            }] ${serviceName}:`, req.url, '->', proxyRes.statusCode)
           })
         }
       }
@@ -194,10 +194,10 @@ export class SmartProxyProcessor {
         configure: (proxy: any) => {
           if (isVerbose) {
             proxy.on('open', () => {
-              console.log(`🔌 [${environment.toUpperCase()}] WebSocket 连接已建立`)
+              }] WebSocket 连接已建立`)
             })
             proxy.on('close', () => {
-              console.log(`🔌 [${environment.toUpperCase()}] WebSocket 连接已关闭`)
+              }] WebSocket 连接已关闭`)
             })
           }
           proxy.on('error', (err: Error) => {

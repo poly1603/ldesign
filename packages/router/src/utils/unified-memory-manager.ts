@@ -1,11 +1,10 @@
 /**
  * @ldesign/router 统一内存管理器
- * 
+ *
  * 整合基础内存管理和分层缓存功能，提供统一的高性能内存管理方案
  */
 
 import { reactive } from 'vue'
-import type { OPTIMIZED_MEMORY_THRESHOLDS } from '../config/performance-defaults'
 
 // ==================== 类型定义 ====================
 
@@ -93,7 +92,7 @@ export interface UnifiedMemoryConfig {
 class EnhancedWeakRefManager {
   private refs = new Map<string, WeakRef<any>>()
   private registry?: FinalizationRegistry<string>
-  private metadata = new Map<string, { size: number; type: string }>()
+  private metadata = new Map<string, { size: number, type: string }>()
 
   constructor() {
     if (typeof FinalizationRegistry !== 'undefined') {
@@ -129,7 +128,8 @@ class EnhancedWeakRefManager {
    */
   getRef<T extends object>(key: string): T | undefined {
     const ref = this.refs.get(key)
-    if (!ref) return undefined
+    if (!ref)
+      return undefined
 
     const target = ref.deref()
     if (!target) {
@@ -160,9 +160,9 @@ class EnhancedWeakRefManager {
   /**
    * 获取统计信息
    */
-  getStats(): { count: number; totalSize: number } {
+  getStats(): { count: number, totalSize: number } {
     let totalSize = 0
-    this.metadata.forEach(meta => {
+    this.metadata.forEach((meta) => {
       totalSize += meta.size || 0
     })
 
@@ -190,7 +190,7 @@ class TieredCacheManager<T = any> {
   private l1Cache = new Map<string, CacheItem<T>>()
   private l2Cache = new Map<string, CacheItem<T>>()
   private l3Cache = new Map<string, CacheItem<T>>()
-  
+
   private accessPatterns = new Map<string, number[]>()
   private hitCount = 0
   private missCount = 0
@@ -259,7 +259,7 @@ class TieredCacheManager<T = any> {
     size?: number
   }): void {
     const now = Date.now()
-    
+
     const item: CacheItem<T> = {
       key,
       value,
@@ -281,10 +281,10 @@ class TieredCacheManager<T = any> {
    * 删除缓存项
    */
   delete(key: string): boolean {
-    const deleted = this.l1Cache.delete(key) ||
-                   this.l2Cache.delete(key) ||
-                   this.l3Cache.delete(key)
-    
+    const deleted = this.l1Cache.delete(key)
+      || this.l2Cache.delete(key)
+      || this.l3Cache.delete(key)
+
     if (deleted) {
       this.accessPatterns.delete(key)
     }
@@ -317,7 +317,7 @@ class TieredCacheManager<T = any> {
     evictionCount: number
   } {
     const totalAccess = this.hitCount + this.missCount
-    
+
     return {
       hitRate: totalAccess > 0 ? this.hitCount / totalAccess : 0,
       l1Size: this.l1Cache.size,
@@ -331,7 +331,7 @@ class TieredCacheManager<T = any> {
   /**
    * 获取内存使用量
    */
-  getMemoryUsage(): { l1: number; l2: number; l3: number; total: number } {
+  getMemoryUsage(): { l1: number, l2: number, l3: number, total: number } {
     let l1Memory = 0
     let l2Memory = 0
     let l3Memory = 0
@@ -378,21 +378,21 @@ class TieredCacheManager<T = any> {
   }
 
   private addToL1(key: string, item: CacheItem<T>): void {
-    if (this.l1Cache.size >= this.config.l1Capacity) {
+    if (this.l1Cache.size >= this.config?.l1Capacity) {
       this.evictFromL1()
     }
     this.l1Cache.set(key, item)
   }
 
   private addToL2(key: string, item: CacheItem<T>): void {
-    if (this.l2Cache.size >= this.config.l2Capacity) {
+    if (this.l2Cache.size >= this.config?.l2Capacity) {
       this.evictFromL2()
     }
     this.l2Cache.set(key, item)
   }
 
   private addToL3(key: string, item: CacheItem<T>): void {
-    if (this.l3Cache.size >= this.config.l3Capacity) {
+    if (this.l3Cache.size >= this.config?.l3Capacity) {
       this.evictFromL3()
     }
     this.l3Cache.set(key, item)
@@ -430,7 +430,8 @@ class TieredCacheManager<T = any> {
   }
 
   private findEvictionCandidate(cache: Map<string, CacheItem<T>>): string | null {
-    if (cache.size === 0) return null
+    if (cache.size === 0)
+      return null
 
     let minScore = Infinity
     let candidate: string | null = null
@@ -438,10 +439,10 @@ class TieredCacheManager<T = any> {
     for (const [key, item] of cache.entries()) {
       const timeSinceLastAccess = Date.now() - item.lastAccessTime
       const frequency = item.accessCount / Math.max(1, Date.now() - item.createTime)
-      
+
       // LFU + LRU 混合策略
       const score = frequency * 1000000 - timeSinceLastAccess
-      
+
       if (score < minScore) {
         minScore = score
         candidate = key
@@ -454,12 +455,13 @@ class TieredCacheManager<T = any> {
   private checkPromotion(key: string, item: CacheItem<T>, currentLevel: number): void {
     const recentAccess = this.getRecentAccessCount(key, 10000) // 10秒内的访问
 
-    if (recentAccess >= this.config.promotionThreshold) {
+    if (recentAccess >= this.config?.promotionThreshold) {
       if (currentLevel === 3) {
         this.l3Cache.delete(key)
         item.priority = CachePriority.WARM
         this.addToL2(key, item)
-      } else if (currentLevel === 2) {
+      }
+      else if (currentLevel === 2) {
         this.l2Cache.delete(key)
         item.priority = CachePriority.HOT
         this.addToL1(key, item)
@@ -470,18 +472,19 @@ class TieredCacheManager<T = any> {
   private recordAccess(key: string, timestamp: number): void {
     const pattern = this.accessPatterns.get(key) || []
     pattern.push(timestamp)
-    
+
     // 只保留最近2分钟的记录
     const twoMinutesAgo = timestamp - 120000
     const recent = pattern.filter(t => t > twoMinutesAgo)
-    
+
     this.accessPatterns.set(key, recent)
   }
 
   private getRecentAccessCount(key: string, windowMs: number): number {
     const pattern = this.accessPatterns.get(key)
-    if (!pattern) return 0
-    
+    if (!pattern)
+      return 0
+
     const now = Date.now()
     return pattern.filter(t => now - t < windowMs).length
   }
@@ -493,15 +496,18 @@ class TieredCacheManager<T = any> {
     }
 
     const recentCount = this.getRecentAccessCount(key, 30000)
-    if (recentCount >= 5) return CachePriority.HOT
-    if (recentCount >= 2) return CachePriority.WARM
+    if (recentCount >= 5)
+      return CachePriority.HOT
+    if (recentCount >= 2)
+      return CachePriority.WARM
     return CachePriority.COLD
   }
 
   private estimateSize(value: any): number {
     try {
       return JSON.stringify(value).length * 2
-    } catch {
+    }
+    catch {
       return 100
     }
   }
@@ -524,7 +530,7 @@ class TieredCacheManager<T = any> {
   private adjustLayers(now: number): void {
     // 检查 L1 中的冷数据，降级到 L2
     for (const [key, item] of this.l1Cache.entries()) {
-      if (now - item.lastAccessTime > this.config.demotionThreshold) {
+      if (now - item.lastAccessTime > this.config?.demotionThreshold) {
         this.l1Cache.delete(key)
         item.priority = CachePriority.WARM
         this.addToL2(key, item)
@@ -533,7 +539,7 @@ class TieredCacheManager<T = any> {
 
     // 检查 L2 中的冷数据，降级到 L3
     for (const [key, item] of this.l2Cache.entries()) {
-      if (now - item.lastAccessTime > this.config.demotionThreshold * 2) {
+      if (now - item.lastAccessTime > this.config?.demotionThreshold * 2) {
         this.l2Cache.delete(key)
         item.priority = CachePriority.COLD
         this.addToL3(key, item)
@@ -605,7 +611,7 @@ export class UnifiedMemoryManager {
       },
     }
 
-    this.tieredCache = new TieredCacheManager(this.config.tieredCache)
+    this.tieredCache = new TieredCacheManager(this.config?.tieredCache)
     this.weakRefManager = new EnhancedWeakRefManager()
 
     this.initialize()
@@ -629,7 +635,7 @@ export class UnifiedMemoryManager {
     tags?: string[]
     weak?: boolean
   }): void {
-    if (options?.weak && this.config.weakRef.enabled) {
+    if (options?.weak && this.config?.weakRef.enabled) {
       if (typeof value === 'object' && value !== null) {
         this.weakRefManager.createRef(key, value as any)
         return
@@ -663,7 +669,7 @@ export class UnifiedMemoryManager {
    * 创建弱引用
    */
   createWeakRef<T extends object>(key: string, target: T): void {
-    if (this.config.weakRef.enabled) {
+    if (this.config?.weakRef.enabled) {
       this.weakRefManager.createRef(key, target)
       this.updateStats()
     }
@@ -710,11 +716,11 @@ export class UnifiedMemoryManager {
   // ==================== 私有方法 ====================
 
   private initialize(): void {
-    if (this.config.monitoring.enabled) {
+    if (this.config?.monitoring.enabled) {
       this.startMonitoring()
     }
 
-    if (this.config.cleanup.autoCleanup) {
+    if (this.config?.cleanup.autoCleanup) {
       this.startAutoCleanup()
     }
 
@@ -722,12 +728,13 @@ export class UnifiedMemoryManager {
   }
 
   private startMonitoring(): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     this.monitorTimer = window.setInterval(() => {
       this.updateStats()
       this.checkThresholds()
-    }, this.config.monitoring.interval)
+    }, this.config?.monitoring.interval)
   }
 
   private stopMonitoring(): void {
@@ -738,11 +745,12 @@ export class UnifiedMemoryManager {
   }
 
   private startAutoCleanup(): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     this.cleanupTimer = window.setInterval(() => {
       this.performCleanup()
-    }, this.config.cleanup.cleanupInterval)
+    }, this.config?.cleanup.cleanupInterval)
   }
 
   private stopAutoCleanup(): void {
@@ -781,22 +789,24 @@ export class UnifiedMemoryManager {
   private checkThresholds(): void {
     const totalMemory = this.state.stats.totalMemory
 
-    if (totalMemory > this.config.monitoring.criticalThreshold) {
+    if (totalMemory > this.config?.monitoring.criticalThreshold) {
       this.state.isCritical = true
       this.state.isWarning = true
       this.performCleanup('aggressive')
-    } else if (totalMemory > this.config.monitoring.warningThreshold) {
+    }
+    else if (totalMemory > this.config?.monitoring.warningThreshold) {
       this.state.isWarning = true
       this.state.isCritical = false
       this.performCleanup('moderate')
-    } else {
+    }
+    else {
       this.state.isWarning = false
       this.state.isCritical = false
     }
   }
 
   private performCleanup(level?: 'aggressive' | 'moderate' | 'conservative'): void {
-    const strategy = level || this.config.cleanup.strategy
+    const strategy = level || this.config?.cleanup.strategy
 
     switch (strategy) {
       case 'aggressive':
@@ -804,12 +814,12 @@ export class UnifiedMemoryManager {
         this.tieredCache.clear()
         this.weakRefManager.clear()
         break
-      
+
       case 'moderate':
         // 优化缓存层级
         this.tieredCache.optimize()
         break
-      
+
       case 'conservative':
         // 仅清理过期项
         this.tieredCache.optimize()

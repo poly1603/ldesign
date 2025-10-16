@@ -86,7 +86,7 @@ export class DataTransformer {
   */
  private transformValue(key: string, value: any): any {
   // 应用自定义转换器
-  for (const customTransformer of this.config.customTransformers || []) {
+  for (const customTransformer of this.config?.customTransformers || []) {
    const result = customTransformer(key, value)
    if (result !== undefined) {
     return result
@@ -95,7 +95,7 @@ export class DataTransformer {
 
   // null处理
   if (value === null) {
-   return this.config.nullToUndefined ? undefined : null
+   return this.config?.nullToUndefined ? undefined : null
   }
 
   // undefined直接返回
@@ -127,12 +127,12 @@ export class DataTransformer {
   */
  private transformString(key: string, value: string): any {
   // 空字符串处理
-  if (value === '' && this.config.emptyStringToNull) {
+  if (value === '' && this.config?.emptyStringToNull) {
    return null
   }
 
   // 日期转换
-  if (this.config.transformDates && this.isDateField(key, value)) {
+  if (this.config?.transformDates && this.isDateField(key, value)) {
    const date = new Date(value)
    if (!isNaN(date.getTime())) {
     return date
@@ -140,7 +140,7 @@ export class DataTransformer {
   }
 
   // 大数字转换
-  if (this.config.transformBigInt && this.isBigIntString(value)) {
+  if (this.config?.transformBigInt && this.isBigIntString(value)) {
    try {
     return BigInt(value)
    }
@@ -176,7 +176,7 @@ export class DataTransformer {
   )
 
   // 检查值是否匹配日期格式
-  const matchesDatePattern = this.config.datePattern.test(value)
+  const matchesDatePattern = this.config?.datePattern.test(value)
 
   return isDateFieldName || matchesDatePattern
  }

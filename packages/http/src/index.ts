@@ -389,7 +389,7 @@ export {
   createHttpDebugger,
   DebugLevel,
   HttpDebugger,
-} from './utils/debugger'
+} from './utils/'
 
 export type {
   DebugEvent,
@@ -397,7 +397,7 @@ export type {
   PerformanceMetrics as DebugPerformanceMetrics,
   RequestLog,
   ResponseLog,
-} from './utils/debugger'
+} from './utils/'
 
 // 开发工具导出
 export {

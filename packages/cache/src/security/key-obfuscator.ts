@@ -29,7 +29,7 @@ export class KeyObfuscator {
    * 混淆键名
    */
   async obfuscate(key: string): Promise<string> {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return key
     }
 
@@ -41,8 +41,8 @@ export class KeyObfuscator {
     let obfuscatedKey: string
 
     // 使用自定义混淆函数
-    if (this.config.customObfuscate) {
-      obfuscatedKey = this.config.customObfuscate(key)
+    if (this.config?.customObfuscate) {
+      obfuscatedKey = this.config?.customObfuscate(key)
       // 自定义混淆函数的结果直接使用，不添加前缀
       const finalKey = obfuscatedKey
 
@@ -54,7 +54,7 @@ export class KeyObfuscator {
     }
     else {
       // 使用内置混淆算法
-      switch (this.config.algorithm) {
+      switch (this.config?.algorithm) {
         case 'hash':
           obfuscatedKey = await this.hashObfuscate(key)
           break
@@ -67,7 +67,7 @@ export class KeyObfuscator {
     }
 
     // 添加前缀（仅对内置算法）
-    const finalKey = `${this.config.prefix}${obfuscatedKey}`
+    const finalKey = `${this.config?.prefix}${obfuscatedKey}`
 
     // 缓存映射关系
     this.keyMap.set(key, finalKey)
@@ -80,7 +80,7 @@ export class KeyObfuscator {
    * 反混淆键名
    */
   async deobfuscate(obfuscatedKey: string): Promise<string> {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return obfuscatedKey
     }
 
@@ -90,7 +90,7 @@ export class KeyObfuscator {
     }
 
     // 移除前缀
-    const prefix = this.config.prefix || 'ld_'
+    const prefix = this.config?.prefix || 'ld_'
     if (!obfuscatedKey.startsWith(prefix)) {
       return obfuscatedKey // 不是混淆的键
     }
@@ -98,8 +98,8 @@ export class KeyObfuscator {
     const keyWithoutPrefix = obfuscatedKey.slice(prefix.length)
 
     // 使用自定义反混淆函数
-    if (this.config.customDeobfuscate) {
-      const originalKey = this.config.customDeobfuscate(keyWithoutPrefix)
+    if (this.config?.customDeobfuscate) {
+      const originalKey = this.config?.customDeobfuscate(keyWithoutPrefix)
       this.reverseKeyMap.set(obfuscatedKey, originalKey)
       this.keyMap.set(originalKey, obfuscatedKey)
       return originalKey
@@ -245,7 +245,7 @@ export class KeyObfuscator {
     }
 
     // 如果算法改变，清理缓存
-    if (config.algorithm && config.algorithm !== this.config.algorithm) {
+    if (config.algorithm && config.algorithm !== this.config?.algorithm) {
       this.clearCache()
     }
   }

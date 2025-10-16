@@ -43,7 +43,7 @@ export class LdesignAffix {
   /**
    * 吸附状态变化事件
    */
-  @Event() ldesignAffixChange: EventEmitter<boolean>;
+  @Event() ldesignAffixChange!: EventEmitter<boolean>;
 
   /** 当前是否处于吸附状态 */
   @State() private affixed: boolean = false;

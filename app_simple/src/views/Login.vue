@@ -1,11 +1,13 @@
 <template>
-  <!-- TemplateRenderer 现在自动处理设备检测和模板加载 -->
-  <TemplateRenderer 
-    category="login"
-    @login="handleLogin"
-    @register="handleRegister"
-    @forgot-password="handleForgotPassword"
-  />
+  <div class="login-page-wrapper">
+    <!-- TemplateRenderer 现在自动处理设备检测和模板加载 -->
+    <TemplateRenderer 
+      category="login"
+      @login="handleLogin"
+      @register="handleRegister"
+      @forgot-password="handleForgotPassword"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -66,5 +68,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 简单的样式，TemplateRenderer 会自动处理布局 */
+/* 登录页面包装器，使用简单的全屏布局 */
+.login-page-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
 </style>

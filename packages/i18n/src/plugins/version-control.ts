@@ -231,8 +231,8 @@ export class TranslationVersionControl extends EventEmitter {
     const commit: Commit = {
       hash: this.generateHash(message + Date.now()),
       parent,
-      author: options?.author || this.config.author,
-      email: options?.email || this.config.email,
+      author: options?.author || this.config?.author,
+      email: options?.email || this.config?.email,
       timestamp: Date.now(),
       message,
       changes,
@@ -268,7 +268,7 @@ export class TranslationVersionControl extends EventEmitter {
       name,
       head: startPoint,
       created: Date.now(),
-      author: this.config.author
+      author: this.config?.author
     };
 
     this.branches.set(name, branch);
@@ -283,7 +283,7 @@ export class TranslationVersionControl extends EventEmitter {
   checkout(target: string, options?: { force?: boolean; createNew?: boolean }): void {
     // Check for uncommitted changes
     if (this.stagingArea.length > 0 && !options?.force) {
-      if (this.config.autoStash) {
+      if (this.config?.autoStash) {
         this.stash('Auto-stash before checkout');
       } else {
         throw new Error('Uncommitted changes. Use force or stash changes.');
@@ -352,7 +352,7 @@ export class TranslationVersionControl extends EventEmitter {
       this.mergeConflicts = conflicts;
       this.emit('merge:conflict', { conflicts, from: branch, to: this.currentBranch });
       
-      if (!this.config.autoMerge) {
+      if (!this.config?.autoMerge) {
         throw new Error(`Merge conflicts detected: ${conflicts.length} conflicts`);
       }
     }
@@ -457,7 +457,7 @@ export class TranslationVersionControl extends EventEmitter {
       id: this.generateHash('stash' + Date.now()),
       message: message || `WIP on ${this.currentBranch}`,
       timestamp: Date.now(),
-      author: this.config.author,
+      author: this.config?.author,
       changes: [...this.stagingArea],
       branch: this.currentBranch
     };
@@ -504,7 +504,7 @@ export class TranslationVersionControl extends EventEmitter {
     const tag: Tag = {
       name,
       commit: options?.commit || this.head!,
-      author: this.config.author,
+      author: this.config?.author,
       timestamp: Date.now(),
       message: options?.message,
       signed: options?.signed

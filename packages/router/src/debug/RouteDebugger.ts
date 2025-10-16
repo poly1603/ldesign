@@ -8,6 +8,7 @@ import type {
   Router,
   RouteRecordNormalized,
 } from '../types'
+import { logger } from '../utils/logger'
 
 // ============= 调试配置 =============
 export interface DebugConfig {
@@ -55,7 +56,7 @@ export class RouteVisualizer {
       ...config,
     }
 
-    if (this.config.enabled) {
+    if (this.config?.enabled) {
       this.init()
     }
   }
@@ -89,7 +90,7 @@ export class RouteVisualizer {
 
     return `
       position: fixed;
-      ${positions[this.config.position || 'bottom-right']}
+      ${positions[this.config?.position || 'bottom-right']}
       width: 400px;
       max-height: 600px;
       background: ${isDark ? '#1e1e1e' : '#ffffff'};
@@ -107,16 +108,16 @@ export class RouteVisualizer {
 
   // 获取主题
   private getTheme(): 'light' | 'dark' {
-    if (this.config.theme === 'auto') {
+    if (this.config?.theme === 'auto') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     }
-    return this.config.theme || 'light'
+    return this.config?.theme || 'light'
   }
 
   // 设置快捷键
   private setupHotkey(): void {
     document.addEventListener('keydown', (e) => {
-      const hotkey = this.config.hotkey || 'ctrl+shift+d'
+      const hotkey = this.config?.hotkey || 'ctrl+shift+d'
       const keys = hotkey.split('+')
 
       const ctrlKey = keys.includes('ctrl') ? e.ctrlKey : true
@@ -163,7 +164,7 @@ export class RouteVisualizer {
         ${this.renderRouteTree(routes, currentRoute)}
       </div>
       <div style="padding: 10px; border-top: 1px solid ${isDark ? '#444' : '#ddd'}; font-size: 11px; color: ${isDark ? '#888' : '#666'};">
-        Press ${this.config.hotkey} to toggle
+        Press ${this.config?.hotkey} to toggle
       </div>
     `
 
@@ -198,9 +199,9 @@ export class RouteVisualizer {
 
     let html = `
       <li>
-        <div style="${nodeStyle}" onclick="console.log('Route:', '${route.path}')">
+        <div style="${nodeStyle}" onclick="">
           <span style="color: ${nameColor}; font-weight: ${isActive ? 'bold' : 'normal'};">
-            ${route.name || '(unnamed)'}
+            ${route.name ? String(route.name) : '(unnamed)'}
           </span>
           <span style="color: ${pathColor}; margin-left: 10px;">
             ${route.path}
@@ -247,7 +248,7 @@ export class RouteTracer {
       ...config,
     }
 
-    if (this.config.enabled) {
+    if (this.config?.enabled) {
       this.setupTracing()
     }
   }
@@ -265,8 +266,8 @@ export class RouteTracer {
         status: 'pending',
       }
 
-      if (this.config.captureStack) {
-        trace.stack = new Error().stack
+      if (this.config?.captureStack) {
+        trace.stack = new Error('Navigation stack trace').stack
       }
 
       this.addTrace(trace)
@@ -302,7 +303,7 @@ export class RouteTracer {
         error: this.serializeError(error),
       }
 
-      if (this.config.captureStack) {
+      if (this.config?.captureStack) {
         trace.stack = error.stack
       }
 
@@ -316,7 +317,7 @@ export class RouteTracer {
     this.history.push(trace)
 
     // 限制历史记录数量
-    if (this.history.length > (this.config.maxHistory || 50)) {
+    if (this.history.length > (this.config?.maxHistory || 50)) {
       this.history.shift()
     }
   }
@@ -350,12 +351,12 @@ export class RouteTracer {
   // 日志输出
   private log(level: string, message: string, data?: any): void {
     const levels = ['verbose', 'info', 'warn', 'error']
-    const configLevel = levels.indexOf(this.config.logLevel || 'info')
+    const configLevel = levels.indexOf(this.config?.logLevel || 'info')
     const messageLevel = levels.indexOf(level)
 
     if (messageLevel >= configLevel) {
-      const method = level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log'
-      console[method](`[Router] ${message}`, data || '')
+      const method = level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'info'
+      logger[method](`[Router] ${message}`, data || '')
     }
   }
 
@@ -400,10 +401,10 @@ export class RoutePerformanceAnalyzer {
       ...config,
     }
 
-    if (this.config.enabled) {
+    if (this.config?.enabled) {
       this.setupMeasurement()
 
-      if (this.config.reportInterval) {
+      if (this.config?.reportInterval) {
         this.startAutoReporting()
       }
     }
@@ -412,7 +413,7 @@ export class RoutePerformanceAnalyzer {
   // 设置性能测量
   private setupMeasurement(): void {
     // 测量路由导航性能
-    this.router.beforeEach((to, from) => {
+    this.router.beforeEach((to, _from) => {
       const metric: PerformanceMetric = {
         route: to.path,
         startTime: performance.now(),
@@ -431,7 +432,7 @@ export class RoutePerformanceAnalyzer {
       const metrics = this.metrics.get(to.path)
       if (metrics && metrics.length > 0) {
         const lastMetric = metrics[metrics.length - 1]
-        if (!lastMetric.endTime) {
+        if (lastMetric && !lastMetric.endTime) {
           lastMetric.endTime = performance.now()
           lastMetric.duration = lastMetric.endTime - lastMetric.startTime
 
@@ -446,13 +447,13 @@ export class RoutePerformanceAnalyzer {
               `route-end-${to.path}`,
             )
           }
-          catch (e) {
+          catch {
             // 忽略测量错误
           }
 
           // 检测慢路由
-          if (lastMetric.duration > this.config.slowThreshold!) {
-            console.warn(`⚠️ Slow route detected: ${to.path} took ${lastMetric.duration.toFixed(2)}ms`)
+          if (lastMetric.duration && lastMetric.duration > (this.config?.slowThreshold || 100)) {
+            logger.warn(`⚠️ Slow route detected: ${to.path} took ${lastMetric.duration.toFixed(2)}ms`)
             this.analyzeSlow(to.path, lastMetric)
           }
         }
@@ -477,7 +478,7 @@ export class RoutePerformanceAnalyzer {
 
   // 测量组件性能
   measureComponent(name: string, fn: () => void): void {
-    if (!this.config.measureComponents) {
+    if (!this.config?.measureComponents) {
       fn()
       return
     }
@@ -526,8 +527,8 @@ export class RoutePerformanceAnalyzer {
     }
 
     if (suggestions.length > 0) {
-      console.log('💡 Performance suggestions:')
-      suggestions.forEach(s => console.log(`   - ${s}`))
+      logger.info('📊 Performance suggestions:')
+      suggestions.forEach(s => logger.info(`  - ${s}`))
     }
   }
 
@@ -535,7 +536,7 @@ export class RoutePerformanceAnalyzer {
   private startAutoReporting(): void {
     this.reportTimer = setInterval(() => {
       this.generateReport()
-    }, this.config.reportInterval)
+    }, this.config?.reportInterval || 30000) as unknown as NodeJS.Timeout
   }
 
   // 生成性能报告
@@ -595,16 +596,17 @@ export class RoutePerformanceAnalyzer {
       const max = Math.max(...timings)
       const min = Math.min(...timings)
 
-      report.components.push({
+      const componentMetric = {
         component,
         count: timings.length,
         avg,
         min,
-        max,
-      })
+        max
+      }
+      report.components.push(componentMetric)
     })
 
-    console.log('📊 Performance Report:', report)
+    logger.info('📊 Performance report generated', report)
     return report
   }
 
@@ -640,7 +642,7 @@ export class RouteErrorDiagnostics {
       ...config,
     }
 
-    if (this.config.enabled) {
+    if (this.config?.enabled) {
       this.setupErrorCapture()
     }
   }
@@ -653,7 +655,7 @@ export class RouteErrorDiagnostics {
     })
 
     // 捕获全局错误
-    if (this.config.captureErrors) {
+    if (this.config?.captureErrors) {
       window.addEventListener('error', (event) => {
         this.captureError(event.error, 'global', {
           message: event.message,
@@ -696,7 +698,7 @@ export class RouteErrorDiagnostics {
     this.outputDiagnosis(record)
 
     // 报告错误
-    if (this.config.reportErrors && this.config.errorEndpoint) {
+    if (this.config?.reportErrors && this.config?.errorEndpoint) {
       this.reportError(record)
     }
   }
@@ -747,38 +749,38 @@ export class RouteErrorDiagnostics {
   private outputDiagnosis(record: ErrorRecord): void {
     const diagnosis = record.diagnosis
 
-    console.group(`🔍 Error Diagnosis [${diagnosis.severity}]`)
-    console.error('Error:', record.error.message)
-    console.log('Category:', diagnosis.category)
-    console.log('Source:', record.source)
-    console.log('Route:', record.route)
+    logger.group(`🔍 Error Diagnosis [${diagnosis.severity}]`)
+    logger.error('Error:', record.error.message)
+    logger.info(`Category: ${diagnosis.category}`)
+    logger.info(`Type: ${diagnosis.type}`)
+    logger.info(`Route: ${record.route}`)
 
     if (diagnosis.suggestions.length > 0) {
-      console.log('💡 Suggestions:')
-      diagnosis.suggestions.forEach(s => console.log(`   - ${s}`))
+      logger.info('Suggestions:')
+      diagnosis.suggestions.forEach(s => logger.info(`  - ${s}`))
     }
 
     if (record.error.stack) {
-      console.log('Stack trace:', record.error.stack)
+      logger.debug('Stack trace:', record.error.stack)
     }
 
-    console.groupEnd()
+    logger.groupEnd()
   }
 
   // 报告错误
   private async reportError(record: ErrorRecord): Promise<void> {
-    if (!this.config.errorEndpoint)
+    if (!this.config?.errorEndpoint)
       return
 
     try {
-      await fetch(this.config.errorEndpoint, {
+      await fetch(this.config?.errorEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(record),
       })
     }
     catch (e) {
-      console.error('Failed to report error:', e)
+      logger.error('Failed to report error:', e)
     }
   }
 
@@ -800,10 +802,10 @@ export class RouteErrorDiagnostics {
 
 // ============= 路由调试器主类 =============
 export class RouteDebugger {
-  private visualizer: RouteVisualizer
-  private tracer: RouteTracer
-  private performanceAnalyzer: RoutePerformanceAnalyzer
-  private errorDiagnostics: RouteErrorDiagnostics
+  private visualizer?: RouteVisualizer
+  private tracer?: RouteTracer
+  private performanceAnalyzer?: RoutePerformanceAnalyzer
+  private errorDiagnostics?: RouteErrorDiagnostics
   private router: Router
   private config: DebugConfig
 
@@ -814,7 +816,7 @@ export class RouteDebugger {
       ...config,
     }
 
-    if (!this.config.enabled)
+    if (!this.config?.enabled)
       return
 
     this.visualizer = new RouteVisualizer(router, config.visualizer)
@@ -829,16 +831,16 @@ export class RouteDebugger {
   private setupConsoleCommands(): void {
     if (typeof window !== 'undefined') {
       (window as any).routeDebugger = {
-        showVisualizer: () => this.visualizer.toggle(),
-        getHistory: () => this.tracer.getHistory(),
-        getErrors: () => this.errorDiagnostics.getErrors(),
-        getPerformance: () => this.performanceAnalyzer.generateReport(),
-        exportTraces: () => this.tracer.exportTraces(),
-        clearHistory: () => this.tracer.clearHistory(),
-        clearErrors: () => this.errorDiagnostics.clearErrors(),
+        showVisualizer: () => this.visualizer?.toggle(),
+        getHistory: () => this.tracer?.getHistory() || [],
+        getErrors: () => this.errorDiagnostics?.getErrors() || [],
+        getPerformance: () => this.performanceAnalyzer?.generateReport(),
+        exportTraces: () => this.tracer?.exportTraces() || '[]',
+        clearHistory: () => this.tracer?.clearHistory(),
+        clearErrors: () => this.errorDiagnostics?.clearErrors(),
       }
 
-      console.log('🛠️ Route Debugger initialized. Use window.routeDebugger for debugging commands.')
+      logger.info('[RouteDebugger] Console commands registered. Use window.routeDebugger to access.')
     }
   }
 
@@ -847,16 +849,16 @@ export class RouteDebugger {
     return {
       currentRoute: this.router.currentRoute.value,
       routes: this.router.getRoutes(),
-      history: this.tracer.getHistory(),
-      errors: this.errorDiagnostics.getErrors(),
-      performance: this.performanceAnalyzer.generateReport(),
+      history: this.tracer?.getHistory() || [],
+      errors: this.errorDiagnostics?.getErrors() || [],
+      performance: this.performanceAnalyzer?.generateReport(),
     }
   }
 
   // 销毁
   destroy(): void {
-    this.visualizer.destroy()
-    this.performanceAnalyzer.destroy()
+    this.visualizer?.destroy()
+    this.performanceAnalyzer?.destroy()
   }
 }
 
@@ -965,4 +967,21 @@ export function setupRouteDebugger(
 
 export function getDebugInfo(): DebugInfo | null {
   return defaultDebugger?.getDebugInfo() || null
+}
+
+export function getRouteDebugger(): RouteDebugger | null {
+  return defaultDebugger
+}
+
+// Debug logging functions
+export function debugLog(...args: any[]): void {
+  logger.info('[RouteDebug]', ...args)
+}
+
+export function debugWarn(...args: any[]): void {
+  logger.warn('[RouteDebug Warning]', ...args)
+}
+
+export function debugError(...args: any[]): void {
+  logger.error('[RouteDebug Error]', ...args)
 }

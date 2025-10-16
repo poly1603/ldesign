@@ -9,7 +9,6 @@
 
 import { Command } from 'commander'
 import { Logger } from '../../utils/logger'
-import chalk from 'chalk'
 import ora from 'ora'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -433,7 +432,7 @@ export class VisualCommand {
   }
 
   private displayDependencyStats(tree: DependencyNode): void {
-    console.log(chalk.cyan('\n📊 依赖统计:\n'))
+    )
     // 显示依赖统计信息
   }
 
@@ -453,7 +452,7 @@ export class VisualCommand {
   }
 
   private displayStructureStats(structure: ProjectStructure): void {
-    console.log(chalk.cyan('\n📊 项目统计:\n'))
+    )
     // 显示项目统计信息
   }
 

@@ -3,7 +3,7 @@
  * 用于在任何组件中显示全局消息通知
  * 
  * 使用方法：
- * import { useMessage } from '@/composables/useMessage'
+ * import { useMessage } from '../composables/useMessage'
  * 
  * const message = useMessage()
  * message.success('操作成功')

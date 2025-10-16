@@ -108,7 +108,7 @@ export type {
  * import { getLibraryInfo } from '@ldesign/vue3-components-example'
  * 
  * const info = getLibraryInfo()
- * console.log(info.name) // '@ldesign/vue3-components-example'
+ *  // '@ldesign/vue3-components-example'
  * ```
  */
 export function getLibraryInfo() {
@@ -126,11 +126,7 @@ export function getLibraryInfo() {
  * ```
  */
 export function printLibraryInfo(): void {
-  console.log(`
-╭─────────────────────────────────────────────────────────────╮
-│                   Vue3 Components Example                   │
-├─────────────────────────────────────────────────────────────┤
-│ Name:        ${LIBRARY_INFO.name.padEnd(43)} │
+  } │
 │ Version:     ${LIBRARY_INFO.version.padEnd(43)} │
 │ Description: ${LIBRARY_INFO.description.slice(0, 43).padEnd(43)} │
 │ Author:      ${LIBRARY_INFO.author.padEnd(43)} │
@@ -238,8 +234,7 @@ export default {
  *   try {
  *     // 模拟登录请求
  *     await new Promise(resolve => setTimeout(resolve, 2000))
- *     console.log('登录成功', { username: username.value, password: password.value })
- *     visible.value = false
+ *      *     visible.value = false
  *   } finally {
  *     loading.value = false
  *   }

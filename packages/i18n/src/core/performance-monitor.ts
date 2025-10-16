@@ -116,7 +116,7 @@ export class PerformanceMonitor {
 
     this.metrics = this.initMetrics();
     
-    if (this.config.enabled) {
+    if (this.config?.enabled) {
       this.start();
     }
   }
@@ -167,7 +167,7 @@ export class PerformanceMonitor {
       this.metrics.fastestTranslation = { key, time: duration };
     }
 
-    if (duration > this.config.slowThreshold!) {
+    if (duration > this.config?.slowThreshold!) {
       this.addEvent({
         type: 'translation',
         timestamp: Date.now(),
@@ -356,7 +356,7 @@ export class PerformanceMonitor {
           for (const entry of list.getEntries()) {
             if (entry.entryType === 'navigation') {
               const nav = entry as PerformanceNavigationTiming;
-              console.log('[PerformanceMonitor] Page load time:', nav.loadEventEnd - nav.fetchStart);
+              
             }
           }
         });
@@ -407,7 +407,7 @@ export class PerformanceMonitor {
     }
 
     // Memory monitoring
-    if (this.config.enableMemoryTracking) {
+    if (this.config?.enableMemoryTracking) {
       this.startMemoryMonitoring();
     }
   }
@@ -469,13 +469,13 @@ export class PerformanceMonitor {
   private startReporting(): void {
     this.reportTimer = setInterval(() => {
       const report = this.getReport();
-      console.log('[PerformanceMonitor] Performance Report:', report);
+      
       
       // 触发自定义事件
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('i18n:performance', { detail: report }));
       }
-    }, this.config.reportInterval!);
+    }, this.config?.reportInterval!);
   }
 
   /**
@@ -495,7 +495,7 @@ export class PerformanceMonitor {
     this.events.push(event);
     
     // 限制事件数量
-    if (this.events.length > this.config.maxEvents!) {
+    if (this.events.length > this.config?.maxEvents!) {
       this.events.shift();
     }
   }
@@ -504,7 +504,7 @@ export class PerformanceMonitor {
    * 检查告警
    */
   private checkAlerts(type: string, value: number): void {
-    const thresholds = this.config.alertThresholds!;
+    const thresholds = this.config?.alertThresholds!;
     
     switch (type) {
       case 'translation':
@@ -524,7 +524,7 @@ export class PerformanceMonitor {
    * 是否应该采样
    */
   private shouldSample(): boolean {
-    return Math.random() < this.config.sampleRate!;
+    return Math.random() < this.config?.sampleRate!;
   }
 }
 
@@ -550,8 +550,7 @@ export function measure(target: any, propertyKey: string, descriptor: PropertyDe
     const result = await originalMethod.apply(this, args);
     
     if (monitor) {
-      const duration = monitor.endTimer(propertyKey);
-      console.log(`[Performance] ${propertyKey} took ${duration.toFixed(2)}ms`);
+      monitor.endTimer(propertyKey);
     }
     
     return result;

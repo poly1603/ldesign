@@ -35,7 +35,6 @@ import { ErrorHandler, createErrorHandler } from '../utils/error-handler'
 import { ErrorCode } from '../constants/errors'
 import { DEFAULT_BUILDER_CONFIG } from '../constants/defaults'
 import { getOutputDirs } from '../utils/glob'
-import { promises as fs } from 'fs'
 import path from 'path'
 import { getGlobalMemoryManager } from '../utils/memory-manager'
 import { PackageUpdater } from '../utils/package-updater'
@@ -398,7 +397,7 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
    * 设置库类型
    */
   setLibraryType(type: LibraryType): void {
-    this.config.libraryType = type
+    this.config?.libraryType = type
     this.logger.info(`已设置库类型为: ${type}`)
   }
 
@@ -433,12 +432,12 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
         current = parent
       }
 
-      const root = resolvedRoot || (this.config.cwd || process.cwd())
+      const root = resolvedRoot || (this.config?.cwd || process.cwd())
       const result = await this.libraryDetector.detect(root)
       return result.type
 
     } catch {
-      const fallbackRoot = this.config.cwd || process.cwd()
+      const fallbackRoot = this.config?.cwd || process.cwd()
       const result = await this.libraryDetector.detect(fallbackRoot)
       return result.type
     }
@@ -476,7 +475,7 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
       await this.loadConfig()
 
       // 初始化适配器
-      this.setBundler(this.config.bundler || 'rollup')
+      this.setBundler(this.config?.bundler || 'rollup')
 
       this.setStatus(BuilderStatus.IDLE)
       this.logger.success('LibraryBuilder 初始化完成')

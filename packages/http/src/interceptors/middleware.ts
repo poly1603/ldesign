@@ -48,7 +48,7 @@ export type ErrorMiddleware = (
  * @example
  * ```typescript
  * const logRequest: RequestMiddleware = async (config, next) => {
- *   console.log('Request:', config.url)
+ *   
  *   return next()
  * }
  * 
@@ -94,7 +94,7 @@ export function composeRequestMiddleware(
  * @example
  * ```typescript
  * const logResponse: ResponseMiddleware = async (response, next) => {
- *   console.log('Response:', response.status)
+ *   
  *   return next()
  * }
  * 
@@ -230,7 +230,7 @@ export function createConditionalMiddleware<TContext>(
  * @example
  * ```typescript
  * const logApiRequests: RequestMiddleware = async (config, next) => {
- *   console.log('API request:', config.url)
+ *   
  *   return next()
  * }
  * 
@@ -302,7 +302,7 @@ export function createMethodMatchMiddleware(
  * @example
  * ```typescript
  * const timingMiddleware = createTimingMiddleware((duration, config) => {
- *   console.log(`Request to ${config.url} took ${duration}ms`)
+ *   
  * })
  * ```
  */
@@ -465,7 +465,7 @@ export function createPipelineMiddleware<TContext>(
  * const middleware = new MiddlewareBuilder<RequestConfig>()
  *   .use(loggingMiddleware)
  *   .when(config => config.url?.includes('/api'), authMiddleware)
- *   .timing((duration, config) => console.log(`${config.url}: ${duration}ms`))
+ *   .timing((duration, config) => )
  *   .build()
  * ```
  */

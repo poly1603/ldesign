@@ -1,0 +1,19 @@
+node_modules
+dist
+.DS_Store
+*.log
+*.local
+.vite
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Build files
+*.tsbuildinfo
+
+# Example build
+example/dist

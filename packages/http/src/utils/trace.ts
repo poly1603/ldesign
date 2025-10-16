@@ -192,8 +192,8 @@ export class RequestTracer {
   if (!context) return
 
   // 导出spans
-  if (this.config.exporter) {
-   const result = this.config.exporter(context.spans)
+  if (this.config?.exporter) {
+   const result = this.config?.exporter(context.spans)
    if (result instanceof Promise) {
     result.catch((err: Error) => {
      console.error('Failed to export trace spans:', err)
@@ -209,8 +209,8 @@ export class RequestTracer {
   * 判断是否应该采样
   */
  private shouldSample(): boolean {
-  if (!this.config.enabled) return false
-  return Math.random() < this.config.sampleRate
+  if (!this.config?.enabled) return false
+  return Math.random() < this.config?.sampleRate
  }
 
  /**
@@ -554,15 +554,15 @@ export function consoleExporter(spans: TraceSpan[]): void {
   const status = span.status === SpanStatus.SUCCESS ? '✅' : span.status === SpanStatus.ERROR ? '❌' : '⏳'
 
   console.group(`${status} ${span.name}${duration}`)
-  console.log('Type:', span.type)
-  console.log('Status:', span.status)
+  
+  
 
   if (span.tags.length > 0) {
-   console.log('Tags:', Object.fromEntries(span.tags.map(t => [t.key, t.value])))
+   ))
   }
 
   if (span.logs.length > 0) {
-   console.log('Logs:', span.logs)
+   
   }
 
   if (span.error) {

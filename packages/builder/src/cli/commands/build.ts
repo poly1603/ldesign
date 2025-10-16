@@ -3,7 +3,6 @@
  */
 
 import { Command } from 'commander'
-import chalk from 'chalk'
 import { LibraryBuilder } from '../../core/LibraryBuilder'
 import { logger, highlight } from '../../utils/logger'
 import { formatFileSize, formatDuration } from '../../utils/format-utils'

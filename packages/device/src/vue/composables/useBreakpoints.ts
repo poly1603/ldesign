@@ -64,7 +64,7 @@ const DEFAULT_BREAKPOINTS: BreakpointConfig = {
  *
  * // 监听断点变化
  * watch(current, (newBreakpoint) => {
- *   console.log('当前断点:', newBreakpoint)
+ *   
  * })
  * </script>
  *

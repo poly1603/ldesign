@@ -87,8 +87,7 @@ export interface UseFormReturn<T extends Record<string, any>> {
  *         return errors
  *       },
  *       onSubmit: async (values) => {
- *         console.log('提交数据:', values)
- *       }
+ *          *       }
  *     })
  *
  *     return {

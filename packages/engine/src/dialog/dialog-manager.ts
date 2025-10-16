@@ -3,6 +3,7 @@
  * 统一的弹窗管理系统
  */
 
+import type { Logger } from '../types'
 import type { Engine } from '../types/engine'
 
 export interface DialogOptions {
@@ -80,6 +81,7 @@ export class DialogManager {
   private idCounter = 0
   private config: DialogManagerConfig
   private engine?: Engine
+  private logger?: Logger
 
   constructor(config: DialogManagerConfig = {}, engine?: Engine) {
     const defaults: DialogManagerConfig = {
@@ -93,6 +95,25 @@ export class DialogManager {
     }
     this.config = { ...defaults, ...config }
     this.engine = engine
+    this.logger = engine?.logger
+  }
+
+  /**
+   * 日志记录
+   */
+  private log(level: string, message: string, ...args: unknown[]): void {
+    if (level === 'info') {
+      this.logger?.info(message, ...args)
+    } else if (level === 'warn') {
+      this.logger?.warn(message, ...args)
+    }
+  }
+
+  /**
+   * 错误日志
+   */
+  private error(message: string, ...args: unknown[]): void {
+    this.logger?.error(message, ...args)
   }
 
   /**
@@ -111,7 +132,7 @@ export class DialogManager {
    */
   private bindGlobalEvents(): void {
     // ESC键关闭
-    if (this.config.escapeKeyClose) {
+    if (this.config?.escapeKeyClose) {
       document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
           this.closeTopDialog()
@@ -485,7 +506,7 @@ export class DialogManager {
    * 检查弹窗数量限制
    */
   private async checkMaxDialogs(): Promise<void> {
-    const maxDialogs = this.config.maxDialogs!
+    const maxDialogs = this.config?.maxDialogs ?? 10
 
     // 如果当前对话框数量已经达到最大限制，关闭最早的对话框
     while (this.instances.size >= maxDialogs) {
@@ -509,9 +530,9 @@ export class DialogManager {
    * 获取下一个z-index
    */
   private getNextZIndex(): number {
-    return (
-      this.config.zIndexBase! + ++this.zIndexCounter * this.config.zIndexStep!
-    )
+    const zIndexBase = this.config?.zIndexBase ?? 1000
+    const zIndexStep = this.config?.zIndexStep ?? 1
+    return zIndexBase + ++this.zIndexCounter * zIndexStep
   }
 
   /**
@@ -525,14 +546,14 @@ export class DialogManager {
       type: 'custom',
       modal: true,
       closable: true,
-      maskClosable: this.config.clickMaskClose,
-      escClosable: this.config.escapeKeyClose,
+      maskClosable: this.config?.clickMaskClose,
+      escClosable: this.config?.escapeKeyClose,
       draggable: false,
       resizable: false,
       centered: true,
       showMask: true,
-      animation: this.config.defaultAnimation,
-      animationDuration: this.config.defaultAnimationDuration,
+      animation: this.config?.defaultAnimation,
+      animationDuration: this.config?.defaultAnimationDuration,
       width: 'auto',
       height: 'auto',
       ...options,
@@ -627,8 +648,8 @@ export class DialogManager {
       // 点击遮罩关闭
       if (options.maskClosable) {
         maskElement.addEventListener('click', e => {
-          if (e.target === maskElement) {
-            const instance = this.instances.get(options.id!)
+          if (e.target === maskElement && options.id) {
+            const instance = this.instances.get(options.id)
             if (instance) {
               instance.close()
             }
@@ -719,7 +740,8 @@ export class DialogManager {
       closeEl.className = 'engine-dialog-close'
       closeEl.innerHTML = '×'
       closeEl.addEventListener('click', () => {
-        const instance = this.instances.get(options.id!)
+        if (!options.id) return
+        const instance = this.instances.get(options.id)
         if (instance) {
           instance.close()
         }
@@ -776,7 +798,8 @@ export class DialogManager {
       }
 
       buttonEl.addEventListener('click', async () => {
-        const instance = this.instances.get(options.id!)
+        if (!options.id) return
+        const instance = this.instances.get(options.id)
         if (instance && button.onClick) {
           try {
             await button.onClick(instance)
@@ -805,7 +828,7 @@ export class DialogManager {
     instance.visible = true
 
     // 设置初始状态
-    const animation = instance.options.animation!
+    const animation = instance.options.animation || 'fade'
     if (animation !== 'none') {
       container.classList.add(`engine-dialog-${animation}-enter`)
     }
@@ -824,7 +847,7 @@ export class DialogManager {
 
         setTimeout(() => {
           container.classList.remove(`engine-dialog-${animation}-enter-active`)
-        }, instance.options.animationDuration!)
+        }, instance.options.animationDuration || 300)
       })
     }
 
@@ -854,15 +877,16 @@ export class DialogManager {
     }
 
     const container = instance.maskElement || instance.element
-    const animation = instance.options.animation!
+    const animation = instance.options.animation || 'fade'
 
     // 检查是否在测试环境中
     const isTestEnvironment = (() => {
       try {
         // 检查是否在测试环境中
-        const g = globalThis as any
+        const g = globalThis as Record<string, unknown>
         const processKey = 'process'
-        return g?.[processKey]?.env?.NODE_ENV === 'test'
+        const proc = g?.[processKey] as { env?: { NODE_ENV?: string } } | undefined
+        return proc?.env?.NODE_ENV === 'test'
       } catch {
         return false
       }
@@ -875,7 +899,7 @@ export class DialogManager {
 
       setTimeout(() => {
         this.destroyInstance(instance)
-      }, instance.options.animationDuration!)
+      }, instance.options.animationDuration || 300)
     } else {
       // 在测试环境中或无动画时立即销毁
       this.destroyInstance(instance)
@@ -1003,10 +1027,8 @@ export class DialogManager {
    * 获取统计信息
    */
   getStats() {
-    const baseStats = super.getStats()
     const visibleInstances = Array.from(this.instances.values()).filter(i => i.visible)
     return {
-      ...baseStats,
       totalDialogs: visibleInstances.length,
       visibleDialogs: visibleInstances.length,
       dialogIds: visibleInstances.map(i => i.id),
@@ -1043,7 +1065,5 @@ export class DialogManager {
     if (styleEl && styleEl.parentNode) {
       styleEl.parentNode.removeChild(styleEl)
     }
-
-    await super.destroy()
   }
 }

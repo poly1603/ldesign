@@ -9,7 +9,6 @@
 
 import { Command } from 'commander'
 import { Logger } from '../../utils/logger'
-import chalk from 'chalk'
 import inquirer from 'inquirer'
 import ora from 'ora'
 import fs from 'node:fs/promises'
@@ -282,18 +281,16 @@ export class MicroCommand {
     try {
       const config = await this.loadMicroConfig()
 
-      console.log(chalk.cyan('\n📊 微前端应用状态\n'))
-      console.log(`${chalk.yellow('应用类型:')} ${config.type === 'main' ? '主应用' : '子应用'}`)
-      console.log(`${chalk.yellow('应用名称:')} ${config.name}`)
-      console.log(`${chalk.yellow('端口号:')} ${config.port}`)
+      )
+      } ${config.type === 'main' ? '主应用' : '子应用'}`)
+      } ${config.name}`)
+      } ${config.port}`)
 
       if (config.subApps && config.subApps.length > 0) {
-        console.log(chalk.yellow('\n子应用列表:'))
+        )
         config.subApps.forEach((app, index) => {
-          console.log(`  ${index + 1}. ${chalk.green(app.name)}`)
-          console.log(`     入口: ${app.entry}`)
-          console.log(`     路由: ${app.activeRule}`)
-        })
+          }`)
+                            })
       }
 
     } catch (error) {
@@ -655,8 +652,7 @@ if (!(window as any).__POWERED_BY_QIANKUN__) {
 }
 
 export async function bootstrap() {
-  console.log('${config.name} bootstraped')
-}
+  }
 
 export async function mount(props: any) {
   render(props)

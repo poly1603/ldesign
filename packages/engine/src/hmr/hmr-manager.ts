@@ -3,9 +3,25 @@
  * 🔥 提供开发环境的热更新支持，提升开发体验
  */
 
-import type { Component } from 'vue'
 import type { Engine } from '../types/engine'
 import type { Plugin } from '../types/plugin'
+import process from 'node:process'
+
+// 扩展 ImportMeta 接口以支持 Vite HMR
+declare global {
+  interface ImportMeta {
+    hot?: {
+      // eslint-disable-next-line ts/no-explicit-any
+      accept: (deps?: string | string[] | ((mod: any) => void), callback?: (newModule: any) => void) => void
+      // eslint-disable-next-line ts/no-explicit-any
+      on: (event: string, callback: (...args: any[]) => void) => void
+      // eslint-disable-next-line ts/no-explicit-any
+      dispose: (callback: (data: any) => void) => void
+      // eslint-disable-next-line ts/no-explicit-any
+      data: any
+    }
+  }
+}
 
 export interface HMROptions {
   /** 是否启用HMR */
@@ -40,7 +56,7 @@ export interface HMRModule {
   /** 热更新处理器 */
   hot?: {
     accept?: (callback: (module: HMRModule) => void) => void
-    dispose?: (callback: () => void) => void
+    dispose?: (callback: (data?: unknown) => void) => void
     data?: Record<string, unknown>
   }
 }
@@ -188,7 +204,8 @@ export class HMRManager {
       }
 
       while (this.updateQueue.length > 0) {
-        const update = this.updateQueue.shift()!
+        const update = this.updateQueue.shift()
+        if (!update) break
         await this.applyUpdate(update)
       }
 
@@ -237,7 +254,9 @@ export class HMRManager {
 
       // 触发模块的热更新回调
       if (module.hot?.accept) {
-        module.hot.accept(module)
+        module.hot.accept(() => {
+          this.engine.logger.debug('Module hot reload callback', module.id)
+        })
       }
     }
 
@@ -249,13 +268,12 @@ export class HMRManager {
    * 更新组件
    */
   private async updateComponent(module: HMRModule): Promise<void> {
-    const component = module.content as Component
-
     // 使用Vue的热更新API
     if (import.meta.hot && typeof import.meta.hot.accept === 'function') {
-      import.meta.hot.accept(module.id, (newModule) => {
+      // eslint-disable-next-line ts/no-explicit-any
+      import.meta.hot.accept(module.id, (newModule: any) => {
         // 更新组件实例
-        this.engine.logger.debug('Component hot updated', module.id)
+        this.engine.logger.debug('Component hot updated', { moduleId: module.id, newModule })
       })
     }
   }
@@ -268,7 +286,10 @@ export class HMRManager {
 
     // 先卸载旧插件
     if (module.hot?.dispose) {
-      module.hot.dispose()
+      module.hot.dispose((_data: unknown) => {
+        // 保存需要的数据
+        this.engine.logger.debug('Plugin disposed', module.id)
+      })
     }
 
     // 重新安装插件
@@ -447,13 +468,16 @@ export class HMRManager {
         this.engine.logger.debug('Vite HMR update detected')
       })
 
-      import.meta.hot.on('vite:error', (error) => {
+      // eslint-disable-next-line ts/no-explicit-any
+      import.meta.hot.on('vite:error', (error: any) => {
         this.handleError(error)
       })
     }
 
     // 监听webpack的HMR API
+    // eslint-disable-next-line ts/no-explicit-any
     if ((module as any).hot) {
+      // eslint-disable-next-line ts/no-explicit-any
       (module as any).hot.addStatusHandler((status: string) => {
         this.engine.logger.debug('Webpack HMR status', status)
       })
@@ -464,7 +488,7 @@ export class HMRManager {
    * 检查是否为开发环境
    */
   private isDevelopment(): boolean {
-    return process.env.NODE_ENV === 'development' ||
+    return (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') ||
            this.engine.config.get('debug', false) as boolean
   }
 
@@ -475,7 +499,8 @@ export class HMRManager {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set())
     }
-    this.listeners.get(event)!.add(listener)
+    const listeners = this.listeners.get(event)
+    listeners?.add(listener)
   }
 
   /**

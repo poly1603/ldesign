@@ -280,7 +280,7 @@ export class WarmupManager {
     for (let retry = 0; retry < maxRetries && result.failed.length > 0; retry++) {
       const failedUrls = result.failed.map(f => f.url)
 
-      console.log(`重试预热失败的 ${failedUrls.length} 个URL (第 ${retry + 1} 次)...`)
+      ...`)
 
       const retryResult = await this.warmup({
         ...config,
@@ -425,7 +425,7 @@ export class KeepAliveManager {
    * 获取或创建连接
    */
   acquire(host: string): void {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return
     }
 
@@ -447,7 +447,7 @@ export class KeepAliveManager {
     // 设置空闲超时
     connection.timer = setTimeout(() => {
       this.release(host)
-    }, this.config.maxIdleTime)
+    }, this.config?.maxIdleTime)
   }
 
   /**
@@ -486,7 +486,7 @@ export class KeepAliveManager {
     this.connections.forEach((connection, host) => {
       const idle = now - connection.lastUsed
 
-      if (idle > this.config.maxIdleTime! / 2) {
+      if (idle > this.config?.maxIdleTime! / 2) {
         stats.idleConnections++
       }
       else {

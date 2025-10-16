@@ -1,33 +1,29 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  typedEmit,
-  typedOn,
-  typedOnce,
+  ErrorUtil,
   getTypedConfig,
-  setTypedConfig,
-  createTypedPluginContext,
-  registerTypedPlugin,
-  isValidObject,
-  isString,
-  isNumber,
+  InputValidator,
+  isArray,
   isBoolean,
   isFunction,
-  isArray,
+  isNumber,
   isPromise,
+  isString,
+  isValidObject,
+  PromiseUtil,
+  safeAsync,
   safeDeepClone,
-  safeMerge,
+  safeFilter,
   safeGet,
   safeGetNested,
-  safeFilter,
-  safeMap,
-  safeAsync,
   safeJsonParse,
   safeJsonStringify,
-  InputValidator,
-  ErrorUtil,
+  safeMap,
+  safeMerge,
+  setTypedConfig,
   TypedConfigWrapper,
-  createTypedConfigManager,
-  PromiseUtil
+  typedEmit,
+  typedOn
 } from '../../src/utils/type-safety'
 
 // 模拟事件发射器
@@ -196,7 +192,7 @@ describe('类型守护函数', () => {
     it('isNumber应该正确识别数字', () => {
       expect(isNumber(123)).toBe(true)
       expect(isNumber(0)).toBe(true)
-      expect(isNumber(NaN)).toBe(false) // NaN不被认为是有效数字
+      expect(isNumber(Number.NaN)).toBe(false) // NaN不被认为是有效数字
       expect(isNumber('123')).toBe(false)
     })
 
@@ -209,7 +205,7 @@ describe('类型守护函数', () => {
 
     it('isFunction应该正确识别函数', () => {
       expect(isFunction(() => {})).toBe(true)
-      expect(isFunction(function() {})).toBe(true)
+      expect(isFunction(() => {})).toBe(true)
       expect(isFunction(async () => {})).toBe(true)
       expect(isFunction({})).toBe(false)
     })
@@ -394,7 +390,7 @@ describe('安全工具函数', () => {
     })
   })
 
-  describe('JSON安全操作', () => {
+  describe('jSON安全操作', () => {
     it('safeJsonParse应该安全地解析JSON', () => {
       const validJson = '{"key": "value"}'
       const result = safeJsonParse(validJson)
@@ -431,7 +427,7 @@ describe('安全工具函数', () => {
   })
 })
 
-describe('InputValidator', () => {
+describe('inputValidator', () => {
   let validator: InputValidator
 
   beforeEach(() => {
@@ -483,7 +479,7 @@ describe('InputValidator', () => {
   })
 })
 
-describe('ErrorUtil', () => {
+describe('errorUtil', () => {
   it('应该格式化错误', () => {
     const error = new Error('Test error')
     const formatted = ErrorUtil.formatError(error)
@@ -509,7 +505,7 @@ describe('ErrorUtil', () => {
   })
 })
 
-describe('TypedConfigWrapper', () => {
+describe('typedConfigWrapper', () => {
   it('应该提供类型安全的配置访问', () => {
     const config = { database: { host: 'localhost', port: 5432 } }
     const wrapper = new TypedConfigWrapper(config)
@@ -531,7 +527,7 @@ describe('TypedConfigWrapper', () => {
   })
 })
 
-describe('PromiseUtil', () => {
+describe('promiseUtil', () => {
   it('应该支持Promise重试', async () => {
     let attempts = 0
     const flakyFn = async () => {

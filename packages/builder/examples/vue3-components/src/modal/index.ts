@@ -136,12 +136,10 @@ export const MODAL_COMPONENT_NAME = 'LModal'
  * }
  * 
  * const handleClose = () => {
- *   console.log('模态框关闭了')
- * }
+ *    * }
  * 
  * const handleConfirm = () => {
- *   console.log('确认操作')
- *   visible.value = false
+ *    *   visible.value = false
  * }
  * </script>
  * ```

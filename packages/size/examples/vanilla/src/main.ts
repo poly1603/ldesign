@@ -44,7 +44,7 @@ const elements = {
  * 初始化应用
  */
 function initApp() {
-  console.log('🚀 初始化 @ldesign/size 原生JS示例')
+  
 
   // 设置初始状态
   updateUI()
@@ -55,13 +55,13 @@ function initApp() {
 
   // 监听尺寸变化
   currentManager.onSizeChange((event: any) => {
-    console.log('尺寸变化事件:', event)
+    
     currentMode = event.currentMode
     updateUI()
     updateLayoutClass()
   })
 
-  console.log('✅ 应用初始化完成')
+  
 }
 
 /**

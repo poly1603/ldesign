@@ -5,7 +5,7 @@
  * @module PersistenceEnhancement
  */
 
-import type { StateDefinition } from '@/types'
+import type { StateDefinition } from '../types'
 
 /**
  * 持久化策略

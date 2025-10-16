@@ -109,8 +109,7 @@ export interface InfiniteScrollActions {
  *         threshold: 100,
  *         immediate: true,
  *         onLoad: (data, page, hasMore) => {
- *           console.log(`加载第 ${page} 页，获得 ${data.length} 条数据`)
- *         }
+ *            *         }
  *       }
  *     )
  *     

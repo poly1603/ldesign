@@ -7,24 +7,20 @@
 export * from './core'
 export * from './types'
 export * from './utils'
-export * from './plugins'
+
 // 只导出 Vue adapter
 export { createVueI18n, useI18n as useVueI18n } from './adapters/vue'
 
-// 导出默认实例
-import { OptimizedI18n as I18n } from './core/i18n-optimized'
-import { createDefaultPlugins } from './plugins'
+// 导出核心 i18n 类
+import { OptimizedI18n } from './core/i18n-optimized'
+export { OptimizedI18n, OptimizedI18n as I18n }
 
-// 创建带默认插件的实例
-const defaultI18n = new I18n({
+// 创建默认实例
+const defaultI18n = new OptimizedI18n({
   locale: 'zh-CN',
   fallbackLocale: 'en-US',
-  messages: {},
-  plugins: createDefaultPlugins()
+  messages: {}
 })
 
 // UMD 导出
 export default defaultI18n
-
-// 为了兼容性，也导出构造函数
-export { I18n }

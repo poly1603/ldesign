@@ -116,7 +116,7 @@ export function createDevicePlugin(options: DevicePluginOptions = {}): Plugin {
  *
  *     // 监听设备变化
  *     detector.on('deviceChange', (info) => {
- *       console.log('设备信息更新:', info)
+ *       
  *     })
  *
  *     return {

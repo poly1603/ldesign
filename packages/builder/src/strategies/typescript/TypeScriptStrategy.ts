@@ -239,7 +239,7 @@ export class TypeScriptStrategy implements ILibraryStrategy {
         options: {
           compress: {
             drop_console: true,
-            drop_debugger: true
+            drop_: true
           },
           format: {
             comments: false
@@ -412,7 +412,7 @@ export class TypeScriptStrategy implements ILibraryStrategy {
           return terser.default({
             compress: {
               drop_console: true,
-              drop_debugger: true
+              drop_: true
             },
             format: {
               comments: false

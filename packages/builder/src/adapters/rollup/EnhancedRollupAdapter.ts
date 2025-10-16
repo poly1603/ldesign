@@ -547,7 +547,7 @@ export class EnhancedRollupAdapter implements IBundlerAdapter {
             ecma: 2015,
             passes: 2,
             drop_console: config.dropConsole ?? false,
-            drop_debugger: true,
+            drop_: true,
             pure_funcs: config.pureFuncs || []
           },
           mangle: {

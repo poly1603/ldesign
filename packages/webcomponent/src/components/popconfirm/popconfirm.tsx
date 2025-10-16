@@ -80,16 +80,16 @@ export class LdesignPopconfirm {
   @Prop() offsetDistance: number = 8;
 
   /** 事件：确认 */
-  @Event() ldesignConfirm: EventEmitter<void>;
+  @Event() ldesignConfirm!: EventEmitter<void>;
 
   /** 事件：取消 */
-  @Event() ldesignCancel: EventEmitter<void>;
+  @Event() ldesignCancel!: EventEmitter<void>;
 
   /** 事件：对外转发可见性变化 */
-  @Event() ldesignVisibleChange: EventEmitter<boolean>;
+  @Event() ldesignVisibleChange!: EventEmitter<boolean>;
   
   /** 内部状态：确认按钮处理中 */
-  @State() isConfirming: boolean = false;
+  @State() isConfirming!: boolean = false;
 
   private hideInnerPopup() {
     const popup = this.getInnerPopup();

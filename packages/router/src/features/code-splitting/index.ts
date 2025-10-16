@@ -1,11 +1,11 @@
 /**
  * @ldesign/router 智能代码分割模块
- * 
+ *
  * 提供智能的路由组件分割和按需加载功能
  */
 
-import type { RouteRecordRaw, RouteLocationNormalized } from '../../types'
 import type { Component } from 'vue'
+import type { RouteRecordRaw } from '../../types'
 
 // ==================== 类型定义 ====================
 
@@ -118,7 +118,7 @@ export class CodeSplittingManager {
     this.preloadQueue = new Set()
     this.loadingPromises = new Map()
     this.chunkMap = new Map()
-    
+
     this.initializePreloadStrategy()
   }
 
@@ -126,9 +126,10 @@ export class CodeSplittingManager {
    * 初始化预加载策略
    */
   private initializePreloadStrategy(): void {
-    if (this.config.preloadStrategy === 'visible') {
+    if (this.config?.preloadStrategy === 'visible') {
       this.setupIntersectionObserver()
-    } else if (this.config.preloadStrategy === 'predictive') {
+    }
+    else if (this.config?.preloadStrategy === 'predictive') {
       this.setupPredictivePreloading()
     }
   }
@@ -140,7 +141,7 @@ export class CodeSplittingManager {
     if (typeof IntersectionObserver !== 'undefined') {
       this.intersectionObserver = new IntersectionObserver(
         (entries) => {
-          entries.forEach(entry => {
+          entries.forEach((entry) => {
             if (entry.isIntersecting) {
               const routeName = entry.target.getAttribute('data-route')
               if (routeName) {
@@ -149,7 +150,7 @@ export class CodeSplittingManager {
             }
           })
         },
-        { rootMargin: '50px' }
+        { rootMargin: '50px' },
       )
     }
   }
@@ -191,7 +192,7 @@ export class CodeSplittingManager {
 
     return {
       ...route,
-      component: splitComponent
+      component: splitComponent,
     }
   }
 
@@ -200,7 +201,7 @@ export class CodeSplittingManager {
    */
   private async loadComponent(
     name: string,
-    loader: () => Promise<Component>
+    loader: () => Promise<Component>,
   ): Promise<Component> {
     // 检查缓存
     if (this.componentCache.has(name)) {
@@ -221,7 +222,8 @@ export class CodeSplittingManager {
       const component = await loadPromise
       this.loadingPromises.delete(name)
       return component
-    } catch (error) {
+    }
+    catch (error) {
       this.loadingPromises.delete(name)
       throw error
     }
@@ -232,7 +234,7 @@ export class CodeSplittingManager {
    */
   private async performLoad(
     name: string,
-    loader: () => Promise<Component>
+    loader: () => Promise<Component>,
   ): Promise<Component> {
     const startTime = performance.now()
     let retries = 0
@@ -241,10 +243,10 @@ export class CodeSplittingManager {
       name,
       status: 'loading',
       startTime,
-      retries: 0
+      retries: 0,
     })
 
-    while (retries <= (this.config.maxRetries || 3)) {
+    while (retries <= (this.config?.maxRetries || 3)) {
       try {
         const component = await loader()
         const loadTime = performance.now() - startTime
@@ -252,31 +254,32 @@ export class CodeSplittingManager {
         this.updateLoadState(name, {
           name,
           status: 'loaded',
-          loadTime
+          loadTime,
         })
 
         // 缓存组件
-        if (this.config.cacheStrategy !== 'storage') {
+        if (this.config?.cacheStrategy !== 'storage') {
           this.componentCache.set(name, component)
         }
 
         this.recordMetrics(name, loadTime, false)
         return component
-      } catch (error) {
+      }
+      catch (error) {
         retries++
-        
-        if (retries > (this.config.maxRetries || 3)) {
+
+        if (retries > (this.config?.maxRetries || 3)) {
           this.updateLoadState(name, {
             name,
             status: 'error',
             error: error as Error,
-            retries
+            retries,
           })
           throw error
         }
 
         // 重试延迟
-        await this.delay(this.config.retryDelay || 1000 * retries)
+        await this.delay(this.config?.retryDelay || 1000 * retries)
       }
     }
 
@@ -288,7 +291,7 @@ export class CodeSplittingManager {
    */
   public async preloadComponent(
     name: string,
-    trigger?: 'hover' | 'visible' | 'manual'
+    _trigger?: 'hover' | 'visible' | 'manual',
   ): Promise<void> {
     if (this.componentCache.has(name) || this.preloadQueue.has(name)) {
       return
@@ -303,10 +306,12 @@ export class CodeSplittingManager {
     if (priority === 'critical') {
       // 立即加载
       await this.loadComponentByName(name)
-    } else if (priority === 'high') {
+    }
+    else if (priority === 'high') {
       // 空闲时加载
       this.requestIdleLoad(name)
-    } else {
+    }
+    else {
       // 延迟加载
       setTimeout(() => this.loadComponentByName(name), 5000)
     }
@@ -315,7 +320,7 @@ export class CodeSplittingManager {
   /**
    * 按名称加载组件
    */
-  private async loadComponentByName(name: string): Promise<void> {
+  private async loadComponentByName(_name: string): Promise<void> {
     // 这里需要维护一个名称到加载器的映射
     // 实际实现时需要在路由注册时建立这个映射
   }
@@ -328,7 +333,8 @@ export class CodeSplittingManager {
       (window as any).requestIdleCallback(() => {
         this.loadComponentByName(name)
       })
-    } else {
+    }
+    else {
       setTimeout(() => this.loadComponentByName(name), 2000)
     }
   }
@@ -344,11 +350,11 @@ export class CodeSplittingManager {
     const analyzeRoute = (route: RouteRecordRaw, depth = 0) => {
       if (route.component) {
         totalComponents++
-        
+
         const chunkId = this.generateChunkId(route)
         const priority = this.determinePriority(route, depth)
         const size = this.estimateComponentSize(route)
-        
+
         estimatedSize += size
 
         chunks.push({
@@ -358,7 +364,7 @@ export class CodeSplittingManager {
           components: [route.name?.toString() || 'unnamed'],
           priority,
           estimatedSize: size,
-          dependencies: []
+          dependencies: [],
         })
       }
 
@@ -376,7 +382,7 @@ export class CodeSplittingManager {
       totalComponents,
       chunks,
       estimatedSize,
-      suggestions
+      suggestions,
     }
   }
 
@@ -384,11 +390,11 @@ export class CodeSplittingManager {
    * 生成块ID
    */
   private generateChunkId(route: RouteRecordRaw): string {
-    const strategy = this.config.strategy
-    
+    const strategy = this.config?.strategy
+
     switch (strategy) {
       case 'route':
-        return `route-${route.name || route.path.replace(/\//g, '-')}`
+        return `route-${route.name ? String(route.name) : route.path.replace(/\//g, '-')}`
       case 'module':
         return `module-${this.extractModuleName(route.path)}`
       case 'feature':
@@ -419,10 +425,14 @@ export class CodeSplittingManager {
    */
   private determinePriority(route: RouteRecordRaw, depth: number): ChunkPriority {
     // 根据路由深度和元信息确定优先级
-    if (depth === 0) return 'critical'
-    if (route.meta?.priority) return route.meta.priority as ChunkPriority
-    if (depth === 1) return 'high'
-    if (depth === 2) return 'normal'
+    if (depth === 0)
+      return 'critical'
+    if (route.meta?.priority)
+      return route.meta.priority as ChunkPriority
+    if (depth === 1)
+      return 'high'
+    if (depth === 2)
+      return 'normal'
     return 'low'
   }
 
@@ -433,15 +443,15 @@ export class CodeSplittingManager {
     // 基于路由配置估算组件大小
     // 实际实现时可以通过构建工具获取真实大小
     let baseSize = 10 // 基础大小 10KB
-    
+
     if (route.children?.length) {
       baseSize += route.children.length * 5
     }
-    
+
     if (route.components) {
       baseSize += Object.keys(route.components).length * 8
     }
-    
+
     return baseSize
   }
 
@@ -452,11 +462,11 @@ export class CodeSplittingManager {
     const suggestions: string[] = []
 
     // 检查块大小
-    chunks.forEach(chunk => {
-      if (chunk.estimatedSize > (this.config.maxChunkSize || 244)) {
+    chunks.forEach((chunk) => {
+      if (chunk.estimatedSize > (this.config?.maxChunkSize || 244)) {
         suggestions.push(`块 ${chunk.name} 过大 (${chunk.estimatedSize}KB)，建议进一步分割`)
       }
-      if (chunk.estimatedSize < (this.config.minChunkSize || 10)) {
+      if (chunk.estimatedSize < (this.config?.minChunkSize || 10)) {
         suggestions.push(`块 ${chunk.name} 过小 (${chunk.estimatedSize}KB)，建议与其他块合并`)
       }
     })
@@ -496,8 +506,10 @@ export class CodeSplittingManager {
       if (chunk) {
         for (const dep of chunk.dependencies) {
           if (!visited.has(dep)) {
-            if (hasCycle(dep)) return true
-          } else if (recursionStack.has(dep)) {
+            if (hasCycle(dep))
+              return true
+          }
+          else if (recursionStack.has(dep)) {
             return true
           }
         }
@@ -509,7 +521,8 @@ export class CodeSplittingManager {
 
     for (const chunk of chunks) {
       if (!visited.has(chunk.id)) {
-        if (hasCycle(chunk.id)) return true
+        if (hasCycle(chunk.id))
+          return true
       }
     }
 
@@ -530,7 +543,7 @@ export class CodeSplittingManager {
     this.metrics.push({
       componentName: name,
       loadTime,
-      cacheHit
+      cacheHit,
     })
 
     // 保持指标数量在合理范围内
@@ -560,17 +573,17 @@ export class CodeSplittingManager {
     const totalLoaded = loaded.filter(s => s.status === 'loaded').length
     const totalFailed = loaded.filter(s => s.status === 'error').length
     const totalCached = this.componentCache.size
-    
+
     const loadTimes = this.metrics.filter(m => !m.cacheHit).map(m => m.loadTime)
     const averageLoadTime = loadTimes.length
       ? loadTimes.reduce((a, b) => a + b, 0) / loadTimes.length
       : 0
-    
+
     const cacheHits = this.metrics.filter(m => m.cacheHit).length
     const cacheHitRate = this.metrics.length
       ? cacheHits / this.metrics.length
       : 0
-    
+
     const failureRate = loaded.length
       ? totalFailed / loaded.length
       : 0
@@ -580,7 +593,7 @@ export class CodeSplittingManager {
       totalCached,
       averageLoadTime,
       cacheHitRate,
-      failureRate
+      failureRate,
     }
   }
 
@@ -604,7 +617,7 @@ export class CodeSplittingManager {
  * 创建代码分割管理器
  */
 export function createCodeSplittingManager(
-  config?: Partial<SplittingConfig>
+  config?: Partial<SplittingConfig>,
 ): CodeSplittingManager {
   const defaultConfig: SplittingConfig = {
     strategy: 'route',
@@ -614,12 +627,12 @@ export function createCodeSplittingManager(
     preloadStrategy: 'lazy',
     cacheStrategy: 'memory',
     maxRetries: 3,
-    retryDelay: 1000
+    retryDelay: 1000,
   }
 
   return new CodeSplittingManager({
     ...defaultConfig,
-    ...config
+    ...config,
   })
 }
 
@@ -631,17 +644,17 @@ export function createCodeSplittingManager(
 export const CodeSplittingPlugin = {
   install(app: any, options?: Partial<SplittingConfig>) {
     const manager = createCodeSplittingManager(options)
-    
+
     app.provide('codeSplittingManager', manager)
-    
+
     app.config.globalProperties.$codeSplitting = manager
-    
+
     // 在应用卸载时清理
     app.unmount = new Proxy(app.unmount, {
       apply(target, thisArg, argArray) {
         manager.dispose()
         return Reflect.apply(target, thisArg, argArray)
-      }
+      },
     })
-  }
+  },
 }

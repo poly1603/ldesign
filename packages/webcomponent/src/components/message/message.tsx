@@ -66,10 +66,10 @@ export class LdesignMessage {
   @State() private messageId?: string;
 
   /** 关闭事件 */
-  @Event() ldesignClose: EventEmitter<void>;
+  @Event() ldesignClose!: EventEmitter<void>;
   
   /** 点击事件 */
-  @Event() ldesignClick: EventEmitter<void>;
+  @Event() ldesignClick!: EventEmitter<void>;
 
   private closeTimer?: number;
   private useGlobalManager = false;

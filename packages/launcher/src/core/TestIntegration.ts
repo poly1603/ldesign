@@ -10,8 +10,6 @@
 import { EventEmitter } from 'events'
 import { spawn, ChildProcess } from 'child_process'
 import { Logger } from '../utils/logger'
-import { FileSystem } from '../utils/file-system'
-import { PathUtils } from '../utils/path-utils'
 import chalk from 'chalk'
 
 export type TestFramework = 'vitest' | 'jest' | 'mocha' | 'cypress' | 'playwright'
@@ -132,7 +130,7 @@ export class TestIntegration extends EventEmitter {
   private async executeTests(): Promise<TestResult> {
     const startTime = Date.now()
     
-    switch (this.config.framework) {
+    switch (this.config?.framework) {
       case 'vitest':
         return this.runVitest(startTime)
       case 'jest':
@@ -144,7 +142,7 @@ export class TestIntegration extends EventEmitter {
       case 'mocha':
         return this.runMocha(startTime)
       default:
-        throw new Error(`不支持的测试框架: ${this.config.framework}`)
+        throw new Error(`不支持的测试框架: ${this.config?.framework}`)
     }
   }
 
@@ -155,23 +153,23 @@ export class TestIntegration extends EventEmitter {
     return new Promise((resolve, reject) => {
       const args = ['vitest', 'run']
       
-      if (this.config.coverage) {
+      if (this.config?.coverage) {
         args.push('--coverage')
       }
       
-      if (this.config.parallel) {
+      if (this.config?.parallel) {
         args.push('--threads')
       }
       
-      if (this.config.configFile) {
-        args.push('--config', this.config.configFile)
+      if (this.config?.configFile) {
+        args.push('--config', this.config?.configFile)
       }
 
       this.logger.info('运行 Vitest 测试...')
       
       this.testProcess = spawn('npx', args, {
         cwd: process.cwd(),
-        env: { ...process.env, ...this.config.env },
+        env: { ...process.env, ...this.config?.env },
         shell: true
       })
 
@@ -215,16 +213,16 @@ export class TestIntegration extends EventEmitter {
     return new Promise((resolve, reject) => {
       const args = ['jest']
       
-      if (this.config.coverage) {
+      if (this.config?.coverage) {
         args.push('--coverage')
       }
       
-      if (this.config.parallel !== false) {
+      if (this.config?.parallel !== false) {
         args.push('--maxWorkers=50%')
       }
       
-      if (this.config.configFile) {
-        args.push('--config', this.config.configFile)
+      if (this.config?.configFile) {
+        args.push('--config', this.config?.configFile)
       }
 
       args.push('--json')
@@ -233,7 +231,7 @@ export class TestIntegration extends EventEmitter {
       
       this.testProcess = spawn('npx', args, {
         cwd: process.cwd(),
-        env: { ...process.env, ...this.config.env },
+        env: { ...process.env, ...this.config?.env },
         shell: true
       })
 
@@ -292,15 +290,15 @@ export class TestIntegration extends EventEmitter {
     return new Promise((resolve, reject) => {
       const args = ['cypress', 'run']
       
-      if (this.config.configFile) {
-        args.push('--config-file', this.config.configFile)
+      if (this.config?.configFile) {
+        args.push('--config-file', this.config?.configFile)
       }
 
       this.logger.info('运行 Cypress E2E 测试...')
       
       this.testProcess = spawn('npx', args, {
         cwd: process.cwd(),
-        env: { ...process.env, ...this.config.env },
+        env: { ...process.env, ...this.config?.env },
         shell: true
       })
 
@@ -342,11 +340,11 @@ export class TestIntegration extends EventEmitter {
     return new Promise((resolve, reject) => {
       const args = ['playwright', 'test']
       
-      if (this.config.configFile) {
-        args.push('--config', this.config.configFile)
+      if (this.config?.configFile) {
+        args.push('--config', this.config?.configFile)
       }
 
-      if (this.config.parallel) {
+      if (this.config?.parallel) {
         args.push('--workers=50%')
       }
 
@@ -354,7 +352,7 @@ export class TestIntegration extends EventEmitter {
       
       this.testProcess = spawn('npx', args, {
         cwd: process.cwd(),
-        env: { ...process.env, ...this.config.env },
+        env: { ...process.env, ...this.config?.env },
         shell: true
       })
 
@@ -397,23 +395,23 @@ export class TestIntegration extends EventEmitter {
       const args = ['mocha']
       
       // 添加测试文件模式
-      this.config.testMatch?.forEach(pattern => {
+      this.config?.testMatch?.forEach(pattern => {
         args.push(pattern)
       })
       
-      if (this.config.parallel) {
+      if (this.config?.parallel) {
         args.push('--parallel')
       }
 
-      if (this.config.timeout) {
-        args.push('--timeout', this.config.timeout.toString())
+      if (this.config?.timeout) {
+        args.push('--timeout', this.config?.timeout.toString())
       }
 
       this.logger.info('运行 Mocha 测试...')
       
       this.testProcess = spawn('npx', args, {
         cwd: process.cwd(),
-        env: { ...process.env, ...this.config.env },
+        env: { ...process.env, ...this.config?.env },
         shell: true
       })
 
@@ -539,14 +537,14 @@ export class TestIntegration extends EventEmitter {
    * 启动监听模式
    */
   async startWatchMode(): Promise<void> {
-    if (!this.config.watch) {
-      this.config.watch = true
+    if (!this.config?.watch) {
+      this.config?.watch = true
     }
 
     this.logger.info('启动测试监听模式...')
     
     // 根据框架启动相应的监听模式
-    switch (this.config.framework) {
+    switch (this.config?.framework) {
       case 'vitest':
         await this.startVitestWatch()
         break
@@ -554,7 +552,7 @@ export class TestIntegration extends EventEmitter {
         await this.startJestWatch()
         break
       default:
-        throw new Error(`${this.config.framework} 不支持监听模式`)
+        throw new Error(`${this.config?.framework} 不支持监听模式`)
     }
   }
 
@@ -564,13 +562,13 @@ export class TestIntegration extends EventEmitter {
   private async startVitestWatch(): Promise<void> {
     const args = ['vitest', 'watch']
     
-    if (this.config.configFile) {
-      args.push('--config', this.config.configFile)
+    if (this.config?.configFile) {
+      args.push('--config', this.config?.configFile)
     }
 
     this.testProcess = spawn('npx', args, {
       cwd: process.cwd(),
-      env: { ...process.env, ...this.config.env },
+      env: { ...process.env, ...this.config?.env },
       shell: true,
       stdio: 'inherit'
     })
@@ -587,13 +585,13 @@ export class TestIntegration extends EventEmitter {
   private async startJestWatch(): Promise<void> {
     const args = ['jest', '--watch']
     
-    if (this.config.configFile) {
-      args.push('--config', this.config.configFile)
+    if (this.config?.configFile) {
+      args.push('--config', this.config?.configFile)
     }
 
     this.testProcess = spawn('npx', args, {
       cwd: process.cwd(),
-      env: { ...process.env, ...this.config.env },
+      env: { ...process.env, ...this.config?.env },
       shell: true,
       stdio: 'inherit'
     })
@@ -627,12 +625,12 @@ export class TestIntegration extends EventEmitter {
    * 检查覆盖率是否达标
    */
   checkCoverageThreshold(): boolean {
-    if (!this.lastResult?.coverage || !this.config.coverageThreshold) {
+    if (!this.lastResult?.coverage || !this.config?.coverageThreshold) {
       return true
     }
 
     const coverage = this.lastResult.coverage
-    const threshold = this.config.coverageThreshold
+    const threshold = this.config?.coverageThreshold
 
     if (threshold.lines && coverage.lines < threshold.lines) {
       this.logger.warn(`行覆盖率不足: ${coverage.lines}% < ${threshold.lines}%`)

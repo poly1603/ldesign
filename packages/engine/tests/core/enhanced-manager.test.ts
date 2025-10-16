@@ -2,14 +2,13 @@
  * 增强管理器单元测试
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import {
-  EnhancedManager,
-  BatchProcessor,
-  type BatchOptions,
-  type StateChangeEvent,
-} from '../../src/core/enhanced-manager'
 import type { Engine } from '../../src/types/engine'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  type BatchOptions,
+  BatchProcessor,
+  EnhancedManager,
+} from '../../src/core/enhanced-manager'
 
 // 测试用的管理器实现
 class TestManager extends EnhancedManager<
@@ -77,7 +76,7 @@ const mockEngine = {
   },
 } as unknown as Engine
 
-describe('EnhancedManager', () => {
+describe('enhancedManager', () => {
   let manager: TestManager
 
   beforeEach(() => {
@@ -221,15 +220,15 @@ describe('EnhancedManager', () => {
     })
 
     it('应该能获取事件监听器数量', () => {
-      expect(manager['getEventListenerCount']()).toBe(0)
+      expect(manager.getEventListenerCount()).toBe(0)
 
       manager.testOn('event1', () => {})
       manager.testOn('event1', () => {})
       manager.testOn('event2', () => {})
 
-      expect(manager['getEventListenerCount']()).toBe(3)
-      expect(manager['getEventListenerCount']('event1')).toBe(2)
-      expect(manager['getEventListenerCount']('event2')).toBe(1)
+      expect(manager.getEventListenerCount()).toBe(3)
+      expect(manager.getEventListenerCount('event1')).toBe(2)
+      expect(manager.getEventListenerCount('event2')).toBe(1)
     })
   })
 
@@ -348,11 +347,11 @@ describe('EnhancedManager', () => {
       manager.testOn('event1', () => {})
       manager.testOn('event2', () => {})
 
-      expect(manager['getEventListenerCount']()).toBe(2)
+      expect(manager.getEventListenerCount()).toBe(2)
 
       await manager.destroy()
 
-      expect(manager['getEventListenerCount']()).toBe(0)
+      expect(manager.getEventListenerCount()).toBe(0)
     })
 
     it('应该清空状态历史', async () => {
@@ -382,7 +381,7 @@ describe('EnhancedManager', () => {
   })
 })
 
-describe('BatchProcessor', () => {
+describe('batchProcessor', () => {
   describe('processArray', () => {
     it('应该批量处理数组', async () => {
       const items = [1, 2, 3, 4, 5]

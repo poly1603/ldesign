@@ -26,8 +26,8 @@ export interface HeapNode<T = unknown> {
  * heap.insert(3, 'three')
  * heap.insert(7, 'seven')
  * 
- * console.log(heap.peek()) // { priority: 3, data: 'three' }
- * console.log(heap.extract()) // { priority: 3, data: 'three' }
+ * ) // { priority: 3, data: 'three' }
+ * ) // { priority: 3, data: 'three' }
  * ```
  */
 export class MinHeap<T = unknown> {

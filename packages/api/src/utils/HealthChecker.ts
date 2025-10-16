@@ -83,7 +83,7 @@ export class HealthChecker {
       ...config,
     }
 
-    if (this.config.enabled) {
+    if (this.config?.enabled) {
       this.startHealthCheck()
     }
   }
@@ -150,35 +150,35 @@ export class HealthChecker {
     const memoryUsage = this.estimateMemoryUsage()
 
     // 检查平均响应时间
-    if (avgResponseTime > this.config.timeoutThreshold) {
+    if (avgResponseTime > this.config?.timeoutThreshold) {
       issues.push({
-        severity: avgResponseTime > this.config.timeoutThreshold * 2 ? 'critical' : 'warning',
+        severity: avgResponseTime > this.config?.timeoutThreshold * 2 ? 'critical' : 'warning',
         message: 'Average response time is too high',
         metric: 'avgResponseTime',
         value: avgResponseTime,
-        threshold: this.config.timeoutThreshold,
+        threshold: this.config?.timeoutThreshold,
       })
     }
 
     // 检查错误率
-    if (errorRate > this.config.errorRateThreshold) {
+    if (errorRate > this.config?.errorRateThreshold) {
       issues.push({
-        severity: errorRate > this.config.errorRateThreshold * 2 ? 'critical' : 'warning',
+        severity: errorRate > this.config?.errorRateThreshold * 2 ? 'critical' : 'warning',
         message: 'Error rate is too high',
         metric: 'errorRate',
         value: errorRate,
-        threshold: this.config.errorRateThreshold,
+        threshold: this.config?.errorRateThreshold,
       })
     }
 
     // 检查内存使用
-    if (memoryUsage > this.config.memoryThreshold) {
+    if (memoryUsage > this.config?.memoryThreshold) {
       issues.push({
-        severity: memoryUsage > this.config.memoryThreshold * 1.5 ? 'critical' : 'warning',
+        severity: memoryUsage > this.config?.memoryThreshold * 1.5 ? 'critical' : 'warning',
         message: 'Memory usage is too high',
         metric: 'memoryUsage',
         value: memoryUsage,
-        threshold: this.config.memoryThreshold,
+        threshold: this.config?.memoryThreshold,
       })
     }
 
@@ -258,7 +258,7 @@ export class HealthChecker {
     // 定期检查
     this.checkTimer = setInterval(() => {
       this.check()
-    }, this.config.interval)
+    }, this.config?.interval)
   }
 
   /**
@@ -309,7 +309,7 @@ export class HealthChecker {
     }
     else if (config.interval !== undefined) {
       // 重启检查以应用新的间隔
-      if (this.config.enabled) {
+      if (this.config?.enabled) {
         this.startHealthCheck()
       }
     }

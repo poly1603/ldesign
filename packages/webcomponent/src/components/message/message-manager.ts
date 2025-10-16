@@ -352,7 +352,7 @@ export class MessageManager {
   // 创建消息元素
   private createElement(options: MessageOptions): HTMLElement {
     // 尝试从对象池获取
-    let element = this.config.enablePool ? this.elementPool.acquire() : null;
+    let element = this.config?.enablePool ? this.elementPool.acquire() : null;
     
     if (!element) {
       element = document.createElement('div');
@@ -392,7 +392,7 @@ export class MessageManager {
     element.innerHTML = parts.join('');
     
     // GPU加速
-    if (this.config.useGPU) {
+    if (this.config?.useGPU) {
       element.style.transform = 'translateY(-100%) translateZ(0)';
     }
     
@@ -457,7 +457,7 @@ export class MessageManager {
       
       // 设置自动关闭
       if (options.duration !== 0) {
-        const duration = options.duration || this.config.defaultDuration;
+        const duration = options.duration || this.config?.defaultDuration;
         instance.startTime = Date.now();
         instance.remainingTime = duration;
         instance.timer = window.setTimeout(() => {
@@ -515,7 +515,7 @@ export class MessageManager {
     const container = this.getContainer(position);
     const messages = container.querySelectorAll('.ldesign-message:not(.hide)');
     
-    if (messages.length >= this.config.maxMessages) {
+    if (messages.length >= this.config?.maxMessages) {
       // 关闭最早的消息
       const oldestId = Array.from(this.instances.entries())
         .find(([_, inst]) => inst.element === messages[0])?.[0];
@@ -549,7 +549,7 @@ export class MessageManager {
       }
       
       // 回收到对象池
-      if (this.config.enablePool) {
+      if (this.config?.enablePool) {
         this.elementPool.release(instance.element);
       }
       
@@ -557,7 +557,7 @@ export class MessageManager {
       
       // 触发回调
       instance.options.onClose?.();
-    }, this.config.animationDuration);
+    }, this.config?.animationDuration);
   }
   
   // 关闭所有消息

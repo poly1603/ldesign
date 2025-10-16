@@ -63,21 +63,21 @@ export class PerformanceStore extends BaseStore {
   async performSlowAction(): Promise<void> {
     // 模拟慢速操作
     await new Promise(resolve => setTimeout(resolve, 100))
-    console.log('慢速操作完成')
+    
   }
 
   @MonitorAction
   @Action()
   performFastAction(): void {
     // 快速操作
-    console.log('快速操作完成')
+    
   }
 
   // 缓存示例
   @MonitorGetter
   @CachedGetter(['data'])
   get complexCalculation(): number {
-    console.log('执行复杂计算...')
+    
     // 模拟复杂计算
     let result = 0
     for (let i = 0; i < this.data.length; i++) {
@@ -102,7 +102,7 @@ export class PerformanceStore extends BaseStore {
   @CachedAction(60000) // 缓存1分钟
   @AsyncAction()
   async fetchUserData(): Promise<UserData> {
-    console.log('从API获取用户数据...')
+    
     // 模拟API调用
     await new Promise(resolve => setTimeout(resolve, 500))
 
@@ -135,7 +135,7 @@ export class PerformanceStore extends BaseStore {
       return
     }
 
-    console.log(`搜索: ${query}`)
+    
 
     // 模拟搜索结果
     const mockResults: SearchResult[] = [
@@ -174,7 +174,7 @@ export class PerformanceStore extends BaseStore {
 
   @Action()
   initializePerformanceMonitoring(): void {
-    console.log('性能监控已初始化')
+    
 
     // 模拟一些初始的性能数据
     const monitor = usePerformanceMonitor()

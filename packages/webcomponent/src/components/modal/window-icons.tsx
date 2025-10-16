@@ -1,4 +1,3 @@
-import { h } from '@stencil/core';
 
 /**
  * Windows 风格的窗口控制图标

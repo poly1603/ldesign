@@ -86,11 +86,11 @@ export class LdesignAvatar {
   @Prop() loading: boolean = false;
 
   /** 加载成功 */
-  @Event() ldesignLoad: EventEmitter<{ width: number; height: number; src: string }>;
+  @Event() ldesignLoad!: EventEmitter<{ width: number; height: number; src: string }>;
   /** 加载失败 */
-  @Event() ldesignError: EventEmitter<{ src?: string; error: string }>;
+  @Event() ldesignError!: EventEmitter<{ src?: string; error: string }>;
   /** 点击 */
-  @Event() ldesignClick: EventEmitter<MouseEvent>;
+  @Event() ldesignClick!: EventEmitter<MouseEvent>;
 
   @State() private hasImgError: boolean = false;
   @State() private textScale: number = 1; // 文本缩放

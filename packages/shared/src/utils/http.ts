@@ -86,7 +86,7 @@ export class HttpClient {
    * 构建完整URL
    */
   private buildURL(url: string, params?: Record<string, any>): string {
-    const baseURL = this.config.baseURL || ''
+    const baseURL = this.config?.baseURL || ''
     const fullURL = url.startsWith('http') ? url : `${baseURL}${url}`
     
     if (!params) return fullURL

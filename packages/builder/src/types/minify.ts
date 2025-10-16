@@ -61,8 +61,8 @@ export interface JSMinifyOptions {
   compress?: boolean | {
     /** 是否移除 console */
     drop_console?: boolean
-    /** 是否移除 debugger */
-    drop_debugger?: boolean
+    /** 是否移除  */
+    drop_?: boolean
     /** 是否移除未使用的代码 */
     dead_code?: boolean
     /** 是否内联函数 */
@@ -191,7 +191,7 @@ export const MINIFY_PRESETS: Record<MinifyLevel, MinifyOptions> = {
       mangle: false,
       compress: {
         drop_console: false,
-        drop_debugger: true,
+        drop_: true,
         dead_code: true,
         inline: false
       },
@@ -228,7 +228,7 @@ export const MINIFY_PRESETS: Record<MinifyLevel, MinifyOptions> = {
       },
       compress: {
         drop_console: true,
-        drop_debugger: true,
+        drop_: true,
         dead_code: true,
         inline: true
       },

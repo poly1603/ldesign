@@ -148,11 +148,11 @@ export class SmartCacheManager extends CacheManager {
       meta.lastAccessTime = Date.now()
       
       // 记录命中
-      if (this.config.enableStatistics) {
+      if (this.config?.enableStatistics) {
         this.statistics.hits++
         this.updateHitRate()
       }
-    } else if (this.config.enableStatistics) {
+    } else if (this.config?.enableStatistics) {
       // 记录未命中
       this.statistics.misses++
       this.updateHitRate()
@@ -182,7 +182,7 @@ export class SmartCacheManager extends CacheManager {
    * 更新统计信息
    */
   private updateStatistics(): void {
-    if (!this.config.enableStatistics) return
+    if (!this.config?.enableStatistics) return
     
     this.statistics.totalItems = this.metadata.size
     this.statistics.memoryUsage = Array.from(this.metadata.values())
@@ -219,11 +219,11 @@ export class SmartCacheManager extends CacheManager {
    */
   private async checkAndCleanup(): Promise<void> {
     // 检查内存压力
-    if (this.config.enableMemoryPressureCleanup) {
+    if (this.config?.enableMemoryPressureCleanup) {
       const memUsage = process.memoryUsage()
       const heapUsedPercent = (memUsage.heapUsed / memUsage.heapTotal) * 100
       
-      if (heapUsedPercent > this.config.memoryPressureThreshold) {
+      if (heapUsedPercent > this.config?.memoryPressureThreshold) {
         console.warn(`🧹 内存压力过高 (${heapUsedPercent.toFixed(1)}%), 开始清理缓存...`)
         await this.cleanup(0.3) // 清理 30% 的缓存
       }
@@ -231,7 +231,7 @@ export class SmartCacheManager extends CacheManager {
     
     // 检查缓存大小
     const sizeMB = this.statistics.memoryUsage / 1024 / 1024
-    if (sizeMB > this.config.maxSize) {
+    if (sizeMB > this.config?.maxSize) {
       console.warn(`🧹 缓存大小超限 (${sizeMB.toFixed(1)}MB), 开始清理...`)
       await this.cleanup(0.2) // 清理 20% 的缓存
     }
@@ -276,7 +276,7 @@ export class SmartCacheManager extends CacheManager {
       await this.delete(key)
     }
     
-    console.log(`✅ 已清理 ${cleanupCount} 个缓存项`)
+    
   }
 
   /**
@@ -285,7 +285,7 @@ export class SmartCacheManager extends CacheManager {
   private startProgressiveCleanup(): void {
     this.cleanupTimer = setInterval(() => {
       this.cleanupExpired()
-    }, this.config.progressiveCleanupInterval)
+    }, this.config?.progressiveCleanupInterval)
   }
 
   /**
@@ -297,19 +297,19 @@ export class SmartCacheManager extends CacheManager {
     
     for (const [key, meta] of this.metadata.entries()) {
       const age = now - meta.createdTime
-      if (age > this.config.maxAge) {
+      if (age > this.config?.maxAge) {
         expired.push(key)
       }
     }
     
     if (expired.length > 0) {
       // 分批清理
-      const batch = expired.slice(0, this.config.cleanupBatchSize)
+      const batch = expired.slice(0, this.config?.cleanupBatchSize)
       for (const key of batch) {
         await this.delete(key)
       }
       
-      console.log(`🧹 渐进式清理: 删除 ${batch.length} 个过期项`)
+      
     }
   }
 
@@ -335,7 +335,7 @@ export class SmartCacheManager extends CacheManager {
    * @param warmupFn 预热函数
    */
   async warmup(warmupFn: () => Promise<Record<string, any>>): Promise<void> {
-    console.log('🔥 开始缓存预热...')
+    
     const startTime = Date.now()
     
     try {
@@ -348,7 +348,7 @@ export class SmartCacheManager extends CacheManager {
       }
       
       const duration = Date.now() - startTime
-      console.log(`✅ 缓存预热完成: ${count} 项, 耗时 ${duration}ms`)
+      
     } catch (error) {
       console.error('❌ 缓存预热失败:', error)
     }
@@ -368,7 +368,7 @@ export class SmartCacheManager extends CacheManager {
 
 【统计信息】
   📊 缓存项总数: ${stats.totalItems}
-  💾 内存占用: ${sizeMB}MB / ${this.config.maxSize}MB
+  💾 内存占用: ${sizeMB}MB / ${this.config?.maxSize}MB
   🎯 命中率: ${stats.hitRate}%
   ✅ 命中次数: ${stats.hits}
   ❌ 未命中次数: ${stats.misses}
@@ -392,7 +392,7 @@ export class SmartCacheManager extends CacheManager {
    */
   private getCacheHealthStatus(stats: CacheStatistics): string {
     const sizeMB = stats.memoryUsage / 1024 / 1024
-    const sizePercent = (sizeMB / this.config.maxSize) * 100
+    const sizePercent = (sizeMB / this.config?.maxSize) * 100
     
     if (stats.hitRate >= 80 && sizePercent < 70) {
       return '健康 - 缓存运行良好'
@@ -411,7 +411,7 @@ export class SmartCacheManager extends CacheManager {
    */
   private getCacheHealthEmoji(stats: CacheStatistics): string {
     const sizeMB = stats.memoryUsage / 1024 / 1024
-    const sizePercent = (sizeMB / this.config.maxSize) * 100
+    const sizePercent = (sizeMB / this.config?.maxSize) * 100
     
     if (stats.hitRate >= 80 && sizePercent < 70) return '✅'
     if (stats.hitRate >= 60 && sizePercent < 85) return '👍'

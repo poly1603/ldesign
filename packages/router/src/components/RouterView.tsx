@@ -5,7 +5,7 @@
  */
 
 import type { Component, Router } from '../types'
-import { defineComponent, h, inject, KeepAlive, markRaw, provide, type PropType, ref, Transition, watch } from 'vue'
+import { defineComponent, h, inject, KeepAlive, markRaw, type PropType, provide, ref, Transition, watch } from 'vue'
 import { useRoute } from '../composables'
 import { ROUTER_INJECTION_SYMBOL } from '../core/constants'
 
@@ -109,8 +109,6 @@ export const RouterView = defineComponent({
         const matchedIndex = currentDepth - 1
         const matched = newRoute.matched?.[matchedIndex]
         const component = matched?.components?.[props.name]
-
-
 
         if (component) {
           try {

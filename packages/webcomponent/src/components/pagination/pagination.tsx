@@ -69,7 +69,7 @@ export class LdesignPagination {
   @Event() ldesignPageSizeChange!: EventEmitter<{ pageSize: number; page: number }>;
 
   /** 内部：快速跳转输入值 */
-  @State() quickInput: string = '';
+  @State() quickInput!: string = '';
 
   /** 监听 current 与 pageSize，保证合法范围 */
   @Watch('current')

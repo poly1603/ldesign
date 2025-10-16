@@ -9,7 +9,6 @@
 
 import { Command } from 'commander'
 import { Logger } from '../../utils/logger'
-import chalk from 'chalk'
 import inquirer from 'inquirer'
 import ora from 'ora'
 import fs from 'node:fs/promises'
@@ -410,23 +409,19 @@ export class TeamCommand {
     try {
       const config = await this.loadTeamConfig()
       
-      console.log(chalk.cyan('\n👥 团队状态\n'))
-      console.log(`${chalk.yellow('团队名称:')} ${config.teamName}`)
-      console.log(`${chalk.yellow('成员数量:')} ${config.members.length}`)
+      )
+      } ${config.teamName}`)
+      } ${config.members.length}`)
 
       if (options.detailed) {
-        console.log(chalk.yellow('\n成员列表:'))
+        )
         config.members.forEach((member, index) => {
-          console.log(`  ${index + 1}. ${chalk.green(member.name)} (${member.email})`)
-          console.log(`     角色: ${member.role}`)
-          console.log(`     权限: ${member.permissions.join(', ')}`)
+          } (${member.email})`)
+                    }`)
         })
 
-        console.log(chalk.yellow('\n开发规范:'))
-        console.log(`  代码规范: ${config.standards.codeStyle.eslint ? '✅' : '❌'} ESLint`)
-        console.log(`  代码格式: ${config.standards.codeStyle.prettier ? '✅' : '❌'} Prettier`)
-        console.log(`  提交规范: ${config.standards.codeStyle.commitlint ? '✅' : '❌'} CommitLint`)
-      }
+        )
+                              }
 
     } catch (error) {
       this.logger.error('获取团队状态失败:', error)

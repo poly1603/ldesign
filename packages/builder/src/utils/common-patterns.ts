@@ -179,7 +179,7 @@ export function createTimer(label?: string) {
     end: () => {
       const duration = performance.now() - startTime
       if (label) {
-        console.log(`${label}: ${formatDuration(duration)}`)
+        }`)
       }
       return duration
     },

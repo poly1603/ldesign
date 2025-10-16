@@ -113,11 +113,9 @@ const getFullscreenAPI = (): FullscreenAPI | null => {
  *     
  *     const { state, enter, exit, toggle } = useFullscreen(videoRef, {
  *       onEnter: (element) => {
- *         console.log('进入全屏:', element)
- *       },
+ *          *       },
  *       onExit: () => {
- *         console.log('退出全屏')
- *       }
+ *          *       }
  *     })
  *     
  *     const handleToggleFullscreen = () => {
@@ -400,8 +398,7 @@ export const isFullscreenSupported = (): boolean => {
  * ```typescript
  * const fullscreenElement = getCurrentFullscreenElement()
  * if (fullscreenElement) {
- *   console.log('当前全屏元素:', fullscreenElement)
- * }
+ *    * }
  * ```
  */
 export const getCurrentFullscreenElement = (): Element | null => {
@@ -419,8 +416,7 @@ export const getCurrentFullscreenElement = (): Element | null => {
  * @example
  * ```typescript
  * if (isCurrentlyFullscreen()) {
- *   console.log('当前处于全屏状态')
- * }
+ *    * }
  * ```
  */
 export const isCurrentlyFullscreen = (): boolean => {

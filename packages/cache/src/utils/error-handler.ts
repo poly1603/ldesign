@@ -51,7 +51,7 @@ export class ErrorHandler {
    * )
    * 
    * if (result.success) {
-   *   console.log('操作成功:', result.data)
+   *   
    * } else {
    *   console.error('操作失败:', result.error?.message)
    * }

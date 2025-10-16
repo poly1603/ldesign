@@ -10,7 +10,6 @@
  */
 
 import { Command } from 'commander'
-import chalk from 'chalk'
 import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -132,12 +131,12 @@ function getVersion(): string {
  */
 function showWelcome(): void {
   const version = getVersion()
-  console.log()
-  console.log(chalk.cyan.bold('  @ldesign/builder'))
-  console.log(chalk.gray(`  v${version}`))
-  console.log()
-  console.log(chalk.gray('  基于 rollup/rolldown 的通用库打包工具'))
-  console.log()
+  
+  )
+  )
+  
+  )
+  
 }
 
 /**

@@ -3,8 +3,8 @@
  * 识别并处理冗余代码、合并重复功能、优化文件结构
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // 要优化的问题列表
 const optimizationTasks = {
@@ -179,7 +179,7 @@ function findTodoComments() {
         const lines = content.split('\n');
         
         lines.forEach((line, index) => {
-          if (/\/\/\s*(TODO|FIXME|HACK|XXX|deprecated)/gi.test(line)) {
+          if (/\/\/\s*(TODO|FIXME|HACK|XXX|deprecated)/i.test(line)) {
             results.push({
               file: path.relative(srcDir, filePath),
               line: index + 1,
@@ -226,7 +226,7 @@ function analyzeLargeFiles() {
         if (stat.size > threshold) {
           largeFiles.push({
             file: path.relative(srcDir, filePath),
-            size: (stat.size / 1024).toFixed(2) + 'KB',
+            size: `${(stat.size / 1024).toFixed(2)  }KB`,
             lines: fs.readFileSync(filePath, 'utf8').split('\n').length
           });
         }
@@ -236,7 +236,7 @@ function analyzeLargeFiles() {
   
   walkDir(srcDir);
   
-  largeFiles.sort((a, b) => parseFloat(b.size) - parseFloat(a.size));
+  largeFiles.sort((a, b) => Number.parseFloat(b.size) - Number.parseFloat(a.size));
   
   console.log(`找到 ${largeFiles.length} 个超过 25KB 的文件:`);
   largeFiles.forEach(f => {
@@ -312,7 +312,7 @@ function generateOptimizationSuggestions() {
     if (s.estimatedReduction) {
       console.log(`  预计减少: ${s.estimatedReduction}`);
       if (s.estimatedReduction.includes('KB')) {
-        totalReduction += parseInt(s.estimatedReduction.match(/\d+/)[0]);
+        totalReduction += Number.parseInt(s.estimatedReduction.match(/\d+/)[0]);
       }
     }
     console.log('');

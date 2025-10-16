@@ -11,7 +11,6 @@ import { Command } from 'commander'
 import { Logger } from '../../utils/logger'
 import { DependencyAnalyzer } from '../../plugins/dependency-analyzer'
 import { SmartCacheManager } from '../../plugins/smart-cache'
-import chalk from 'chalk'
 import inquirer from 'inquirer'
 import ora from 'ora'
 
@@ -206,11 +205,10 @@ export class OptimizeCommand {
 
     if (options.stats) {
       const stats = cacheManager.getStats()
-      console.log(chalk.blue('\n📊 缓存统计:'))
-      console.log(`   命中率: ${(stats.hitRate * 100).toFixed(1)}%`)
-      console.log(`   总大小: ${(stats.totalSize / 1024 / 1024).toFixed(2)}MB`)
-      console.log(`   条目数: ${stats.entryCount}`)
-      console.log(`   节省时间: ${stats.timeSaved.toFixed(0)}ms`)
+      )
+      .toFixed(1)}%`)
+      .toFixed(2)}MB`)
+            }ms`)
     }
   }
 
@@ -229,7 +227,7 @@ export class OptimizeCommand {
    * 显示结果
    */
   private displayResults(results: any, options: OptimizeCommandOptions): void {
-    console.log(chalk.blue('\n🔍 优化分析结果:\n'))
+    )
 
     if (results.dependencies) {
       this.displayDependencyResults(results.dependencies)
@@ -252,59 +250,49 @@ export class OptimizeCommand {
    * 显示依赖分析结果
    */
   private displayDependencyResults(deps: any): void {
-    console.log(chalk.yellow('📦 依赖分析:'))
+    )
     
     if (deps.unusedDependencies?.length > 0) {
-      console.log(`   ❌ 未使用依赖: ${deps.unusedDependencies.length} 个`)
-      if (deps.unusedDependencies.length <= 5) {
+            if (deps.unusedDependencies.length <= 5) {
         deps.unusedDependencies.forEach((dep: string) => {
-          console.log(`      - ${dep}`)
-        })
+                  })
       }
     }
 
     if (deps.outdatedDependencies?.length > 0) {
-      console.log(`   📅 过时依赖: ${deps.outdatedDependencies.length} 个`)
-    }
+          }
 
     if (deps.vulnerabilities?.length > 0) {
       const critical = deps.vulnerabilities.filter((v: any) => v.severity === 'critical').length
-      console.log(`   🔒 安全漏洞: ${deps.vulnerabilities.length} 个 (${critical} 个严重)`)
+      `)
     }
 
-    console.log()
-  }
+      }
 
   /**
    * 显示缓存分析结果
    */
   private displayCacheResults(cache: any): void {
-    console.log(chalk.green('💾 缓存分析:'))
-    console.log(`   命中率: ${(cache.stats.hitRate * 100).toFixed(1)}%`)
-    console.log(`   总大小: ${(cache.stats.totalSize / 1024 / 1024).toFixed(2)}MB`)
-    console.log(`   建议: ${cache.recommendations.length} 条`)
-    console.log()
-  }
+    )
+    .toFixed(1)}%`)
+    .toFixed(2)}MB`)
+          }
 
   /**
    * 显示打包分析结果
    */
   private displayBundleResults(bundle: any): void {
-    console.log(chalk.cyan('📦 打包分析:'))
-    console.log(`   总大小: ${(bundle.size / 1024).toFixed(2)}KB`)
-    console.log(`   代码块: ${bundle.chunks.length} 个`)
-    console.log()
-  }
+    )
+    .toFixed(2)}KB`)
+          }
 
   /**
    * 显示性能分析结果
    */
   private displayPerformanceResults(perf: any): void {
-    console.log(chalk.magenta('⚡ 性能分析:'))
-    console.log(`   内存使用: ${perf.memory.used.toFixed(2)}MB / ${perf.memory.total.toFixed(2)}MB`)
-    console.log(`   优化建议: ${perf.recommendations.length} 条`)
-    console.log()
-  }
+    )
+    }MB / ${perf.memory.total.toFixed(2)}MB`)
+          }
 
   /**
    * 交互式优化
@@ -325,7 +313,7 @@ export class OptimizeCommand {
     }
 
     if (choices.length === 0) {
-      console.log(chalk.green('✨ 项目已经优化得很好了！'))
+      )
       return
     }
 

@@ -27,15 +27,15 @@ export class SecurityManager {
       },
     }
 
-    this.encryption = new AESCrypto(this.config.encryption)
-    this.obfuscation = new KeyObfuscator(this.config.obfuscation)
+    this.encryption = new AESCrypto(this.config?.encryption)
+    this.obfuscation = new KeyObfuscator(this.config?.obfuscation)
   }
 
   /**
    * 加密数据
    */
   async encrypt(data: string): Promise<string> {
-    if (!this.config.encryption.enabled) {
+    if (!this.config?.encryption.enabled) {
       return data
     }
 
@@ -52,7 +52,7 @@ export class SecurityManager {
    * 解密数据
    */
   async decrypt(data: string): Promise<string> {
-    if (!this.config.encryption.enabled) {
+    if (!this.config?.encryption.enabled) {
       return data
     }
 
@@ -69,7 +69,7 @@ export class SecurityManager {
    * 混淆键名
    */
   async obfuscateKey(key: string): Promise<string> {
-    if (!this.config.obfuscation.enabled) {
+    if (!this.config?.obfuscation.enabled) {
       return key
     }
 
@@ -86,7 +86,7 @@ export class SecurityManager {
    * 反混淆键名
    */
   async deobfuscateKey(key: string): Promise<string> {
-    if (!this.config.obfuscation.enabled) {
+    if (!this.config?.obfuscation.enabled) {
       return key
     }
 
@@ -107,7 +107,7 @@ export class SecurityManager {
       return options.encrypt
     }
 
-    return this.config.encryption.enabled
+    return this.config?.encryption.enabled
   }
 
   /**
@@ -118,7 +118,7 @@ export class SecurityManager {
       return options.obfuscateKey
     }
 
-    return this.config.obfuscation.enabled
+    return this.config?.obfuscation.enabled
   }
 
   /**
@@ -164,7 +164,7 @@ export class SecurityManager {
    * @example
    * ```typescript
    * const isValid = await securityManager.verifyIntegrity('original', 'stored')
-   * console.log(isValid) // true 或 false
+   *  // true 或 false
    * ```
    */
   async verifyIntegrity(
@@ -188,7 +188,7 @@ export class SecurityManager {
         return false
       }
 
-      if (this.config.encryption.enabled) {
+      if (this.config?.encryption.enabled) {
         try {
           const decrypted = await this.decrypt(storedData)
           return decrypted === originalData
@@ -223,18 +223,18 @@ export class SecurityManager {
       ...this.config,
       ...config,
       encryption: {
-        ...this.config.encryption,
+        ...this.config?.encryption,
         ...config.encryption,
       },
       obfuscation: {
-        ...this.config.obfuscation,
+        ...this.config?.obfuscation,
         ...config.obfuscation,
       },
     }
 
     // 重新初始化加密和混淆器
-    this.encryption = new AESCrypto(this.config.encryption)
-    this.obfuscation = new KeyObfuscator(this.config.obfuscation)
+    this.encryption = new AESCrypto(this.config?.encryption)
+    this.obfuscation = new KeyObfuscator(this.config?.obfuscation)
   }
 
   /**

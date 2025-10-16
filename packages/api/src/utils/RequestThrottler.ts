@@ -57,7 +57,7 @@ export class RequestThrottler {
     }
 
     // 初始化令牌桶
-    this.tokens = this.config.maxBurst
+    this.tokens = this.config?.maxBurst
     this.lastRefillTime = Date.now()
 
     // 启动令牌补充定时器
@@ -68,7 +68,7 @@ export class RequestThrottler {
    * 获取执行权限（消耗一个令牌）
    */
   async acquire(): Promise<void> {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return Promise.resolve()
     }
 
@@ -108,8 +108,8 @@ export class RequestThrottler {
     const timePassed = now - this.lastRefillTime
 
     // 计算应补充的令牌数
-    const tokensToAdd = (timePassed / 1000) * this.config.requestsPerSecond
-    this.tokens = Math.min(this.config.maxBurst, this.tokens + tokensToAdd)
+    const tokensToAdd = (timePassed / 1000) * this.config?.requestsPerSecond
+    this.tokens = Math.min(this.config?.maxBurst, this.tokens + tokensToAdd)
     this.lastRefillTime = now
 
     // 处理等待队列
@@ -139,7 +139,7 @@ export class RequestThrottler {
 
     this.refillTimer = setInterval(() => {
       this.refill()
-    }, this.config.refillRate)
+    }, this.config?.refillRate)
   }
 
   /**
@@ -148,7 +148,7 @@ export class RequestThrottler {
   getStats(): ThrottlerStats {
     return {
       currentTokens: Math.floor(this.tokens),
-      maxTokens: this.config.maxBurst,
+      maxTokens: this.config?.maxBurst,
       totalRequests: this.stats.totalRequests,
       throttledRequests: this.stats.throttledRequests,
       pendingRequests: this.pendingQueue.length,
@@ -159,7 +159,7 @@ export class RequestThrottler {
    * 重置节流器
    */
   reset(): void {
-    this.tokens = this.config.maxBurst
+    this.tokens = this.config?.maxBurst
     this.lastRefillTime = Date.now()
     this.stats.totalRequests = 0
     this.stats.throttledRequests = 0

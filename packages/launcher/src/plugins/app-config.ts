@@ -225,7 +225,7 @@ export function createAppConfigPlugin(options: AppConfigPluginOptions = {}): Plu
           })
 
           // 配置已更新，通过 HMR 热更新（无需重启服务器）
-          console.log('ℹ️  配置已更新，通过 HMR 热更新...')
+          
 
           // 触发虚拟模块热更新
           const module = server!.moduleGraph.getModuleById(RESOLVED_VIRTUAL_MODULE_ID)

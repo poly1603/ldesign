@@ -82,7 +82,7 @@ export interface GeolocationConfig {
  *       immediate: true,
  *       watch: true,
  *       onChange: (coords) => {
- *         console.log('位置更新:', coords)
+ *         
  *       }
  *     })
  *     

@@ -5,8 +5,8 @@ LDesign Engine 提供了强大的指令系统，包含丰富的内置指令和�
 ## 快速开始
 
 ```typescript
-import { createApp } from 'vue'
 import { createEngine } from '@ldesign/engine'
+import { createApp } from 'vue'
 
 const app = createApp({})
 const engine = createEngine()
@@ -41,22 +41,6 @@ app.use(engine)
 当用户点击元素外部时触发回调，常用于下拉菜单、弹窗等组件的关闭功能。
 
 ```vue
-<template>
-  <!-- 基础用法 -->
-  <div v-click-outside="handleClickOutside">
-    点击外部关闭
-  </div>
-
-  <!-- 高级配置 -->
-  <div v-click-outside="{
-    handler: handleClickOutside,
-    exclude: ['.exclude-element'],
-    disabled: isDisabled
-  }">
-    高级配置
-  </div>
-</template>
-
 <script setup>
 const handleClickOutside = (event) => {
   console.log('Clicked outside:', event)
@@ -64,6 +48,24 @@ const handleClickOutside = (event) => {
 
 const isDisabled = ref(false)
 </script>
+
+<template>
+  <!-- 基础用法 -->
+  <div v-click-outside="handleClickOutside">
+    点击外部关闭
+  </div>
+
+  <!-- 高级配置 -->
+  <div
+    v-click-outside="{
+      handler: handleClickOutside,
+      exclude: ['.exclude-element'],
+      disabled: isDisabled
+    }"
+  >
+    高级配置
+  </div>
+</template>
 ```
 
 **配置选项：**
@@ -77,24 +79,6 @@ const isDisabled = ref(false)
 点击元素时复制指定内容到剪贴板，支持多种复制源和回调处理。
 
 ```vue
-<template>
-  <!-- 复制元素文本 -->
-  <button v-copy>复制我</button>
-
-  <!-- 复制指定文本 -->
-  <button v-copy="'Hello World'">复制Hello World</button>
-
-  <!-- 完整配置 -->
-  <button v-copy="{
-    text: 'Custom text',
-    onSuccess: handleSuccess,
-    onError: handleError,
-    successClass: 'copy-success'
-  }">
-    高级复制
-  </button>
-</template>
-
 <script setup>
 const handleSuccess = (text) => {
   console.log('复制成功:', text)
@@ -104,6 +88,30 @@ const handleError = (error) => {
   console.error('复制失败:', error)
 }
 </script>
+
+<template>
+  <!-- 复制元素文本 -->
+  <button v-copy>
+    复制我
+  </button>
+
+  <!-- 复制指定文本 -->
+  <button v-copy="'Hello World'">
+    复制Hello World
+  </button>
+
+  <!-- 完整配置 -->
+  <button
+    v-copy="{
+      text: 'Custom text',
+      onSuccess: handleSuccess,
+      onError: handleError,
+      successClass: 'copy-success'
+    }"
+  >
+    高级复制
+  </button>
+</template>
 ```
 
 **配置选项：**
@@ -151,25 +159,6 @@ function handleClick(event) {
 防止事件频繁触发，在指定时间内只执行最后一次，适用于搜索输入、按钮点击等场景。
 
 ```vue
-<template>
-  <!-- 基础用法 -->
-  <input v-debounce:input="handleInput" placeholder="防抖输入">
-
-  <!-- 自定义延迟 -->
-  <button v-debounce:click="{ handler: handleClick, delay: 500 }">
-    500ms防抖点击
-  </button>
-
-  <!-- 立即执行 + 防抖 -->
-  <button v-debounce="{
-    handler: handleSubmit,
-    delay: 1000,
-    immediate: true
-  }">
-    立即执行防抖
-  </button>
-</template>
-
 <script setup>
 const handleInput = (event) => {
   console.log('防抖输入:', event.target.value)
@@ -183,6 +172,27 @@ const handleSubmit = () => {
   console.log('提交表单')
 }
 </script>
+
+<template>
+  <!-- 基础用法 -->
+  <input v-debounce:input="handleInput" placeholder="防抖输入">
+
+  <!-- 自定义延迟 -->
+  <button v-debounce:click="{ handler: handleClick, delay: 500 }">
+    500ms防抖点击
+  </button>
+
+  <!-- 立即执行 + 防抖 -->
+  <button
+    v-debounce="{
+      handler: handleSubmit,
+      delay: 1000,
+      immediate: true
+    }"
+  >
+    立即执行防抖
+  </button>
+</template>
 ```
 
 **配置选项：**
@@ -197,25 +207,6 @@ const handleSubmit = () => {
 限制事件触发频率，在指定时间内最多执行一次，适用于滚动、鼠标移动等高频事件。
 
 ```vue
-<template>
-  <!-- 基础用法 -->
-  <button v-throttle:click="handleClick">节流点击</button>
-
-  <!-- 滚动节流 -->
-  <div v-throttle:scroll="{ handler: handleScroll, delay: 100 }"
-       style="height: 200px; overflow-y: auto;">
-    滚动内容...
-  </div>
-
-  <!-- 鼠标移动节流 -->
-  <div v-throttle:mousemove="{
-    handler: handleMouseMove,
-    delay: 16
-  }" style="width: 300px; height: 200px; border: 1px solid #ccc;">
-    鼠标移动区域
-  </div>
-</template>
-
 <script setup>
 const handleClick = () => {
   console.log('节流点击')
@@ -229,6 +220,31 @@ const handleMouseMove = (event) => {
   console.log('鼠标位置:', event.clientX, event.clientY)
 }
 </script>
+
+<template>
+  <!-- 基础用法 -->
+  <button v-throttle:click="handleClick">
+    节流点击
+  </button>
+
+  <!-- 滚动节流 -->
+  <div
+    v-throttle:scroll="{ handler: handleScroll, delay: 100 }"
+    style="height: 200px; overflow-y: auto;"
+  >
+    滚动内容...
+  </div>
+
+  <!-- 鼠标移动节流 -->
+  <div
+    v-throttle:mousemove="{
+      handler: handleMouseMove,
+      delay: 16
+    }" style="width: 300px; height: 200px; border: 1px solid #ccc;"
+  >
+    鼠标移动区域
+  </div>
+</template>
 ```
 
 **配置选项：**
@@ -243,32 +259,36 @@ const handleMouseMove = (event) => {
 当元素进入视口时触发加载，支持图片懒加载和自定义内容懒加载。
 
 ```vue
-<template>
-  <!-- 图片懒加载 -->
-  <img v-lazy="'/path/to/image.jpg'" alt="懒加载图片">
-
-  <!-- 带占位符 -->
-  <img v-lazy="{
-    src: '/path/to/image.jpg',
-    placeholder: '/path/to/placeholder.jpg',
-    error: '/path/to/error.jpg'
-  }" alt="带占位符的懒加载">
-
-  <!-- 自定义回调 -->
-  <div v-lazy="{
-    callback: handleLazyLoad,
-    threshold: 0.5,
-    rootMargin: '100px'
-  }">
-    自定义懒加载内容
-  </div>
-</template>
-
 <script setup>
 const handleLazyLoad = (el, entry) => {
   console.log('元素进入视口:', el, entry)
 }
 </script>
+
+<template>
+  <!-- 图片懒加载 -->
+  <img v-lazy="'/path/to/image.jpg'" alt="懒加载图片">
+
+  <!-- 带占位符 -->
+  <img
+    v-lazy="{
+      src: '/path/to/image.jpg',
+      placeholder: '/path/to/placeholder.jpg',
+      error: '/path/to/error.jpg'
+    }" alt="带占位符的懒加载"
+  >
+
+  <!-- 自定义回调 -->
+  <div
+    v-lazy="{
+      callback: handleLazyLoad,
+      threshold: 0.5,
+      rootMargin: '100px'
+    }"
+  >
+    自定义懒加载内容
+  </div>
+</template>
 ```
 
 **配置选项：**
@@ -285,6 +305,11 @@ const handleLazyLoad = (el, entry) => {
 显示加载状态和加载动画，支持多种动画效果和自定义样式。
 
 ```vue
+<script setup>
+const isLoading = ref(false)
+const isFullscreenLoading = ref(false)
+</script>
+
 <template>
   <!-- 基础用法 -->
   <div v-loading="isLoading" style="height: 200px;">
@@ -292,30 +317,29 @@ const handleLazyLoad = (el, entry) => {
   </div>
 
   <!-- 自定义样式 -->
-  <div v-loading="{
-    loading: isLoading,
-    text: '数据加载中...',
-    spinner: 'dots',
-    size: 'large',
-    color: '#ff6b6b'
-  }">
+  <div
+    v-loading="{
+      loading: isLoading,
+      text: '数据加载中...',
+      spinner: 'dots',
+      size: 'large',
+      color: '#ff6b6b'
+    }"
+  >
     自定义加载样式
   </div>
 
   <!-- 全屏加载 -->
-  <button v-loading="{
-    loading: isFullscreenLoading,
-    text: '处理中，请稍候...',
-    fullscreen: true
-  }">
+  <button
+    v-loading="{
+      loading: isFullscreenLoading,
+      text: '处理中，请稍候...',
+      fullscreen: true
+    }"
+  >
     全屏加载
   </button>
 </template>
-
-<script setup>
-const isLoading = ref(false)
-const isFullscreenLoading = ref(false)
-</script>
 ```
 
 **配置选项：**

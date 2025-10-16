@@ -1,11 +1,18 @@
 /**
  * @ldesign/router 性能优化默认配置
- * 
+ *
  * 提供优化后的默认配置值，以获得更好的性能和内存使用
  */
 
-import type { MemoryThresholds } from '../utils/memory-manager'
 import { AnimationType, CacheStrategy, PreloadStrategy } from '../core/constants'
+
+// Define MemoryThresholds type locally
+interface MemoryThresholds {
+  warning: number
+  critical: number
+  maxCache: number
+  maxListeners: number
+}
 
 // ==================== 缓存配置 ====================
 
@@ -162,7 +169,7 @@ export const OPTIMIZED_ROUTER_CONFIG = {
  */
 export const DEV_CONFIG = {
   /** 是否启用调试模式 */
-  debug: process.env.NODE_ENV === 'development',
+  debug: (typeof import.meta !== 'undefined' && (import.meta as any).env?.DEV) || false,
   /** 是否启用性能分析 */
   profiling: false,
   /** 是否启用详细日志 */
@@ -201,7 +208,7 @@ export const PROD_CONFIG = {
  */
 export function getOptimizedConfig(env: 'development' | 'production' = 'production') {
   const isDev = env === 'development'
-  
+
   return {
     cache: OPTIMIZED_CACHE_CONFIG,
     memory: {

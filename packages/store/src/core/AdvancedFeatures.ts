@@ -6,7 +6,7 @@
  * @description 统一的高级功能模块，整合了所有高级特性
  */
 
-import type { StateDefinition, ActionDefinition, GetterDefinition } from '@/types'
+import type { StateDefinition, ActionDefinition, GetterDefinition } from '../types'
 import type { Store } from 'pinia'
 import { readonly, toRaw } from 'vue'
 
@@ -809,24 +809,24 @@ export class MiddlewareSystem<S = any> {
       }
 
       if (context.action) {
-        console.log('Action:', context.action)
+        
       }
 
       if (context.oldState) {
-        console.log('Previous State:', context.oldState)
+        
       }
 
       await next()
 
-      console.log('Next State:', context.state)
+      
 
       if (duration) {
         const endTime = performance.now()
-        console.log(`Duration: ${(endTime - startTime).toFixed(2)}ms`)
+        .toFixed(2)}ms`)
       }
 
       if (diff && context.oldState) {
-        console.log('Diff:', this.computeDiff(context.oldState, context.state))
+        )
       }
 
       console.groupEnd()

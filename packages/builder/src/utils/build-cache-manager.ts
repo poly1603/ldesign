@@ -138,9 +138,9 @@ export class BuildCacheManager {
    */
   async initialize(): Promise<void> {
     try {
-      await fs.ensureDir(this.config.cacheDir)
+      await fs.ensureDir(this.config?.cacheDir)
       await this.loadCacheIndex()
-      this.logger.info(`缓存管理器初始化完成，缓存目录: ${this.config.cacheDir}`)
+      this.logger.info(`缓存管理器初始化完成，缓存目录: ${this.config?.cacheDir}`)
     } catch (error) {
       this.logger.error('缓存初始化失败:', error)
       throw error
@@ -230,7 +230,7 @@ export class BuildCacheManager {
           accessCount: 0,
           tags: options.tags || [],
           dependencies: options.dependencies || [],
-          ttl: options.ttl || this.config.defaultTtl
+          ttl: options.ttl || this.config?.defaultTtl
         }
       }
 
@@ -353,7 +353,7 @@ export class BuildCacheManager {
         this.cache.clear()
 
         // 清空缓存目录
-        await fs.emptyDir(this.config.cacheDir)
+        await fs.emptyDir(this.config?.cacheDir)
       }
 
       this.logger.info(`清理缓存完成，删除 ${deletedCount} 个条目`)
@@ -381,13 +381,13 @@ export class BuildCacheManager {
       }
 
       // 否则扫描磁盘文件
-      if (await fs.pathExists(this.config.cacheDir)) {
-        const files = await fs.readdir(this.config.cacheDir)
+      if (await fs.pathExists(this.config?.cacheDir)) {
+        const files = await fs.readdir(this.config?.cacheDir)
         const cacheFiles = files.filter(file => file.endsWith('.cache'))
 
         for (const file of cacheFiles) {
           try {
-            const filePath = path.join(this.config.cacheDir, file)
+            const filePath = path.join(this.config?.cacheDir, file)
             const stats = await fs.stat(filePath)
             totalSize += stats.size
           } catch {
@@ -596,8 +596,8 @@ export class BuildCacheManager {
     const currentSize = Array.from(this.cache.values())
       .reduce((sum, entry) => sum + entry.metadata.size, 0)
 
-    if (currentSize + requiredSize <= this.config.maxSize &&
-      this.cache.size < this.config.maxEntries) {
+    if (currentSize + requiredSize <= this.config?.maxSize &&
+      this.cache.size < this.config?.maxEntries) {
       return
     }
 
@@ -616,7 +616,7 @@ export class BuildCacheManager {
     const sortedEntries = this.sortEntriesForEviction(entries)
 
     for (const entry of sortedEntries) {
-      if (freedSize >= requiredSize && this.cache.size < this.config.maxEntries) {
+      if (freedSize >= requiredSize && this.cache.size < this.config?.maxEntries) {
         break
       }
 
@@ -630,7 +630,7 @@ export class BuildCacheManager {
    * 根据策略排序条目
    */
   private sortEntriesForEviction(entries: CacheEntry[]): CacheEntry[] {
-    switch (this.config.strategy) {
+    switch (this.config?.strategy) {
       case 'lru':
         return entries.sort((a, b) =>
           a.metadata.lastAccessed.getTime() - b.metadata.lastAccessed.getTime()
@@ -659,7 +659,7 @@ export class BuildCacheManager {
    */
   private getCacheFilePath(key: string): string {
     const hash = this.generateHash(key)
-    return path.join(this.config.cacheDir, `${hash}.cache`)
+    return path.join(this.config?.cacheDir, `${hash}.cache`)
   }
 
   /**
@@ -712,12 +712,12 @@ export class BuildCacheManager {
    */
   private async loadCacheIndex(): Promise<void> {
     try {
-      const files = await fs.readdir(this.config.cacheDir)
+      const files = await fs.readdir(this.config?.cacheDir)
       const cacheFiles = files.filter(file => file.endsWith('.cache'))
 
       for (const file of cacheFiles) {
         try {
-          const filePath = path.join(this.config.cacheDir, file)
+          const filePath = path.join(this.config?.cacheDir, file)
           const content = await fs.readFile(filePath, 'utf8')
           const entry: CacheEntry = JSON.parse(content)
 
@@ -793,7 +793,7 @@ export class BuildCacheManager {
       } catch (error) {
         this.logger.error('定时清理失败:', error)
       }
-    }, this.config.cleanupInterval * 1000)
+    }, this.config?.cleanupInterval * 1000)
   }
 
   /**

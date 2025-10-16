@@ -5,8 +5,8 @@
  * 将错误的 '../utils/unified-logger' 修正为 '../logger/unified-logger'
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // 统计
 let fixedFiles = 0;
@@ -24,7 +24,7 @@ function calculateCorrectPath(filePath) {
   
   // 确保路径以 ./ 或 ../ 开头
   if (!relativePath.startsWith('.')) {
-    relativePath = './' + relativePath;
+    relativePath = `./${  relativePath}`;
   }
   
   return relativePath;
@@ -140,7 +140,7 @@ function main() {
   
   scanDirectory(srcDir);
   
-  console.log('\n' + '=' .repeat(60));
+  console.log(`\n${  '=' .repeat(60)}`);
   console.log(`✅ 修复完成！共修复 ${fixedFiles} 个文件`);
   
   if (fixedFilesList.length > 0) {

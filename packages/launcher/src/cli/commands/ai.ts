@@ -92,12 +92,12 @@ export class AICommand {
     try {
       const projectPath = options.path || process.cwd()
       
-      console.log()
-      console.log(chalk.cyan('🤖 AI 优化分析启动'))
-      console.log(chalk.gray('─'.repeat(50)))
+      
+      )
+      ))
       
       // 分析项目
-      console.log(chalk.yellow('\n📊 分析项目中...'))
+      )
       const analysis = await this.aiOptimizer.analyzeProject(projectPath)
       
       // 显示分析结果
@@ -114,7 +114,7 @@ export class AICommand {
       const devMetrics = devExperience.getMetrics()
       
       // 生成建议
-      console.log(chalk.yellow('\n💡 生成优化建议...'))
+      )
       const suggestions = await this.aiOptimizer.generateSuggestions(
         analysis,
         performanceMetrics,
@@ -122,7 +122,7 @@ export class AICommand {
       )
       
       if (suggestions.length === 0) {
-        console.log(chalk.green('✨ 项目已经优化得很好了！'))
+        )
         return
       }
       
@@ -151,9 +151,9 @@ export class AICommand {
    * 显示分析结果
    */
   private displayAnalysis(analysis: any): void {
-    console.log()
-    console.log(chalk.bold('📋 项目分析结果'))
-    console.log(chalk.gray('─'.repeat(50)))
+    
+    )
+    ))
     
     const info = [
       ['项目类型', analysis.projectType],
@@ -168,7 +168,7 @@ export class AICommand {
     ]
     
     info.forEach(([label, value]) => {
-      console.log(`  ${chalk.gray(label + ':')} ${chalk.white(value)}`)
+      } ${chalk.white(value)}`)
     })
   }
 
@@ -176,9 +176,9 @@ export class AICommand {
    * 显示优化建议
    */
   private displaySuggestions(suggestions: any[]): void {
-    console.log()
-    console.log(chalk.bold(`🎯 发现 ${suggestions.length} 个优化建议`))
-    console.log(chalk.gray('─'.repeat(50)))
+    
+    )
+    ))
     
     // 按优先级分组
     const high = suggestions.filter(s => s.priority === 'high')
@@ -186,27 +186,27 @@ export class AICommand {
     const low = suggestions.filter(s => s.priority === 'low')
     
     if (high.length > 0) {
-      console.log(chalk.red('\n⚠️  高优先级'))
+      )
       high.forEach((s, i) => {
-        console.log(`  ${i + 1}. ${s.title}`)
-        console.log(chalk.gray(`     ${s.description}`))
-        console.log(chalk.green(`     预期收益: ${s.expectedBenefit.improvement}`))
+        
+        )
+        )
       })
     }
     
     if (medium.length > 0) {
-      console.log(chalk.yellow('\n⚡ 中优先级'))
+      )
       medium.forEach((s, i) => {
-        console.log(`  ${i + 1}. ${s.title}`)
-        console.log(chalk.gray(`     ${s.description}`))
+        
+        )
       })
     }
     
     if (low.length > 0) {
-      console.log(chalk.blue('\n💡 低优先级'))
+      )
       low.forEach((s, i) => {
-        console.log(`  ${i + 1}. ${s.title}`)
-        console.log(chalk.gray(`     ${s.description}`))
+        
+        )
       })
     }
   }
@@ -215,7 +215,7 @@ export class AICommand {
    * 交互模式
    */
   private async interactiveMode(suggestions: any[]): Promise<void> {
-    console.log()
+    
     
     const { action } = await inquirer.prompt([
       {
@@ -259,7 +259,7 @@ export class AICommand {
         break
       
       case 'exit':
-        console.log(chalk.gray('退出 AI 优化'))
+        )
         break
     }
   }
@@ -269,22 +269,22 @@ export class AICommand {
    */
   private async viewDetailedSuggestions(suggestions: any[]): Promise<void> {
     for (const suggestion of suggestions) {
-      console.log()
-      console.log(chalk.bold(`📌 ${suggestion.title}`))
-      console.log(chalk.gray('─'.repeat(50)))
-      console.log(`${chalk.gray('优先级:')} ${this.getPriorityColor(suggestion.priority)(suggestion.priority.toUpperCase())}`)
-      console.log(`${chalk.gray('描述:')} ${suggestion.description}`)
-      console.log(`${chalk.gray('影响:')} ${suggestion.impact}`)
-      console.log(`${chalk.gray('预期收益:')} ${suggestion.expectedBenefit.metric} ${suggestion.expectedBenefit.improvement}`)
-      console.log(chalk.gray('\n实施步骤:'))
+      
+      )
+      ))
+      } ${this.getPriorityColor(suggestion.priority)(suggestion.priority.toUpperCase())}`)
+      } ${suggestion.description}`)
+      } ${suggestion.impact}`)
+      } ${suggestion.expectedBenefit.metric} ${suggestion.expectedBenefit.improvement}`)
+      )
       suggestion.implementation.forEach((step: string, i: number) => {
-        console.log(`  ${i + 1}. ${step}`)
+        
       })
       
       if (suggestion.references && suggestion.references.length > 0) {
-        console.log(chalk.gray('\n参考链接:'))
+        )
         suggestion.references.forEach((ref: string) => {
-          console.log(`  • ${chalk.cyan(ref)}`)
+          }`)
         })
       }
       
@@ -337,23 +337,23 @@ export class AICommand {
    * 应用建议
    */
   private async applySuggestions(suggestions: any[]): Promise<void> {
-    console.log()
-    console.log(chalk.cyan(`🔧 应用 ${suggestions.length} 个优化建议...`))
+    
+    )
     
     for (const suggestion of suggestions) {
-      console.log(`  • 应用: ${suggestion.title}`)
+      
       
       try {
         await this.aiOptimizer.applySuggestion(suggestion.id)
-        console.log(chalk.green(`    ✓ 成功`))
+        )
       } catch (error) {
-        console.log(chalk.red(`    ✗ 失败: ${(error as Error).message}`))
+        .message}`))
       }
     }
     
-    console.log()
-    console.log(chalk.green('✨ 优化应用完成！'))
-    console.log(chalk.gray('请重新构建项目以查看效果'))
+    
+    )
+    )
   }
 
   /**
@@ -363,12 +363,12 @@ export class AICommand {
     const highPriority = suggestions.filter(s => s.priority === 'high')
     
     if (highPriority.length === 0) {
-      console.log(chalk.yellow('没有高优先级建议需要自动应用'))
+      )
       return
     }
     
-    console.log()
-    console.log(chalk.cyan(`🤖 自动应用 ${highPriority.length} 个高优先级建议`))
+    
+    )
     
     await this.applySuggestions(highPriority)
   }
@@ -385,8 +385,8 @@ export class AICommand {
     
     await fs.writeFile(filepath, report, 'utf-8')
     
-    console.log()
-    console.log(chalk.green(`✅ 报告已导出到: ${filepath}`))
+    
+    )
   }
 
   /**

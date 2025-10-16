@@ -3,7 +3,7 @@
  * 提供状态持久化、缓存、防抖等性能优化功能
  */
 
-import type { PersistOptions } from '@/types'
+import type { PersistOptions } from '../types'
 import { LRUCache } from '../utils/cache'
 
 /**

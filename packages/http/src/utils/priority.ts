@@ -97,7 +97,7 @@ export class PriorityQueue<T = any> {
     }
 
     // 启动优先级提升定时器（优化：只在有队列项时运行）
-    if (this.config.priorityBoost) {
+    if (this.config?.priorityBoost) {
       this.startPriorityBoost()
     }
   }
@@ -112,7 +112,7 @@ export class PriorityQueue<T = any> {
   ): Promise<T> {
     return new Promise((resolve, reject) => {
       // 检查队列大小
-      if (this.getTotalQueueSize() >= this.config.maxQueueSize) {
+      if (this.getTotalQueueSize() >= this.config?.maxQueueSize) {
         reject(new Error('Queue is full'))
         return
       }
@@ -136,13 +136,13 @@ export class PriorityQueue<T = any> {
       }
 
       // 设置超时
-      if (this.config.queueTimeout > 0) {
+      if (this.config?.queueTimeout > 0) {
         setTimeout(() => {
           if (this.removeItem(item)) {
             item.reject(new Error('Request timeout in queue'))
             this.stats.totalFailed++
           }
-        }, this.config.queueTimeout)
+        }, this.config?.queueTimeout)
       }
 
       // 尝试处理队列
@@ -158,7 +158,7 @@ export class PriorityQueue<T = any> {
       return
     this.processing = true
 
-    while (this.active.size < this.config.maxConcurrent) {
+    while (this.active.size < this.config?.maxConcurrent) {
       const item = this.getNextItem()
       if (!item)
         break
@@ -241,7 +241,7 @@ export class PriorityQueue<T = any> {
       const now = Date.now()
 
       // 优化：避免频繁检查
-      if (now - this.lastBoostCheck < this.config.boostInterval / 2) {
+      if (now - this.lastBoostCheck < this.config?.boostInterval / 2) {
         return
       }
 
@@ -263,7 +263,7 @@ export class PriorityQueue<T = any> {
       // 优化：使用索引而非 filter，减少数组创建
       for (let i = items.length - 1; i >= 0; i--) {
         const item = items[i]
-        if (now - item.timestamp > this.config.boostInterval) {
+        if (now - item.timestamp > this.config?.boostInterval) {
           // 移除原队列
           items.splice(i, 1)
 

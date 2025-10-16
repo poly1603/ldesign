@@ -443,54 +443,54 @@ export class PerformanceMonitor extends EventEmitter {
   printSummary(report: PerformanceReport): void {
     const { metrics, score, recommendations } = report
 
-    console.log('\n📊 性能监控报告')
-    console.log('='.repeat(50))
+    
+    )
 
-    console.log('\n⏱️  构建时间:')
+    
     if (metrics.totalBuildTime) {
-      console.log(`   总时间: ${(metrics.totalBuildTime / 1000).toFixed(2)}s`)
+      .toFixed(2)}s`)
     }
 
     if (metrics.phases && Object.keys(metrics.phases).length > 0) {
-      console.log('   分阶段时间:')
+      
       Object.entries(metrics.phases)
         .filter(([, time]) => time !== undefined)
         .sort(([,a], [,b]) => (b || 0) - (a || 0))
         .slice(0, 5)
         .forEach(([phase, time]) => {
           if (time) {
-            console.log(`     ${phase}: ${(time / 1000).toFixed(2)}s`)
+            .toFixed(2)}s`)
           }
         })
     }
 
     if (metrics.memoryUsage) {
-      console.log('\n💾 内存使用:')
+      
       const heapUsedMB = Math.round(metrics.memoryUsage.heapUsed / 1024 / 1024)
       const heapTotalMB = Math.round(metrics.memoryUsage.heapTotal / 1024 / 1024)
-      console.log(`   堆内存: ${heapUsedMB}MB / ${heapTotalMB}MB`)
+      
       if (metrics.memoryUsage.rss) {
-        console.log(`   RSS: ${Math.round(metrics.memoryUsage.rss / 1024 / 1024)}MB`)
+        }MB`)
       }
     }
 
-    console.log('\n🎯 性能评分:')
-    console.log(`   综合评分: ${score.overall}/100`)
-    console.log(`   构建速度: ${score.buildSpeed}/100`)
-    console.log(`   包大小: ${score.bundleSize}/100`)
-    console.log(`   内存使用: ${score.memoryUsage}/100`)
+    
+    
+    
+    
+    
 
     if (recommendations.length > 0) {
-      console.log('\n💡 优化建议:')
+      
       recommendations.forEach((rec, index) => {
         const icon = rec.type === 'error' ? '❌' : rec.type === 'warning' ? '⚠️' : 'ℹ️'
-        console.log(`   ${icon} ${rec.title}`)
-        console.log(`      ${rec.description}`)
-        console.log(`      建议: ${rec.solution}\n`)
+        
+        
+        
       })
     }
 
-    console.log('📈 更多详细信息可查看完整的性能报告文件')
+    
   }
 
   /**

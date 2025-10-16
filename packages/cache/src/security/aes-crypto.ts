@@ -37,7 +37,7 @@ export class AESCrypto {
     }
 
     try {
-      const keyData = new TextEncoder().encode(this.config.secretKey)
+      const keyData = new TextEncoder().encode(this.config?.secretKey)
 
       // 使用 SHA-256 生成固定长度的密钥
       const hashBuffer = await window.crypto.subtle.digest('SHA-256', keyData)
@@ -60,17 +60,17 @@ export class AESCrypto {
    * 加密数据
    */
   async encrypt(data: string): Promise<string> {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return data
     }
 
     // 使用自定义加密函数
-    if (this.config.customEncrypt) {
-      return this.config.customEncrypt(data)
+    if (this.config?.customEncrypt) {
+      return this.config?.customEncrypt(data)
     }
 
     // 使用内置 AES 加密
-    if (this.config.algorithm === 'AES') {
+    if (this.config?.algorithm === 'AES') {
       return this.encryptAES(data)
     }
 
@@ -82,17 +82,17 @@ export class AESCrypto {
    * 解密数据
    */
   async decrypt(data: string): Promise<string> {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return data
     }
 
     // 使用自定义解密函数
-    if (this.config.customDecrypt) {
-      return this.config.customDecrypt(data)
+    if (this.config?.customDecrypt) {
+      return this.config?.customDecrypt(data)
     }
 
     // 使用内置 AES 解密
-    if (this.config.algorithm === 'AES') {
+    if (this.config?.algorithm === 'AES') {
       return this.decryptAES(data)
     }
 

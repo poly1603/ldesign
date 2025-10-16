@@ -62,7 +62,7 @@ export class DataCompressor {
    * @example
    * ```typescript
    * const result = DataCompressor.compress('Hello World Hello World')
-   * console.log(result.compressionRatio) // 压缩率
+   *  // 压缩率
    * ```
    */
   static compress(data: string, options: CompressionOptions = {}): CompressionResult {
@@ -114,7 +114,7 @@ export class DataCompressor {
    * @example
    * ```typescript
    * const result = DataCompressor.decompress(compressed.data)
-   * console.log(result.data) // 原始数据
+   *  // 原始数据
    * ```
    */
   static decompress(

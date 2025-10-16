@@ -60,7 +60,7 @@ export class AESEncryptor implements IEncryptor {
    * @example
    * ```ts
    * const res = new AESEncryptor().encrypt('hello', 'secret', { keySize: 256, mode: 'CBC' })
-   * if (res.success) console.log(res.data)
+   * if (res.success) 
    * ```
    */
   encrypt(data: string, key: string, options: AESOptions = {}): EncryptResult {

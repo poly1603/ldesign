@@ -177,7 +177,7 @@ async function generateDetailedReport(outputDir: string, chunkSizeLimit: number)
     // 生成 HTML 报告
     generateHTMLReport(report, statsDir)
 
-    console.log(`\n📊 Build analysis report generated at: ${statsDir}`)
+    
   } catch (error) {
     console.error('Failed to generate analysis report:', error)
   }

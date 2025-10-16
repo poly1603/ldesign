@@ -9,8 +9,8 @@
  * 4. 更好的上下文识别
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // 要排除的目录（更精确的排除列表）
 const excludeDirs = [
@@ -183,7 +183,7 @@ function addLoggerImport(content, filePath) {
   const importStatement = `import { getLogger } from '${relativePath}';\n`;
   
   // 查找合适的插入位置
-  const importMatches = content.match(/^import\s+.*?from\s+['"].*?['"];?\s*$/gm);
+  const importMatches = content.match(/^import\s+(?:\S.*?)??from\s+['"].*?['"];?\s*$/gm);
   
   if (importMatches && importMatches.length > 0) {
     // 在最后一个import后添加
@@ -191,16 +191,16 @@ function addLoggerImport(content, filePath) {
     const lastImportIndex = content.lastIndexOf(lastImport);
     const insertPosition = lastImportIndex + lastImport.length;
     
-    return content.slice(0, insertPosition) + '\n' + importStatement + content.slice(insertPosition);
+    return `${content.slice(0, insertPosition)  }\n${  importStatement  }${content.slice(insertPosition)}`;
   } else {
     // 在文件开头添加（跳过可能的注释）
     const firstNonCommentLine = content.match(/^(?!\/\/|\/\*|\s*$).*/m);
     if (firstNonCommentLine) {
       const insertIndex = content.indexOf(firstNonCommentLine[0]);
-      return content.slice(0, insertIndex) + importStatement + '\n' + content.slice(insertIndex);
+      return `${content.slice(0, insertIndex) + importStatement  }\n${  content.slice(insertIndex)}`;
     }
     
-    return importStatement + '\n' + content;
+    return `${importStatement  }\n${  content}`;
   }
 }
 
@@ -244,7 +244,7 @@ function processFile(filePath) {
         // 根据上下文决定替换方式
         if (analysis.hasClass) {
           // 类中使用this.logger
-          content = content.replace(pattern.regex, 'this.' + pattern.replacement);
+          content = content.replace(pattern.regex, `this.${  pattern.replacement}`);
         } else {
           // 其他情况直接使用logger
           content = content.replace(pattern.regex, pattern.replacement);
@@ -266,7 +266,7 @@ function processFile(filePath) {
         content = content.replace(classRegex, `$1\n${loggerCode.property}\n`);
       } else if (!analysis.hasClass && loggerCode.instance) {
         // 在导入语句后添加logger实例
-        const importEndRegex = /((?:import\s+.*?from\s+['"].*?['"];?\s*\n)+)/;
+        const importEndRegex = /((?:import\s+(?:\S.*?)??from\s+['"].*?['"];?\s*\n)+)/;
         if (importEndRegex.test(content)) {
           content = content.replace(importEndRegex, `$1\n${loggerCode.instance}\n`);
         } else {
@@ -399,7 +399,7 @@ async function main() {
   const report = generateReport();
   
   // 输出统计
-  console.log('\n' + '=' .repeat(60));
+  console.log(`\n${  '=' .repeat(60)}`);
   console.log('📊 替换统计：');
   console.log(`  ⏱️  处理时间: ${((endTime - startTime) / 1000).toFixed(2)}秒`);
   console.log(`  📄 扫描文件数: ${stats.totalFiles}`);
@@ -436,7 +436,7 @@ async function main() {
   const reportPath = path.join(process.cwd(), 'console-replacement-report.json');
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
   
-  console.log('\n' + '=' .repeat(60));
+  console.log(`\n${  '=' .repeat(60)}`);
   console.log('✅ 替换完成！');
   console.log(`📄 详细报告已保存至: ${reportPath}`);
   

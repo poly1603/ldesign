@@ -76,21 +76,6 @@ export * from './utils/bundle-optimization';
 
 // Advanced features (lazy-loadable)
 export const LazyFeatures = {
-  async loadABTesting() {
-    const module = await import('./core/ab-testing');
-    return module;
-  },
-
-  async loadQualityScorer() {
-    const module = await import('./core/quality-scorer');
-    return module;
-  },
-
-  async loadCollaborativeEditor() {
-    const module = await import('./core/collaborative-editor');
-    return module;
-  },
-
   async loadOfflineFirst() {
     const module = await import('./core/offline-first');
     return module;
@@ -103,16 +88,6 @@ export const LazyFeatures = {
 
   async loadContextAware() {
     const module = await import('./core/context-aware');
-    return module;
-  },
-
-  async loadIntelligentPreheater() {
-    const module = await import('./core/intelligent-preheater');
-    return module;
-  },
-
-  async loadMemoryOptimizer() {
-    const module = await import('./core/memory-optimizer');
     return module;
   },
 
@@ -145,7 +120,6 @@ export function createI18n(config?: I18nConfig): I18nInstance {
   // Auto-initialize if messages are provided
   if (config?.messages) {
     instance.init().catch(err => {
-      console.error('Failed to initialize i18n:', err);
     });
   }
 
@@ -228,7 +202,7 @@ export const Adapters = {
   },
 };
 
-// Engine Plugin Integration
+// Engine Plugin Integration (for compatibility)
 export {
   createI18nEnginePlugin,
   createDefaultI18nEnginePlugin,

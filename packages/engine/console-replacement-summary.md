@@ -10,7 +10,7 @@
 
 ### 总体统计
 - **扫描文件数**: 114 个
-- **修改文件数**: 44 个  
+- **修改文件数**: 44 个
 - **总替换次数**: 129 处
 - **错误文件数**: 0 个
 
@@ -46,7 +46,7 @@
 ### 技术改进
 
 1. **智能导入管理**: 自动添加getLogger导入语句，并计算正确的相对路径
-2. **上下文感知替换**: 
+2. **上下文感知替换**:
    - 类中使用 `this.logger`
    - 函数/模块中使用 `logger`
 3. **保护性替换**: 对关键初始化代码使用window.console以避免循环依赖
@@ -88,7 +88,7 @@ logger.error('错误信息')
 ```typescript
 class MyClass {
   private logger = getLogger('MyClass')
-  
+
   method() {
     this.logger.debug('方法执行')
   }

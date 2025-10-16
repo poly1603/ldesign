@@ -114,17 +114,17 @@ export class ScrollbarCompensationManager {
     const elements: HTMLElement[] = [];
     
     // 手动指定的选择器
-    if (this.config.fixedSelectors && this.config.fixedSelectors.length > 0) {
-      this.config.fixedSelectors.forEach(selector => {
+    if (this.config?.fixedSelectors && this.config?.fixedSelectors.length > 0) {
+      this.config?.fixedSelectors.forEach(selector => {
         const found = document.querySelectorAll<HTMLElement>(selector);
         elements.push(...Array.from(found));
       });
     }
     
     // 自动检测
-    if (this.config.autoDetectFixed) {
+    if (this.config?.autoDetectFixed) {
       const allElements = document.querySelectorAll<HTMLElement>('*');
-      const maxScan = this.config.maxElementsToScan || allElements.length;
+      const maxScan = this.config?.maxElementsToScan || allElements.length;
       let scanned = 0;
       
       for (const el of Array.from(allElements)) {
@@ -132,7 +132,7 @@ export class ScrollbarCompensationManager {
         scanned++;
         
         // 检查是否在排除列表中
-        if (this.config.excludeSelectors?.some(selector => el.matches(selector))) {
+        if (this.config?.excludeSelectors?.some(selector => el.matches(selector))) {
           continue;
         }
         
@@ -157,20 +157,20 @@ export class ScrollbarCompensationManager {
   
   /** 应用补偿 */
   applyCompensation(scrollbarWidth: number): void {
-    if (!this.config.enabled) return;
-    if (scrollbarWidth < this.config.minScrollbarWidth) return;
+    if (!this.config?.enabled) return;
+    if (scrollbarWidth < this.config?.minScrollbarWidth) return;
     
     const elements = this.findElementsToCompensate();
     
-    if (this.config.debug) {
-      console.log('[ScrollbarCompensation] 找到需要补偿的元素:', elements.length);
+    if (this.config?.debug) {
+      
     }
     
     elements.forEach(el => {
       this.saveOriginalStyles(el, ['padding-right', 'right', 'margin-right']);
       
       const style = window.getComputedStyle(el);
-      const strategy = this.config.compensationStrategy;
+      const strategy = this.config?.compensationStrategy;
       
       // 自动策略：根据元素的 right 属性选择
       if (strategy === 'auto') {
@@ -205,8 +205,8 @@ export class ScrollbarCompensationManager {
       el.removeAttribute('data-scroll-compensated');
     });
     
-    if (this.config.debug) {
-      console.log('[ScrollbarCompensation] 已移除补偿，元素数量:', compensatedElements.length);
+    if (this.config?.debug) {
+      
     }
   }
   

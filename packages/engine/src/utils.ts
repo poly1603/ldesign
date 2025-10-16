@@ -19,19 +19,6 @@ export type {
   ConfigValue,
 } from './config/loaders'
 
-// 快速设置工具 - 简化API使用
-export {
-  quickCache,
-  quickLogger,
-  quickPerformance,
-  quickSetup,
-  lightCache,
-  lightLogger,
-  getDefaultCache,
-  getDefaultLogger,
-  type QuickSetupResult
-} from './utils/quick-setup'
-
 // 基础工具函数
 export {
   chunk,
@@ -54,3 +41,16 @@ export {
   throttle,
   unique
 } from './utils/index'
+
+// 快速设置工具 - 简化API使用
+export {
+  getDefaultCache,
+  getDefaultLogger,
+  lightCache,
+  lightLogger,
+  quickCache,
+  quickLogger,
+  quickPerformance,
+  quickSetup,
+  type QuickSetupResult
+} from './utils/quick-setup'

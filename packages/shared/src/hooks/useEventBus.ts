@@ -60,8 +60,7 @@ export interface UseEventBusReturn {
  * 
  * // 监听事件
  * const unsubscribe = on('user-login', (user) => {
- *   console.log('用户登录:', user)
- * })
+ *    * })
  * 
  * // 触发事件
  * const handleLogin = () => {
@@ -143,8 +142,7 @@ export function useEventBus(options: UseEventBusOptions = {}): UseEventBusReturn
  * // 类型安全的事件监听
  * on('user-login', (user) => {
  *   // user 的类型自动推断为 { id: number; name: string }
- *   console.log('用户登录:', user.name)
- * })
+ *    * })
  * 
  * // 类型安全的事件触发
  * emit('user-login', { id: 1, name: 'John' }) // ✅ 正确
@@ -210,8 +208,7 @@ export function useTypedEventBus<EventMap extends Record<string, any>>(
  * 
  * // 监听全局事件
  * on('theme-change', (theme) => {
- *   console.log('主题变更:', theme)
- * })
+ *    * })
  * 
  * // 触发全局事件
  * const changeTheme = (theme) => {
@@ -239,8 +236,7 @@ export function useGlobalEventBus(): UseEventBusReturn {
  * 
  * // 这些事件只在当前组件树中传播
  * on('local-event', (data) => {
- *   console.log('局部事件:', data)
- * })
+ *    * })
  * 
  * emit('local-event', 'hello')
  * </script>

@@ -88,7 +88,7 @@ export class OfflineQueueManager {
     }
 
     // 从持久化存储恢复队列
-    if (this.config.persistent) {
+    if (this.config?.persistent) {
       this.loadQueue()
     }
   }
@@ -97,11 +97,11 @@ export class OfflineQueueManager {
    * 添加请求到离线队列
    */
   async enqueue<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       throw new Error('Offline queue is disabled')
     }
 
-    if (this.queue.size >= this.config.maxQueueSize) {
+    if (this.queue.size >= this.config?.maxQueueSize) {
       throw new Error('Offline queue is full')
     }
 
@@ -120,7 +120,7 @@ export class OfflineQueueManager {
       this.stats.queuedCount++
 
       // 持久化队列
-      if (this.config.persistent) {
+      if (this.config?.persistent) {
         this.saveQueue()
       }
 
@@ -154,7 +154,7 @@ export class OfflineQueueManager {
       catch (error) {
         item.retries++
 
-        if (item.retries >= this.config.maxRetries) {
+        if (item.retries >= this.config?.maxRetries) {
           item.reject(error)
           this.queue.delete(item.id)
           this.stats.failedCount++
@@ -165,7 +165,7 @@ export class OfflineQueueManager {
     this.updateStats()
 
     // 持久化队列
-    if (this.config.persistent) {
+    if (this.config?.persistent) {
       this.saveQueue()
     }
 
@@ -194,7 +194,7 @@ export class OfflineQueueManager {
     this.retryTimer = setTimeout(() => {
       this.retryTimer = undefined
       this.processQueue()
-    }, this.config.retryInterval)
+    }, this.config?.retryInterval)
   }
 
   /**
@@ -228,7 +228,7 @@ export class OfflineQueueManager {
         retries: item.retries,
       }))
 
-      localStorage.setItem(this.config.storageKey, JSON.stringify(data))
+      localStorage.setItem(this.config?.storageKey, JSON.stringify(data))
     }
     catch (error) {
       console.warn('Failed to save offline queue:', error)
@@ -244,7 +244,7 @@ export class OfflineQueueManager {
     }
 
     try {
-      const data = localStorage.getItem(this.config.storageKey)
+      const data = localStorage.getItem(this.config?.storageKey)
       if (!data) {
         return
       }
@@ -300,8 +300,8 @@ export class OfflineQueueManager {
 
     this.queue.clear()
 
-    if (this.config.persistent && typeof localStorage !== 'undefined') {
-      localStorage.removeItem(this.config.storageKey)
+    if (this.config?.persistent && typeof localStorage !== 'undefined') {
+      localStorage.removeItem(this.config?.storageKey)
     }
   }
 

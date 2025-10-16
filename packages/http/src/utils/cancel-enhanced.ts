@@ -66,7 +66,7 @@ export class EnhancedCancelManager extends CancelManager {
       cleanupInterval: config.cleanupInterval || 60000,
     }
 
-    if (this.config.autoCleanup) {
+    if (this.config?.autoCleanup) {
       this.startAutoCleanup()
     }
   }
@@ -403,7 +403,7 @@ export class EnhancedCancelManager extends CancelManager {
   private startAutoCleanup(): void {
     this.cleanupTimer = setInterval(() => {
       this.cleanupAll()
-    }, this.config.cleanupInterval)
+    }, this.config?.cleanupInterval)
   }
 
   /**
@@ -422,15 +422,15 @@ export class EnhancedCancelManager extends CancelManager {
    * @param config - 新配置
    */
   updateConfig(config: Partial<EnhancedCancelConfig>): void {
-    const oldAutoCleanup = this.config.autoCleanup
+    const oldAutoCleanup = this.config?.autoCleanup
 
     this.config = { ...this.config, ...config }
 
     // 处理自动清理配置变化
-    if (oldAutoCleanup && !this.config.autoCleanup) {
+    if (oldAutoCleanup && !this.config?.autoCleanup) {
       this.stopAutoCleanup()
     }
-    else if (!oldAutoCleanup && this.config.autoCleanup) {
+    else if (!oldAutoCleanup && this.config?.autoCleanup) {
       this.startAutoCleanup()
     }
   }

@@ -5,8 +5,7 @@
 
 import type { Directive, DirectiveBinding } from 'vue'
 import type { DirectiveBase } from './directive-base'
-
-// import { getLogger } from '../../logger/logger' // 已移除日志
+import { getLogger } from '../../logger/logger'
 
 const logger = getLogger('vue-directive-adapter')
 export interface VueDirectiveBinding {
@@ -184,11 +183,13 @@ export function createVueDirective(directive: DirectiveBase): Directive {
 }
 
 /**
- * 指令工厂函数
+ * 指令工厂函数 - 支持两种使用方式
+ * 1. defineDirective(directiveBase) - 传入 DirectiveBase 实例
+ * 2. defineDirective(name, hooks) - 传入名称和钩子对象
  */
 export function defineDirective(
-  _name: string,
-  hooks: VueDirectiveHooks & {
+  directiveOrName: DirectiveBase | string,
+  hooks?: VueDirectiveHooks & {
     created?: (el: HTMLElement, binding: VueDirectiveBinding) => void
     beforeMount?: (el: HTMLElement, binding: VueDirectiveBinding) => void
     mounted?: (el: HTMLElement, binding: VueDirectiveBinding) => void
@@ -198,6 +199,16 @@ export function defineDirective(
     unmounted?: (el: HTMLElement, binding: VueDirectiveBinding) => void
   }
 ): Directive {
+  // 如果传入的是 DirectiveBase 实例，使用 createVueDirective
+  if (typeof directiveOrName !== 'string') {
+    return createVueDirective(directiveOrName)
+  }
+
+  // 否则使用钩子对象
+  if (!hooks) {
+    throw new Error('Hooks are required when name is provided')
+  }
+
   return {
     created(el, binding) { hooks.created?.(el as HTMLElement, createCompatibleBinding(binding as DirectiveBinding<unknown, string, string>)) },
     beforeMount(el, binding) { hooks.beforeMount?.(el as HTMLElement, createCompatibleBinding(binding as DirectiveBinding<unknown, string, string>)) },
@@ -297,6 +308,37 @@ export const directiveUtils = {
 
     return handler
   },
+
+  /**
+   * 存储数据到元素
+   */
+  storeData(el: HTMLElement, key: string, value: unknown): void {
+    if (!el._directiveData) {
+      el._directiveData = new Map()
+    }
+    el._directiveData.set(key, value)
+  },
+
+  /**
+   * 从元素获取数据
+   */
+  getData(el: HTMLElement, key: string): unknown {
+    return el._directiveData?.get(key)
+  },
+
+  /**
+   * 从元素删除数据
+   */
+  removeData(el: HTMLElement, key: string): void {
+    el._directiveData?.delete(key)
+  },
+
+  /**
+   * 清空元素数据
+   */
+  clearData(el: HTMLElement): void {
+    el._directiveData?.clear()
+  },
 }
 
 // 防抖函数
@@ -332,5 +374,6 @@ function throttle(func: EventListener, wait: number): EventListener {
 declare global {
   interface HTMLElement {
     _engineDirectives?: Map<string, DirectiveBase>
+    _directiveData?: Map<string, unknown>
   }
 }

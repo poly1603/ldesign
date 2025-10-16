@@ -49,10 +49,10 @@ export class LdesignTabPanel {
   @Prop({ mutable: true, reflect: true }) active: boolean = false;
 
   /** 是否已渲染（懒渲染标记） */
-  @State() hasRendered: boolean = false;
+  @State() hasRendered!: boolean = false;
 
   /** 动画状态 */
-  @State() animationClass: string = '';
+  @State() animationClass!: string = '';
 
   /** 面板加载完成事件 */
   @Event() ldesignPanelLoad!: EventEmitter<void>;

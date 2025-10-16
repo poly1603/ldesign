@@ -116,20 +116,20 @@ export class DashboardCommand {
 
       const url = `http://${options.host || 'localhost'}:${options.port || 9527}`
       
-      console.log()
-      console.log(chalk.green('  ✨ 监控面板已启动！'))
-      console.log()
-      console.log(`  ${chalk.bold('访问地址:')} ${chalk.cyan(url)}`)
+      
+      )
+      
+      } ${chalk.cyan(url)}`)
       
       if (options.auth) {
-        console.log(`  ${chalk.bold('认证令牌:')} ${chalk.yellow(authToken)}`)
-        console.log()
-        console.log(chalk.gray('  请在请求头中添加: Authorization: Bearer ' + authToken))
+        } ${chalk.yellow(authToken)}`)
+        
+        )
       }
       
-      console.log()
-      console.log(chalk.gray('  按 Ctrl+C 停止服务器'))
-      console.log()
+      
+      )
+      
 
       // 打开浏览器
       if (options.open) {

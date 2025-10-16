@@ -13,8 +13,8 @@ export class ApiClient {
   }
 
   async get(endpoint: string): Promise<any> {
-    const url = `${this.config.apiUrl}${endpoint}`
-    let retries = this.config.retries
+    const url = `${this.config?.apiUrl}${endpoint}`
+    let retries = this.config?.retries
     
     while (retries > 0) {
       try {
@@ -41,8 +41,8 @@ export class ApiClient {
   }
 
   async post(endpoint: string, data: any): Promise<any> {
-    const url = `${this.config.apiUrl}${endpoint}`
-    let retries = this.config.retries
+    const url = `${this.config?.apiUrl}${endpoint}`
+    let retries = this.config?.retries
     
     while (retries > 0) {
       try {

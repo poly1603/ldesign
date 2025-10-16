@@ -30,7 +30,7 @@ import { DeviceDetector } from '../../core/DeviceDetector'
  *
  * // 监听方向变化
  * watch(orientation, (newOrientation) => {
- *   console.log('屏幕方向变化:', newOrientation)
+ *   
  * })
  * </script>
  *

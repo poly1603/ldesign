@@ -1,11 +1,11 @@
 /**
  * @ldesign/router 路由性能分析器
- * 
+ *
  * 提供详细的路由性能分析、诊断和优化建议
  */
 
-import type { Router, RouteLocationNormalized } from '../types'
-import { reactive, computed } from 'vue'
+import type { RouteLocationNormalized, Router } from '../types'
+import { reactive } from 'vue'
 
 // ==================== 类型定义 ====================
 
@@ -101,9 +101,9 @@ export interface AnalyzerConfig {
   maxRecords?: number
   /** 性能阈值 */
   thresholds?: {
-    good?: number      // 良好 < 200ms
+    good?: number // 良好 < 200ms
     acceptable?: number // 可接受 < 500ms
-    poor?: number      // 差 < 1000ms
+    poor?: number // 差 < 1000ms
   }
   /** 是否记录详细信息 */
   detailed?: boolean
@@ -125,7 +125,7 @@ export class RoutePerformanceAnalyzer {
   private currentNavigation: PerformanceMetric | null = null
   private analyzeTimer?: number
   private navigationCount = 0
-  
+
   // 响应式状态
   public state = reactive({
     isRecording: false,
@@ -156,7 +156,7 @@ export class RoutePerformanceAnalyzer {
       ...config,
     }
 
-    if (this.config.enabled) {
+    if (this.config?.enabled) {
       this.initialize()
     }
   }
@@ -166,8 +166,8 @@ export class RoutePerformanceAnalyzer {
    */
   private initialize(): void {
     this.setupNavigationTracking()
-    
-    if (this.config.autoAnalyze) {
+
+    if (this.config?.autoAnalyze) {
       this.startAutoAnalyze()
     }
 
@@ -183,9 +183,9 @@ export class RoutePerformanceAnalyzer {
       if (this.shouldRecord()) {
         this.startNavigation(to)
       }
-      
+
       const guardStart = performance.now()
-      
+
       // 包装 next 函数以测量守卫时间
       const wrappedNext = (arg?: any) => {
         if (this.currentNavigation) {
@@ -193,12 +193,12 @@ export class RoutePerformanceAnalyzer {
         }
         return next(arg)
       }
-      
+
       return wrappedNext
     })
 
     // 导航完成后
-    this.router.afterEach((to, from) => {
+    this.router.afterEach((to, _from) => {
       if (this.currentNavigation) {
         this.endNavigation(to)
       }
@@ -217,17 +217,17 @@ export class RoutePerformanceAnalyzer {
    * 判断是否应该记录
    */
   private shouldRecord(): boolean {
-    if (!this.config.enabled || !this.state.isRecording) {
+    if (!this.config?.enabled || !this.state.isRecording) {
       return false
     }
 
     // 采样
-    if (Math.random() > this.config.sampleRate) {
+    if (Math.random() > this.config?.sampleRate) {
       return false
     }
 
     // 检查记录数限制
-    if (this.state.totalRecords >= this.config.maxRecords) {
+    if (this.state.totalRecords >= this.config?.maxRecords) {
       this.cleanOldRecords()
     }
 
@@ -250,7 +250,8 @@ export class RoutePerformanceAnalyzer {
    * 结束导航记录
    */
   private endNavigation(to?: RouteLocationNormalized): void {
-    if (!this.currentNavigation) return
+    if (!this.currentNavigation)
+      return
 
     const endTime = performance.now()
     this.currentNavigation.endTime = endTime
@@ -258,8 +259,8 @@ export class RoutePerformanceAnalyzer {
 
     // 计算渲染时间（总时间 - 守卫时间 - 组件加载时间）
     if (this.currentNavigation.guardTime && this.currentNavigation.componentLoadTime) {
-      this.currentNavigation.renderTime = this.currentNavigation.duration 
-        - this.currentNavigation.guardTime 
+      this.currentNavigation.renderTime = this.currentNavigation.duration
+        - this.currentNavigation.guardTime
         - this.currentNavigation.componentLoadTime
     }
 
@@ -285,17 +286,21 @@ export class RoutePerformanceAnalyzer {
    * 计算性能评分
    */
   private calculateScore(metric: PerformanceMetric): number {
-    if (!metric.duration) return 0
+    if (!metric.duration)
+      return 0
 
-    const { good, acceptable, poor } = this.config.thresholds
+    const { good = 200, acceptable = 500, poor = 1000 } = this.config?.thresholds || {}
 
     if (metric.duration <= good) {
       return 100
-    } else if (metric.duration <= acceptable) {
+    }
+    else if (metric.duration <= acceptable) {
       return 80 - (metric.duration - good) / (acceptable - good) * 20
-    } else if (metric.duration <= poor) {
+    }
+    else if (metric.duration <= poor) {
       return 60 - (metric.duration - acceptable) / (poor - acceptable) * 30
-    } else {
+    }
+    else {
       return Math.max(0, 30 - (metric.duration - poor) / 1000 * 10)
     }
   }
@@ -316,13 +321,13 @@ export class RoutePerformanceAnalyzer {
   private updateRealTimeMetrics(metric: PerformanceMetric): void {
     this.state.realTimeMetrics.lastNavigationTime = metric.duration || 0
     this.state.realTimeMetrics.memoryUsage = this.getMemoryUsage()
-    
+
     // 计算移动平均
     const allMetrics = Array.from(this.metrics.values()).flat()
     const recentMetrics = allMetrics.slice(-100) // 最近100次
     const totalTime = recentMetrics.reduce((sum, m) => sum + (m.duration || 0), 0)
-    this.state.realTimeMetrics.averageTime = recentMetrics.length > 0 
-      ? totalTime / recentMetrics.length 
+    this.state.realTimeMetrics.averageTime = recentMetrics.length > 0
+      ? totalTime / recentMetrics.length
       : 0
   }
 
@@ -330,14 +335,14 @@ export class RoutePerformanceAnalyzer {
    * 清理旧记录
    */
   private cleanOldRecords(): void {
-    const halfMax = Math.floor(this.config.maxRecords / 2)
-    
+    const halfMax = Math.floor(this.config?.maxRecords / 2)
+
     for (const [path, metrics] of this.metrics.entries()) {
       if (metrics.length > halfMax) {
         this.metrics.set(path, metrics.slice(-halfMax))
       }
     }
-    
+
     this.state.totalRecords = Array.from(this.metrics.values())
       .reduce((sum, metrics) => sum + metrics.length, 0)
   }
@@ -347,7 +352,7 @@ export class RoutePerformanceAnalyzer {
    */
   generateReport(): PerformanceReport {
     const allMetrics = Array.from(this.metrics.values()).flat()
-    
+
     if (allMetrics.length === 0) {
       return this.createEmptyReport()
     }
@@ -374,7 +379,7 @@ export class RoutePerformanceAnalyzer {
     // 找出最慢和最快的路由
     const slowestRoutes = sortedByDuration.slice(-5).reverse()
     const fastestRoutes = sortedByDuration.slice(0, 5)
-    
+
     // 找出错误路由
     const errorRoutes = allMetrics.filter(m => m.error)
 
@@ -407,8 +412,9 @@ export class RoutePerformanceAnalyzer {
    * 计算百分位数
    */
   private percentile(sorted: number[], p: number): number {
-    if (sorted.length === 0) return 0
-    
+    if (sorted.length === 0)
+      return 0
+
     const index = Math.ceil(sorted.length * p) - 1
     return sorted[Math.max(0, Math.min(index, sorted.length - 1))]
   }
@@ -417,7 +423,8 @@ export class RoutePerformanceAnalyzer {
    * 计算性能趋势
    */
   private calculateTrend(metrics: PerformanceMetric[]): 'improving' | 'stable' | 'degrading' {
-    if (metrics.length < 20) return 'stable'
+    if (metrics.length < 20)
+      return 'stable'
 
     const recent = metrics.slice(-10)
     const previous = metrics.slice(-20, -10)
@@ -427,8 +434,10 @@ export class RoutePerformanceAnalyzer {
 
     const changePercent = (recentAvg - previousAvg) / previousAvg * 100
 
-    if (changePercent < -10) return 'improving'
-    if (changePercent > 10) return 'degrading'
+    if (changePercent < -10)
+      return 'improving'
+    if (changePercent > 10)
+      return 'degrading'
     return 'stable'
   }
 
@@ -440,7 +449,7 @@ export class RoutePerformanceAnalyzer {
     const routeMetrics = new Map<string, PerformanceMetric[]>()
 
     // 按路由分组
-    metrics.forEach(m => {
+    metrics.forEach((m) => {
       if (!routeMetrics.has(m.path)) {
         routeMetrics.set(m.path, [])
       }
@@ -452,7 +461,7 @@ export class RoutePerformanceAnalyzer {
       const avgTime = pathMetrics.reduce((sum, m) => sum + (m.duration || 0), 0) / pathMetrics.length
 
       // 检查慢路由
-      if (avgTime > this.config.thresholds.poor) {
+      if (avgTime > this.config?.thresholds.poor) {
         suggestions.push({
           priority: 'high',
           type: 'lazy-loading',
@@ -468,7 +477,7 @@ export class RoutePerformanceAnalyzer {
       }
 
       // 检查频繁访问的路由
-      if (pathMetrics.length > metrics.length * 0.2 && avgTime > this.config.thresholds.acceptable) {
+      if (pathMetrics.length > metrics.length * 0.2 && avgTime > this.config?.thresholds.acceptable) {
         suggestions.push({
           priority: 'medium',
           type: 'caching',
@@ -533,13 +542,15 @@ export class RoutePerformanceAnalyzer {
    * 计算总体评分
    */
   private calculateOverallScore(metrics: PerformanceMetric[]): number {
-    if (metrics.length === 0) return 100
+    if (metrics.length === 0)
+      return 100
 
     const scores = metrics
       .filter(m => m.score !== undefined)
       .map(m => m.score!)
 
-    if (scores.length === 0) return 100
+    if (scores.length === 0)
+      return 100
 
     return scores.reduce((sum, score) => sum + score, 0) / scores.length
   }
@@ -571,11 +582,12 @@ export class RoutePerformanceAnalyzer {
    * 开始自动分析
    */
   private startAutoAnalyze(): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined')
+      return
 
     this.analyzeTimer = window.setInterval(() => {
       this.generateReport()
-    }, this.config.analyzeInterval)
+    }, this.config?.analyzeInterval)
   }
 
   /**
@@ -637,7 +649,7 @@ export class RoutePerformanceAnalyzer {
   importData(jsonData: string): boolean {
     try {
       const data = JSON.parse(jsonData)
-      
+
       // 恢复指标
       this.metrics.clear()
       data.metrics.forEach((item: any) => {
@@ -652,7 +664,8 @@ export class RoutePerformanceAnalyzer {
       this.generateReport()
 
       return true
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to import data:', error)
       return false
     }
@@ -690,7 +703,7 @@ let defaultAnalyzer: RoutePerformanceAnalyzer | null = null
  */
 export function setupPerformanceAnalyzer(
   router: Router,
-  config?: AnalyzerConfig
+  config?: AnalyzerConfig,
 ): RoutePerformanceAnalyzer {
   if (!defaultAnalyzer) {
     defaultAnalyzer = new RoutePerformanceAnalyzer(router, config)

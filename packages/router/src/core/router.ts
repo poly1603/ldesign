@@ -22,7 +22,7 @@ import type {
 import { ref } from 'vue'
 import { RouterLink } from '../components/RouterLink'
 import { RouterView } from '../components/RouterView'
-import { MemoryManager } from '../utils/memory-manager'
+import { UnifiedMemoryManager } from '../utils/unified-memory-manager'
 import {
   NavigationFailureType,
   ROUTE_INJECTION_SYMBOL,
@@ -58,7 +58,7 @@ export class RouterImpl implements Router {
   // private _pendingLocation?: RouteLocationNormalized
 
   // 内存管理
-  private memoryManager: MemoryManager
+  private memoryManager: UnifiedMemoryManager
   private guardCleanupFunctions: Array<() => void> = []
 
   public readonly currentRoute: Ref<RouteLocationNormalized>
@@ -70,15 +70,18 @@ export class RouterImpl implements Router {
     this.currentRoute = ref(START_LOCATION)
 
     // 初始化内存管理器（优化：降低阈值以更早触发清理）
-    this.memoryManager = new MemoryManager(
-      {
-        warning: 30, // 优化：从50MB降低到30MB
-        critical: 60, // 优化：从100MB降低到60MB
-        maxCache: 10, // 优化：从20MB降低到10MB
-        maxListeners: 500, // 优化：从1000降低到500
+    this.memoryManager = new UnifiedMemoryManager({
+      monitoring: {
+        enabled: true,
+        warningThreshold: 30 * 1024 * 1024, // 30MB
+        criticalThreshold: 60 * 1024 * 1024, // 60MB
       },
-      'moderate',
-    )
+      tieredCache: {
+        l1Capacity: 20,
+        l2Capacity: 50,
+        l3Capacity: 100,
+      },
+    })
 
     // 创建 isReady Promise
     this.isReadyPromise = new Promise((resolve) => {
@@ -96,8 +99,7 @@ export class RouterImpl implements Router {
     // 初始化当前路由
     this.initializeCurrentRoute()
 
-    // 启动内存管理
-    this.memoryManager.start()
+    // 内存管理器自动启动
   }
 
   // ==================== 路由管理 ====================
@@ -180,15 +182,14 @@ export class RouterImpl implements Router {
   beforeEach(guard: NavigationGuard): () => void {
     this.beforeGuards.push(guard)
 
-    // 注册到内存监控
-    this.memoryManager.getMemoryMonitor().registerListener(guard as () => void)
+    // 内存监控已在UnifiedMemoryManager内部处理
 
     const cleanup = () => {
       const index = this.beforeGuards.indexOf(guard)
       if (index >= 0) {
         this.beforeGuards.splice(index, 1)
       }
-      this.memoryManager.getMemoryMonitor().unregisterListener(guard as () => void)
+      // 清理已在UnifiedMemoryManager内部处理
     }
 
     this.guardCleanupFunctions.push(cleanup)
@@ -251,8 +252,8 @@ export class RouterImpl implements Router {
    * 销毁路由器，清理所有资源
    */
   destroy(): void {
-    // 停止内存管理
-    this.memoryManager.stop()
+    // 销毁内存管理
+    this.memoryManager.destroy()
 
     // 清理所有守卫
     this.guardCleanupFunctions.forEach(cleanup => cleanup())
@@ -276,7 +277,7 @@ export class RouterImpl implements Router {
    */
   getMemoryStats() {
     return {
-      memory: this.memoryManager.getMemoryMonitor().getStats(),
+      memory: this.memoryManager.getStats(),
       matcher: this.matcher.getStats(),
       guards: {
         beforeGuards: this.beforeGuards.length,

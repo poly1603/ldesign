@@ -177,7 +177,7 @@ export class LdesignModal {
   @Prop() steps?: string[];
   /** 当前步骤（0-based，可受控） */
   @Prop({ mutable: true }) currentStep: number = 0;
-  @Event() ldesignStepChange: EventEmitter<number>;
+  @Event() ldesignStepChange!: EventEmitter<number>;
   /** 向导步进前置钩子：返回 false 阻止切换 */
   @Prop() beforeStepChange?: (from: number, to: number) => boolean | Promise<boolean>;
 
@@ -258,28 +258,28 @@ export class LdesignModal {
   /**
    * 模态框状态
    */
-  @State() isVisible: boolean = false;
+  @State() isVisible!: boolean = false;
 
   /**
    * 是否正在动画中
    */
-  @State() isAnimating: boolean = false;
+  @State() isAnimating!: boolean = false;
 
   /**
    * 是否正在关闭动画中
    */
-  @State() isClosing: boolean = false;
+  @State() isClosing!: boolean = false;
 
   /**
    * 是否最大化
    */
-  @State() isMaximized: boolean = false;
+  @State() isMaximized!: boolean = false;
 
   /**
    * 滚动阴影状态
    */
-  @State() showHeaderShadow: boolean = false;
-  @State() showFooterShadow: boolean = false;
+  @State() showHeaderShadow!: boolean = false;
+  @State() showFooterShadow!: boolean = false;
 
   /**
    * 模态框元素引用
@@ -497,17 +497,17 @@ export class LdesignModal {
   /**
    * 显示状态变化事件
    */
-  @Event() ldesignVisibleChange: EventEmitter<boolean>;
+  @Event() ldesignVisibleChange!: EventEmitter<boolean>;
 
   /**
    * 关闭事件
    */
-  @Event() ldesignClose: EventEmitter<void>;
+  @Event() ldesignClose!: EventEmitter<void>;
 
   /**
    * 确认事件
    */
-  @Event() ldesignOk: EventEmitter<void>;
+  @Event() ldesignOk!: EventEmitter<void>;
 
   /**
    * 监听visible属性变化

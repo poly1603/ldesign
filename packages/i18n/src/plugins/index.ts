@@ -2,21 +2,21 @@
  * Plugins module exports
  */
 
-export * from './ai-translator'
-export * from './ai-context-translator'
+// Core plugins
 export * from './smart-cache'
-export * from './ml-optimizer'
-export * from './gpu-accelerator'
-export * from './wasm-optimizer'
-export * from './edge-computing'
-export * from './quantum-accelerator'
-export * from './neural-network'
 export * from './version-control'
 export * from './realtime-sync'
-export * from './blockchain-validator'
-export * from './crowdsourcing-platform'
-export * from './analytics-dashboard'
-export * from './immersive-translator'
+
+// Advanced/Experimental plugins - Import these separately when needed:
+// import { MLOptimizerPlugin } from '@ldesign/i18n/plugins/ml-optimizer'
+// import { GPUAcceleratorPlugin } from '@ldesign/i18n/plugins/gpu-accelerator'
+// import { WasmOptimizerPlugin } from '@ldesign/i18n/plugins/wasm-optimizer'
+// import { EdgeComputingPlugin } from '@ldesign/i18n/plugins/edge-computing'
+// import { QuantumAcceleratorPlugin } from '@ldesign/i18n/plugins/quantum-accelerator'
+// import { NeuralNetworkPlugin } from '@ldesign/i18n/plugins/neural-network'
+// import { BlockchainValidatorPlugin } from '@ldesign/i18n/plugins/blockchain-validator'
+// import { CrowdsourcingPlatformPlugin } from '@ldesign/i18n/plugins/crowdsourcing-platform'
+// import { ImmersiveTranslatorPlugin } from '@ldesign/i18n/plugins/immersive-translator'
 
 // Default plugins factory
 export function createDefaultPlugins() {

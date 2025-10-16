@@ -89,7 +89,7 @@ function runBuild() {
       const lines = data.toString().split('\n')
       lines.forEach(line => {
         if (line.trim()) {
-          outputBuffer += line + '\n'
+          outputBuffer += `${line  }\n`
           if (!shouldFilterLine(line)) {
             console.log(line)
           }
@@ -101,7 +101,7 @@ function runBuild() {
       const lines = data.toString().split('\n')
       lines.forEach(line => {
         if (line.trim()) {
-          errorBuffer += line + '\n'
+          errorBuffer += `${line  }\n`
           if (!shouldFilterLine(line)) {
             console.error(line)
           }

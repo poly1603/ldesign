@@ -150,7 +150,7 @@ export class HttpClient extends EventEmitter {
     const requestConfig = this.mergeConfig(config)
 
     // 检查缓存
-    if (this.config.cache && requestConfig.method === 'GET') {
+    if (this.config?.cache && requestConfig.method === 'GET') {
       const cached = this.getFromCache(requestConfig)
       if (cached) {
         this.emit('cache-hit', { url: requestConfig.url })
@@ -168,7 +168,7 @@ export class HttpClient extends EventEmitter {
 
     let lastError: Error | undefined
     let attempt = 0
-    const maxAttempts = this.config.retries + 1
+    const maxAttempts = this.config?.retries + 1
 
     while (attempt < maxAttempts) {
       try {
@@ -181,7 +181,7 @@ export class HttpClient extends EventEmitter {
         }
 
         // 验证状态码
-        if (!this.config.validateStatus(processedResponse.status)) {
+        if (!this.config?.validateStatus(processedResponse.status)) {
           throw new (NetworkError as any)(
             `Request failed with status ${processedResponse.status}`,
             processedConfig,
@@ -190,7 +190,7 @@ export class HttpClient extends EventEmitter {
         }
 
         // 缓存响应
-        if (this.config.cache && processedConfig.method === 'GET') {
+        if (this.config?.cache && processedConfig.method === 'GET') {
           this.setCache(processedConfig, processedResponse)
         }
 
@@ -203,7 +203,7 @@ export class HttpClient extends EventEmitter {
 
         if (attempt < maxAttempts && this.shouldRetry(lastError)) {
           this.emit('retry', { attempt, error: lastError, config: processedConfig })
-          await AsyncUtils.delay(this.config.retryDelay * attempt)
+          await AsyncUtils.delay(this.config?.retryDelay * attempt)
         }
         else {
           break
@@ -219,7 +219,7 @@ export class HttpClient extends EventEmitter {
    * 执行HTTP请求
    */
   private async executeRequest<T>(config: HttpRequest): Promise<HttpResponse<T>> {
-    const url = new URL(config.url, this.config.baseURL)
+    const url = new URL(config.url, this.config?.baseURL)
 
     // 添加查询参数
     if (config.params) {
@@ -232,7 +232,7 @@ export class HttpClient extends EventEmitter {
       method: config.method,
       headers: config.headers,
       body: this.prepareBody(config.data, config.headers),
-      signal: AbortSignal.timeout(config.timeout || this.config.timeout),
+      signal: AbortSignal.timeout(config.timeout || this.config?.timeout),
     }
 
     const startTime = Date.now()
@@ -340,8 +340,8 @@ export class HttpClient extends EventEmitter {
     return {
       method: 'GET',
       url: '',
-      headers: { ...this.config.headers, ...config.headers },
-      timeout: config.timeout || this.config.timeout,
+      headers: { ...this.config?.headers, ...config.headers },
+      timeout: config.timeout || this.config?.timeout,
       ...config,
     }
   }
@@ -350,7 +350,7 @@ export class HttpClient extends EventEmitter {
    * 判断是否应该重试
    */
   private shouldRetry(error: Error): boolean {
-    return this.config.retryCondition(error)
+    return this.config?.retryCondition(error)
   }
 
   /**
@@ -360,7 +360,7 @@ export class HttpClient extends EventEmitter {
     const key = this.getCacheKey(config)
     const entry = this.cache.get(key)
 
-    if (entry && Date.now() - entry.timestamp < this.config.cacheMaxAge) {
+    if (entry && Date.now() - entry.timestamp < this.config?.cacheMaxAge) {
       return entry.response as HttpResponse<T>
     }
 
@@ -386,7 +386,7 @@ export class HttpClient extends EventEmitter {
    * 获取缓存键
    */
   private getCacheKey(config: HttpRequest): string {
-    const url = new URL(config.url, this.config.baseURL)
+    const url = new URL(config.url, this.config?.baseURL)
 
     if (config.params) {
       for (const [key, value] of Object.entries(config.params)) {
@@ -451,7 +451,7 @@ export class HttpClient extends EventEmitter {
     let expiredEntries = 0
 
     for (const entry of this.cache.values()) {
-      if (now - entry.timestamp < this.config.cacheMaxAge) {
+      if (now - entry.timestamp < this.config?.cacheMaxAge) {
         validEntries++
       }
       else {

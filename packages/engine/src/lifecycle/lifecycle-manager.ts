@@ -27,7 +27,7 @@ export interface LifecycleContext<T = unknown> {
   readonly phase: LifecyclePhase
   readonly timestamp: number
   readonly engine: T
-  readonly data?: any
+  readonly data?: unknown
   readonly error?: Error
 }
 
@@ -51,7 +51,7 @@ export interface LifecycleEvent {
   readonly success: boolean
   readonly error?: Error
   readonly hooksExecuted: number
-  readonly data?: any
+  readonly data?: unknown
 }
 
 // 生命周期管理器接口
@@ -80,7 +80,7 @@ export interface LifecycleManager<T = unknown> {
   execute: (
     phase: LifecyclePhase,
     engine: T,
-    data?: any
+    data?: unknown
   ) => Promise<LifecycleEvent>
   executeSync: (phase: LifecyclePhase, engine: T, data?: unknown) => LifecycleEvent
 
@@ -158,7 +158,8 @@ export class LifecycleManagerImpl<T = unknown> implements LifecycleManager<T> {
     if (!this.phaseHooks.has(phase)) {
       this.phaseHooks.set(phase, new Set())
     }
-    this.phaseHooks.get(phase)!.add(id)
+    const phaseHooks = this.phaseHooks.get(phase)
+    phaseHooks?.add(id)
 
     this.logger?.debug(`Lifecycle hook registered`, {
       id,
@@ -188,7 +189,8 @@ export class LifecycleManagerImpl<T = unknown> implements LifecycleManager<T> {
     if (!this.phaseHooks.has(phase)) {
       this.phaseHooks.set(phase, new Set())
     }
-    this.phaseHooks.get(phase)!.add(id)
+    const phaseHooks = this.phaseHooks.get(phase)
+    phaseHooks?.add(id)
 
     this.logger?.debug(`One-time lifecycle hook registered`, {
       id,
@@ -266,9 +268,9 @@ export class LifecycleManagerImpl<T = unknown> implements LifecycleManager<T> {
       return []
     }
 
-    const hooks = Array.from(phaseHooks)
-      .map(id => this.hooks.get(id)!)
-      .filter(Boolean)
+    const hooks = (Array.from(phaseHooks)
+      .map(id => this.hooks.get(id))
+      .filter(Boolean) as HookInfo<T>[])
       .sort((a, b) => b.priority - a.priority) // 高优先级先执行
 
     return hooks
@@ -307,7 +309,7 @@ export class LifecycleManagerImpl<T = unknown> implements LifecycleManager<T> {
   async execute(
     phase: LifecyclePhase,
     engine: T,
-    data?: any
+    data?: unknown
   ): Promise<LifecycleEvent> {
     const startTime = Date.now()
     this.currentPhase = phase
@@ -348,7 +350,9 @@ export class LifecycleManagerImpl<T = unknown> implements LifecycleManager<T> {
           // 通知错误回调
           this.errorCallbacks.forEach(callback => {
             try {
-              callback(error!, { ...context, error })
+              if (error) {
+                callback(error, { ...context, error })
+              }
             } catch (callbackError) {
               this.logger?.error(
                 'Error in lifecycle error callback',
@@ -442,7 +446,9 @@ export class LifecycleManagerImpl<T = unknown> implements LifecycleManager<T> {
           // 通知错误回调
           this.errorCallbacks.forEach(callback => {
             try {
-              callback(error!, { ...context, error })
+              if (error) {
+                callback(error, { ...context, error })
+              }
             } catch (callbackError) {
               this.logger?.error(
                 'Error in lifecycle error callback',
@@ -536,7 +542,7 @@ export class LifecycleManagerImpl<T = unknown> implements LifecycleManager<T> {
     // 计算平均执行时间
     const executionTimes = this.history
       .filter(event => event.duration !== undefined)
-      .map(event => event.duration!)
+      .map(event => event.duration || 0)
 
     const averageExecutionTime =
       executionTimes.length > 0

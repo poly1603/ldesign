@@ -455,10 +455,9 @@ export function createSmartCachePlugin(options: SmartCacheOptions = {}): Plugin 
     async buildEnd() {
       const stats = cacheManager.getStats()
       if (stats.hits + stats.misses > 0) {
-        console.log(`\n📊 智能缓存统计:`)
-        console.log(`   命中率: ${(stats.hitRate * 100).toFixed(1)}%`)
-        console.log(`   节省时间: ${stats.timeSaved.toFixed(0)}ms`)
-        console.log(`   缓存大小: ${(stats.totalSize / 1024 / 1024).toFixed(2)}MB`)
+                .toFixed(1)}%`)
+        }ms`)
+        .toFixed(2)}MB`)
       }
     }
   }

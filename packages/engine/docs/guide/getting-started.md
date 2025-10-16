@@ -90,6 +90,11 @@ console.log('引擎创建成功！', engine.config.get('app.name'))
 // composables/useEngine.ts
 import { createEngine } from '@ldesign/engine'
 
+// main.ts
+import { createApp } from 'vue'
+import App from './App.vue'
+import { useEngine } from './composables/useEngine'
+
 const engine = createEngine({
   config: {
     debug: true,
@@ -103,11 +108,6 @@ const engine = createEngine({
 export function useEngine() {
   return engine
 }
-
-// main.ts
-import { createApp } from 'vue'
-import App from './App.vue'
-import { useEngine } from './composables/useEngine'
 
 const engine = useEngine()
 const app = createApp(App)

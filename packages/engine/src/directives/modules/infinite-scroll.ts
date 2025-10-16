@@ -29,7 +29,7 @@ export class InfiniteScrollDirective extends DirectiveBase {
 
   public mounted(el: HTMLElement, binding: VueDirectiveBinding): void {
     const config = this.parseConfig(binding)
-    
+
     if (!config.callback || typeof config.callback !== 'function') {
       this.warn('Infinite scroll directive requires a callback function')
       return
@@ -38,10 +38,10 @@ export class InfiniteScrollDirective extends DirectiveBase {
     const distance = config.distance ?? 100
     const delay = config.delay ?? 200
     const container = this.getContainer(el, config.container)
-    
+
     let isLoading = false
     let timeoutId: NodeJS.Timeout | null = null
-    
+
     const handleScroll = async () => {
       if (config.disabled || isLoading) return
 
@@ -52,22 +52,24 @@ export class InfiniteScrollDirective extends DirectiveBase {
 
       // Debounce the scroll handler
       timeoutId = setTimeout(async () => {
-        const scrollTop = container === window ? 
+        const scrollTop = container === window ?
           window.pageYOffset || document.documentElement.scrollTop :
           (container as HTMLElement).scrollTop
-        
+
         const scrollHeight = container === window ?
           document.documentElement.scrollHeight :
           (container as HTMLElement).scrollHeight
-        
+
         const clientHeight = container === window ?
           window.innerHeight :
           (container as HTMLElement).clientHeight
-        
+
         if (scrollTop + clientHeight >= scrollHeight - distance) {
           isLoading = true
           try {
-            await config.callback!()
+            if (config.callback) {
+              await config.callback()
+            }
           } catch (error) {
             this.warn('Error in infinite scroll callback:', error)
           } finally {
@@ -96,10 +98,10 @@ export class InfiniteScrollDirective extends DirectiveBase {
   public updated(el: HTMLElement, binding: VueDirectiveBinding): void {
     // Clean up old listener
     this.cleanup(el)
-    
+
     // Re-mount with new config
     this.mounted(el, binding)
-    
+
     this.log('Infinite scroll directive updated', el)
   }
 
@@ -112,9 +114,10 @@ export class InfiniteScrollDirective extends DirectiveBase {
     const handler = directiveUtils.getData(el, 'infinite-scroll-handler')
     const container = directiveUtils.getData(el, 'infinite-scroll-container')
     const timeout = directiveUtils.getData(el, 'infinite-scroll-timeout')
-    
+
     if (handler && container) {
-      container.removeEventListener('scroll', handler as EventListener)
+      const typedContainer = container as HTMLElement | Window
+      typedContainer.removeEventListener('scroll', handler as EventListener)
     }
 
     if (timeout) {
@@ -130,12 +133,12 @@ export class InfiniteScrollDirective extends DirectiveBase {
     if (!container) {
       return window
     }
-    
+
     if (typeof container === 'string') {
       const containerEl = document.querySelector(container) as HTMLElement
       return containerEl || window
     }
-    
+
     return container
   }
 
@@ -143,7 +146,7 @@ export class InfiniteScrollDirective extends DirectiveBase {
     const value = binding.value
 
     if (typeof value === 'function') {
-      return { callback: value }
+      return { callback: value as () => void | Promise<void> }
     }
 
     if (typeof value === 'object' && value !== null) {

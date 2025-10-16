@@ -8,7 +8,7 @@ export class Logger {
     return [`[${ts}]`, `[${this.prefix}]`, `[${level.toUpperCase()}]`, ...args]
   }
 
-  debug(...args: any[]) { console.debug(...this.format('debug', args)) }
+  debug(...args: any[]) { ) }
   info(...args: any[]) { console.info(...this.format('info', args)) }
   warn(...args: any[]) { console.warn(...this.format('warn', args)) }
   error(...args: any[]) { console.error(...this.format('error', args)) }

@@ -9,7 +9,7 @@
 
 **建议**：
 - 删除 `logger.ts`，只保留 `unified-logger.ts`
-- 重命名 `unified-logger.ts` 为 `logger.ts` 
+- 重命名 `unified-logger.ts` 为 `logger.ts`
 - 简化导出，统一使用一个日志系统
 
 ### 2. 不必要的 index.ts 文件
@@ -77,7 +77,7 @@ const engine = await createEngineApp({
   performance: {
     budget: {
       bundleSize: 200 * 1024, // 200KB
-      initialLoadTime: 3000,   // 3秒
+      initialLoadTime: 3000, // 3秒
       memoryUsage: 50 * 1024 * 1024 // 50MB
     },
     onBudgetExceeded: (metric) => {
@@ -93,10 +93,10 @@ const engine = await createEngineApp({
 const engine = await createEngineApp({
   devtools: {
     enabled: true,
-    timeline: true,      // 记录时间线
-    performance: true,   // 性能分析
-    network: true,      // 网络请求监控
-    state: true        // 状态追踪
+    timeline: true, // 记录时间线
+    performance: true, // 性能分析
+    network: true, // 网络请求监控
+    state: true // 状态追踪
   }
 })
 ```
@@ -112,7 +112,7 @@ const engine = await createEngineApp({
       'zh-CN': () => import('./locales/zh-CN'),
       'en-US': () => import('./locales/en-US')
     },
-    lazy: true  // 懒加载语言包
+    lazy: true // 懒加载语言包
   }
 })
 ```
@@ -128,7 +128,7 @@ const engine = await createEngineApp({
       dark: { primary: '#177ddc', background: '#141414' }
     },
     autoDetect: true, // 自动检测系统主题
-    persist: true     // 持久化用户选择
+    persist: true // 持久化用户选择
   }
 })
 
@@ -142,7 +142,7 @@ engine.theme.switch('dark')
 const engine = await createEngineApp({
   analytics: {
     enabled: true,
-    provider: 'google',  // 或 'custom'
+    provider: 'google', // 或 'custom'
     events: {
       pageView: true,
       userAction: true,

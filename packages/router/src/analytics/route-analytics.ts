@@ -79,7 +79,7 @@ export class RouteAnalytics {
   private behaviorEvents: UserBehaviorEvent[] = []
   private sessionId: string
   private currentVisit?: RouteVisit
-  private reportTimer?: number
+  private reportTimer?: ReturnType<typeof setInterval>
 
   constructor(router: Router, config: Partial<AnalyticsConfig> = {}) {
     this.router = router
@@ -96,7 +96,7 @@ export class RouteAnalytics {
 
     this.sessionId = this.generateSessionId()
 
-    if (this.config.enabled && this.shouldSample()) {
+    if (this.config?.enabled && this.shouldSample()) {
       this.init()
     }
   }
@@ -107,11 +107,11 @@ export class RouteAnalytics {
   private init(): void {
     this.setupRouteTracking()
 
-    if (this.config.collectPerformance) {
+    if (this.config?.collectPerformance) {
       this.setupPerformanceTracking()
     }
 
-    if (this.config.collectBehavior) {
+    if (this.config?.collectBehavior) {
       this.setupBehaviorTracking()
     }
 
@@ -216,7 +216,7 @@ export class RouteAnalytics {
     })
 
     // 滚动事件（节流）
-    let scrollTimer: number
+    let scrollTimer: ReturnType<typeof setTimeout>
     document.addEventListener('scroll', () => {
       clearTimeout(scrollTimer)
       scrollTimer = setTimeout(() => {
@@ -272,7 +272,7 @@ export class RouteAnalytics {
    * 判断是否应该采样
    */
   private shouldSample(): boolean {
-    return Math.random() < this.config.sampleRate
+    return Math.random() < this.config?.sampleRate
   }
 
   /**
@@ -281,7 +281,7 @@ export class RouteAnalytics {
   private startReporting(): void {
     this.reportTimer = setInterval(() => {
       this.report()
-    }, this.config.reportInterval)
+    }, this.config?.reportInterval) as any
   }
 
   /**
@@ -295,16 +295,16 @@ export class RouteAnalytics {
     const data = {
       sessionId: this.sessionId,
       timestamp: Date.now(),
-      visits: this.visits.splice(0, this.config.batchSize),
+      visits: this.visits.splice(0, this.config?.batchSize),
       performance: Object.fromEntries(this.performanceData),
-      behavior: this.behaviorEvents.splice(0, this.config.batchSize * 5),
+      behavior: this.behaviorEvents.splice(0, this.config?.batchSize * 5),
       userAgent: navigator.userAgent,
       url: window.location.href,
     }
 
     try {
-      if (this.config.endpoint) {
-        await fetch(this.config.endpoint, {
+      if (this.config?.endpoint) {
+        await fetch(this.config?.endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -330,7 +330,7 @@ export class RouteAnalytics {
    */
   private storeData(data: any): void {
     try {
-      const stored = localStorage.getItem(this.config.storageKey)
+      const stored = localStorage.getItem(this.config?.storageKey)
       const existing = stored ? JSON.parse(stored) : []
       existing.push(data)
 
@@ -339,7 +339,7 @@ export class RouteAnalytics {
         existing.splice(0, existing.length - 100)
       }
 
-      localStorage.setItem(this.config.storageKey, JSON.stringify(existing))
+      localStorage.setItem(this.config?.storageKey, JSON.stringify(existing))
     }
     catch (error) {
       console.error('路由分析数据存储失败:', error)
@@ -351,10 +351,10 @@ export class RouteAnalytics {
    */
   private loadStoredData(): void {
     try {
-      const stored = localStorage.getItem(this.config.storageKey)
+      const stored = localStorage.getItem(this.config?.storageKey)
       if (stored) {
-        const data = JSON.parse(stored)
-        console.log('加载的路由分析数据:', data)
+        // const data = JSON.parse(stored)
+        // 加载的路由分析数据
       }
     }
     catch (error) {
@@ -432,7 +432,7 @@ export class RouteAnalytics {
     this.performanceData.clear()
     this.behaviorEvents = []
     this.currentVisit = undefined
-    localStorage.removeItem(this.config.storageKey)
+    localStorage.removeItem(this.config?.storageKey)
   }
 
   /**

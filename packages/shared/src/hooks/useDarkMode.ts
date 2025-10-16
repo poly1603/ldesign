@@ -75,7 +75,7 @@ export interface DarkModeConfig {
  *       defaultMode: 'auto',
  *       enableTransition: true,
  *       onChange: (isDark, mode) => {
- *         console.log(`主题切换为: ${isDark ? '暗黑' : '亮色'} (${mode})`)
+ *         `)
  *       }
  *     })
  *     
@@ -345,8 +345,7 @@ export function useDarkMode(config: DarkModeConfig = {}) {
  * toggle()
  * 
  * // 检查当前状态
- * console.log('当前是暗黑模式:', isDark.value)
- * ```
+ *  * ```
  */
 export function useSimpleDarkMode() {
   const { state, toggle } = useDarkMode()
@@ -365,8 +364,7 @@ export function useSimpleDarkMode() {
  * @example
  * ```typescript
  * const prefersDark = getSystemThemePreference()
- * console.log('系统偏好暗黑模式:', prefersDark)
- * ```
+ *  * ```
  */
 export function getSystemThemePreference(): boolean {
   if (typeof window === 'undefined' || !('matchMedia' in window)) {
@@ -385,8 +383,7 @@ export function getSystemThemePreference(): boolean {
  * @example
  * ```typescript
  * const unwatch = watchSystemTheme((prefersDark) => {
- *   console.log('系统主题变化:', prefersDark ? '暗黑' : '亮色')
- * })
+ *    * })
  * 
  * // 取消监听
  * unwatch()

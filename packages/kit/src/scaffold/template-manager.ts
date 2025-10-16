@@ -5,7 +5,6 @@
 
 import type { Logger } from '../logger'
 import { EventEmitter } from 'node:events'
-import { promises as fs } from 'node:fs'
 import { dirname, extname, join } from 'node:path'
 import { FileSystem } from '../filesystem'
 import { StringUtils } from '../utils'

@@ -106,7 +106,7 @@ export class MinifyProcessor {
       } else {
         terserOptions.compress = {
           drop_console: jsOptions.compress.drop_console,
-          drop_debugger: jsOptions.compress.drop_debugger,
+          drop_: jsOptions.compress.drop_,
           dead_code: jsOptions.compress.dead_code,
           inline: jsOptions.compress.inline
         }
@@ -220,7 +220,7 @@ export function getDefaultMinifyConfig(): MinifyOptions {
       mangle: false,
       compress: {
         drop_console: false,
-        drop_debugger: true,
+        drop_: true,
         dead_code: true,
         inline: false
       },

@@ -105,7 +105,7 @@ export {
  * import { getLibraryInfo } from '@ldesign/vue2-components-example'
  * 
  * const info = getLibraryInfo()
- * console.log(info.name) // '@ldesign/vue2-components-example'
+ *  // '@ldesign/vue2-components-example'
  * ```
  */
 export function getLibraryInfo() {
@@ -123,11 +123,7 @@ export function getLibraryInfo() {
  * ```
  */
 export function printLibraryInfo() {
-  console.log(`
-╭─────────────────────────────────────────────────────────────╮
-│                   Vue2 Components Example                   │
-├─────────────────────────────────────────────────────────────┤
-│ Name:        ${LIBRARY_INFO.name.padEnd(43)} │
+  } │
 │ Version:     ${LIBRARY_INFO.version.padEnd(43)} │
 │ Description: ${LIBRARY_INFO.description.slice(0, 43).padEnd(43)} │
 │ Author:      ${LIBRARY_INFO.author.padEnd(43)} │
@@ -215,8 +211,7 @@ export default {
  *   },
  *   methods: {
  *     handleLogin() {
- *       console.log('登录', { username: this.username, password: this.password })
- *     }
+ *        *     }
  *   }
  * }
  * </script>

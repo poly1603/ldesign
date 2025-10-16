@@ -129,124 +129,130 @@ export {
   RouteInspector,
 } from './debug/dev-tools'
 
+// ==================== 路由调试器导出 ====================
+export {
+  getRouteDebugger,
+  RouteDebugger,
+  setupRouteDebugger,
+} from './debug/RouteDebugger'
+
+export type {
+  DebugConfig,
+} from './debug/RouteDebugger'
+
 // 设备适配核心功能
 export {
   createDeviceRouterPlugin,
   DeviceComponentResolver,
   DeviceRouteGuard,
 } from './device'
-
 // 设备适配工具函数
 export {
   checkDeviceSupport,
   createUnsupportedDeviceRoute,
   resolveDeviceComponent,
 } from './device/utils'
-
 // Engine插件（用于Engine集成）
 export {
   createDefaultRouterEnginePlugin,
   createRouterEnginePlugin,
   routerPlugin,
 } from './engine'
-export type { RouterEnginePluginOptions } from './engine'
-export {
-  combineGuards,
-  createAuthGuard,
-  createLoadingGuard,
-  createPermissionGuard,
-  createProgressGuard,
-  createScrollGuard,
-  createTitleGuard,
-} from './guards'
 
-export type {
-  AuthChecker,
-  AuthGuardOptions,
-  LoadingGuardOptions,
-  PermissionChecker,
-  PermissionGuardOptions,
-  ProgressGuardOptions,
-  ScrollGuardOptions,
-  TitleGuardOptions,
-} from './guards'
+export type { RouterEnginePluginOptions } from './engine'
+// ==================== 智能代码分割导出 ====================
 export {
-  authMiddleware,
-  createCacheMiddleware,
-  createRateLimitMiddleware,
-  loggingMiddleware,
-  // 中间件系统
-  MiddlewareManager,
-  middlewareManager,
-  permissionMiddleware,
-  progressMiddleware,
-  roleMiddleware,
-  titleMiddleware,
-} from './middleware'
+  CodeSplittingManager,
+  CodeSplittingPlugin,
+  createCodeSplittingManager,
+} from './features/code-splitting'
 
 // ==================== 路由守卫导出 ====================
 
 export type {
-  MiddlewareConfig,
-  MiddlewareContext,
-  MiddlewareFunction,
-} from './middleware'
+  ChunkInfo,
+  ChunkPriority,
+  LoadingMetrics as CodeSplittingMetrics,
+  PreloadStrategy as CodeSplittingPreloadStrategy,
+  ComponentLoadState,
+  SplittingAnalysis,
+  SplittingConfig,
+  SplittingStrategy,
+} from './features/code-splitting'
 
-// 动画插件
+// ==================== 路由性能分析器导出 ====================
 export {
-  ANIMATION_PRESETS,
-  AnimationManager,
-  createAnimationConfig,
-  createAnimationPlugin,
-  getAnimationDuration,
-  supportsAnimations,
-} from './plugins/animation'
+  generatePerformanceReport,
+  getPerformanceAnalyzer,
+  getPerformanceSuggestions,
+  RoutePerformanceAnalyzer,
+  setupPerformanceAnalyzer,
+} from './features/RoutePerformanceAnalyzer'
 
 // ==================== 工具函数导出 ====================
 
-export type { AnimationPluginOptions } from './plugins/animation'
+export type {
+  AnalyzerConfig,
+  OptimizationSuggestion,
+  PerformanceMetric,
+  PerformanceReport,
+} from './features/RoutePerformanceAnalyzer'
 
 // ==================== Engine 集成导出 ====================
 
-// 缓存插件
+// ==================== 安全功能导出 ====================
 export {
-  CacheManager,
-  createCacheConfig,
-  createCachePlugin,
-  supportsCaching,
-} from './plugins/cache'
+  AuthManager,
+  checkPermission,
+  CSRFProtection,
+  getCurrentUser,
+  isAuthenticated,
+  PermissionManager,
+  RouteSecurityManager,
+  sanitizeContent,
+  setupRouteSecurity,
+  XSSProtection,
+} from './features/RouteSecurity'
 
 // ==================== 设备适配功能 ====================
 
-export type { CachePluginOptions } from './plugins/cache'
+export type {
+  SecurityConfig,
+} from './features/RouteSecurity'
 
-// 性能监控插件
+// ==================== 路由版本控制导出 ====================
 export {
-  createPerformanceConfig,
-  createPerformancePlugin,
-  getPagePerformance,
-  PerformanceEventType,
-  PerformanceManager,
-  supportsPerformanceAPI,
-  withPerformanceMonitoring,
-} from './plugins/performance'
+  createRouteVersion,
+  getVersionControl,
+  restoreRouteVersion,
+  RouteVersionControl,
+  setupRouteVersionControl,
+} from './features/RouteVersionControl'
 
-export type { PerformancePluginOptions } from './plugins/performance'
+export type {
+  RouteVersion,
+  VersionControlConfig,
+  VersionDiff,
+} from './features/RouteVersionControl'
 
 // ==================== 性能优化工具 ====================
 
-// 预加载插件
+// ==================== 智能路由管理导出 ====================
 export {
-  createPreloadConfig,
-  createPreloadPlugin,
-  HoverPreloadStrategy,
-  IdlePreloadStrategy,
-  PreloadManager,
-  supportsPreload,
-  VisibilityPreloadStrategy,
-} from './plugins/preload'
+  addDynamicRoute,
+  AutoRouteGenerator,
+  DynamicRouteLoader,
+  getRouteStatistics,
+  NestedRouteOptimizer,
+  RouteGroupManager,
+  setupSmartRouteManager,
+  SmartRouteManager,
+} from './features/SmartRouteManager'
 
-export type { PreloadPluginOptions } from './plugins/preload'
+export type {
+  RouteGroup,
+  SmartRouteConfig,
+} from './features/SmartRouteManager'
 
 // ==================== 便捷创建函数 ====================
 
@@ -379,6 +385,97 @@ export async function createFullRouter(options: {
 // ==================== 开发工具导出 ====================
 
 export {
+  combineGuards,
+  createAuthGuard,
+  createLoadingGuard,
+  createPermissionGuard,
+  createProgressGuard,
+  createScrollGuard,
+  createTitleGuard,
+} from './guards'
+
+export type {
+  AuthChecker,
+  AuthGuardOptions,
+  LoadingGuardOptions,
+  PermissionChecker,
+  PermissionGuardOptions,
+  ProgressGuardOptions,
+  ScrollGuardOptions,
+  TitleGuardOptions,
+} from './guards'
+
+// ==================== 功能扩展导出 ====================
+
+export {
+  authMiddleware,
+  createCacheMiddleware,
+  createRateLimitMiddleware,
+  loggingMiddleware,
+  // 中间件系统
+  MiddlewareManager,
+  middlewareManager,
+  permissionMiddleware,
+  progressMiddleware,
+  roleMiddleware,
+  titleMiddleware,
+} from './middleware'
+
+export type {
+  MiddlewareConfig,
+  MiddlewareContext,
+  MiddlewareFunction,
+} from './middleware'
+
+// 动画插件
+export {
+  ANIMATION_PRESETS,
+  AnimationManager,
+  createAnimationConfig,
+  createAnimationPlugin,
+  getAnimationDuration,
+  supportsAnimations,
+} from './plugins/animation'
+
+export type { AnimationPluginOptions } from './plugins/animation'
+
+// 缓存插件
+export {
+  CacheManager,
+  createCacheConfig,
+  createCachePlugin,
+  supportsCaching,
+} from './plugins/cache'
+
+export type { CachePluginOptions } from './plugins/cache'
+
+// 性能监控插件
+export {
+  createPerformanceConfig,
+  createPerformancePlugin,
+  getPagePerformance,
+  PerformanceEventType,
+  PerformanceManager,
+  supportsPerformanceAPI,
+  withPerformanceMonitoring,
+} from './plugins/performance'
+
+export type { PerformancePluginOptions } from './plugins/performance'
+
+// 预加载插件
+export {
+  createPreloadConfig,
+  createPreloadPlugin,
+  HoverPreloadStrategy,
+  IdlePreloadStrategy,
+  PreloadManager,
+  supportsPreload,
+  VisibilityPreloadStrategy,
+} from './plugins/preload'
+
+export type { PreloadPluginOptions } from './plugins/preload'
+
+export {
   createRouteStateManager,
   // 路由状态管理
   RouteStateManager,
@@ -390,19 +487,7 @@ export type {
   RouteState,
 } from './state/route-state'
 
-// ==================== 功能扩展导出 ====================
-
-export {
-  createPerformanceTester,
-  createRouteAssertions,
-  createTestRouter,
-  RouteAssertions,
-  RoutePerformanceTester,
-  // 测试工具
-  RouterTestUtils,
-  setupRouterTest,
-  testRoutes,
-} from './testing/test-utils'
+// 测试工具已移除
 
 // 核心类型
 export type {
@@ -475,112 +560,18 @@ export {
   stringifyURL,
 } from './utils'
 
-export {
-  hoverPreload,
-  lazyLoadComponent,
-  lazyLoadRoutes,
-  optimizeRoutes,
-  preloadRoutes,
-  SmartPreloader,
-  splitChunk,
-  visibilityPreload,
-} from './utils/lazy-load'
-
-export type { LazyLoadOptions } from './utils/lazy-load'
+// 懒加载功能已集成到其他模块中
 
 // ==================== 性能监控导出 ====================
+
+// ==================== 内存管理器导出 ====================
 export {
-  RoutePerformanceMonitor,
-  createRoutePerformanceMonitor,
-  createPerformanceMonitorPlugin,
-  getPerformanceMonitor,
-} from './utils/route-performance-monitor'
-
-export type {
-  RoutePerformanceMetric,
-  PerformanceMonitorConfig,
-} from './utils/route-performance-monitor'
-
-export {
-  RouteCacheWarmer,
-  createRouteCacheWarmer,
-  warmupRoutes,
-} from './utils/route-cache-warmer'
-
-export type {
-  WarmupConfig,
-  WarmupResult,
-} from './utils/route-cache-warmer'
-
-// ==================== 智能预取导出 ====================
-export {
-  IntelligentPrefetchManager,
-  createIntelligentPrefetch,
-  PrefetchPriority,
-  NetworkQuality,
-} from './utils/intelligent-prefetch'
-
-export type {
-  IntelligentPrefetchConfig,
-} from './utils/intelligent-prefetch'
-
-// ==================== 路由版本控制导出 ====================
-export {
-  RouteVersionControl,
-  setupRouteVersionControl,
-  getVersionControl,
-  createRouteVersion,
-  restoreRouteVersion,
-} from './features/RouteVersionControl'
-
-export type {
-  RouteVersion,
-  VersionDiff,
-  VersionControlConfig,
-} from './features/RouteVersionControl'
-
-// ==================== 路由性能分析器导出 ====================
-export {
-  RoutePerformanceAnalyzer,
-  setupPerformanceAnalyzer,
-  getPerformanceAnalyzer,
-  generatePerformanceReport,
-  getPerformanceSuggestions,
-} from './features/RoutePerformanceAnalyzer'
-
-export type {
-  PerformanceMetric,
-  PerformanceReport,
-  OptimizationSuggestion,
-  AnalyzerConfig,
-} from './features/RoutePerformanceAnalyzer'
-
-// ==================== 路由调试器导出 ====================
-export {
-  RouteDebugger,
-  setupRouteDebugger,
-  getRouteDebugger,
-  debugLog,
-  debugWarn,
-  debugError,
-} from './features/RouteDebugger'
-
-export type {
-  DebugEvent,
-  RouteTrace,
-  TraceStep,
-  Breakpoint,
-  DebuggerConfig,
-} from './features/RouteDebugger'
-
-// ==================== 统一内存管理器导出 ====================
-export {
-  UnifiedMemoryManager,
-  CachePriority,
-  getMemoryManager,
   cacheGet,
+  CachePriority,
   cacheSet,
   cleanupMemory,
+  getMemoryManager,
+  UnifiedMemoryManager,
 } from './utils/unified-memory-manager'
 
 export type {
@@ -588,59 +579,6 @@ export type {
   MemoryStats,
   UnifiedMemoryConfig,
 } from './utils/unified-memory-manager'
-
-// ==================== 智能代码分割导出 ====================
-export {
-  CodeSplittingManager,
-  createCodeSplittingManager,
-  CodeSplittingPlugin,
-} from './features/code-splitting'
-
-export type {
-  SplittingStrategy,
-  ChunkPriority,
-  PreloadStrategy as CodeSplittingPreloadStrategy,
-  SplittingConfig,
-  SplittingAnalysis,
-  ChunkInfo,
-  ComponentLoadState,
-  LoadingMetrics as CodeSplittingMetrics,
-} from './features/code-splitting'
-
-// ==================== 安全功能导出 ====================
-export {
-  RouteSecurityManager,
-  AuthManager,
-  PermissionManager,
-  CSRFProtection,
-  XSSProtection,
-  setupRouteSecurity,
-  checkPermission,
-  isAuthenticated,
-  getCurrentUser,
-  sanitizeContent,
-} from './features/RouteSecurity'
-
-export type {
-  SecurityConfig,
-} from './features/RouteSecurity'
-
-// ==================== 智能路由管理导出 ====================
-export {
-  SmartRouteManager,
-  AutoRouteGenerator,
-  DynamicRouteLoader,
-  NestedRouteOptimizer,
-  RouteGroupManager,
-  setupSmartRouteManager,
-  getRouteStatistics,
-  addDynamicRoute,
-} from './features/SmartRouteManager'
-
-export type {
-  SmartRouteConfig,
-  RouteGroup,
-} from './features/SmartRouteManager'
 
 // ==================== 默认导出 ====================
 

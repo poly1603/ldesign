@@ -676,7 +676,7 @@ export class EnhancedLibraryBuilder extends EventEmitter implements ILibraryBuil
       if (typeof output.source === 'string') {
         const debugPatterns = [
           { pattern: /console\.(?:log|debug|info|warn|error)/g, message: '包含 console 调试代码' },
-          { pattern: /debugger(?:\s*;)?/g, message: '包含 debugger 语句' },
+          { pattern: /(?:\s*;)?/g, message: '包含  语句' },
           { pattern: /(?:alert|confirm)\s*\(/g, message: '包含弹窗调用' }
         ]
 
@@ -1227,7 +1227,7 @@ describe('Library Validation', () => {
    * 设置库类型
    */
   setLibraryType(type: LibraryType): void {
-    this.config.libraryType = type
+    this.config?.libraryType = type
     this.logger.info(`已设置库类型为: ${type}`)
   }
 
@@ -1261,13 +1261,13 @@ describe('Library Validation', () => {
         current = parent
       }
 
-      const root = resolvedRoot || (this.config.cwd || process.cwd())
+      const root = resolvedRoot || (this.config?.cwd || process.cwd())
       const result = await this.libraryDetector.detect(root)
       return result.type
 
     } catch {
       // 发生错误时，回退到 cwd
-      const fallbackRoot = this.config.cwd || process.cwd()
+      const fallbackRoot = this.config?.cwd || process.cwd()
       const result = await this.libraryDetector.detect(fallbackRoot)
       return result.type
     }
@@ -1302,7 +1302,7 @@ describe('Library Validation', () => {
 
     try {
       await this.loadConfig()
-      this.setBundler(this.config.bundler || 'rollup')
+      this.setBundler(this.config?.bundler || 'rollup')
       this.setStatus(BuilderStatus.IDLE)
       this.logger.success('EnhancedLibraryBuilder 初始化完成')
     } catch (error) {

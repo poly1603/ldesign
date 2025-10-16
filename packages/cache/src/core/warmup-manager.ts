@@ -210,7 +210,7 @@ export class WarmupManager {
     items: WarmupItem[],
     result: WarmupResult,
   ): Promise<void> {
-    const concurrency = this.config.concurrency || 5
+    const concurrency = this.config?.concurrency || 5
 
     for (let i = 0; i < items.length; i += concurrency) {
       const batch = items.slice(i, i + concurrency)
@@ -229,7 +229,7 @@ export class WarmupManager {
     result: WarmupResult,
   ): Promise<void> {
     let retries = 0
-    const maxRetries = this.config.retries || 3
+    const maxRetries = this.config?.retries || 3
 
     while (retries <= maxRetries) {
       try {
@@ -261,14 +261,14 @@ export class WarmupManager {
           })
           result.stats.failed++
           
-          if (!this.config.continueOnError) {
+          if (!this.config?.continueOnError) {
             throw error
           }
           return
         }
 
         // 等待后重试
-        await this.delay(this.config.retryDelay || 1000)
+        await this.delay(this.config?.retryDelay || 1000)
       }
     }
   }
@@ -279,7 +279,7 @@ export class WarmupManager {
   private async fetchWithTimeout<T>(
     fetcher: () => Promise<T> | T,
   ): Promise<T> {
-    const timeout = this.config.timeout || 30000
+    const timeout = this.config?.timeout || 30000
     
     return Promise.race([
       Promise.resolve(fetcher()),

@@ -4,7 +4,6 @@
 
 import { Command } from 'commander'
 import path from 'path'
-import { promises as fs } from 'fs'
 import { existsSync } from 'fs'
 import { logger } from '../../utils/logger'
 import { formatFileSize } from '../../utils/format-utils'

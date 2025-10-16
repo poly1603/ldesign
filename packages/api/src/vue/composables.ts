@@ -312,7 +312,7 @@ export function useRequest<T = unknown>(
  * // 基础用法
  * const { data, loading, error, execute } = useApiCall<UserInfo>('getUserInfo', {
  *   immediate: true,
- *   onSuccess: (data) => console.log('Success:', data),
+ *   onSuccess: (data) => ,
  *   onError: (error) => console.error('Error:', error),
  * })
  *
@@ -743,7 +743,7 @@ export function useBatchApiCall<T = unknown>(
  * })
  *
  * const { execute: login } = systemApi.login({
- *   onSuccess: (result) => console.log('登录成功:', result),
+ *   onSuccess: (result) => ,
  * })
  * ```
  */

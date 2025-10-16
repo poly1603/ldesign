@@ -9,7 +9,6 @@
 
 import { Command } from 'commander'
 import { Logger } from '../../utils/logger'
-import chalk from 'chalk'
 import ora from 'ora'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -352,12 +351,11 @@ export class MonitorCommand {
         this.logger.success(`✅ 配置已更新: ${key} = ${value}`)
       } else if (options.get) {
         const value = await this.getConfig(options.get)
-        console.log(`${options.get}: ${value}`)
-      } else if (options.list) {
+              } else if (options.list) {
         const config = await this.getAllConfig()
-        console.log(chalk.cyan('\n📋 监控配置:\n'))
+        )
         Object.entries(config).forEach(([key, value]) => {
-          console.log(`${chalk.yellow(key)}: ${value}`)
+          }: ${value}`)
         })
       }
     } catch (error) {
@@ -410,20 +408,20 @@ export class MonitorCommand {
 
   private displayRealTimeMetrics(metrics: PerformanceMetrics, target: string): void {
     console.clear()
-    console.log(chalk.cyan(`\n📊 实时性能监控 - ${target}\n`))
+    )
     
     // 显示 Web Vitals
-    console.log(chalk.yellow('Core Web Vitals:'))
-    console.log(`  LCP: ${this.formatMetric(metrics.webVitals.LCP, 'ms')}`)
-    console.log(`  FID: ${this.formatMetric(metrics.webVitals.FID, 'ms')}`)
-    console.log(`  CLS: ${this.formatMetric(metrics.webVitals.CLS, '')}`)
+    )
+    }`)
+    }`)
+    }`)
     
     // 显示运行时指标
-    console.log(chalk.yellow('\n运行时指标:'))
-    console.log(`  内存使用: ${this.formatMetric(metrics.runtimeMetrics.memoryUsage, 'MB')}`)
-    console.log(`  CPU 使用: ${this.formatMetric(metrics.runtimeMetrics.cpuUsage, '%')}`)
+    )
+    }`)
+    }`)
     
-    console.log(chalk.gray(`\n最后更新: ${new Date().toLocaleTimeString()}`))
+    .toLocaleTimeString()}`))
   }
 
   private formatMetric(value: number, unit: string): string {

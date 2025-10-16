@@ -132,7 +132,7 @@ export class PerformanceMonitor {
       ...config,
     }
 
-    if (this.config.autoCleanup) {
+    if (this.config?.autoCleanup) {
       this.startAutoCleanup()
     }
   }
@@ -141,7 +141,7 @@ export class PerformanceMonitor {
    * 开始监控操作
    */
   startOperation(operationId: string, _algorithm?: EncryptionAlgorithm): void {
-    if (!this.config.enabled || Math.random() > this.config.samplingRate) {
+    if (!this.config?.enabled || Math.random() > this.config?.samplingRate) {
       return
     }
 
@@ -159,7 +159,7 @@ export class PerformanceMonitor {
     error?: string,
     algorithm?: EncryptionAlgorithm,
   ): void {
-    if (!this.config.enabled || !this.startTimes.has(operationId)) {
+    if (!this.config?.enabled || !this.startTimes.has(operationId)) {
       return
     }
 
@@ -175,7 +175,7 @@ export class PerformanceMonitor {
       duration,
       dataSize,
       throughput: dataSize ? (dataSize / duration) * 1000 : undefined,
-      memoryUsage: this.config.trackMemory ? this.getMemoryUsage() : undefined,
+      memoryUsage: this.config?.trackMemory ? this.getMemoryUsage() : undefined,
       success,
       error,
     }
@@ -184,7 +184,7 @@ export class PerformanceMonitor {
     this.startTimes.delete(operationId)
 
     // 触发实时监控回调
-    if (this.config.realTimeMonitoring) {
+    if (this.config?.realTimeMonitoring) {
       this.notifyRealTimeListeners(metric)
     }
   }
@@ -196,7 +196,7 @@ export class PerformanceMonitor {
     this.metrics.push(metric)
 
     // 限制存储的指标数量
-    if (this.metrics.length > this.config.maxMetrics) {
+    if (this.metrics.length > this.config?.maxMetrics) {
       this.metrics.shift()
     }
   }
@@ -384,7 +384,7 @@ export class PerformanceMonitor {
    * 清理旧数据
    */
   cleanup(olderThan?: number): void {
-    const threshold = olderThan || Date.now() - this.config.cleanupThreshold
+    const threshold = olderThan || Date.now() - this.config?.cleanupThreshold
     this.metrics = this.metrics.filter(m => m.startTime >= threshold)
   }
 
@@ -394,7 +394,7 @@ export class PerformanceMonitor {
   private startAutoCleanup(): void {
     this.cleanupInterval = setInterval(() => {
       this.cleanup()
-    }, this.config.cleanupThreshold)
+    }, this.config?.cleanupThreshold)
   }
 
   /**

@@ -114,8 +114,8 @@
   ],
   "scripts": {
     "// Build Scripts": "",
-    "build": "ldesign-builder build -f esm,cjs,umd",
-    "build:clean": "ldesign-builder build -f esm,cjs,umd --clean",
+    "build": "ldesign-builder build -f esm,cjs",
+    "build:clean": "ldesign-builder build -f esm,cjs --clean",
     "build:watch": "ldesign-builder build --watch",
     "build:dev": "node scripts/build.js --dev",
     "// Development Scripts": "",

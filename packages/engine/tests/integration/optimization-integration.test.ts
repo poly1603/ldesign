@@ -1,23 +1,22 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  PerformanceAnalyzer,
+  createManagedPromise,
+  memoryManager
+} from '../../src/utils/memory-manager'
+import {
+  debounce,
   globalPerformanceAnalyzer,
   measurePerformance,
-  debounce,
+  PerformanceAnalyzer,
   throttle
 } from '../../src/utils/performance-analyzer'
 import {
-  typedEmit2 as typedEmit,
+  createTypedConfigManager,
+  InputValidator,
   safeAsync,
   safeDeepClone,
-  InputValidator,
-  PromiseUtil,
-  createTypedConfigManager
+  typedEmit2 as typedEmit
 } from '../../src/utils/type-safety'
-import {
-  memoryManager,
-  createManagedPromise
-} from '../../src/utils/memory-manager'
 
 describe.skip('性能优化工具集成测试', () => {
   beforeEach(() => {
@@ -89,7 +88,7 @@ describe.skip('性能优化工具集成测试', () => {
         element.addEventListener('click', () => {})
         
         // 返回一个大对象
-        return new Array(1000).fill(0).map(i => ({ data: Math.random() }))
+        return Array.from({length: 1000}).fill(0).map(i => ({ data: Math.random() }))
       }
 
       // 使用性能分析器监控
@@ -457,9 +456,9 @@ describe.skip('性能优化工具集成测试', () => {
         {
           name: 'memory-pressure',
           operation: () => {
-            const largeArray = new Array(100).fill(0).map((_, i) => ({ // 减少数组大小
+            const largeArray = Array.from({length: 100}).fill(0).map((_, i) => ({ // 减少数组大小
               id: i,
-              data: new Array(10).fill(Math.random()) // 减少内部数组大小
+              data: Array.from({length: 10}).fill(Math.random()) // 减少内部数组大小
             }))
             return safeDeepClone(largeArray)
           }

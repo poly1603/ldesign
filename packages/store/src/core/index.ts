@@ -105,4 +105,4 @@ export type {
   PersistOptions,
   StateDefinition,
   StoreOptions,
-} from '@/types'
+} from '../types'

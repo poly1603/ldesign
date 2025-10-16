@@ -221,7 +221,7 @@ export class HttpCacheManager {
   }
 
   private createStorage(): CacheStorage {
-    switch (this.config.strategy) {
+    switch (this.config?.strategy) {
       case 'localStorage':
         return new LocalStorageCacheStorage()
       case 'sessionStorage':
@@ -229,7 +229,7 @@ export class HttpCacheManager {
         return new LocalStorageCacheStorage('session_http_cache_')
       case 'memory':
       default:
-        return new MemoryCacheStorage(this.config.maxSize)
+        return new MemoryCacheStorage(this.config?.maxSize)
     }
   }
 
@@ -237,8 +237,8 @@ export class HttpCacheManager {
    * 生成缓存键
    */
   private generateKey(url: string, options: any): string {
-    if (this.config.keyGenerator) {
-      return this.config.keyGenerator(url, options)
+    if (this.config?.keyGenerator) {
+      return this.config?.keyGenerator(url, options)
     }
 
     // 默认键生成策略
@@ -281,7 +281,7 @@ export class HttpCacheManager {
     const item: CacheItem = {
       data,
       timestamp: Date.now(),
-      ttl: ttl || this.config.defaultTTL,
+      ttl: ttl || this.config?.defaultTTL,
       headers,
       size: this.calculateSize(data),
     }

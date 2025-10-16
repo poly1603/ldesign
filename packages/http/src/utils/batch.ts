@@ -85,7 +85,7 @@ export class BatchManager {
    * 添加请求到批处理队列
    */
   async add<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       throw new Error('Batch processing is disabled')
     }
 
@@ -101,7 +101,7 @@ export class BatchManager {
       this.stats.totalRequests++
 
       // 如果达到最大批处理大小，立即执行
-      if (this.pendingBatch.length >= this.config.maxBatchSize) {
+      if (this.pendingBatch.length >= this.config?.maxBatchSize) {
         this.flush()
       }
       else {
@@ -121,7 +121,7 @@ export class BatchManager {
 
     this.batchTimer = setTimeout(() => {
       this.flush()
-    }, this.config.windowMs)
+    }, this.config?.windowMs)
   }
 
   /**
@@ -137,14 +137,14 @@ export class BatchManager {
       return
     }
 
-    const batch = this.pendingBatch.splice(0, this.config.maxBatchSize)
+    const batch = this.pendingBatch.splice(0, this.config?.maxBatchSize)
     this.stats.batchCount++
     this.stats.savedRequests += batch.length - 1
     this.updateStats()
 
     try {
       // 构建批处理请求
-      const batchRequest = this.config.requestBuilder(
+      const batchRequest = this.config?.requestBuilder(
         batch.map(item => item.config),
       )
 
@@ -154,7 +154,7 @@ export class BatchManager {
       const batchResponse = await this.executeBatchRequest(batchRequest)
 
       // 解析批处理响应
-      const responses = this.config.responseParser(batchResponse)
+      const responses = this.config?.responseParser(batchResponse)
 
       // 分发响应到各个请求
       batch.forEach((item, index) => {
@@ -194,7 +194,7 @@ export class BatchManager {
   private defaultRequestBuilder(requests: RequestConfig[]): RequestConfig {
     return {
       method: 'POST',
-      url: this.config.endpoint,
+      url: this.config?.endpoint,
       data: {
         requests: requests.map(req => ({
           method: req.method,

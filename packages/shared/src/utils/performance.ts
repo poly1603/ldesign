@@ -116,8 +116,7 @@ export function createTimer(): PerformanceTimer {
  *   someExpensiveOperation()
  * }, 100)
  * 
- * console.log(`平均耗时: ${avgTime}ms`)
- * ```
+ *  * ```
  */
 export function benchmark(fn: () => void, iterations = 1000): number {
   const timer = createTimer()

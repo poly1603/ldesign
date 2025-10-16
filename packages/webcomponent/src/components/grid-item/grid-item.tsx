@@ -19,7 +19,7 @@ export class LdesignGridItem {
   @Prop({ reflect: true }) span: number = 1;
 
   /** 父容器的列数（内部维护，用于限制 span） */
-  @State() parentCols: number = 24;
+  @State() parentCols!: number = 24;
 
   private parentObserver?: MutationObserver;
 

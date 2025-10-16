@@ -95,12 +95,12 @@ export class UnifiedLogger implements ILogger {
     }
 
     // 启动定期刷新
-    if (this.config.async && this.config.flushInterval > 0) {
+    if (this.config?.async && this.config?.flushInterval > 0) {
       this.startFlushTimer()
     }
 
     // 启动远程日志批量发送
-    if (this.config.remote && this.config.remoteInterval > 0) {
+    if (this.config?.remote && this.config?.remoteInterval > 0) {
       this.startRemoteTimer()
     }
   }
@@ -110,24 +110,27 @@ export class UnifiedLogger implements ILogger {
    */
   private normalizeConfig(config: LogConfig): Required<LogConfig> {
     return {
-      level: config.level ?? 'warn',  // 生产环境默认只记录warn以上
+      level: config.level ?? 'warn',
       enabled: config.enabled ?? true,
-      maxLogs: config.maxLogs ?? 100,  // 减少日志存储数量
+      maxLogs: config.maxLogs ?? 100,
       console: config.console ?? true,
       remote: config.remote ?? false,
       file: config.file ?? false,
       remoteUrl: config.remoteUrl ?? '',
       remoteHeaders: config.remoteHeaders ?? {},
-      remoteBatchSize: config.remoteBatchSize ?? 50,  // 减少批量大小
-      remoteInterval: config.remoteInterval ?? 10000,  // 减少发送频率
-      format: config.format ?? 'text',  // 使用更简单的格式
-      timestamp: config.timestamp ?? false,  // 默认关闭时间戳以节省内存
-      context: config.context ?? false,  // 默认关闭上下文
+      remoteBatchSize: config.remoteBatchSize ?? 50,
+      remoteInterval: config.remoteInterval ?? 10000,
+      format: config.format ?? 'text',
+      timestamp: config.timestamp ?? false,
+      context: config.context ?? false,
       async: config.async ?? false,
-      bufferSize: config.bufferSize ?? 50,  // 减少缓冲区大小
-      flushInterval: config.flushInterval ?? 2000,  // 减少刷新频率
+      bufferSize: config.bufferSize ?? 50,
+      flushInterval: config.flushInterval ?? 2000,
       filters: config.filters ?? [],
-      plugins: config.plugins ?? []
+      plugins: config.plugins ?? [],
+      showTimestamp: config.showTimestamp ?? false,
+      showContext: config.showContext ?? false,
+      prefix: config.prefix ?? ''
     }
   }
 
@@ -154,17 +157,17 @@ export class UnifiedLogger implements ILogger {
    */
   private initTransports(): void {
     // 控制台传输器
-    if (this.config.console) {
+    if (this.config?.console) {
       this.transports.set('console', new ConsoleTransport(this.config))
     }
 
     // 远程传输器
-    if (this.config.remote && this.config.remoteUrl) {
+    if (this.config?.remote && this.config?.remoteUrl) {
       this.transports.set('remote', new RemoteTransport(this.config))
     }
 
     // 文件传输器（浏览器环境使用 IndexedDB）
-    if (this.config.file && typeof window !== 'undefined') {
+    if (this.config?.file && typeof window !== 'undefined') {
       this.transports.set('file', new IndexedDBTransport(this.config))
     }
   }
@@ -193,7 +196,7 @@ export class UnifiedLogger implements ILogger {
    * 核心日志方法
    */
   private log(level: LogLevel, message: string, ...args: unknown[]): void {
-    if (!this.config.enabled) return
+    if (!this.config?.enabled) return
     if (!this.shouldLog(level)) return
 
     // 创建日志条目
@@ -212,7 +215,7 @@ export class UnifiedLogger implements ILogger {
     }
 
     // 应用过滤器
-    for (const filter of this.config.filters) {
+    for (const filter of this.config?.filters) {
       if (!filter(entry)) {
         this.stats.dropped++
         return
@@ -223,11 +226,11 @@ export class UnifiedLogger implements ILogger {
     this.updateStats(level)
 
     // 异步模式：加入缓冲区
-    if (this.config.async) {
+    if (this.config?.async) {
       this.buffer.push(entry)
       this.stats.buffered++
 
-      if (this.buffer.length >= this.config.bufferSize) {
+      if (this.buffer.length >= this.config?.bufferSize) {
         this.flush()
       }
     } else {
@@ -250,7 +253,7 @@ export class UnifiedLogger implements ILogger {
       } catch (error) {
         this.stats.errors++
         // 避免递归
-        if (this.config.console) {
+        if (this.config?.console) {
           console.error('Logger transport error:', error)
         }
       }
@@ -264,7 +267,7 @@ export class UnifiedLogger implements ILogger {
     this.logs.push(entry)
 
     // 限制历史记录大小
-    if (this.logs.length > this.config.maxLogs) {
+    if (this.logs.length > this.config?.maxLogs) {
       this.logs.shift()
     }
   }
@@ -274,7 +277,7 @@ export class UnifiedLogger implements ILogger {
    */
   private shouldLog(level: LogLevel): boolean {
     const levels: LogLevel[] = ['debug', 'info', 'warn', 'error']
-    const configIndex = levels.indexOf(this.config.level)
+    const configIndex = levels.indexOf(this.config?.level)
     const levelIndex = levels.indexOf(level)
     return levelIndex >= configIndex
   }
@@ -325,7 +328,7 @@ export class UnifiedLogger implements ILogger {
   private startFlushTimer(): void {
     this.flushTimer = setInterval(() => {
       this.flush()
-    }, this.config.flushInterval)
+    }, this.config?.flushInterval)
   }
 
   /**
@@ -334,7 +337,7 @@ export class UnifiedLogger implements ILogger {
   private startRemoteTimer(): void {
     this.remoteTimer = setInterval(() => {
       this.flushRemote()
-    }, this.config.remoteInterval)
+    }, this.config?.remoteInterval)
   }
 
   /**
@@ -343,18 +346,18 @@ export class UnifiedLogger implements ILogger {
   private async flushRemote(): Promise<void> {
     if (this.remoteQueue.length === 0) return
 
-    const batch = this.remoteQueue.splice(0, this.config.remoteBatchSize)
+    const batch = this.remoteQueue.splice(0, this.config?.remoteBatchSize)
 
     try {
-      await fetch(this.config.remoteUrl, {
+      await fetch(this.config?.remoteUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...this.config.remoteHeaders
+          ...this.config?.remoteHeaders
         },
         body: JSON.stringify(batch)
       })
-    } catch (error) {
+    } catch {
       this.stats.errors++
       // 恢复失败的日志到队列
       this.remoteQueue.unshift(...batch)
@@ -411,14 +414,16 @@ export class UnifiedLogger implements ILogger {
    * 设置日志级别
    */
   setLevel(level: LogLevel): void {
-    this.config.level = level
+    if (this.config) {
+      this.config.level = level
+    }
   }
 
   /**
    * 获取日志级别
    */
   getLevel(): LogLevel {
-    return this.config.level
+    return this.config?.level
   }
 
   /**
@@ -441,6 +446,34 @@ export class UnifiedLogger implements ILogger {
     this.logs.length = 0
     this.buffer.length = 0
     this.remoteQueue.length = 0
+  }
+
+  /**
+   * 清空日志（别名方法，与 Logger 接口兼容）
+   */
+  clear(): void {
+    this.clearLogs()
+    this.resetStats()
+  }
+
+  /**
+   * 设置最大日志数
+   */
+  setMaxLogs(max: number): void {
+    if (this.config) {
+      this.config.maxLogs = max
+    }
+    // 如果当前日志数超过新限制，删除老日志
+    while (this.logs.length > max) {
+      this.logs.shift()
+    }
+  }
+
+  /**
+   * 获取最大日志数
+   */
+  getMaxLogs(): number {
+    return this.config?.maxLogs
   }
 
   /**
@@ -492,19 +525,20 @@ class ConsoleTransport implements LogTransport {
 
   write(entry: LogEntry): void {
     const { level, message, data } = entry
-    const timestamp = this.config.timestamp
+    const timestamp = this.config?.timestamp
       ? new Date(entry.timestamp).toISOString()
       : ''
 
-    const prefix = this.config.format === 'pretty'
+    const prefix = this.config?.format === 'pretty'
       ? this.getPrettyPrefix(level, timestamp)
       : timestamp
 
-    const args = [prefix, message, ...(data || [])]
+    const dataArray = Array.isArray(data) ? data : []
+    const args = [prefix, message, ...dataArray]
 
     switch (level) {
       case 'debug':
-        console.debug(...args)
+        
         break
       case 'info':
         console.info(...args)
@@ -545,7 +579,7 @@ class RemoteTransport implements LogTransport {
   write(entry: LogEntry): void {
     this.queue.push(entry)
 
-    if (this.queue.length >= this.config.remoteBatchSize) {
+    if (this.queue.length >= this.config?.remoteBatchSize) {
       this.flush()
     }
   }
@@ -556,11 +590,11 @@ class RemoteTransport implements LogTransport {
     const batch = this.queue.splice(0, this.queue.length)
 
     try {
-      await fetch(this.config.remoteUrl, {
+      await fetch(this.config?.remoteUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...this.config.remoteHeaders
+          ...this.config?.remoteHeaders
         },
         body: JSON.stringify(batch)
       })
@@ -608,8 +642,9 @@ class IndexedDBTransport implements LogTransport {
 
   async write(entry: LogEntry): Promise<void> {
     if (!this.db) await this.initDB()
+    if (!this.db) return
 
-    const transaction = this.db!.transaction([this.storeName], 'readwrite')
+    const transaction = this.db.transaction([this.storeName], 'readwrite')
     const store = transaction.objectStore(this.storeName)
     store.add(entry)
 
@@ -624,8 +659,8 @@ class IndexedDBTransport implements LogTransport {
     const store = transaction.objectStore(this.storeName)
     const count = await this.getCount(store)
 
-    if (count > this.config.maxLogs) {
-      const deleteCount = count - this.config.maxLogs
+    if (count > this.config?.maxLogs) {
+      const deleteCount = count - this.config?.maxLogs
       const request = store.openCursor()
       let deleted = 0
 
@@ -688,7 +723,8 @@ export class ErrorTrackingPlugin implements LogPlugin {
   process(entry: LogEntry): LogEntry {
     if (entry.level !== 'error') return entry
 
-    const error = entry.data?.[0]
+    const dataArray = Array.isArray(entry.data) ? entry.data : [entry.data]
+    const error = dataArray[0]
     if (error instanceof Error) {
       return {
         ...entry,
@@ -729,9 +765,19 @@ export function createUnifiedLogger(config?: LogConfig): UnifiedLogger {
   return new UnifiedLogger(config)
 }
 
+/**
+ * 创建日志器（兼容 LogLevel 字符串和 LogConfig 对象）
+ * @param levelOrConfig 日志级别字符串或配置对象
+ */
+export function createLogger(levelOrConfig?: LogLevel | LogConfig): UnifiedLogger {
+  if (typeof levelOrConfig === 'string') {
+    return new UnifiedLogger({ level: levelOrConfig })
+  }
+  return new UnifiedLogger(levelOrConfig)
+}
+
 // 向后兼容
 export { UnifiedLogger as Logger }
-export { createUnifiedLogger as createLogger }
 
 // ============================================
 // getLogger 工厂函数
@@ -749,18 +795,19 @@ const loggerInstances = new Map<string, UnifiedLogger>()
 export function getLogger(name: string = 'default', config?: LogConfig): UnifiedLogger {
   // 如果已存在，直接返回
   if (loggerInstances.has(name) && !config) {
-    return loggerInstances.get(name)!
+    const existing = loggerInstances.get(name)
+    if (existing) return existing
   }
-  
+
   // 创建新实例
   const logger = new UnifiedLogger({
     ...config,
     // 添加默认前缀
     format: config?.format ?? 'pretty'
   })
-  
+
   // 缓存实例
   loggerInstances.set(name, logger)
-  
+
   return logger
 }

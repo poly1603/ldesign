@@ -4,7 +4,7 @@ import type {
   GetterDefinition,
   StateDefinition,
   UseStoreReturn,
-} from '@/types'
+} from '../types'
 import { defineStore } from 'pinia'
 import { computed, reactive, ref, watch } from 'vue'
 

@@ -102,12 +102,12 @@ export class UnifiedCacheManager<T = unknown> {
    */
   private normalizeConfig(config: CacheConfig<T>): Required<CacheConfig<T>> {
     return {
-      maxSize: config.maxSize ?? 100,  // 减少默认缓存大小从1000到100
-      defaultTTL: config.defaultTTL ?? 5 * 60 * 1000,  // 设置默认TTL为5分钟
+      maxSize: config.maxSize ?? 100, // 减少默认缓存大小从1000到100
+      defaultTTL: config.defaultTTL ?? 5 * 60 * 1000, // 设置默认TTL为5分钟
       strategy: config.strategy ?? CacheStrategy.LRU,
-      enableStats: config.enableStats ?? false,  // 默认关闭统计以节省内存
-      maxMemory: config.maxMemory ?? 10 * 1024 * 1024,  // 限制最大内存10MB
-      cleanupInterval: config.cleanupInterval ?? 30000,  // 更频繁的清理（30秒）
+      enableStats: config.enableStats ?? false, // 默认关闭统计以节省内存
+      maxMemory: config.maxMemory ?? 10 * 1024 * 1024, // 限制最大内存10MB
+      cleanupInterval: config.cleanupInterval ?? 30000, // 更频繁的清理（30秒）
       layers: config.layers ?? {},
       onEvict: config.onEvict ?? (() => {}),
       onError: config.onError ?? ((error) => this.logger?.error('Cache error', error))
@@ -170,14 +170,14 @@ export class UnifiedCacheManager<T = unknown> {
     }
 
     // 从分层缓存查找
-    for (const [layerName, layer] of this.layers) {
+    for (const [, layer] of this.layers) {
       try {
         const value = await layer.get(key)
         if (value !== undefined) {
           // 回填到内存缓存
           this.set(key, value)
 
-          if (this.config.enableStats) {
+          if (this.config?.enableStats) {
             this.stats.hits++
             this.updateHitRate()
           }
@@ -185,12 +185,12 @@ export class UnifiedCacheManager<T = unknown> {
           return value
         }
       } catch (error) {
-        this.config.onError(error as Error)
+        this.config?.onError(error as Error)
       }
     }
 
     // 未命中
-    if (this.config.enableStats) {
+    if (this.config?.enableStats) {
       this.stats.misses++
       this.updateHitRate()
     }
@@ -222,7 +222,7 @@ export class UnifiedCacheManager<T = unknown> {
     // 根据策略更新顺序
     this.updateItemOrder(key, item)
 
-    if (this.config.enableStats) {
+    if (this.config?.enableStats) {
       this.stats.hits++
       this.updateHitRate()
     }
@@ -234,7 +234,7 @@ export class UnifiedCacheManager<T = unknown> {
    * 设置缓存值
    */
   async set(key: string, value: T, ttl?: number, metadata?: Record<string, unknown>): Promise<void> {
-    const effectiveTTL = ttl ?? this.config.defaultTTL
+    const effectiveTTL = ttl ?? this.config?.defaultTTL
     const size = this.estimateSize(value)
 
     // 检查容量限制
@@ -260,11 +260,11 @@ export class UnifiedCacheManager<T = unknown> {
       try {
         await layer.set(key, value, effectiveTTL)
       } catch (error) {
-        this.config.onError(error as Error)
+        this.config?.onError(error as Error)
       }
     }
 
-    if (this.config.enableStats) {
+    if (this.config?.enableStats) {
       this.stats.sets++
       this.stats.size = this.cache.size
       this.updateStats()
@@ -286,11 +286,11 @@ export class UnifiedCacheManager<T = unknown> {
         try {
           await layer.delete(key)
         } catch (error) {
-          this.config.onError(error as Error)
+          this.config?.onError(error as Error)
         }
       }
 
-      if (this.config.enableStats) {
+      if (this.config?.enableStats) {
         this.stats.deletes++
         this.stats.size = this.cache.size
       }
@@ -313,7 +313,7 @@ export class UnifiedCacheManager<T = unknown> {
       try {
         await layer.clear()
       } catch (error) {
-        this.config.onError(error as Error)
+        this.config?.onError(error as Error)
       }
     }
 
@@ -393,6 +393,34 @@ export class UnifiedCacheManager<T = unknown> {
     this.stats = this.initStats()
   }
 
+  /**
+   * 事件监听（兼容方法）
+   * @param event 事件名称
+   * @param callback 回调函数
+   * @returns 取消监听的函数
+   */
+  on(event: string, callback: (...args: unknown[]) => void): () => void {
+    // 简单实现，如果需要更复杂的事件系统可以后续扩展
+    const self = this as unknown as { _eventListeners?: Map<string, Array<(...args: unknown[]) => void>> }
+    const listeners = self._eventListeners || new Map()
+    if (!self._eventListeners) {
+      self._eventListeners = listeners
+    }
+
+    const eventListeners = listeners.get(event) || []
+    eventListeners.push(callback)
+    listeners.set(event, eventListeners)
+
+    // 返回取消监听的函数
+    return () => {
+      const callbacks = listeners.get(event) || []
+      const index = callbacks.indexOf(callback)
+      if (index > -1) {
+        callbacks.splice(index, 1)
+      }
+    }
+  }
+
   // ============================================
   // 私有方法
   // ============================================
@@ -402,13 +430,13 @@ export class UnifiedCacheManager<T = unknown> {
    */
   private async ensureCapacity(key: string, size: number): Promise<void> {
     // 检查最大条目数
-    if (this.cache.size >= this.config.maxSize && !this.cache.has(key)) {
+    if (this.cache.size >= this.config?.maxSize && !this.cache.has(key)) {
       await this.evict()
     }
 
     // 检查内存限制
-    if (this.config.maxMemory > 0) {
-      while (this.totalMemory + size > this.config.maxMemory && this.cache.size > 0) {
+    if (this.config?.maxMemory > 0) {
+      while (this.totalMemory + size > this.config?.maxMemory && this.cache.size > 0) {
         await this.evict()
       }
     }
@@ -418,7 +446,7 @@ export class UnifiedCacheManager<T = unknown> {
    * 淘汰缓存项
    */
   private async evict(): Promise<void> {
-    const strategy = this.config.strategy
+    const strategy = this.config?.strategy
     let keyToEvict: string | undefined
 
     switch (strategy) {
@@ -439,7 +467,7 @@ export class UnifiedCacheManager<T = unknown> {
     if (keyToEvict) {
       const item = this.cache.get(keyToEvict)
       if (item) {
-        this.config.onEvict(keyToEvict, item.value)
+        this.config?.onEvict(keyToEvict, item.value)
         await this.delete(keyToEvict)
         this.stats.evictions++
       }
@@ -499,7 +527,7 @@ export class UnifiedCacheManager<T = unknown> {
    * 更新项顺序
    */
   private updateItemOrder(key: string, item: CacheItem<T>): void {
-    if (this.config.strategy === CacheStrategy.LRU) {
+    if (this.config?.strategy === CacheStrategy.LRU) {
       // 移到最后（最近使用）
       this.cache.delete(key)
       this.cache.set(key, item)
@@ -544,10 +572,10 @@ export class UnifiedCacheManager<T = unknown> {
    * 启动定期清理
    */
   private startCleanup(): void {
-    if (this.config.cleanupInterval > 0) {
+    if (this.config?.cleanupInterval > 0) {
       this.cleanupTimer = setInterval(() => {
         this.cleanup()
-      }, this.config.cleanupInterval)
+      }, this.config?.cleanupInterval)
     }
   }
 
@@ -595,7 +623,7 @@ export class UnifiedCacheManager<T = unknown> {
 // ============================================
 
 abstract class StorageLayer<T> {
-  constructor(protected config: any) {}
+  constructor(protected config: Record<string, unknown>) {}
 
   abstract get(key: string): Promise<T | undefined>
   abstract set(key: string, value: T, ttl?: number): Promise<void>
@@ -643,9 +671,9 @@ class MemoryLayer<T> extends StorageLayer<T> {
 class LocalStorageLayer<T> extends StorageLayer<T> {
   private prefix: string
 
-  constructor(config: any) {
+  constructor(config: Record<string, unknown>) {
     super(config)
-    this.prefix = config.prefix || 'cache:'
+    this.prefix = (config.prefix as string) || 'cache:'
   }
 
   async get(key: string): Promise<T | undefined> {
@@ -701,9 +729,9 @@ class LocalStorageLayer<T> extends StorageLayer<T> {
 class SessionStorageLayer<T> extends StorageLayer<T> {
   private prefix: string
 
-  constructor(config: any) {
+  constructor(config: Record<string, unknown>) {
     super(config)
-    this.prefix = config.prefix || 'cache:'
+    this.prefix = (config.prefix as string) || 'cache:'
   }
 
   async get(key: string): Promise<T | undefined> {
@@ -761,10 +789,10 @@ class IndexedDBLayer<T> extends StorageLayer<T> {
   private dbName: string
   private storeName: string
 
-  constructor(config: any) {
+  constructor(config: Record<string, unknown>) {
     super(config)
-    this.dbName = config.dbName || 'CacheDB'
-    this.storeName = config.storeName || 'cache'
+    this.dbName = (config.dbName as string) || 'CacheDB'
+    this.storeName = (config.storeName as string) || 'cache'
     this.initDB()
   }
 
@@ -786,9 +814,11 @@ class IndexedDBLayer<T> extends StorageLayer<T> {
 
   async get(key: string): Promise<T | undefined> {
     if (!this.db) await this.initDB()
+    if (!this.db) return undefined
 
+    const db = this.db
     return new Promise((resolve) => {
-      const transaction = this.db!.transaction([this.storeName], 'readonly')
+      const transaction = db.transaction([this.storeName], 'readonly')
       const store = transaction.objectStore(this.storeName)
       const request = store.get(key)
 
@@ -810,9 +840,11 @@ class IndexedDBLayer<T> extends StorageLayer<T> {
 
   async set(key: string, value: T, ttl?: number): Promise<void> {
     if (!this.db) await this.initDB()
+    if (!this.db) return
 
+    const db = this.db
     return new Promise((resolve) => {
-      const transaction = this.db!.transaction([this.storeName], 'readwrite')
+      const transaction = db.transaction([this.storeName], 'readwrite')
       const store = transaction.objectStore(this.storeName)
       const expires = ttl ? Date.now() + ttl : 0
 
@@ -825,9 +857,11 @@ class IndexedDBLayer<T> extends StorageLayer<T> {
 
   async delete(key: string): Promise<boolean> {
     if (!this.db) await this.initDB()
+    if (!this.db) return false
 
+    const db = this.db
     return new Promise((resolve) => {
-      const transaction = this.db!.transaction([this.storeName], 'readwrite')
+      const transaction = db.transaction([this.storeName], 'readwrite')
       const store = transaction.objectStore(this.storeName)
       store.delete(key)
 
@@ -838,9 +872,11 @@ class IndexedDBLayer<T> extends StorageLayer<T> {
 
   async clear(): Promise<void> {
     if (!this.db) await this.initDB()
+    if (!this.db) return
 
+    const db = this.db
     return new Promise((resolve) => {
-      const transaction = this.db!.transaction([this.storeName], 'readwrite')
+      const transaction = db.transaction([this.storeName], 'readwrite')
       const store = transaction.objectStore(this.storeName)
       store.clear()
 

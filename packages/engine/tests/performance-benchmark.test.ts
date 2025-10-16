@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { EventManagerImpl } from '../src/events/event-manager'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { CacheManagerImpl } from '../src/cache/cache-manager'
+import { EventManagerImpl } from '../src/events/event-manager'
 
 describe('性能基准测试', () => {
   describe('事件管理器性能', () => {

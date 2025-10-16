@@ -61,7 +61,7 @@ export const useCounterCompositionStore = defineStore('counter-composition', () 
 
   // 监听计数变化
   watch(count, (newValue, oldValue) => {
-    console.log(`计数从 ${oldValue} 变为 ${newValue}`)
+    
   })
 
   // 返回公开的状态和方法

@@ -462,7 +462,7 @@ export class RetryManager {
     let lastError: HttpError | undefined
     let retryCount = 0
 
-    while (retryCount <= this.config.retries) {
+    while (retryCount <= this.config?.retries) {
       try {
         return await requestFn()
       }
@@ -471,14 +471,14 @@ export class RetryManager {
 
         // 检查是否应该重试
         if (
-          retryCount >= this.config.retries
-          || !this.config.retryCondition(lastError)
+          retryCount >= this.config?.retries
+          || !this.config?.retryCondition(lastError)
         ) {
           throw lastError
         }
 
         // 计算延迟时间
-        const delayTime = this.config.retryDelayFunction(retryCount, lastError)
+        const delayTime = this.config?.retryDelayFunction(retryCount, lastError)
 
         // 等待重试
         await delay(delayTime)
@@ -497,7 +497,7 @@ export class RetryManager {
     retryCount: number,
     _error: HttpError,
   ): number {
-    const baseDelay = this.config.retryDelay
+    const baseDelay = this.config?.retryDelay
     const exponentialDelay = baseDelay * 2 ** retryCount
 
     // 添加随机抖动，避免雷群效应

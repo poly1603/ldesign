@@ -56,7 +56,7 @@ export interface ApiCallState<T = unknown> {
  * // 基础用法
  * const { data, loading, error, execute } = useApiCall<UserInfo>('getUserInfo', {
  *   immediate: true,
- *   onSuccess: (data) => console.log('Success:', data),
+ *   onSuccess: (data) => ,
  *   onError: (error) => console.error('Error:', error),
  * })
  *

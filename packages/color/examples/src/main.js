@@ -368,6 +368,6 @@ generateAndDisplayTheme()
 
 // Run analysis in console
 setTimeout(() => {
-  console.log('Running color analysis...')
+  
   runAnalysis()
 }, 500)

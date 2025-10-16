@@ -4,7 +4,6 @@
  */
 
 import { cac } from 'cac'
-import chalk from 'chalk'
 import { readFileSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -69,13 +68,10 @@ function createCLI() {
  */
 function showWelcome(): void {
   const version = getVersion()
-  console.log()
-  console.log(chalk.cyan.bold('  @ldesign/cli'))
-  console.log(chalk.gray(`  v${version}`))
-  console.log()
-  console.log(chalk.gray('  LDesign 设计系统命令行工具'))
-  console.log()
-}
+    )
+  )
+    )
+  }
 
 /**
  * 主函数 - 供开发模式调用

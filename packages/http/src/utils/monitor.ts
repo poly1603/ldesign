@@ -96,19 +96,19 @@ export class RequestMonitor {
    * 检查是否应该采样
    */
   private shouldSample(): boolean {
-    if (!this.config.enableSampling) {
+    if (!this.config?.enableSampling) {
       return true
     }
 
     this.sampleCounter++
-    return Math.random() < this.config.samplingRate
+    return Math.random() < this.config?.samplingRate
   }
 
   /**
    * 开始监控请求（优化版 - 带采样）
    */
   startRequest(requestId: string, _config: RequestConfig): void {
-    if (!this.config.enabled || !this.shouldSample()) {
+    if (!this.config?.enabled || !this.shouldSample()) {
       return
     }
 
@@ -127,7 +127,7 @@ export class RequestMonitor {
     response?: ResponseData<T>,
     error?: Error,
   ): void {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return
     }
 
@@ -160,15 +160,15 @@ export class RequestMonitor {
     this.invalidateStatsCache()
 
     // 触发回调
-    if (duration > this.config.slowRequestThreshold) {
-      this.config.onSlowRequest(metrics)
+    if (duration > this.config?.slowRequestThreshold) {
+      this.config?.onSlowRequest(metrics)
     }
 
     if (error) {
-      this.config.onError(metrics)
+      this.config?.onError(metrics)
     }
 
-    this.config.onMetricsUpdate(this.metrics)
+    this.config?.onMetricsUpdate(this.metrics)
   }
 
   /**
@@ -195,14 +195,14 @@ export class RequestMonitor {
    * 添加指标（使用循环缓冲区优化性能）
    */
   private addMetrics(metrics: PerformanceMetrics): void {
-    if (this.metrics.length < this.config.maxMetrics) {
+    if (this.metrics.length < this.config?.maxMetrics) {
       // 缓冲区未满，直接添加
       this.metrics.push(metrics)
     }
     else {
       // 缓冲区已满，使用循环覆盖（O(1)操作）
       this.metrics[this.metricsIndex] = metrics
-      this.metricsIndex = (this.metricsIndex + 1) % this.config.maxMetrics
+      this.metricsIndex = (this.metricsIndex + 1) % this.config?.maxMetrics
     }
   }
 
@@ -281,7 +281,7 @@ export class RequestMonitor {
         cached++
       }
 
-      if (metric.duration > this.config.slowRequestThreshold) {
+      if (metric.duration > this.config?.slowRequestThreshold) {
         slow++
       }
 
@@ -343,7 +343,7 @@ export class RequestMonitor {
    * 获取慢请求
    */
   getSlowRequests(): PerformanceMetrics[] {
-    return this.metrics.filter(m => m.duration > this.config.slowRequestThreshold)
+    return this.metrics.filter(m => m.duration > this.config?.slowRequestThreshold)
   }
 
   /**
@@ -372,21 +372,21 @@ export class RequestMonitor {
    * 启用监控
    */
   enable(): void {
-    this.config.enabled = true
+    this.config?.enabled = true
   }
 
   /**
    * 禁用监控
    */
   disable(): void {
-    this.config.enabled = false
+    this.config?.enabled = false
   }
 
   /**
    * 是否启用
    */
   isEnabled(): boolean {
-    return this.config.enabled
+    return this.config?.enabled
   }
 }
 

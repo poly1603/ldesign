@@ -8,7 +8,7 @@ import { DirectiveBase } from '../base/directive-base'
 import { defineDirective, directiveUtils } from '../base/vue-directive-adapter'
 
 export interface DebounceOptions {
-  handler?: (...args: any[]) => void
+  handler?: (...args: unknown[]) => void
   delay?: number
   event?: string
   immediate?: boolean
@@ -28,7 +28,7 @@ export class DebounceDirective extends DirectiveBase {
 
   public mounted(el: HTMLElement, binding: VueDirectiveBinding): void {
     const config = this.parseConfig(binding)
-    
+
     if (!config.handler || typeof config.handler !== 'function') {
       this.warn('Debounce directive requires a handler function')
       return
@@ -39,20 +39,16 @@ export class DebounceDirective extends DirectiveBase {
     const immediate = config.immediate ?? false
 
     let timeoutId: NodeJS.Timeout | null = null
-    let lastCallTime = 0
 
-    const debouncedHandler = (...args: any[]) => {
+    const debouncedHandler = (...args: unknown[]) => {
       if (config.disabled) {
         return
       }
 
-      const now = Date.now()
-      const timeSinceLastCall = now - lastCallTime
-
       const later = () => {
         timeoutId = null
-        if (!immediate) {
-          config.handler!(...args)
+        if (!immediate && config.handler) {
+          config.handler(...args)
           this.log(`Debounced event triggered after ${delay}ms`)
         }
       }
@@ -65,12 +61,10 @@ export class DebounceDirective extends DirectiveBase {
 
       timeoutId = setTimeout(later, delay)
 
-      if (callNow) {
-        config.handler!(...args)
+      if (callNow && config.handler) {
+        config.handler(...args)
         this.log(`Immediate debounced event triggered`)
       }
-
-      lastCallTime = now
     }
 
     // Store handlers and config for cleanup
@@ -129,7 +123,7 @@ export class DebounceDirective extends DirectiveBase {
 
     // Handle function as handler
     if (typeof value === 'function') {
-      return { handler: value }
+      return { handler: value as (...args: unknown[]) => void }
     }
 
     // Handle object config
@@ -180,23 +174,23 @@ export class DebounceDirective extends DirectiveBase {
 
 <script setup>
 const handleSearch = (event) => {
-  console.log('Searching:', event.target.value)
+  
 }
 
 const handleClick = () => {
-  console.log('Button clicked')
+  
 }
 
 const handleInput = (event) => {
-  console.log('Input changed:', event.target.value)
+  
 }
 
 const saveData = () => {
-  console.log('Saving data...')
+  
 }
 
 const submitForm = () => {
-  console.log('Form submitted')
+  
 }
 </script>
     `

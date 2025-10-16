@@ -1,4 +1,4 @@
-/**
+﻿/**
  * LDesign Editor - Vite + TypeScript 示例
  * 
  * 最简单的富文本编辑器使用示例
@@ -14,11 +14,32 @@ import '@/styles/codeblock.css'
 // 导入编辑器核心类
 import { Editor } from '@/core/Editor'
 
+// 导入插件
+import { MediaCommandsPlugin } from '@/plugins/media'
+import { FormattingCommandsPlugin } from '@/plugins/formatting'
+import FullscreenPlugin from '@/plugins/utils/fullscreen'
+import HistoryPlugin from '@/plugins/utils/history'
+import FindReplacePlugin from '@/plugins/utils/find-replace'
+import ExportMarkdownPlugin from '@/plugins/utils/export-markdown'
+import ContextMenuPlugin from '@/plugins/utils/context-menu'
+
 // 创建编辑器实例
 const editor = new Editor({
   element: '#editor',
   placeholder: '开始输入内容...',
   autofocus: true,
+  plugins: [
+    // 媒体插件
+    MediaCommandsPlugin,
+    // 格式化插件
+    FormattingCommandsPlugin,
+    // 工具插件
+    FullscreenPlugin,
+    HistoryPlugin,
+    FindReplacePlugin,
+    ExportMarkdownPlugin,
+    ContextMenuPlugin
+  ],
   content: `
     <h1>欢迎使用 LDesign Editor!</h1>
     <p>这是一个功能强大的富文本编辑器，支持：</p>

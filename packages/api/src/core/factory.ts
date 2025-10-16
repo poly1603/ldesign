@@ -254,7 +254,7 @@ export function createTestApiEngine(
  * import { createApiEngineByEnv } from '@ldesign/api'
  *
  * // 根据 NODE_ENV 或 VITE_MODE 自动选择配置
- * const apiEngine = createApiEngineByEnv(import.meta.env.VITE_API_BASE_URL)
+ * const apiEngine = createApiEngineByEnv(import.meta.env?.VITE_API_BASE_URL)
  * ```
  */
 export function createApiEngineByEnv(

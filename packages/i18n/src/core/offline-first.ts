@@ -76,7 +76,7 @@ export class OfflineManager {
       ...config
     };
 
-    if (this.config.enabled) {
+    if (this.config?.enabled) {
       this.initialize();
     }
   }
@@ -89,7 +89,7 @@ export class OfflineManager {
     await this.registerServiceWorker();
     
     // 初始化IndexedDB
-    if (this.config.enableIndexedDB) {
+    if (this.config?.enableIndexedDB) {
       await this.initializeIndexedDB();
     }
 
@@ -100,7 +100,7 @@ export class OfflineManager {
     this.setupNetworkListeners();
 
     // 启动后台同步
-    if (this.config.enableBackgroundSync) {
+    if (this.config?.enableBackgroundSync) {
       this.startBackgroundSync();
     }
   }
@@ -124,11 +124,11 @@ export class OfflineManager {
         scope: '/'
       });
 
-      console.log('[OfflineManager] Service Worker registered');
+      
 
       // 监听更新
       this.serviceWorkerRegistration.addEventListener('updatefound', () => {
-        console.log('[OfflineManager] Service Worker update found');
+        
       });
 
       // 等待激活
@@ -361,7 +361,7 @@ export class OfflineManager {
    */
   private async initializeCache(): Promise<void> {
     if ('caches' in window) {
-      this.cacheStorage = await caches.open(this.config.cacheName!);
+      this.cacheStorage = await caches.open(this.config?.cacheName!);
     }
   }
 
@@ -371,13 +371,13 @@ export class OfflineManager {
   private setupNetworkListeners(): void {
     window.addEventListener('online', () => {
       this.isOnline = true;
-      console.log('[OfflineManager] Back online');
+      
       this.syncPendingData();
     });
 
     window.addEventListener('offline', () => {
       this.isOnline = false;
-      console.log('[OfflineManager] Gone offline');
+      
     });
   }
 
@@ -390,10 +390,10 @@ export class OfflineManager {
       
       switch (type) {
         case 'CACHE_UPDATED':
-          console.log('[OfflineManager] Cache updated:', data);
+          
           break;
         case 'SYNC_COMPLETE':
-          console.log('[OfflineManager] Sync complete');
+          
           break;
       }
     });
@@ -529,7 +529,7 @@ export class OfflineManager {
       if (this.isOnline) {
         this.syncPendingData();
       }
-    }, this.config.syncInterval!);
+    }, this.config?.syncInterval!);
   }
 
   /**
@@ -538,7 +538,7 @@ export class OfflineManager {
   private async syncPendingData(): Promise<void> {
     if (this.syncQueue.length === 0) return;
 
-    console.log('[OfflineManager] Syncing', this.syncQueue.length, 'items');
+    
 
     const completed: string[] = [];
 
@@ -573,7 +573,7 @@ export class OfflineManager {
    */
   private async processSyncItem(item: SyncQueueItem): Promise<void> {
     // 这里应该实现实际的同步逻辑
-    console.log('[OfflineManager] Processing sync item:', item);
+    
     
     // 模拟网络请求
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -625,7 +625,7 @@ export class OfflineManager {
    * 检查是否过期
    */
   private isExpired(timestamp: number): boolean {
-    return Date.now() - timestamp > this.config.maxAge!;
+    return Date.now() - timestamp > this.config?.maxAge!;
   }
 
   /**
@@ -676,7 +676,7 @@ export class OfflineManager {
 
     // 清理缓存
     if ('caches' in window) {
-      await caches.delete(this.config.cacheName!);
+      await caches.delete(this.config?.cacheName!);
     }
   }
 }

@@ -98,12 +98,10 @@ function getConnection(): NetworkInformation | undefined {
  *     // 监听网络状态变化
  *     watch(isOnline, (online) => {
  *       if (online) {
- *         console.log('网络已连接')
- *         // 重新加载数据
+ *          *         // 重新加载数据
  *         loadData()
  *       } else {
- *         console.log('网络已断开')
- *         // 显示离线提示
+ *          *         // 显示离线提示
  *         showOfflineMessage()
  *       }
  *     })

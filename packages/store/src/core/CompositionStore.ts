@@ -6,7 +6,6 @@
 import type { Ref, ComputedRef, UnwrapNestedRefs } from 'vue'
 import type { Store, StoreDefinition } from 'pinia'
 import type { PersistOptions, CacheOptions } from '../types'
-import { defineStore as piniaDefineStore } from 'pinia'
 import { ref, computed, reactive, watch, onUnmounted } from 'vue'
 import { PerformanceOptimizer } from './PerformanceOptimizer'
 

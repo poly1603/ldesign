@@ -7,7 +7,6 @@
  * @version 1.0.0
  */
 
-import { promises as fs } from 'fs'
 import path from 'path'
 import { formatBytes, formatDuration } from './performance-utils'
 import { Logger } from './logger'

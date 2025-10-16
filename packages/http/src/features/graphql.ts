@@ -154,7 +154,7 @@ export class GraphQLClient {
     operationName?: string,
     config?: GraphQLRequestConfig,
   ): Promise<GraphQLResponse<T>> {
-    const shouldBatch = config?.batching ?? this.config.batching
+    const shouldBatch = config?.batching ?? this.config?.batching
 
     if (shouldBatch) {
       return this.batchRequest<T>(query, variables, operationName, config)
@@ -172,12 +172,12 @@ export class GraphQLClient {
     operationName?: string,
     config?: GraphQLRequestConfig,
   ): Promise<GraphQLResponse<T>> {
-    const endpoint = config?.endpoint || this.config.endpoint
+    const endpoint = config?.endpoint || this.config?.endpoint
 
-    if (this.config.debug) {
-      console.log('[GraphQL Query]', query)
+    if (this.config?.debug) {
+      
       if (variables) {
-        console.log('[GraphQL Variables]', variables)
+        
       }
     }
 
@@ -193,7 +193,7 @@ export class GraphQLClient {
           ...config,
           headers: {
             'Content-Type': 'application/json',
-            ...this.config.headers,
+            ...this.config?.headers,
             ...config?.headers,
           },
         },
@@ -201,7 +201,7 @@ export class GraphQLClient {
 
       const result = response.data
 
-      if (this.config.debug && result.errors) {
+      if (this.config?.debug && result.errors) {
         console.error('[GraphQL Errors]', result.errors)
       }
 
@@ -247,7 +247,7 @@ export class GraphQLClient {
       }
 
       // 设置批量执行定时器
-      const delay = config?.batchDelay ?? this.config.batchDelay
+      const delay = config?.batchDelay ?? this.config?.batchDelay
       this.batchTimer = setTimeout(() => {
         this.executeBatch(config)
       }, delay)
@@ -267,10 +267,10 @@ export class GraphQLClient {
       return
     }
 
-    const endpoint = config?.endpoint || this.config.endpoint
+    const endpoint = config?.endpoint || this.config?.endpoint
 
-    if (this.config.debug) {
-      console.log(`[GraphQL Batch] Executing ${batch.length} queries`)
+    if (this.config?.debug) {
+      
     }
 
     try {
@@ -289,7 +289,7 @@ export class GraphQLClient {
           ...config,
           headers: {
             'Content-Type': 'application/json',
-            ...this.config.headers,
+            ...this.config?.headers,
             ...config?.headers,
           },
         },

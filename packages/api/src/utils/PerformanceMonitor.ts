@@ -120,7 +120,7 @@ export class PerformanceMonitor {
       ...config,
     }
 
-    if (this.config.enabled && this.config.reportInterval > 0) {
+    if (this.config?.enabled && this.config?.reportInterval > 0) {
       this.startReporting()
     }
   }
@@ -129,7 +129,7 @@ export class PerformanceMonitor {
    * 开始监控API调用
    */
   startCall(methodName: string, params?: unknown): (error?: Error) => void {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return () => {}
     }
 
@@ -146,7 +146,7 @@ export class PerformanceMonitor {
         duration,
         success: !error,
         error,
-        params: this.config.collectDetailedMetrics ? params : undefined,
+        params: this.config?.collectDetailedMetrics ? params : undefined,
       })
     }
   }
@@ -159,15 +159,15 @@ export class PerformanceMonitor {
     this.updateMethodMetrics(record)
 
     // 保存调用记录
-    if (this.config.collectDetailedMetrics) {
+    if (this.config?.collectDetailedMetrics) {
       this.callRecords.push(record)
-      if (this.callRecords.length > this.config.maxRecords) {
+      if (this.callRecords.length > this.config?.maxRecords) {
         this.callRecords.shift()
       }
     }
 
     // 检查慢查询
-    if (record.duration > this.config.slowQueryThreshold && this.config.logWarnings) {
+    if (record.duration > this.config?.slowQueryThreshold && this.config?.logWarnings) {
       console.warn(
         `🐌 Slow API call detected: ${record.methodName} took ${record.duration.toFixed(2)}ms`,
         record.params ? { params: record.params } : '',
@@ -175,7 +175,7 @@ export class PerformanceMonitor {
     }
 
     // 检查错误
-    if (!record.success && this.config.logWarnings) {
+    if (!record.success && this.config?.logWarnings) {
       console.warn(
         `❌ API call failed: ${record.methodName}`,
         record.error,
@@ -311,7 +311,7 @@ export class PerformanceMonitor {
     const recommendations: string[] = []
 
     // 检查慢方法
-    const slowMethods = methods.filter(m => m.averageTime > this.config.slowQueryThreshold)
+    const slowMethods = methods.filter(m => m.averageTime > this.config?.slowQueryThreshold)
     if (slowMethods.length > 0) {
       recommendations.push(
         `发现 ${slowMethods.length} 个慢方法，建议优化: ${slowMethods.map(m => m.methodName).join(', ')}`,
@@ -371,13 +371,13 @@ export class PerformanceMonitor {
     this.reportTimer = setInterval(() => {
       const report = this.generateReport()
       console.group('📊 API Performance Report')
-      console.log('Time Range:', new Date(report.timeRange.start), '-', new Date(report.timeRange.end))
-      console.log('Overall:', report.overall)
-      console.log('Top 5 Slowest Methods:', report.methods.slice(0, 5))
-      console.log('Memory Usage:', `${(report.memory.usage * 100).toFixed(1)}%`)
-      console.log('Recommendations:', report.recommendations)
+      , '-', new Date(report.timeRange.end))
+      
+      )
+      .toFixed(1)}%`)
+      
       console.groupEnd()
-    }, this.config.reportInterval)
+    }, this.config?.reportInterval)
   }
 
   /**

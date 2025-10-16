@@ -61,8 +61,7 @@ export type TreeTraverseCallback<T> = (
  * ]
  * 
  * const tree = arrayToTree(flatData)
- * console.log(tree)
- * // [
+ *  * // [
  * //   {
  * //     id: 1,
  * //     name: '根节点',
@@ -151,8 +150,7 @@ export function arrayToTree<T extends Record<string, any>>(
  * ]
  * 
  * const flatData = treeToArray(tree)
- * console.log(flatData)
- * // [
+ *  * // [
  * //   { id: 1, name: '根节点' },
  * //   { id: 2, name: '子节点1' },
  * //   { id: 3, name: '子节点2' }
@@ -191,8 +189,7 @@ export function treeToArray<T>(
  * @example
  * ```typescript
  * traverseTree(tree, (node, index, level, parent) => {
- *   console.log(`Level ${level}: ${node.name}`)
- *   
+ *    *   
  *   // 返回 false 可停止遍历
  *   if (node.id === 'stop') {
  *     return false
@@ -247,7 +244,7 @@ export function traverseTree<T>(
  * @example
  * ```typescript
  * const node = findInTree(tree, node => node.id === 2)
- * console.log(node) // { id: 2, name: '子节点1', ... }
+ *  // { id: 2, name: '子节点1', ... }
  * 
  * const nodeByName = findInTree(tree, node => node.name === '特定节点')
  * ```
@@ -281,7 +278,7 @@ export function findInTree<T>(
  * @example
  * ```typescript
  * const nodes = findAllInTree(tree, node => node.type === 'folder')
- * console.log(nodes) // 所有类型为 'folder' 的节点
+ *  // 所有类型为 'folder' 的节点
  * ```
  */
 export function findAllInTree<T>(
@@ -311,7 +308,7 @@ export function findAllInTree<T>(
  * @example
  * ```typescript
  * const path = getNodePath(tree, 4)
- * console.log(path) // [根节点, 子节点1, 孙节点1]
+ *  // [根节点, 子节点1, 孙节点1]
  * ```
  */
 export function getNodePath<T>(
@@ -438,7 +435,7 @@ export function mapTree<T, R>(
  * @example
  * ```typescript
  * const depth = getTreeDepth(tree)
- * console.log(depth) // 3
+ *  // 3
  * ```
  */
 export function getTreeDepth<T>(
@@ -476,7 +473,7 @@ export function getTreeDepth<T>(
  * @example
  * ```typescript
  * const count = getTreeNodeCount(tree)
- * console.log(count) // 10
+ *  // 10
  * ```
  */
 export function getTreeNodeCount<T>(

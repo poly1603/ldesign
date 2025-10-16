@@ -124,12 +124,12 @@ export class LdesignIcon {
   /**
    * 内部状态：SVG内容
    */
-  @State() svgContent: string = '';
+  @State() svgContent!: string = '';
 
   /**
    * 内部状态：渐变ID
    */
-  @State() gradientId: string = '';
+  @State() gradientId!: string = '';
 
   /**
    * 监听name属性变化

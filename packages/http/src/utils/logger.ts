@@ -66,14 +66,14 @@ export class Logger {
    * 设置日志级别
    */
   setLevel(level: LogLevel): void {
-    this.config.level = level
+    this.config?.level = level
   }
 
   /**
    * 获取当前日志级别
    */
   getLevel(): LogLevel {
-    return this.config.level
+    return this.config?.level
   }
 
   /**
@@ -169,15 +169,15 @@ export class Logger {
     const formattedMessage = this.formatMessage(message)
 
     // 使用自定义处理器
-    if (this.config.customHandler) {
-      this.config.customHandler(level, message, args.length > 0 ? args : undefined)
+    if (this.config?.customHandler) {
+      this.config?.customHandler(level, message, args.length > 0 ? args : undefined)
       return
     }
 
     // 根据级别选择console方法
     switch (level) {
       case LogLevel.DEBUG:
-        console.log(formattedMessage, ...args)
+        
         break
       case LogLevel.INFO:
         console.info(formattedMessage, ...args)
@@ -196,12 +196,12 @@ export class Logger {
    */
   private shouldLog(level: LogLevel): boolean {
     // 生产环境检查
-    if (this.isProduction && !this.config.enableInProduction) {
+    if (this.isProduction && !this.config?.enableInProduction) {
       return false
     }
 
     // 级别检查
-    return level >= this.config.level
+    return level >= this.config?.level
   }
 
   /**
@@ -211,12 +211,12 @@ export class Logger {
     const parts: string[] = []
 
     // 添加前缀
-    if (this.config.prefix) {
-      parts.push(this.config.prefix)
+    if (this.config?.prefix) {
+      parts.push(this.config?.prefix)
     }
 
     // 添加时间戳
-    if (this.config.showTimestamp) {
+    if (this.config?.showTimestamp) {
       const timestamp = new Date().toISOString().split('T')[1].slice(0, -1)
       parts.push(`[${timestamp}]`)
     }
@@ -234,7 +234,7 @@ export class Logger {
     return new Logger({
       ...restConfig,
       customHandler: customHandler || undefined,
-      prefix: `${this.config.prefix} ${prefix}`,
+      prefix: `${this.config?.prefix} ${prefix}`,
     })
   }
 }

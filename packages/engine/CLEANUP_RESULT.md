@@ -42,12 +42,12 @@
 const engine = await createEngineApp({
   performance: {
     budget: {
-      bundleSize: 200 * 1024,      // 200KB
-      initialLoadTime: 3000,        // 3秒
+      bundleSize: 200 * 1024, // 200KB
+      initialLoadTime: 3000, // 3秒
       memoryUsage: 50 * 1024 * 1024, // 50MB
-      minFps: 30,                   // 最低30帧
-      domNodes: 1500,               // 最多1500个节点
-      networkRequests: 50          // 最多50个请求
+      minFps: 30, // 最低30帧
+      domNodes: 1500, // 最多1500个节点
+      networkRequests: 50 // 最多50个请求
     },
     onBudgetExceeded: (metric) => {
       console.warn(`性能预算超标: ${metric.name}`)

@@ -1,5 +1,4 @@
 /**
-
  * 配置加载器模块
  *
  * 提供多种配置加载器实现，支持从不同来源加载配置
@@ -101,6 +100,8 @@ export class EnvironmentConfigLoader implements ConfigLoader {
  * ```
  */
 export class JsonConfigLoader implements ConfigLoader {
+  private logger = getLogger('JsonConfigLoader')
+
   constructor(private configPath: string) {}
 
   async load(): Promise<ConfigObject> {
@@ -169,6 +170,8 @@ export class MemoryConfigLoader implements ConfigLoader {
  * ```
  */
 export class LocalStorageConfigLoader implements ConfigLoader {
+  private logger = getLogger('LocalStorageConfigLoader')
+
   constructor(private key: string) {}
 
   load(): ConfigObject {
@@ -228,6 +231,8 @@ export class LocalStorageConfigLoader implements ConfigLoader {
  * ```
  */
 export class CompositeConfigLoader implements ConfigLoader {
+  private logger = getLogger('CompositeConfigLoader')
+
   constructor(private loaders: ConfigLoader[]) {}
 
   async load(): Promise<ConfigObject> {

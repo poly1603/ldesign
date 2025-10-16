@@ -20,7 +20,7 @@
  * 
  * // 获取统计信息
  * const stats = pool.getStats()
- * console.log('Completed tasks:', stats.completedTasks)
+ * 
  * ```
  */
 

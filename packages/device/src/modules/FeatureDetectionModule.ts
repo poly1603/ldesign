@@ -114,12 +114,10 @@ export interface FeatureDetectionEvents extends Record<string, unknown> {
  * const features = featureModule.getData()
  *
  * if (features.media.webp) {
- *   console.log('支持 WebP 格式')
- * }
+ *    * }
  *
  * if (features.preferences.darkMode) {
- *   console.log('用户偏好暗黑模式')
- * }
+ *    * }
  * ```
  */
 export class FeatureDetectionModule

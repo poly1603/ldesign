@@ -144,7 +144,7 @@ export class Vue3Strategy implements ILibraryStrategy {
         options: {
           compress: {
             drop_console: true,
-            drop_debugger: true
+            drop_: true
           },
           format: {
             comments: false
@@ -515,20 +515,20 @@ export class Vue3Strategy implements ILibraryStrategy {
         const isSilent = config?.logLevel === 'silent'
 
         if (!isSilent) {
-          console.log('🔍 DTS 插件被调用，options:', options)
+          
         }
 
         try {
           const outputDir = options.dir
           if (!outputDir) {
             if (!isSilent) {
-              console.log('⚠️ 输出目录为空')
+              
             }
             return
           }
 
           if (!isSilent) {
-            console.log('🔧 开始生成 TypeScript 声明文件')
+            
           }
           await this.generateDtsFiles(outputDir, config)
 
@@ -569,7 +569,7 @@ export class Vue3Strategy implements ILibraryStrategy {
       // 检查 src 目录和 tsconfig.json 是否存在
       if (!fs.existsSync(srcDir)) {
         if (!isSilent) {
-          console.log('⚠️ src 目录不存在，跳过 DTS 生成')
+          
         }
         return
       }
@@ -594,7 +594,7 @@ export class Vue3Strategy implements ILibraryStrategy {
         }
       } else {
         if (!isSilent) {
-          console.log('⚠️ tsconfig.json 不存在，使用默认配置')
+          
         }
         parsedConfig = {
           options: {},
@@ -613,13 +613,13 @@ export class Vue3Strategy implements ILibraryStrategy {
 
       if (tsFiles.length === 0) {
         if (!isSilent) {
-          console.log('⚠️ 没有找到 TypeScript 文件')
+          
         }
         return
       }
 
       if (!isSilent) {
-        console.log(`🔧 开始生成 ${tsFiles.length} 个文件的 TypeScript 声明文件`)
+        
       }
 
       // 创建编译选项
@@ -676,7 +676,7 @@ export class Vue3Strategy implements ILibraryStrategy {
           absolute: false
         })
         if (!isSilent) {
-          console.log(`✅ TypeScript 声明文件生成成功，共生成 ${generatedDtsFiles.length} 个 .d.ts 文件`)
+          
         }
       }
 

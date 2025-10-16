@@ -429,18 +429,18 @@ export class AutoPerformanceAnalyzer {
     const report = this.monitor.stopRecording();
 
     // 输出分析结果
-    console.log('📊 Performance Analysis Report:');
-    console.log(`  Duration: ${report.duration.toFixed(2)}ms`);
-    console.log(`  Metrics collected: ${report.metrics.length}`);
+    
+    }ms`);
+    
 
     if (report.warnings.length > 0) {
-      console.log('  ⚠️ Warnings:');
-      report.warnings.forEach(w => console.log(`    - ${w}`));
+      
+      report.warnings.forEach(w => );
     }
 
     if (report.suggestions.length > 0) {
-      console.log('  💡 Suggestions:');
-      report.suggestions.forEach(s => console.log(`    - ${s}`));
+      
+      report.suggestions.forEach(s => );
     }
 
     // 重新开始记录
@@ -458,16 +458,16 @@ export class AutoPerformanceAnalyzer {
     ];
 
     const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
-    console.log(`💡 Optimization suggestion for '${operation}': ${randomSuggestion}`);
+    
   }
 
   // 尝试内存清理
   private attemptMemoryCleanup(): void {
     if ((globalThis as any).gc) {
-      console.log('🧹 Running garbage collection...');
+      
       (globalThis as any).gc();
     } else {
-      console.log('ℹ️ Garbage collection not available. Run Node with --expose-gc flag');
+      
     }
   }
 

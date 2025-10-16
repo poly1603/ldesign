@@ -335,10 +335,10 @@ export class CacheManager {
    * 检查是否应该缓存
    */
   private shouldCache(componentName: string): boolean {
-    if (this.config.include) {
-      const include = Array.isArray(this.config.include)
-        ? this.config.include
-        : [this.config.include]
+    if (this.config?.include) {
+      const include = Array.isArray(this.config?.include)
+        ? this.config?.include
+        : [this.config?.include]
       return include.some((pattern) => {
         if (typeof pattern === 'string') {
           return componentName === pattern
@@ -347,10 +347,10 @@ export class CacheManager {
       })
     }
 
-    if (this.config.exclude) {
-      const exclude = Array.isArray(this.config.exclude)
-        ? this.config.exclude
-        : [this.config.exclude]
+    if (this.config?.exclude) {
+      const exclude = Array.isArray(this.config?.exclude)
+        ? this.config?.exclude
+        : [this.config?.exclude]
       return !exclude.some((pattern) => {
         if (typeof pattern === 'string') {
           return componentName === pattern
@@ -398,7 +398,7 @@ export class CacheManager {
     const key = this.generateKey(route)
 
     // 检查缓存大小限制
-    if (this.storage.size() >= this.config.maxSize) {
+    if (this.storage.size() >= this.config?.maxSize) {
       this.evict()
     }
 
@@ -408,7 +408,7 @@ export class CacheManager {
       createdAt: Date.now(),
       lastAccessedAt: Date.now(),
       accessCount: 1,
-      ttl: this.config.ttl || 0,
+      ttl: this.config?.ttl || 0,
     }
 
     // 存储到内存和持久化存储
@@ -448,8 +448,8 @@ export class CacheManager {
     return {
       size: this.storage.size(),
       memorySize: this.componentCache.size,
-      maxSize: this.config.maxSize,
-      strategy: this.config.strategy,
+      maxSize: this.config?.maxSize,
+      strategy: this.config?.strategy,
       keys: this.storage.keys(),
     }
   }

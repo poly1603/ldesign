@@ -426,8 +426,7 @@ export function createFontConverterPlugin(options: FontConverterOptions = {}): P
       server.watcher.add(fontDir)
       server.watcher.on('change', async (file) => {
         if (/\.(ttf|otf|woff|woff2)$/i.test(file)) {
-          console.log('字体文件变更，重新转换...')
-          await converter.convertFonts()
+                    await converter.convertFonts()
         }
       })
     }

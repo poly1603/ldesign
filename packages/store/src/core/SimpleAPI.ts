@@ -4,7 +4,6 @@
  */
 
 import type { StoreDefinition } from 'pinia';
-import { defineStore as piniaDefineStore } from 'pinia'
 import { computed, ref, reactive, watch, watchEffect } from 'vue'
 import type { Ref, UnwrapRef } from 'vue'
 import { batchUpdate } from './ReactiveSystem'
@@ -505,7 +504,7 @@ function applyPersistence(store: any, options: PersistOptions): void {
 function applyDevtools(store: any, options: DevToolsOptions): void {
   if (typeof window !== 'undefined' && (window as any).__VUE_DEVTOOLS_GLOBAL_HOOK__) {
     // 集成 Vue DevTools
-    console.log(`[Store] ${options.name || 'Store'} connected to DevTools`)
+    
   }
 }
 

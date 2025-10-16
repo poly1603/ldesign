@@ -3,19 +3,18 @@
  * 🧪 测试错误处理和自动恢复功能
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  createEnhancedErrorManager,
+  DataRecoveryStrategy,
   EngineError,
+  EnhancedErrorManager,
   ErrorCategory,
   ErrorSeverity,
-  EnhancedErrorManager,
-  createEnhancedErrorManager,
   NetworkErrorRecoveryStrategy,
-  DataRecoveryStrategy,
-  ConfigResetStrategy,
 } from '../../src/errors/enhanced-error-handler'
 
-describe('EngineError', () => {
+describe('engineError', () => {
   it('应该创建结构化错误', () => {
     const error = new EngineError('测试错误', {
       code: 'TEST_ERROR',
@@ -87,7 +86,7 @@ describe('EngineError', () => {
   })
 })
 
-describe('NetworkErrorRecoveryStrategy', () => {
+describe('networkErrorRecoveryStrategy', () => {
   let strategy: NetworkErrorRecoveryStrategy
 
   beforeEach(() => {
@@ -116,7 +115,7 @@ describe('NetworkErrorRecoveryStrategy', () => {
   })
 })
 
-describe('DataRecoveryStrategy', () => {
+describe('dataRecoveryStrategy', () => {
   let strategy: DataRecoveryStrategy
   let mockCache: any
 
@@ -177,7 +176,7 @@ describe('DataRecoveryStrategy', () => {
   })
 })
 
-describe('EnhancedErrorManager', () => {
+describe('enhancedErrorManager', () => {
   let manager: EnhancedErrorManager
 
   beforeEach(() => {

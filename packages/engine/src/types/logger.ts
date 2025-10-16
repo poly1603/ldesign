@@ -5,6 +5,9 @@
 
 import type { LogEntry, LogLevel } from './base'
 
+// 重新导出基础日志类型
+export type { LogEntry, LogLevel } from './base'
+
 // 日志管理器接口
 export interface Logger {
   debug: (message: string, data?: unknown) => void
@@ -19,6 +22,18 @@ export interface Logger {
   setMaxLogs: (max: number) => void
   getMaxLogs: () => number
 }
+
+// 日志配置接口
+export interface LogConfig {
+  level?: LogLevel
+  maxLogs?: number
+  showTimestamp?: boolean
+  showContext?: boolean
+  prefix?: string
+}
+
+// 日志选项接口（兼容性导出）
+export type LoggerOptions = LogConfig
 
 // 日志传输器接口
 export interface LogTransport {

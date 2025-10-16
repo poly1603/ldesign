@@ -88,7 +88,7 @@ export class LdesignAlert {
   private mutationObserver?: MutationObserver;
 
   /** 关闭事件 */
-  @Event() ldesignClose: EventEmitter<void>;
+  @Event() ldesignClose!: EventEmitter<void>;
 
   componentDidLoad() {
     if (this.marquee) {

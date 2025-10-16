@@ -4,7 +4,6 @@
  * TODO: 后期可以移到 @ldesign/kit 中统一管理
  */
 
-import { promises as fs } from 'fs'
 import path from 'path'
 import fastGlob from 'fast-glob'
 import type { FileInfo } from '../types/common'

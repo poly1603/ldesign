@@ -3,7 +3,7 @@
  * 提供模态框、下拉菜单、工具提示等通用组件
  */
 
-import { getLucideIcon } from '../utils/icons'
+import { getLucideIcon } from '../ui/icons/lucide'
 
 export interface ModalOptions {
   title?: string

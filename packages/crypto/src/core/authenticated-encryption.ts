@@ -15,7 +15,7 @@
  * // 解密并验证
  * const decrypted = decryptWithAuth(result, 'secret-key')
  * if (decrypted.verified) {
- *   console.log(decrypted.data)
+ *   
  * }
  * ```
  */
@@ -23,7 +23,6 @@
 import CryptoJS from 'crypto-js'
 import type { EncryptionAlgorithm } from '../types'
 import { ErrorUtils, RandomUtils } from '../utils'
-import { aes } from '../algorithms'
 
 /**
  * 认证加密结果

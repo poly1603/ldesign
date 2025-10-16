@@ -150,7 +150,7 @@ export class PreloadManager {
    */
   async preload(
     route: RouteLocationNormalized,
-    strategy: PreloadStrategy = this.config.strategy,
+    strategy: PreloadStrategy = this.config?.strategy,
     priority: number = 0,
   ): Promise<void> {
     const key = this.generateKey(route)

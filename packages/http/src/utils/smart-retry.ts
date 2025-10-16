@@ -113,25 +113,25 @@ export class SmartRetryManager {
   */
  shouldRetry(error: HttpError, attempt: number): RetryDecision {
   // 超过最大重试次数
-  if (attempt >= this.config.maxRetries) {
+  if (attempt >= this.config?.maxRetries) {
    return {
     shouldRetry: false,
     delay: 0,
     strategy: RetryStrategy.NONE,
-    reason: `已达到最大重试次数 ${this.config.maxRetries}`,
+    reason: `已达到最大重试次数 ${this.config?.maxRetries}`,
    }
   }
 
   // 使用自定义决策函数
-  if (this.config.customDecision) {
-   const customDecision = this.config.customDecision(error, attempt)
+  if (this.config?.customDecision) {
+   const customDecision = this.config?.customDecision(error, attempt)
    if (customDecision) {
     return customDecision
    }
   }
 
   // 检查网络状态
-  if (this.config.checkNetworkStatus && this.isOffline()) {
+  if (this.config?.checkNetworkStatus && this.isOffline()) {
    return {
     shouldRetry: false,
     delay: 0,
@@ -154,7 +154,7 @@ export class SmartRetryManager {
   }
 
   // 检查是否在不可重试列表中
-  if (this.config.nonRetryableStatusCodes.includes(statusCode)) {
+  if (this.config?.nonRetryableStatusCodes.includes(statusCode)) {
    return {
     shouldRetry: false,
     delay: 0,
@@ -164,7 +164,7 @@ export class SmartRetryManager {
   }
 
   // 检查是否在可重试列表中
-  if (this.config.retryableStatusCodes.includes(statusCode)) {
+  if (this.config?.retryableStatusCodes.includes(statusCode)) {
    return this.createRetryDecision(
     true,
     attempt,
@@ -238,17 +238,17 @@ export class SmartRetryManager {
 
    case RetryStrategy.EXPONENTIAL:
     // 指数退避: baseDelay * 2^attempt
-    delay = this.config.baseDelay * Math.pow(2, attempt)
+    delay = this.config?.baseDelay * Math.pow(2, attempt)
     break
 
    case RetryStrategy.LINEAR:
     // 线性退避: baseDelay * attempt
-    delay = this.config.baseDelay * attempt
+    delay = this.config?.baseDelay * attempt
     break
 
    case RetryStrategy.FIXED:
     // 固定延迟
-    delay = this.config.baseDelay
+    delay = this.config?.baseDelay
     break
 
    default:
@@ -259,7 +259,7 @@ export class SmartRetryManager {
   delay = this.addJitter(delay)
 
   // 限制最大延迟
-  return Math.min(delay, this.config.maxDelay)
+  return Math.min(delay, this.config?.maxDelay)
  }
 
  /**

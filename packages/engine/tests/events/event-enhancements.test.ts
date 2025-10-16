@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { EventManagerImpl, EventNamespace, EventDebouncer, EventThrottler } from '../../src/events/event-manager'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { EventManagerImpl } from '../../src/events/event-manager'
 
 describe('事件管理器功能增强', () => {
   let eventManager: EventManagerImpl

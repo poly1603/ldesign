@@ -252,13 +252,11 @@ const STATIC_CACHE_URLS = [
 
 // 安装事件
 self.addEventListener('install', (event) => {
-  console.log('Service Worker installing...');
-  
+    
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Caching static resources');
-        return cache.addAll(STATIC_CACHE_URLS);
+                return cache.addAll(STATIC_CACHE_URLS);
       })
       .then(() => {
         return self.skipWaiting();
@@ -268,15 +266,13 @@ self.addEventListener('install', (event) => {
 
 // 激活事件
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker activating...');
-  
+    
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
+                        return caches.delete(cacheName);
           }
         })
       );
@@ -520,8 +516,7 @@ class PWAUtils {
     if ('serviceWorker' in navigator) {
       try {
         const registration = await navigator.serviceWorker.register('/sw.js');
-        console.log('Service Worker registered:', registration);
-        
+                
         // 监听更新
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
@@ -550,8 +545,7 @@ class PWAUtils {
   // 监听应用安装
   listenForAppInstalled() {
     window.addEventListener('appinstalled', () => {
-      console.log('PWA was installed');
-      this.hideInstallButton();
+            this.hideInstallButton();
       this.deferredPrompt = null;
     });
   }
@@ -578,8 +572,7 @@ class PWAUtils {
     if (this.deferredPrompt) {
       this.deferredPrompt.prompt();
       const { outcome } = await this.deferredPrompt.userChoice;
-      console.log('Install prompt outcome:', outcome);
-      this.deferredPrompt = null;
+            this.deferredPrompt = null;
     }
   }
 

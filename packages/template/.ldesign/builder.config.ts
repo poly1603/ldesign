@@ -1,38 +1,46 @@
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
-  // Output format config
+  // Output format config - 只构建ESM和CJS
   output: {
-    format: ['esm', 'cjs'], // 移除umd格式
+    format: ['esm', 'cjs'],
   },
 
-  // 绂佺敤鏋勫缓鍚庨獙璇侊紙搴撻」鐩笉闇€瑕佽繍琛屾祴璇曢獙璇侊級
+  // 禁用构建后验证
   postBuildValidation: {
     enabled: false,
   },
 
-  // 鐢熸垚绫诲瀷澹版槑鏂囦欢
+  // 生成类型声明文件
   dts: true,
 
-  // 鐢熸垚 source map
+  // 生成 source map
   sourcemap: true,
 
-  // 娓呯悊杈撳嚭鐩綍
+  // 清理输出目录
   clean: true,
 
-  // 涓嶅帇缂╀唬鐮侊紙寮€鍙戦樁娈碉級
+  // 不压缩代码
   minify: false,
 
-  // UMD 构建配置
-  umd: {
-    enabled: false, // 禁用UMD构建，因为没有index-lib.ts文件
-    minify: true,
-    fileName: 'index.js',
+  // 完全禁用dist目录的构建
+  build: {
+    // 不构建UMD
+    umd: false,
+    // 不生成dist目录
+    dist: false,
   },
 
-  // 澶栭儴渚濊禆閰嶇疆
+  // 外部依赖配置
   external: [
     'vue',
+    '@vueuse/core',
+    'lucide-vue-next',
+    '@ldesign/cache',
+    '@ldesign/device',
+    '@ldesign/engine',
+    '@ldesign/shared',
+    '@ldesign/webcomponent',
     'node:fs',
     'node:path',
     'node:os',

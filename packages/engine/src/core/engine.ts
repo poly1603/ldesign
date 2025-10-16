@@ -152,7 +152,7 @@ export class EngineImpl implements Engine {
       const startTime = Date.now()
       // 从配置中获取缓存设置，使用默认配置作为备用
       this._cache = createCacheManager(
-        this.config.get('cache', {}) as CacheConfig
+        this.config?.get('cache', {}) as CacheConfig
       )
       const initTime = Date.now() - startTime
       // 在管理器注册表中标记为已初始化
@@ -161,7 +161,7 @@ export class EngineImpl implements Engine {
         initTime: `${initTime}ms`,
       })
     }
-    return this._cache!
+    return this._cache as CacheManager
   }
 
   /**
@@ -186,7 +186,7 @@ export class EngineImpl implements Engine {
         initTime: `${initTime}ms`,
       })
     }
-    return this._performance!
+    return this._performance as PerformanceManager
   }
 
   /**
@@ -212,7 +212,7 @@ export class EngineImpl implements Engine {
         initTime: `${initTime}ms`,
       })
     }
-    return this._security!
+    return this._security as SecurityManager
   }
 
   /**
@@ -236,11 +236,11 @@ export class EngineImpl implements Engine {
     })
 
     // 设置默认配置Schema，确保配置项的类型安全
-    this.config.setSchema(defaultConfigSchema)
+    this.config?.setSchema(defaultConfigSchema)
 
     // 2. 基于配置创建日志器 - 所有组件都需要记录日志
     this.logger = createLogger(
-      this.config.get('debug', false) ? 'debug' : 'info'
+      this.config?.get('debug', false) ? 'debug' : 'info'
     )
 
     // 3. 创建管理器注册表 - 管理所有管理器的依赖关系和初始化顺序
@@ -263,8 +263,8 @@ export class EngineImpl implements Engine {
     this.setupConfigWatchers()
 
     this.logger.info('Engine initialized', {
-      environment: this.config.getEnvironment(),
-      features: this.config.get('features', {}),
+      environment: this.config?.getEnvironment(),
+      features: this.config?.get('features', {}),
     })
 
     // 执行初始化后的生命周期钩子
@@ -294,7 +294,7 @@ export class EngineImpl implements Engine {
       this.events.emit('engine:error', errorInfo)
 
       // 3. 在开发环境下显示错误通知，帮助开发者快速发现问题
-      if (this.config.get('debug', false)) {
+      if (this.config?.get('debug', false)) {
         this.notifications.show({
           type: 'error',
           title: 'Error Captured',
@@ -318,7 +318,7 @@ export class EngineImpl implements Engine {
     }, 300)
 
     // 监听调试模式变化
-    this.config.watch('debug', debouncedDebugChange)
+    this.config?.watch('debug', debouncedDebugChange)
 
     // 使用防抖优化日志级别监听
     const debouncedLevelChange = this.debounce((newValue: unknown) => {
@@ -331,14 +331,14 @@ export class EngineImpl implements Engine {
     }, 300)
 
     // 监听日志级别变化
-    this.config.watch('logger.level', debouncedLevelChange)
+    this.config?.watch('logger.level', debouncedLevelChange)
   }
 
   /**
    * 防抖函数 - 优化性能
    * @private
    */
-  private debounce<T extends (...args: any[]) => void>(
+  private debounce<T extends (...args: unknown[]) => void>(
     func: T,
     wait: number
   ): (...args: Parameters<T>) => void {
@@ -564,7 +564,7 @@ export class EngineImpl implements Engine {
     }
 
     // 禁用配置自动保存
-    this.config.disableAutoSave()
+    this.config?.disableAutoSave()
 
     // 重置引擎状态
     this._isReady = false
@@ -578,18 +578,18 @@ export class EngineImpl implements Engine {
 
   // 配置相关方法
   updateConfig(config: Partial<Record<string, unknown>>): void {
-    this.config.merge(config)
+    this.config?.merge(config)
     this.logger.info('Engine configuration updated', {
       keys: Object.keys(config),
     })
   }
 
   getConfig<T = unknown>(path: string, defaultValue?: T): T {
-    return this.config.get(path, defaultValue) as T
+    return this.config?.get(path, defaultValue) as T
   }
 
   setConfig(path: string, value: unknown): void {
-    this.config.set(path, value)
+    this.config?.set(path, value)
     this.logger.debug('Engine configuration set', { path, value })
   }
 

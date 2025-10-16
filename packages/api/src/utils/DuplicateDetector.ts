@@ -68,7 +68,7 @@ export class DuplicateDetector {
       ...config,
     }
 
-    if (this.config.autoCleanup) {
+    if (this.config?.autoCleanup) {
       this.startCleanup()
     }
   }
@@ -77,7 +77,7 @@ export class DuplicateDetector {
    * 检测请求是否重复
    */
   isDuplicate(key: string): boolean {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return false
     }
 
@@ -99,7 +99,7 @@ export class DuplicateDetector {
     // 检查是否在时间窗口内
     const elapsed = now - record.timestamp
 
-    if (elapsed > this.config.timeWindow) {
+    if (elapsed > this.config?.timeWindow) {
       // 超出时间窗口，重置记录
       this.records.set(key, {
         key,
@@ -114,7 +114,7 @@ export class DuplicateDetector {
     this.stats.duplicateRequests++
 
     // 检查是否超过最大重复次数
-    if (record.count > this.config.maxDuplicates) {
+    if (record.count > this.config?.maxDuplicates) {
       this.stats.blockedRequests++
       return true
     }
@@ -196,7 +196,7 @@ export class DuplicateDetector {
   private startCleanup(): void {
     this.cleanupTimer = setInterval(() => {
       this.cleanup()
-    }, this.config.cleanupInterval)
+    }, this.config?.cleanupInterval)
   }
 
   /**
@@ -217,7 +217,7 @@ export class DuplicateDetector {
     const expiredKeys: string[] = []
 
     for (const [key, record] of this.records.entries()) {
-      if (now - record.timestamp > this.config.timeWindow) {
+      if (now - record.timestamp > this.config?.timeWindow) {
         expiredKeys.push(key)
       }
     }

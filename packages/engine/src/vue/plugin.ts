@@ -10,7 +10,7 @@ function isDevelopment(): boolean {
     // 使用更安全的方式检查环境变量，避免直接使用process
     if (typeof globalThis === 'undefined') return false
 
-    const global = globalThis as Record<string, any>
+    const global = globalThis as unknown as Record<string, Record<string, Record<string, string>>>
     // 使用字符串索引避免ESLint的process检查
     const processKey = 'process'
     const envKey = 'env'
@@ -43,8 +43,8 @@ export interface VueEnginePluginOptions {
   exposeGlobal?: boolean
   /** 引擎配置 */
   config?: Record<string, unknown>
-  /** 插件列表 */
-  plugins?: any[]
+  /** 插件列表 (引擎插件，不是Vue插件) */
+  plugins?: import('../types').Plugin<Engine>[]
 }
 
 /**
@@ -79,7 +79,6 @@ export function createVueEnginePlugin(options: VueEnginePluginOptions = {}): Plu
   const {
     debug = isDevelopment(),
     registerComponents = true,
-    _registerDirectives = true,
     globalPropertyName = '$engine',
     injectKey = 'engine',
     exposeGlobal = isDevelopment(),
@@ -113,6 +112,7 @@ export function createVueEnginePlugin(options: VueEnginePluginOptions = {}): Plu
 
       // 在开发环境下暴露到全局
       if (exposeGlobal && typeof window !== 'undefined') {
+        // eslint-disable-next-line ts/no-explicit-any
         ; (window as any).__LDESIGN_ENGINE__ = engine
       }
 
@@ -125,6 +125,7 @@ export function createVueEnginePlugin(options: VueEnginePluginOptions = {}): Plu
 
       // 设置Vue开发工具支持
       if (debug && typeof window !== 'undefined') {
+        // eslint-disable-next-line ts/no-explicit-any
         const devtools = (window as any).__VUE_DEVTOOLS_GLOBAL_HOOK__
         if (devtools) {
           devtools.emit('app:init', app, engine)
@@ -257,6 +258,10 @@ export function defineEngineModel<T>(key: string, defaultValue: T) {
  * Vue组件增强装饰器
  *
  * @param options 组件选项
+ * @param options.performance 是否启用性能监控
+ * @param options.errorBoundary 是否启用错误边界
+ * @param options.cache 是否启用组件缓存
+ * @param options.memoryManagement 是否启用内存管理
  * @returns 装饰器函数
  *
  * @example
@@ -280,20 +285,19 @@ export function engineComponent(options: {
   cache?: boolean
   memoryManagement?: boolean
 } = {}) {
-  return function <T extends Record<string, any>>(component: T): T {
+  return function <T extends Record<string, unknown>>(component: T): T {
     const {
       performance = false,
       errorBoundary = false,
-      cache: _cache = false,
       memoryManagement = false
     } = options
 
     // 增强组件
-    const enhancedComponent = { ...component } as any
+    const enhancedComponent = { ...component } as Record<string, unknown>
 
     // 添加性能监控
     if (performance) {
-      const originalSetup = enhancedComponent.setup
+      const originalSetup = enhancedComponent.setup as ((props: Record<string, unknown>, ctx: SetupContext) => unknown) | undefined
       enhancedComponent.setup = function (props: Record<string, unknown>, ctx: SetupContext) {
         // 注入性能监控逻辑
         const result = originalSetup?.(props, ctx)
@@ -312,14 +316,14 @@ export function engineComponent(options: {
 
     // 添加内存管理
     if (memoryManagement) {
-      const originalUnmounted = enhancedComponent.unmounted
+      const originalUnmounted = enhancedComponent.unmounted as (() => void) | undefined
       enhancedComponent.unmounted = function () {
         // 清理内存
         originalUnmounted?.()
       }
     }
 
-    return enhancedComponent
+    return enhancedComponent as T
   }
 }
 
@@ -331,6 +335,7 @@ export function setupDevtools(engine: Engine) {
     return
   }
 
+  // eslint-disable-next-line ts/no-explicit-any
   const devtools = (window as any).__VUE_DEVTOOLS_GLOBAL_HOOK__
   if (!devtools) {
     return

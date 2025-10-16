@@ -61,7 +61,7 @@ export class RealTimeStore extends BaseStore {
 
   @Action()
   initialize(): void {
-    console.log('实时Store已初始化')
+    
     // 模拟一些初始消息
     this.addSystemMessage('欢迎使用实时聊天系统')
   }
@@ -287,7 +287,7 @@ export class RealTimeStore extends BaseStore {
     this.heartbeatTimer = window.setInterval(() => {
       if (this.connectionStatus === 'connected') {
         // 模拟心跳检测
-        console.log('心跳检测...')
+        
       }
     }, 30000) // 30秒心跳
   }

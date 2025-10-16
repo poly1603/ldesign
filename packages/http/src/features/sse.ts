@@ -64,12 +64,12 @@ export type SSEEventListener<T = any> = (event: T) => void
  *
  * // 监听消息
  * sseClient.on('message', (event) => {
- *   console.log('收到消息:', event.data)
+ *   
  * })
  *
  * // 监听自定义事件
  * sseClient.addEventListener('notification', (event) => {
- *   console.log('收到通知:', event.data)
+ *   
  * })
  *
  * // 连接
@@ -113,11 +113,11 @@ export class SSEClient {
 
     return new Promise((resolve, reject) => {
       this.status = SSEStatus.CONNECTING
-      this.log(`Connecting to ${this.config.url}`)
+      this.log(`Connecting to ${this.config?.url}`)
 
       try {
         // 构建 URL（添加 lastEventId 如果存在）
-        let url = this.config.url
+        let url = this.config?.url
         if (this.lastEventId) {
           const separator = url.includes('?') ? '&' : '?'
           url += `${separator}lastEventId=${encodeURIComponent(this.lastEventId)}`
@@ -125,7 +125,7 @@ export class SSEClient {
 
         // 创建 EventSource
         this.eventSource = new EventSource(url, {
-          withCredentials: this.config.withCredentials,
+          withCredentials: this.config?.withCredentials,
         })
 
         // 连接打开
@@ -349,10 +349,10 @@ export class SSEClient {
     this.emit('close')
 
     // 自动重连
-    if (this.config.autoReconnect && this.reconnectAttempts < this.config.maxReconnectAttempts) {
+    if (this.config?.autoReconnect && this.reconnectAttempts < this.config?.maxReconnectAttempts) {
       this.reconnect()
     }
-    else if (this.reconnectAttempts >= this.config.maxReconnectAttempts) {
+    else if (this.reconnectAttempts >= this.config?.maxReconnectAttempts) {
       this.log('Max reconnect attempts reached')
       this.emit('reconnect_failed')
     }
@@ -363,7 +363,7 @@ export class SSEClient {
    */
   private reconnect(): void {
     this.reconnectAttempts++
-    this.log(`Reconnecting... (attempt ${this.reconnectAttempts}/${this.config.maxReconnectAttempts})`)
+    this.log(`Reconnecting... (attempt ${this.reconnectAttempts}/${this.config?.maxReconnectAttempts})`)
 
     this.emit('reconnecting', { attempts: this.reconnectAttempts })
 
@@ -383,14 +383,14 @@ export class SSEClient {
         this.log('Reconnect failed:', error)
         this.handleDisconnection()
       }
-    }, this.config.reconnectDelay * this.reconnectAttempts)
+    }, this.config?.reconnectDelay * this.reconnectAttempts)
   }
 
   /**
    * 启动心跳检测
    */
   private startHeartbeat(): void {
-    if (this.config.heartbeatTimeout <= 0) {
+    if (this.config?.heartbeatTimeout <= 0) {
       return
     }
 
@@ -398,7 +398,7 @@ export class SSEClient {
       this.log('Heartbeat timeout')
       // 心跳超时，认为连接已断开
       this.handleDisconnection()
-    }, this.config.heartbeatTimeout)
+    }, this.config?.heartbeatTimeout)
   }
 
   /**
@@ -423,8 +423,8 @@ export class SSEClient {
    * 日志输出
    */
   private log(...args: any[]): void {
-    if (this.config.debug) {
-      console.log('[SSE]', ...args)
+    if (this.config?.debug) {
+      
     }
   }
 }

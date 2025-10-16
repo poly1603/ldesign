@@ -8,7 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@ldesign/template': resolve(__dirname, '../src'),
+      // '@ldesign/template': resolve(__dirname, '../src'),  // 使用源代码进行开发
     },
   },
   server: {

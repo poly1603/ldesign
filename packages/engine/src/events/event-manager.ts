@@ -91,7 +91,10 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
       return
     }
 
-    const listeners = this.events.get(key)!
+    const listeners = this.events.get(key)
+    if (!listeners) {
+      return
+    }
 
     if (!handler) {
       // 移除所有监听器
@@ -144,11 +147,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
       try {
         listener.handler(args[0] as unknown)
       } catch (error) {
-        if (this.logger) {
-          this.logger.error(`Error in event handler for "${key}":`, error)
-        } else {
-          this.logger.error(`Error in event handler for "${key}":`, error)
-        }
+        this.logger?.error(`Error in event handler for "${key}":`, error)
       }
 
       // 标记需要移除的一次性监听器
@@ -190,11 +189,12 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
       this.events.set(event, [])
     }
 
-    const listeners = this.events.get(event)!
+    const listeners = this.events.get(event)
+    if (!listeners) return
 
     // 检查监听器数量限制
     if (listeners.length >= this.maxListeners) {
-      this.logger.warn(
+      this.logger?.warn(
         `MaxListenersExceededWarning: Possible EventManager memory leak detected. ` +
         `${listeners.length + 1} "${event}" listeners added. ` +
         `Use setMaxListeners() to increase limit.`

@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { EngineImpl } from '../../src/core/engine'
 import type { EngineConfig } from '../../src/types'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { EngineImpl } from '../../src/core/engine'
 
 // Mock Vue
 vi.mock('vue', () => ({
@@ -20,7 +20,7 @@ vi.mock('vue', () => ({
   reactive: vi.fn()
 }))
 
-describe('EngineImpl', () => {
+describe('engineImpl', () => {
   let engine: EngineImpl
   let mockConfig: EngineConfig
 
@@ -90,7 +90,7 @@ describe('EngineImpl', () => {
     })
   })
 
-  describe('Vue应用创建', () => {
+  describe('vue应用创建', () => {
     it('应该能够创建Vue应用', () => {
       const mockComponent = { template: '<div>Test</div>' }
       

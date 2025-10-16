@@ -25,7 +25,7 @@ export class LdesignAvatarGroup {
   /** 边框颜色（用于实现“描边”效果以区分重叠） */
   @Prop() borderColor: string = '#fff';
 
-  @State() overflowCount: number = 0;
+  @State() overflowCount!: number = 0;
 
   componentDidLoad() {
     this.applyDefaults();

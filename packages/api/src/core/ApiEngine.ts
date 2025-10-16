@@ -127,10 +127,10 @@ export class ApiEngineImpl implements ApiEngine {
     }
 
     // 创建 HTTP 客户端
-    this.httpClient = createHttpClient(this.config.http!)
+    this.httpClient = createHttpClient(this.config?.http!)
 
     // 创建管理器
-    this.cacheManager = new CacheManager(this.config.cache!)
+    this.cacheManager = new CacheManager(this.config?.cache!)
     this.debounceManager = new DebounceManagerImpl()
     this.deduplicationManager = new DeduplicationManagerImpl()
 
@@ -142,11 +142,11 @@ export class ApiEngineImpl implements ApiEngine {
     })
 
     // 创建请求队列（按需）
-    if (this.config.queue?.enabled) {
+    if (this.config?.queue?.enabled) {
       const q = {
         enabled: true,
-        concurrency: this.config.queue.concurrency ?? DEFAULT_CONFIG.DEFAULT_CONCURRENCY,
-        maxQueue: this.config.queue.maxQueue ?? 0,
+        concurrency: this.config?.queue.concurrency ?? DEFAULT_CONFIG.DEFAULT_CONCURRENCY,
+        maxQueue: this.config?.queue.maxQueue ?? 0,
       }
       this.requestQueueManager = new RequestQueueManager(q)
     }
@@ -315,7 +315,7 @@ export class ApiEngineImpl implements ApiEngine {
       backoff: 'fixed' as 'fixed' | 'exponential',
       maxDelay: undefined as number | undefined,
       retryOn: (error: unknown, _attempt: number) => true,
-      ...this.config.retry,
+      ...this.config?.retry,
       ...methodConfig.retry,
       ...options.retry,
     }
@@ -329,10 +329,10 @@ export class ApiEngineImpl implements ApiEngine {
     options: ApiCallOptions,
   ) {
     return {
-      enabled: this.config.retry?.circuitBreaker?.enabled || methodConfig.retry?.circuitBreaker?.enabled || options.retry?.circuitBreaker?.enabled || false,
-      failureThreshold: options.retry?.circuitBreaker?.failureThreshold ?? methodConfig.retry?.circuitBreaker?.failureThreshold ?? this.config.retry?.circuitBreaker?.failureThreshold ?? DEFAULT_FAILURE_THRESHOLD,
-      halfOpenAfter: options.retry?.circuitBreaker?.halfOpenAfter ?? methodConfig.retry?.circuitBreaker?.halfOpenAfter ?? this.config.retry?.circuitBreaker?.halfOpenAfter ?? DEFAULT_HALF_OPEN_AFTER,
-      successThreshold: options.retry?.circuitBreaker?.successThreshold ?? methodConfig.retry?.circuitBreaker?.successThreshold ?? this.config.retry?.circuitBreaker?.successThreshold ?? DEFAULT_SUCCESS_THRESHOLD,
+      enabled: this.config?.retry?.circuitBreaker?.enabled || methodConfig.retry?.circuitBreaker?.enabled || options.retry?.circuitBreaker?.enabled || false,
+      failureThreshold: options.retry?.circuitBreaker?.failureThreshold ?? methodConfig.retry?.circuitBreaker?.failureThreshold ?? this.config?.retry?.circuitBreaker?.failureThreshold ?? DEFAULT_FAILURE_THRESHOLD,
+      halfOpenAfter: options.retry?.circuitBreaker?.halfOpenAfter ?? methodConfig.retry?.circuitBreaker?.halfOpenAfter ?? this.config?.retry?.circuitBreaker?.halfOpenAfter ?? DEFAULT_HALF_OPEN_AFTER,
+      successThreshold: options.retry?.circuitBreaker?.successThreshold ?? methodConfig.retry?.circuitBreaker?.successThreshold ?? this.config?.retry?.circuitBreaker?.successThreshold ?? DEFAULT_SUCCESS_THRESHOLD,
     }
   }
 
@@ -458,7 +458,7 @@ export class ApiEngineImpl implements ApiEngine {
   ): void {
     if (!options.skipCache && this.shouldUseCache(methodConfig, options)) {
       const cacheConfig = {
-        ...this.config.cache,
+        ...this.config?.cache,
         ...methodConfig.cache,
         ...options.cache,
       }
@@ -495,7 +495,7 @@ export class ApiEngineImpl implements ApiEngine {
       }
     }
     
-    const jitter = (retryConfig as any).jitter ?? this.config.retry?.jitter ?? 0
+    const jitter = (retryConfig as any).jitter ?? this.config?.retry?.jitter ?? 0
     if (typeof jitter === 'number' && jitter > 0) {
       const delta = delay * jitter
       const min = Math.max(0, delay - delta)
@@ -566,9 +566,9 @@ export class ApiEngineImpl implements ApiEngine {
         // 发送请求（可选队列）
         const useQueue = this.shouldUseQueue(methodConfig, options)
         const effectiveQueue = {
-          enabled: this.config.queue?.enabled ?? false,
-          concurrency: this.config.queue?.concurrency ?? 5,
-          maxQueue: this.config.queue?.maxQueue ?? 0,
+          enabled: this.config?.queue?.enabled ?? false,
+          concurrency: this.config?.queue?.concurrency ?? 5,
+          maxQueue: this.config?.queue?.maxQueue ?? 0,
           ...methodConfig.queue,
           ...options.queue,
         }
@@ -710,7 +710,7 @@ export class ApiEngineImpl implements ApiEngine {
       ) {
         const debounceKey = this.generateDebounceKey(methodName, params)
         const debounceConfig = {
-          ...this.config.debounce,
+          ...this.config?.debounce,
           ...methodConfig.debounce,
           ...options.debounce,
         }
@@ -850,7 +850,7 @@ export class ApiEngineImpl implements ApiEngine {
    * 生成缓存键
    */
   private generateCacheKey(methodName: string, params?: unknown): string {
-    const keyGenerator = this.config.cache?.keyGenerator
+    const keyGenerator = this.config?.cache?.keyGenerator
     if (keyGenerator) {
       return keyGenerator(methodName, params)
     }
@@ -868,7 +868,7 @@ export class ApiEngineImpl implements ApiEngine {
    * 生成去重键
    */
   private generateDeduplicationKey(methodName: string, params?: unknown): string {
-    const keyGenerator = this.config.deduplication?.keyGenerator
+    const keyGenerator = this.config?.deduplication?.keyGenerator
     if (keyGenerator) {
       return keyGenerator(methodName, params)
     }
@@ -882,7 +882,7 @@ export class ApiEngineImpl implements ApiEngine {
     methodConfig: ApiMethodConfig,
     options: ApiCallOptions,
   ): boolean {
-    const globalEnabled = this.config.cache?.enabled ?? true
+    const globalEnabled = this.config?.cache?.enabled ?? true
     const methodEnabled = methodConfig.cache?.enabled ?? true
     const optionEnabled = options.cache?.enabled ?? true
     return globalEnabled && methodEnabled && optionEnabled
@@ -895,7 +895,7 @@ export class ApiEngineImpl implements ApiEngine {
     methodConfig: ApiMethodConfig,
     options: ApiCallOptions,
   ): boolean {
-    const globalEnabled = this.config.debounce?.enabled ?? true
+    const globalEnabled = this.config?.debounce?.enabled ?? true
     const methodEnabled = methodConfig.debounce?.enabled ?? true
     const optionEnabled = options.debounce?.enabled ?? true
     return globalEnabled && methodEnabled && optionEnabled
@@ -908,7 +908,7 @@ export class ApiEngineImpl implements ApiEngine {
     methodConfig: ApiMethodConfig,
     _options: ApiCallOptions,
   ): boolean {
-    const globalEnabled = this.config.deduplication?.enabled ?? true
+    const globalEnabled = this.config?.deduplication?.enabled ?? true
     const methodEnabled = methodConfig.deduplication?.enabled ?? true
     return globalEnabled && methodEnabled
   }
@@ -920,7 +920,7 @@ export class ApiEngineImpl implements ApiEngine {
     methodConfig: ApiMethodConfig,
     options: ApiCallOptions,
   ): boolean {
-    const globalEnabled = this.config.queue?.enabled ?? false
+    const globalEnabled = this.config?.queue?.enabled ?? false
     const methodEnabled = methodConfig.queue?.enabled ?? undefined
     const optionEnabled = options.queue?.enabled ?? undefined
 
@@ -1051,17 +1051,17 @@ export class ApiEngineImpl implements ApiEngine {
     if (options.middlewares) {
       return {
         request: [
-          ...(this.config.middlewares?.request || []),
+          ...(this.config?.middlewares?.request || []),
           ...(methodConfig.middlewares?.request || []),
           ...(options.middlewares?.request || []),
         ],
         response: [
-          ...(this.config.middlewares?.response || []),
+          ...(this.config?.middlewares?.response || []),
           ...(methodConfig.middlewares?.response || []),
           ...(options.middlewares?.response || []),
         ],
         error: [
-          ...(this.config.middlewares?.error || []),
+          ...(this.config?.middlewares?.error || []),
           ...(methodConfig.middlewares?.error || []),
           ...(options.middlewares?.error || []),
         ],
@@ -1078,15 +1078,15 @@ export class ApiEngineImpl implements ApiEngine {
     // 创建新的中间件数组
     const middlewares = {
       request: [
-        ...(this.config.middlewares?.request || []),
+        ...(this.config?.middlewares?.request || []),
         ...(methodConfig.middlewares?.request || []),
       ],
       response: [
-        ...(this.config.middlewares?.response || []),
+        ...(this.config?.middlewares?.response || []),
         ...(methodConfig.middlewares?.response || []),
       ],
       error: [
-        ...(this.config.middlewares?.error || []),
+        ...(this.config?.middlewares?.error || []),
         ...(methodConfig.middlewares?.error || []),
       ],
     }
@@ -1132,7 +1132,7 @@ export class ApiEngineImpl implements ApiEngine {
    * 日志输出
    */
   private log(message: string, ...args: unknown[]): void {
-    if (this.config.debug) {
+    if (this.config?.debug) {
       console.warn(`[API Engine] ${message}`, ...args)
     }
   }

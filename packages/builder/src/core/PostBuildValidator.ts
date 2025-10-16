@@ -138,8 +138,8 @@ export class PostBuildValidator extends EventEmitter implements IPostBuildValida
 
     try {
       // 执行验证前钩子
-      if (this.config.hooks?.beforeValidation) {
-        await this.config.hooks.beforeValidation(context)
+      if (this.config?.hooks?.beforeValidation) {
+        await this.config?.hooks.beforeValidation(context)
       }
 
       // 创建验证统计对象
@@ -162,8 +162,8 @@ export class PostBuildValidator extends EventEmitter implements IPostBuildValida
       stats.setupDuration = Date.now() - setupStartTime
 
       // 执行环境准备后钩子
-      if (this.config.hooks?.afterEnvironmentSetup) {
-        await this.config.hooks.afterEnvironmentSetup(context)
+      if (this.config?.hooks?.afterEnvironmentSetup) {
+        await this.config?.hooks.afterEnvironmentSetup(context)
       }
 
       // 2. 运行测试
@@ -200,8 +200,8 @@ export class PostBuildValidator extends EventEmitter implements IPostBuildValida
       stats.cleanupDuration = Date.now() - cleanupStartTime
 
       // 执行验证完成后钩子
-      if (this.config.hooks?.afterValidation) {
-        await this.config.hooks.afterValidation(context, validationResult)
+      if (this.config?.hooks?.afterValidation) {
+        await this.config?.hooks.afterValidation(context, validationResult)
       }
 
       // 发出验证完成事件
@@ -219,8 +219,8 @@ export class PostBuildValidator extends EventEmitter implements IPostBuildValida
       )
 
       // 执行验证失败钩子
-      if (this.config.hooks?.onValidationError) {
-        await this.config.hooks.onValidationError(context, validationError)
+      if (this.config?.hooks?.onValidationError) {
+        await this.config?.hooks.onValidationError(context, validationError)
       }
 
       // 发出验证失败事件
@@ -281,7 +281,7 @@ export class PostBuildValidator extends EventEmitter implements IPostBuildValida
     await this.tempEnvironment.copyBuildOutputs(context)
 
     // 安装依赖（如果需要）
-    if (this.config.environment?.installDependencies) {
+    if (this.config?.environment?.installDependencies) {
       await this.testRunner.installDependencies(context)
     }
 
@@ -295,16 +295,16 @@ export class PostBuildValidator extends EventEmitter implements IPostBuildValida
     this.logger.info('运行验证测试...')
 
     // 执行测试前钩子
-    if (this.config.hooks?.beforeTestRun) {
-      await this.config.hooks.beforeTestRun(context)
+    if (this.config?.hooks?.beforeTestRun) {
+      await this.config?.hooks.beforeTestRun(context)
     }
 
     // 运行测试
     const testResult = await this.testRunner.runTests(context)
 
     // 执行测试后钩子
-    if (this.config.hooks?.afterTestRun) {
-      await this.config.hooks.afterTestRun(context, testResult)
+    if (this.config?.hooks?.afterTestRun) {
+      await this.config?.hooks.afterTestRun(context, testResult)
     }
 
     this.logger.success(`测试运行完成: ${testResult.passedTests}/${testResult.totalTests} 通过`)
@@ -356,8 +356,8 @@ export class PostBuildValidator extends EventEmitter implements IPostBuildValida
    * 输出验证报告
    */
   private async outputValidationReport(result: ValidationResult): Promise<void> {
-    if (this.config.reporting) {
-      await this.reporter.outputReport(result.report, this.config.reporting)
+    if (this.config?.reporting) {
+      await this.reporter.outputReport(result.report, this.config?.reporting)
     }
   }
 
@@ -367,7 +367,7 @@ export class PostBuildValidator extends EventEmitter implements IPostBuildValida
   private async cleanupValidationEnvironment(context: ValidationContext): Promise<void> {
     this.logger.info('清理验证环境...')
 
-    if (!this.config.environment?.keepTempFiles) {
+    if (!this.config?.environment?.keepTempFiles) {
       await this.tempEnvironment.cleanup(context)
     }
 

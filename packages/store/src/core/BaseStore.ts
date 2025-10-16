@@ -140,7 +140,7 @@ export abstract class BaseStore<
    * @example
    * ```typescript
    * const userStore = new UserStore()
-   * console.log(userStore.$state.name) // 读取状态
+   *  // 读取状态
    * userStore.$state.name = 'John'      // 修改状态
    * ```
    */
@@ -198,7 +198,7 @@ export abstract class BaseStore<
    * @example
    * ```typescript
    * const userStore = new UserStore()
-   * console.log(userStore.$getters.displayName) // 获取计算属性值
+   *  // 获取计算属性值
    * ```
    */
   get $getters(): TGetters {

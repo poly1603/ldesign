@@ -79,13 +79,16 @@ export class AuthManager {
   // 加载token
   private loadToken(): void {
     const storage = this.getStorage()
-    this.token = storage.getItem(this.config.tokenKey!)
+    const tokenKey = this.config?.tokenKey
+    if (tokenKey) {
+      this.token = storage.getItem(tokenKey)
+    }
 
     if (this.token) {
       this.state.isAuthenticated = true
       this.validateToken()
 
-      if (this.config.refreshToken) {
+      if (this.config?.refreshToken) {
         this.setupTokenRefresh()
       }
     }
@@ -93,7 +96,7 @@ export class AuthManager {
 
   // 获取存储
   private getStorage(): Storage {
-    switch (this.config.tokenStorage) {
+    switch (this.config?.tokenStorage) {
       case 'sessionStorage':
         return sessionStorage
       case 'cookie':
@@ -156,6 +159,9 @@ export class AuthManager {
   private parseJWT(token: string): any {
     try {
       const base64Url = token.split('.')[1]
+      if (!base64Url) {
+        throw new Error('Invalid JWT format')
+      }
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
       const jsonPayload = decodeURIComponent(
         atob(base64)
@@ -165,7 +171,7 @@ export class AuthManager {
       )
       return JSON.parse(jsonPayload)
     }
-    catch (e) {
+    catch {
       throw new Error('Invalid JWT token')
     }
   }
@@ -176,7 +182,7 @@ export class AuthManager {
       clearInterval(this.refreshTimer)
     }
 
-    const refreshInterval = (this.config.tokenExpiry || 3600000) * 0.8 // 80%时刷新
+    const refreshInterval = (this.config?.tokenExpiry || 3600000) * 0.8 // 80%时刷新
 
     this.refreshTimer = setInterval(() => {
       this.refreshToken()
@@ -188,7 +194,7 @@ export class AuthManager {
     try {
       // 这里应该调用API刷新token
       // 模拟刷新
-      console.log('Refreshing token...')
+      
 
       // 实际实现中，这里会发送请求到服务器
       // const response = await fetch('/api/auth/refresh', {...});
@@ -202,7 +208,7 @@ export class AuthManager {
   }
 
   // 登录
-  async login(credentials: any): Promise<boolean> {
+  async login(_credentials: any): Promise<boolean> {
     this.state.loading = true
     this.state.error = null
 
@@ -239,9 +245,12 @@ export class AuthManager {
     this.state.isAuthenticated = true
 
     const storage = this.getStorage()
-    storage.setItem(this.config.tokenKey!, token)
+    const tokenKey = this.config?.tokenKey
+    if (tokenKey) {
+      storage.setItem(tokenKey, token)
+    }
 
-    if (this.config.refreshToken) {
+    if (this.config?.refreshToken) {
       this.setupTokenRefresh()
     }
   }
@@ -253,7 +262,10 @@ export class AuthManager {
     this.state.user = null
 
     const storage = this.getStorage()
-    storage.removeItem(this.config.tokenKey!)
+    const tokenKey = this.config?.tokenKey
+    if (tokenKey) {
+      storage.removeItem(tokenKey)
+    }
 
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer)
@@ -270,7 +282,7 @@ export class AuthManager {
 
   // 创建认证守卫
   createAuthGuard(options: AuthGuardOptions = {}): NavigationGuard {
-    return async (to, from, next) => {
+    return async (to, _from, _next) => {
       // 检查路由是否需要认证
       const requiresAuth = options.requiresAuth ?? to.meta?.requiresAuth ?? true
 
@@ -281,8 +293,9 @@ export class AuthManager {
       // 检查是否已认证
       if (!this.state.isAuthenticated) {
         // 重定向到登录页
+        const loginRoute = this.config?.loginRoute || '/login'
         return {
-          path: this.config.loginRoute!,
+          path: loginRoute,
           query: { redirect: to.fullPath },
         }
       }
@@ -290,8 +303,9 @@ export class AuthManager {
       // 验证token有效性
       const isValid = await this.validateToken()
       if (!isValid) {
+        const loginRoute = this.config?.loginRoute || '/login'
         return {
-          path: this.config.loginRoute!,
+          path: loginRoute,
           query: { redirect: to.fullPath },
         }
       }
@@ -319,8 +333,8 @@ export class PermissionManager {
     }
 
     // 设置默认角色
-    if (this.config.defaultRole) {
-      this.addRole(this.config.defaultRole)
+    if (this.config?.defaultRole) {
+      this.addRole(this.config?.defaultRole)
     }
   }
 
@@ -329,14 +343,14 @@ export class PermissionManager {
     this.roles.add(role)
 
     // 添加继承的角色
-    if (this.config.roleHierarchy?.[role]) {
-      this.config.roleHierarchy[role].forEach((inheritedRole) => {
+    if (this.config?.roleHierarchy?.[role]) {
+      this.config?.roleHierarchy[role].forEach((inheritedRole) => {
         this.roles.add(inheritedRole)
       })
     }
 
     // 清除缓存
-    if (this.config.cachePermissions) {
+    if (this.config?.cachePermissions) {
       this.permissionCache.clear()
     }
   }
@@ -346,14 +360,14 @@ export class PermissionManager {
     this.roles.delete(role)
 
     // 移除继承的角色
-    if (this.config.roleHierarchy?.[role]) {
-      this.config.roleHierarchy[role].forEach((inheritedRole) => {
+    if (this.config?.roleHierarchy?.[role]) {
+      this.config?.roleHierarchy[role].forEach((inheritedRole) => {
         this.roles.delete(inheritedRole)
       })
     }
 
     // 清除缓存
-    if (this.config.cachePermissions) {
+    if (this.config?.cachePermissions) {
       this.permissionCache.clear()
     }
   }
@@ -369,7 +383,7 @@ export class PermissionManager {
     this.permissions.add(permission)
 
     // 清除缓存
-    if (this.config.cachePermissions) {
+    if (this.config?.cachePermissions) {
       this.permissionCache.clear()
     }
   }
@@ -379,7 +393,7 @@ export class PermissionManager {
     this.permissions.delete(permission)
 
     // 清除缓存
-    if (this.config.cachePermissions) {
+    if (this.config?.cachePermissions) {
       this.permissionCache.clear()
     }
   }
@@ -390,27 +404,27 @@ export class PermissionManager {
     permissions.forEach(p => this.permissions.add(p))
 
     // 清除缓存
-    if (this.config.cachePermissions) {
+    if (this.config?.cachePermissions) {
       this.permissionCache.clear()
     }
   }
 
   // 检查权限
   hasPermission(permission: string | string[]): boolean {
-    if (!this.config.enabled)
+    if (!this.config?.enabled)
       return true
 
     const permissions = Array.isArray(permission) ? permission : [permission]
 
     // 检查缓存
     const cacheKey = permissions.join(',')
-    if (this.config.cachePermissions && this.permissionCache.has(cacheKey)) {
+    if (this.config?.cachePermissions && this.permissionCache.has(cacheKey)) {
       return this.permissionCache.get(cacheKey)!
     }
 
     let result = false
 
-    switch (this.config.mode) {
+    switch (this.config?.mode) {
       case 'role':
         result = permissions.every(p => this.roles.has(p))
         break
@@ -427,7 +441,7 @@ export class PermissionManager {
     }
 
     // 缓存结果
-    if (this.config.cachePermissions) {
+    if (this.config?.cachePermissions) {
       this.permissionCache.set(cacheKey, result)
     }
 
@@ -452,7 +466,7 @@ export class PermissionManager {
 
   // 创建权限守卫
   createPermissionGuard(): NavigationGuard {
-    return (to, from, next) => {
+    return (to, _from, _next) => {
       // 检查路由权限
       const requiredPermissions = to.meta?.permissions as string[] | undefined
       const requiredRoles = to.meta?.roles as string[] | undefined
@@ -520,16 +534,22 @@ export class CSRFProtection {
   // 设置token
   private setupToken(): void {
     // 设置到cookie
-    this.setCookie(this.config.cookieName!, this.token)
+    const cookieName = this.config?.cookieName
+    if (cookieName) {
+      this.setCookie(cookieName, this.token)
+    }
 
     // 设置到meta标签
-    let meta = document.querySelector(`meta[name="${this.config.tokenName}"]`)
-    if (!meta) {
-      meta = document.createElement('meta')
-      meta.setAttribute('name', this.config.tokenName!)
-      document.head.appendChild(meta)
+    const tokenName = this.config?.tokenName
+    if (tokenName) {
+      let meta = document.querySelector(`meta[name="${tokenName}"]`)
+      if (!meta) {
+        meta = document.createElement('meta')
+        meta.setAttribute('name', tokenName)
+        document.head.appendChild(meta)
+      }
+      meta.setAttribute('content', this.token)
     }
-    meta.setAttribute('content', this.token)
   }
 
   // 设置cookie
@@ -550,11 +570,11 @@ export class CSRFProtection {
 
   // 验证请求
   validateRequest(method: string, token?: string): boolean {
-    if (!this.config.enabled)
+    if (!this.config?.enabled)
       return true
 
     // 检查是否需要验证
-    if (!this.config.validateMethods?.includes(method.toUpperCase())) {
+    if (!this.config?.validateMethods?.includes(method.toUpperCase())) {
       return true
     }
 
@@ -564,11 +584,15 @@ export class CSRFProtection {
 
   // 获取请求头
   getHeaders(): Record<string, string> {
-    if (!this.config.enabled)
+    if (!this.config?.enabled)
       return {}
 
+    const headerName = this.config?.headerName
+    if (!headerName) {
+      return {}
+    }
     return {
-      [this.config.headerName!]: this.token,
+      [headerName]: this.token,
     }
   }
 
@@ -577,7 +601,7 @@ export class CSRFProtection {
     return {
       request: (config: any) => {
         // 添加CSRF token到请求头
-        if (this.config.validateMethods?.includes(config.method?.toUpperCase())) {
+        if (this.config?.validateMethods?.includes(config.method?.toUpperCase())) {
           config.headers = {
             ...config.headers,
             ...this.getHeaders(),
@@ -588,10 +612,13 @@ export class CSRFProtection {
 
       response: (response: any) => {
         // 从响应中更新token（如果有）
-        const newToken = response.headers?.[this.config.headerName!.toLowerCase()]
-        if (newToken && newToken !== this.token) {
-          this.token = newToken
-          this.setupToken()
+        const headerName = this.config?.headerName
+        if (headerName) {
+          const newToken = response.headers?.[headerName.toLowerCase()]
+          if (newToken && newToken !== this.token) {
+            this.token = newToken
+            this.setupToken()
+          }
         }
         return response
       },
@@ -635,12 +662,12 @@ export class XSSProtection {
 
   // 清理值
   sanitize(value: any): any {
-    if (!this.config.enabled)
+    if (!this.config?.enabled)
       return value
 
     if (typeof value === 'string') {
       // 检查白名单
-      if (this.config.whitelist?.some(pattern =>
+      if (this.config?.whitelist?.some(pattern =>
         new RegExp(pattern).test(value),
       )) {
         return value
@@ -666,18 +693,18 @@ export class XSSProtection {
 
   // 清理路由参数
   sanitizeRoute(route: RouteLocationNormalized): RouteLocationNormalized {
-    if (!this.config.enabled)
+    if (!this.config?.enabled)
       return route
 
     const sanitized = { ...route }
 
     // 清理params
-    if (this.config.sanitizeParams && route.params) {
+    if (this.config?.sanitizeParams && route.params) {
       sanitized.params = this.sanitize(route.params)
     }
 
     // 清理query
-    if (this.config.sanitizeQuery && route.query) {
+    if (this.config?.sanitizeQuery && route.query) {
       sanitized.query = this.sanitize(route.query)
     }
 
@@ -686,8 +713,8 @@ export class XSSProtection {
 
   // 创建XSS守卫
   createXSSGuard(): NavigationGuard {
-    return (to, from, next) => {
-      if (!this.config.enabled)
+    return (to, _from, _next) => {
+      if (!this.config?.enabled)
         return true
 
       // 清理路由参数
@@ -708,22 +735,22 @@ export class XSSProtection {
     const threats: string[] = []
 
     // 检查脚本标签
-    if (/<script[^>]*>.*?<\/script>/gi.test(content)) {
+    if (/<script[^>]*>.*?<\/script>/i.test(content)) {
       threats.push('Script tags detected')
     }
 
     // 检查事件处理器
-    if (/on\w+\s*=/gi.test(content)) {
+    if (/on\w+\s*=/i.test(content)) {
       threats.push('Event handlers detected')
     }
 
     // 检查JavaScript协议
-    if (/javascript:/gi.test(content)) {
+    if (/javascript:/i.test(content)) {
       threats.push('JavaScript protocol detected')
     }
 
     // 检查数据URI
-    if (/data:text\/html/gi.test(content)) {
+    if (/data:text\/html/i.test(content)) {
       threats.push('Data URI detected')
     }
 
@@ -760,7 +787,7 @@ export class RouteSecurityManager {
   // 设置守卫
   private setupGuards(): void {
     // 认证守卫
-    if (this.config.auth?.enabled) {
+    if (this.config?.auth?.enabled) {
       const cleanup = this.router.beforeEach(
         this.authManager.createAuthGuard(),
       )
@@ -768,7 +795,7 @@ export class RouteSecurityManager {
     }
 
     // 权限守卫
-    if (this.config.permission?.enabled) {
+    if (this.config?.permission?.enabled) {
       const cleanup = this.router.beforeEach(
         this.permissionManager.createPermissionGuard(),
       )
@@ -776,7 +803,7 @@ export class RouteSecurityManager {
     }
 
     // XSS守卫
-    if (this.config.xss?.enabled) {
+    if (this.config?.xss?.enabled) {
       const cleanup = this.router.beforeEach(
         this.xssProtection.createXSSGuard(),
       )
@@ -800,7 +827,7 @@ export class RouteSecurityManager {
   // 登出
   logout(): void {
     this.authManager.logout()
-    this.permissionManager.setRoles([this.config.permission?.defaultRole || 'guest'])
+    this.permissionManager.setRoles([this.config?.permission?.defaultRole || 'guest'])
     this.permissionManager.setPermissions([])
   }
 

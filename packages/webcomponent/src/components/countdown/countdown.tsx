@@ -53,19 +53,19 @@ export class LdesignCountdown {
   @Prop() circleStroke: number = 4;
 
   /** 剩余时间（毫秒）内部状态 */
-  @State() remaining: number = 0;
+  @State() remaining!: number = 0;
 
   /** 是否已结束 */
-  @State() finished: boolean = false;
+  @State() finished!: boolean = false;
 
   /** 初始总时长（毫秒），用于进度展示 */
-  @State() total: number = 0;
+  @State() total!: number = 0;
 
   /** 变化事件：倒计时数值变化时触发 */
-  @Event() ldesignChange: EventEmitter<{ remaining: number; formatted: string }>;
+  @Event() ldesignChange!: EventEmitter<{ remaining: number; formatted: string }>;
 
   /** 完成事件：倒计时结束时触发 */
-  @Event() ldesignFinish: EventEmitter<void>;
+  @Event() ldesignFinish!: EventEmitter<void>;
 
   private timer: any;
   private targetEnd: number | null = null; // 目标结束时间戳（ms）

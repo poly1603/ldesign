@@ -107,7 +107,7 @@ export class CacheWarmer {
     this.tasks.push({
       priority: 0,
       required: false,
-      timeout: this.config.timeout,
+      timeout: this.config?.timeout,
       retries: 0,
       ...task,
     })
@@ -131,7 +131,7 @@ export class CacheWarmer {
    * 执行预热
    */
   async warmup(engine: any): Promise<WarmupResult[]> {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return []
     }
 
@@ -156,11 +156,11 @@ export class CacheWarmer {
         (r, i) => !r.success && sortedTasks[i]?.required,
       )
 
-      if (requiredFailed && this.config.throwOnError) {
+      if (requiredFailed && this.config?.throwOnError) {
         throw new Error('Required warmup tasks failed')
       }
 
-      this.config.onComplete(this.results)
+      this.config?.onComplete(this.results)
 
       return this.results
     }
@@ -181,7 +181,7 @@ export class CacheWarmer {
 
     while (queue.length > 0 || executing.length > 0) {
       // 填充执行队列
-      while (executing.length < this.config.concurrency && queue.length > 0) {
+      while (executing.length < this.config?.concurrency && queue.length > 0) {
         const task = queue.shift()!
         const promise = this.executeTask(engine, task).then(() => {
           const index = executing.indexOf(promise)
@@ -229,7 +229,7 @@ export class CacheWarmer {
         }
 
         this.results.push(result)
-        this.config.onProgress(this.results.length, this.tasks.length, task)
+        this.config?.onProgress(this.results.length, this.tasks.length, task)
 
         return
       }
@@ -254,8 +254,8 @@ export class CacheWarmer {
     }
 
     this.results.push(result)
-    this.config.onError(lastError, task)
-    this.config.onProgress(this.results.length, this.tasks.length, task)
+    this.config?.onError(lastError, task)
+    this.config?.onProgress(this.results.length, this.tasks.length, task)
   }
 
   /**

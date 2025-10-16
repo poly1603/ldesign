@@ -168,35 +168,35 @@ export class PerformanceConfigManager {
    * 获取序列化缓存配置
    */
   getSerializationCacheConfig(): SerializationCacheConfig | undefined {
-    return this.config.serializationCache
+    return this.config?.serializationCache
   }
 
   /**
    * 获取事件节流配置
    */
   getEventThrottleConfig(): ThrottleConfig | undefined {
-    return this.config.eventThrottle
+    return this.config?.eventThrottle
   }
 
   /**
    * 检查是否启用批量操作优化
    */
   isBatchOptimizationEnabled(): boolean {
-    return this.config.batchOptimization ?? true
+    return this.config?.batchOptimization ?? true
   }
 
   /**
    * 检查是否启用内存优化
    */
   isMemoryOptimizationEnabled(): boolean {
-    return this.config.memoryOptimization ?? true
+    return this.config?.memoryOptimization ?? true
   }
 
   /**
    * 检查是否启用性能监控
    */
   isPerformanceMonitoringEnabled(): boolean {
-    return this.config.performanceMonitoring ?? true
+    return this.config?.performanceMonitoring ?? true
   }
 
   /**

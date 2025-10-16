@@ -14,8 +14,7 @@ export function setupWebSocket(): void {
 
   // 订阅欢迎消息
   subscribe('welcome', (data) => {
-    console.log('收到服务器欢迎消息:', data)
-  })
+      })
 
   // 订阅心跳消息
   subscribe('ping', (data) => {
@@ -26,8 +25,7 @@ export function setupWebSocket(): void {
 
   // 订阅项目更新消息
   subscribe('project-updated', (data) => {
-    console.log('项目更新:', data)
-    // 这里可以触发页面刷新或状态更新
+        // 这里可以触发页面刷新或状态更新
   })
 
   // 订阅错误消息
@@ -35,5 +33,4 @@ export function setupWebSocket(): void {
     console.error('WebSocket 错误:', data)
   })
 
-  console.log('WebSocket 事件监听器已设置')
-}
+  }

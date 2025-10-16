@@ -69,8 +69,7 @@ export const BUTTON_COMPONENT_NAME = 'LButton'
  * import { Button } from '@ldesign/vue3-components-example/button'
  * 
  * const handleClick = (event: Event) => {
- *   console.log('按钮被点击了', event)
- * }
+ *    * }
  * </script>
  * ```
  * 

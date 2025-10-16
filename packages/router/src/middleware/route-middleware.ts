@@ -91,7 +91,7 @@ export class MiddlewareComposer {
     }
 
     this.middlewares.push(wrapper)
-    
+
     // 按优先级排序（降序）
     this.middlewares.sort((a, b) => b.config.priority - a.config.priority)
 
@@ -119,7 +119,7 @@ export class MiddlewareComposer {
   async execute(context: RouteContext): Promise<void> {
     // 过滤出启用且满足条件的中间件
     const activeMiddlewares = this.middlewares.filter(
-      wrapper => wrapper.config.enabled && wrapper.config.condition(context)
+      wrapper => wrapper.config.enabled && wrapper.config.condition(context),
     )
 
     if (activeMiddlewares.length === 0) {
@@ -133,7 +133,7 @@ export class MiddlewareComposer {
       // 防止 next() 被多次调用
       if (i <= index && i !== 0) {
         throw new Error(
-          `next() called multiple times in middleware "${activeMiddlewares[index - 1]?.config.name}"`
+          `next() called multiple times in middleware "${activeMiddlewares[index - 1]?.config.name}"`,
         )
       }
 
@@ -153,7 +153,7 @@ export class MiddlewareComposer {
       try {
         // 执行当前中间件
         await Promise.resolve(
-          wrapper.middleware(context, () => dispatch(i + 1))
+          wrapper.middleware(context, () => dispatch(i + 1)),
         )
       }
       catch (error) {
@@ -179,7 +179,7 @@ export class MiddlewareComposer {
    */
   private handleError(error: Error, context: RouteContext): void {
     context.error = error
-    
+
     for (const handler of this.errorHandlers) {
       try {
         handler(error, context)
@@ -241,14 +241,14 @@ export function createLoggerMiddleware(options?: {
   logger?: (message: string, data?: any) => void
 }): RouteMiddleware {
   const verbose = options?.verbose ?? false
-  const logger = options?.logger || console.log
+  const logger = options?.logger || console.info
 
   return async (context, next) => {
     const start = Date.now()
-    
+
     logger(
       `🚀 Navigation: ${context.from.path} → ${context.to.path}`,
-      verbose ? context : undefined
+      verbose ? context : undefined,
     )
 
     await next()
@@ -256,7 +256,7 @@ export function createLoggerMiddleware(options?: {
     const duration = Date.now() - start
     logger(
       `✅ Navigation completed in ${duration}ms`,
-      verbose ? { duration, path: context.to.path } : undefined
+      verbose ? { duration, path: context.to.path } : undefined,
     )
   }
 }
@@ -282,7 +282,7 @@ export function createPerformanceMiddleware(options?: {
     if (duration > threshold) {
       options?.onSlow?.(duration, context)
       console.warn(
-        `⚠️ Slow navigation detected: ${context.to.path} took ${duration.toFixed(2)}ms`
+        `⚠️ Slow navigation detected: ${context.to.path} took ${duration.toFixed(2)}ms`,
       )
     }
 
@@ -355,7 +355,7 @@ export function createPermissionMiddleware(options: {
 
     // 检查权限
     const hasPermission = await Promise.resolve(
-      checkPermission(requiredPermissions)
+      checkPermission(requiredPermissions),
     )
 
     if (!hasPermission) {
@@ -428,7 +428,7 @@ export function createProgressMiddleware(options?: {
           z-index: 9999;
         `
         document.body.appendChild(progressBar)
-        
+
         // 开始进度
         setTimeout(() => {
           if (progressBar) {
@@ -492,7 +492,7 @@ export function createScrollMiddleware(options?: {
     // 恢复或设置滚动位置
     if (typeof window !== 'undefined') {
       const behavior = options?.behavior || 'auto'
-      
+
       let scrollTo: { x: number, y: number } | undefined
 
       if (options?.position === 'saved') {
@@ -531,7 +531,7 @@ export function createMiddlewareComposer(): MiddlewareComposer {
  */
 export function createRouteContext(
   to: RouteLocationNormalized,
-  from: RouteLocationNormalized
+  from: RouteLocationNormalized,
 ): RouteContext {
   return {
     to,

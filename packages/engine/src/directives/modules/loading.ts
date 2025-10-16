@@ -55,9 +55,9 @@ export class LoadingDirective extends DirectiveBase {
   private addLoading(el: HTMLElement, config: LoadingOptions): void {
     // Remove existing overlay if any
     this.removeLoading(el)
-    
+
     const overlay = this.createOverlay(config)
-    
+
     if (config.fullscreen) {
       document.body.appendChild(overlay)
       if (config.lock) {
@@ -69,7 +69,7 @@ export class LoadingDirective extends DirectiveBase {
       }
       el.appendChild(overlay)
     }
-    
+
     directiveUtils.storeData(el, 'loading-overlay', overlay)
   }
 
@@ -101,7 +101,7 @@ export class LoadingDirective extends DirectiveBase {
     spinner.className = 'v-loading-spinner'
     spinner.innerHTML = config.spinner || this.getDefaultSpinner()
     overlay.appendChild(spinner)
-    
+
     if (config.text) {
       const text = document.createElement('div')
       text.className = 'v-loading-text'
@@ -111,7 +111,7 @@ export class LoadingDirective extends DirectiveBase {
       text.style.fontSize = '14px'
       overlay.appendChild(text)
     }
-    
+
     return overlay
   }
 
@@ -119,7 +119,7 @@ export class LoadingDirective extends DirectiveBase {
     const svg = '<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">'
     const circle = '<circle cx="20" cy="20" r="18" stroke="#3498db" stroke-width="3" fill="none" stroke-dasharray="90" stroke-dashoffset="15">'
     const animate = '<animateTransform attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="1s" repeatCount="indefinite"/>'
-    return svg + circle + animate + '</circle></svg>'
+    return `${svg + circle + animate}</circle></svg>`
   }
 
   private parseConfig(binding: VueDirectiveBinding): LoadingOptions {

@@ -13,12 +13,10 @@ import type { Router } from '@ldesign/router'
  * @param router 路由器实例
  */
 export async function setupPlugins(app: App, router: Router) {
-  console.log('🔌 开始设置路由插件...')
-
+  
   try {
     // 基础路由功能已经在 main.ts 中设置
-    console.log('✅ 路由插件设置完成')
-  } catch (error) {
+      } catch (error) {
     console.error('❌ 插件设置失败:', error)
     throw error
   }

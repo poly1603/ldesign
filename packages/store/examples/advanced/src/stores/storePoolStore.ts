@@ -75,7 +75,7 @@ export class StorePoolDemoStore extends BaseStore {
 
   @Action()
   initializePool(): void {
-    console.log('Store池已初始化')
+    
     // 预热池
     this.pool.warmUp(TestPooledStore, 3, 'warmup')
   }

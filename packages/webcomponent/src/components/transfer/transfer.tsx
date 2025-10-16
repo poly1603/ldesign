@@ -46,12 +46,12 @@ export class LdesignTransfer {
   /** 值改变事件 */
   @Event() ldesignChange!: EventEmitter<{ value: string[]; movedKeys: string[]; direction: 'left' | 'right' }>; 
 
-  @State() parsedItems: TransferItem[] = [];
-  @State() rightKeys: string[] = [];
-  @State() leftSelectedKeys: string[] = [];
-  @State() rightSelectedKeys: string[] = [];
-  @State() leftQuery: string = '';
-  @State() rightQuery: string = '';
+  @State() parsedItems!: TransferItem[] = [];
+  @State() rightKeys!: string[] = [];
+  @State() leftSelectedKeys!: string[] = [];
+  @State() rightSelectedKeys!: string[] = [];
+  @State() leftQuery!: string = '';
+  @State() rightQuery!: string = '';
 
   @Watch('items')
   watchItems(val: string | TransferItem[]) {

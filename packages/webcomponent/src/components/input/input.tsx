@@ -106,12 +106,12 @@ export class LdesignInput {
   /**
    * 内部状态：是否显示密码
    */
-  @State() showPasswordText: boolean = false;
+  @State() showPasswordText!: boolean = false;
 
   /**
    * 内部状态：是否聚焦
    */
-  @State() isFocused: boolean = false;
+  @State() isFocused!: boolean = false;
 
   /**
    * 组合输入标记（中文输入法等）
@@ -456,16 +456,7 @@ export class LdesignInput {
 
     // 调试信息
     if (typeof this.autosize === 'object' && this.autosize !== null) {
-      console.log('Textarea auto-height debug:', {
-        minRows: this.autosize.minRows,
-        maxRows: this.autosize.maxRows,
-        actualLineHeight,
-        scrollHeight,
-        contentHeight,
-        minHeight,
-        maxHeight,
-        newHeight
-      });
+      
     }
     });
   }

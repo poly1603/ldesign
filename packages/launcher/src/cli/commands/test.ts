@@ -249,9 +249,9 @@ export class TestCommand {
    * 显示测试结果
    */
   private displayResults(result: any): void {
-    console.log()
-    console.log(chalk.bold('测试结果:'))
-    console.log(chalk.gray('─'.repeat(50)))
+    
+    )
+    ))
     
     // 显示统计信息
     const stats = [
@@ -263,14 +263,14 @@ export class TestCommand {
     ]
     
     stats.forEach(([label, value]) => {
-      console.log(`  ${chalk.gray(label + ':')} ${value}`)
+      } ${value}`)
     })
     
     // 显示覆盖率信息
     if (result.coverage) {
-      console.log()
-      console.log(chalk.bold('覆盖率:'))
-      console.log(chalk.gray('─'.repeat(50)))
+      
+      )
+      ))
       
       const coverage = [
         ['行覆盖率', `${result.coverage.lines}%`],
@@ -284,21 +284,21 @@ export class TestCommand {
         const coloredValue = percentage >= 80 ? chalk.green(value) :
                            percentage >= 60 ? chalk.yellow(value) :
                            chalk.red(value)
-        console.log(`  ${chalk.gray(label + ':')} ${coloredValue}`)
+        } ${coloredValue}`)
       })
     }
     
     // 显示错误信息
     if (result.errors && result.errors.length > 0) {
-      console.log()
-      console.log(chalk.bold.red('错误:'))
-      console.log(chalk.gray('─'.repeat(50)))
+      
+      )
+      ))
       result.errors.forEach((error: string) => {
-        console.log(chalk.red(`  • ${error}`))
+        )
       })
     }
     
-    console.log(chalk.gray('─'.repeat(50)))
+    ))
   }
 
   /**

@@ -57,11 +57,11 @@ export class DropdownPanel {
    */
   @Event() visibleChange!: EventEmitter<boolean>;
 
-  @State() triggerRect: DOMRect | null = null;
-  @State() panelHeight: number = 0;
-  @State() actualPlacement: 'top' | 'bottom' = 'bottom';
-  @State() isReady: boolean = false;
-  @State() disableTransition: boolean = false; // 禁用过渡效果的标志
+  @State() triggerRect!: DOMRect | null = null;
+  @State() panelHeight!: number = 0;
+  @State() actualPlacement!: 'top' | 'bottom' = 'bottom';
+  @State() isReady!: boolean = false;
+  @State() disableTransition!: boolean = false; // 禁用过渡效果的标志
 
   private triggerRef?: HTMLDivElement;
   private panelRef?: HTMLDivElement;
@@ -97,7 +97,7 @@ export class DropdownPanel {
       // 计算并更新新的placement，确保在动画开始前就是正确的
       const newPlacement = this.getNewPlacement();
       const placementChanged = this.actualPlacement !== newPlacement;
-      console.log('[open] calculated placement:', newPlacement, 'previous:', this.actualPlacement, 'changed:', placementChanged);
+      
       
       // 如果 placement 改变了，需要先禁用 transition，避免从旧状态到新状态的过渡动画
       if (placementChanged) {
@@ -116,12 +116,12 @@ export class DropdownPanel {
         }
         
         requestAnimationFrame(() => {
-          console.log('[open] setting isReady to true, visible:', this.visible, 'placement:', this.actualPlacement);
+          
           if (this.visible) {
             this.isReady = true;
             if (this.panelRef) {
               this.panelHeight = this.panelRef.scrollHeight;
-              console.log('[open] panelRef classes:', this.panelRef.className);
+              
             } else {
               console.warn('[open] panelRef is null!');
             }
@@ -173,7 +173,7 @@ export class DropdownPanel {
       
       // 如果方向改变了，需要先隐藏，然后改变方向，再显示
       if (oldPlacement !== newPlacement) {
-        console.log(`[scroll] placement changed from ${oldPlacement} to ${newPlacement}, resetting animation`);
+        
         // 先隐藏面板
         this.isReady = false;
         
@@ -370,7 +370,7 @@ export class DropdownPanel {
       [`l-dropdown-panel__panel--animation-${this.animationMode}`]: true,
     };
     
-    console.log('[render] panelClasses:', panelClasses, 'visible:', this.visible, 'isReady:', this.isReady, 'animationMode:', this.animationMode);
+    
 
     const maskClasses = {
       'l-dropdown-panel__mask': true,

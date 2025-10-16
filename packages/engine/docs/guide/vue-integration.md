@@ -7,9 +7,9 @@
 ### 安装和配置
 
 ```typescript
+import { createEngine } from '@ldesign/engine'
 // main.ts
 import { createApp } from 'vue'
-import { createEngine } from '@ldesign/engine'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -71,18 +71,6 @@ subscribe('user', (newValue, oldValue) => {
 ### useAsync - 异步操作管理
 
 ```vue
-<template>
-  <div>
-    <div v-if="loading">加载中...</div>
-    <div v-else-if="error">错误: {{ error.message }}</div>
-    <div v-else>
-      <h1>{{ data?.title }}</h1>
-      <p>{{ data?.content }}</p>
-    </div>
-    <button @click="refresh">刷新</button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { useAsync } from '@ldesign/engine'
 
@@ -109,40 +97,29 @@ const {
   }
 )
 </script>
+
+<template>
+  <div>
+    <div v-if="loading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      错误: {{ error.message }}
+    </div>
+    <div v-else>
+      <h1>{{ data?.title }}</h1>
+      <p>{{ data?.content }}</p>
+    </div>
+    <button @click="refresh">
+      刷新
+    </button>
+  </div>
+</template>
 ```
 
 ### useForm - 表单管理
 
 ```vue
-<template>
-  <form @submit.prevent="handleSubmit">
-    <div>
-      <label>用户名:</label>
-      <input 
-        v-model="values.username" 
-        :class="{ error: errors.username }"
-        @blur="validateField('username')"
-      />
-      <span v-if="errors.username" class="error">{{ errors.username }}</span>
-    </div>
-    
-    <div>
-      <label>邮箱:</label>
-      <input 
-        v-model="values.email" 
-        type="email"
-        :class="{ error: errors.email }"
-        @blur="validateField('email')"
-      />
-      <span v-if="errors.email" class="error">{{ errors.email }}</span>
-    </div>
-    
-    <button type="submit" :disabled="!isValid || submitting">
-      {{ submitting ? '提交中...' : '提交' }}
-    </button>
-  </form>
-</template>
-
 <script setup lang="ts">
 import { useForm } from '@ldesign/engine'
 
@@ -185,6 +162,35 @@ const handleSubmit = async () => {
   }
 }
 </script>
+
+<template>
+  <form @submit.prevent="handleSubmit">
+    <div>
+      <label>用户名:</label>
+      <input 
+        v-model="values.username" 
+        :class="{ error: errors.username }"
+        @blur="validateField('username')"
+      >
+      <span v-if="errors.username" class="error">{{ errors.username }}</span>
+    </div>
+    
+    <div>
+      <label>邮箱:</label>
+      <input 
+        v-model="values.email" 
+        type="email"
+        :class="{ error: errors.email }"
+        @blur="validateField('email')"
+      >
+      <span v-if="errors.email" class="error">{{ errors.email }}</span>
+    </div>
+    
+    <button type="submit" :disabled="!isValid || submitting">
+      {{ submitting ? '提交中...' : '提交' }}
+    </button>
+  </form>
+</template>
 ```
 
 ### usePerformance - 性能监控

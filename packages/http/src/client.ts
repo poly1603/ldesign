@@ -373,7 +373,7 @@ export class HttpClientImpl implements HttpClient {
       ...this.config,
       ...config,
       headers: {
-        ...this.config.headers,
+        ...this.config?.headers,
         ...config.headers,
       },
     }
@@ -533,17 +533,17 @@ export class HttpClientImpl implements HttpClient {
     }
 
     // 只有在两者都有 headers 时才进行深度合并
-    if (this.config.headers && config.headers) {
+    if (this.config?.headers && config.headers) {
       merged.headers = {
-        ...this.config.headers,
+        ...this.config?.headers,
         ...config.headers,
       }
     }
 
     // 只有在两者都有 params 时才进行深度合并
-    if (this.config.params && config.params) {
+    if (this.config?.params && config.params) {
       merged.params = {
-        ...this.config.params,
+        ...this.config?.params,
         ...config.params,
       }
     }

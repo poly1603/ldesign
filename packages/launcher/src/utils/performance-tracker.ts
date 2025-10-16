@@ -208,7 +208,7 @@ export class PerformanceTracker {
     const htmlPath = outputPath.replace('.json', '.html')
     await this.saveHTMLReport(report, htmlPath)
 
-    console.log(`📊 Performance report saved to: ${outputPath}`)
+    
   }
 
   /**
@@ -398,20 +398,20 @@ export class PerformanceTracker {
   public printSummary(): void {
     const report = this.generateReport()
     
-    console.log('\n⚡ Performance Summary:')
-    console.log(`   Total Duration: ${(report.totalDuration / 1000).toFixed(2)}s`)
+    
+    .toFixed(2)}s`)
     
     if (report.bottlenecks.length > 0) {
-      console.log('\n🔥 Bottlenecks:')
+      
       report.bottlenecks.forEach(b => {
-        console.log(`   ${b.name}: ${(b.duration / 1000).toFixed(2)}s (${b.percentage.toFixed(1)}%)`)
+        .toFixed(2)}s (${b.percentage.toFixed(1)}%)`)
       })
     }
 
     if (report.recommendations.length > 0) {
-      console.log('\n💡 Recommendations:')
+      
       report.recommendations.forEach(r => {
-        console.log(`   • ${r}`)
+        
       })
     }
   }

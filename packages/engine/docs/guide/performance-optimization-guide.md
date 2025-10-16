@@ -27,11 +27,11 @@ npm install @ldesign/engine
 
 ```typescript
 import {
-  globalPerformanceAnalyzer,
-  memoryManager,
   debounce,
-  safeAsync,
-  measurePerformance
+  globalPerformanceAnalyzer,
+  measurePerformance,
+  memoryManager,
+  safeAsync
 } from '@ldesign/engine'
 ```
 
@@ -40,9 +40,9 @@ import {
 在应用启动时进行基础设置：
 
 ```typescript
+import { globalPerformanceAnalyzer, memoryManager } from '@ldesign/engine'
 // main.ts
 import { createApp } from 'vue'
-import { memoryManager, globalPerformanceAnalyzer } from '@ldesign/engine'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -381,7 +381,7 @@ const userRegistrationSchema = {
     type: 'string' as const,
     validator: (value: string) => {
       if (value.length < 3) return '用户名至少3个字符'
-      if (!/^[a-zA-Z0-9_]+$/.test(value)) return '用户名只能包含字母、数字和下划线'
+      if (!/^\w+$/.test(value)) return '用户名只能包含字母、数字和下划线'
       return null
     }
   },
@@ -389,7 +389,7 @@ const userRegistrationSchema = {
     required: true,
     type: 'string' as const,
     validator: (value: string) => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      const emailRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
       return emailRegex.test(value) ? null : '请输入有效的邮箱地址'
     }
   },

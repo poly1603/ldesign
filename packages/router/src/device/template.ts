@@ -41,11 +41,10 @@ export class TemplateRouteResolver {
    */
   public init(): void {
     if (!this.options.enabled) {
-      return
+      // Template routing is disabled
+      
     }
-
-    // 这里可以添加模板相关的路由逻辑
-    console.log('TemplateRouteResolver initialized')
+    // TODO: 添加模板相关的路由逻辑
   }
 
   /**
@@ -68,6 +67,5 @@ export class TemplateRouteResolver {
    */
   public destroy(): void {
     // 清理资源
-    console.log('TemplateRouteResolver destroyed')
   }
 }

@@ -74,9 +74,9 @@ export class LdesignCircleNavigation {
   private items: HTMLElement[] = [];
   private trackEl?: HTMLElement;
 
-  @State() _version: number = 0; // 触发重渲染的内部计数器（通常无需）
-  @State() rotationAngle: number = 0; // 当前旋转角度
-  @State() isDragging: boolean = false; // 是否正在拖动
+  @State() _version!: number = 0; // 触发重渲染的内部计数器（通常无需）
+  @State() rotationAngle!: number = 0; // 当前旋转角度
+  @State() isDragging!: boolean = false; // 是否正在拖动
 
   private dragStartX: number = 0;
   private dragStartY: number = 0;

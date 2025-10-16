@@ -150,7 +150,7 @@ export class StoreDevTools extends EventEmitter {
       port: config.port || 8089
     };
 
-    if (this.config.port) {
+    if (this.config?.port) {
       this.setupConnection();
     }
 
@@ -159,14 +159,14 @@ export class StoreDevTools extends EventEmitter {
 
   // 设置连接
   private setupConnection(): void {
-    this.connection = new DevToolsConnection(this.config.port);
+    this.connection = new DevToolsConnection(this.config?.port);
 
     this.connection.on('message', (message: any) => {
       this.handleDevToolsMessage(message);
     });
 
     this.connection.on('connected', () => {
-      console.log('🔧 DevTools connected');
+      
       this.syncAllStores();
     });
   }
@@ -215,9 +215,9 @@ export class StoreDevTools extends EventEmitter {
       actions[actionName] = (...args: any[]) => {
         const startTime = performance.now();
 
-        if (this.config.logActions) {
+        if (this.config?.logActions) {
           console.group(`🎯 [${storeName}] ${actionName}`);
-          console.log('Arguments:', args);
+          
         }
 
         try {
@@ -225,8 +225,8 @@ export class StoreDevTools extends EventEmitter {
 
           const duration = performance.now() - startTime;
 
-          if (this.config.logActions) {
-            console.log('Duration:', `${duration.toFixed(2)}ms`);
+          if (this.config?.logActions) {
+            }ms`);
             console.groupEnd();
           }
 
@@ -239,7 +239,7 @@ export class StoreDevTools extends EventEmitter {
 
           return result;
         } catch (error) {
-          if (this.config.logActions) {
+          if (this.config?.logActions) {
             console.error('Error:', error);
             console.groupEnd();
           }
@@ -269,11 +269,8 @@ export class StoreDevTools extends EventEmitter {
       this.watchers.set(storeName, watchersList);
 
       store.watch('*', (newValue: any, oldValue: any, path: string) => {
-        if (this.config.logState) {
-          console.log(`📊 [${storeName}] State changed at ${path}:`, {
-            old: oldValue,
-            new: newValue
-          });
+        if (this.config?.logState) {
+          
         }
 
         this.sendStoreUpdate(storeName, store);
@@ -345,7 +342,7 @@ export class StoreDevTools extends EventEmitter {
     store: any,
     metadata: StoreSnapshot['metadata']
   ): void {
-    if (!this.config.enableTimeTravel) return;
+    if (!this.config?.enableTimeTravel) return;
 
     const snapshot: StoreSnapshot = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -359,7 +356,7 @@ export class StoreDevTools extends EventEmitter {
     storeHistory.push(snapshot);
 
     // 限制历史记录数量
-    if (storeHistory.length > this.config.maxHistory) {
+    if (storeHistory.length > this.config?.maxHistory) {
       storeHistory.shift();
     }
 
@@ -408,7 +405,7 @@ export class StoreDevTools extends EventEmitter {
 
   // 时间旅行
   timeTravel(storeName: string, direction: 'forward' | 'backward' | number): void {
-    if (!this.config.enableTimeTravel) {
+    if (!this.config?.enableTimeTravel) {
       console.warn('Time travel is disabled');
       return;
     }
@@ -437,8 +434,7 @@ export class StoreDevTools extends EventEmitter {
     if (snapshot && store.setState) {
       store.setState(snapshot.state);
 
-      console.log(`⏱️ Time travel to snapshot #${currentIndex}:`, {
-        timestamp: new Date(snapshot.timestamp).toLocaleTimeString(),
+      .toLocaleTimeString(),
         action: snapshot.metadata.actionName,
         state: snapshot.state
       });
@@ -464,7 +460,7 @@ export class StoreDevTools extends EventEmitter {
 
   // 热重载
   hotReload(storeName: string, newModule: any): void {
-    if (!this.config.enableHotReload) {
+    if (!this.config?.enableHotReload) {
       console.warn('Hot reload is disabled');
       return;
     }
@@ -494,7 +490,7 @@ export class StoreDevTools extends EventEmitter {
       store.setState(currentState);
     }
 
-    console.log(`🔥 Hot reload completed for store: ${storeName}`);
+    
     this.emit('store:reloaded', { storeName, store });
   }
 
@@ -588,7 +584,7 @@ export class StoreDevTools extends EventEmitter {
     }
 
     store.setState(state);
-    console.log(`📥 State imported for store: ${storeName}`);
+    
   }
 
   // 清理

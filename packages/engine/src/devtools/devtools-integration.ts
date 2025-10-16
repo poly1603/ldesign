@@ -6,6 +6,7 @@
 
 import type { App } from 'vue'
 import type { Engine } from '../types'
+import process from 'node:process'
 
 import { getLogger } from '../logger/logger'
 
@@ -23,6 +24,12 @@ export interface DevToolsInspectorState {
   value: unknown
   editable?: boolean
   type?: string
+}
+
+export interface DevToolsInspectorTreeNode {
+  id: string
+  label: string
+  children?: DevToolsInspectorTreeNode[]
 }
 
 export interface DevToolsOptions {
@@ -67,11 +74,12 @@ export class DevToolsIntegration {
   private engine?: Engine
   private options: Required<DevToolsOptions>
   private timelineEvents: DevToolsTimelineEvent[] = []
+  // eslint-disable-next-line ts/no-explicit-any
   private devtoolsApi: any = null
 
   constructor(options: DevToolsOptions = {}) {
     this.options = {
-      enabled: process.env.NODE_ENV !== 'production',
+      enabled: (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') || false,
       maxTimelineEvents: 1000,
       trackPerformance: true,
       trackStateChanges: true,
@@ -102,7 +110,8 @@ export class DevToolsIntegration {
    */
   private setupDevTools(): void {
     // 检查 Vue DevTools 是否可用
-    const target = typeof window !== 'undefined' ? window : global
+    const target = typeof window !== 'undefined' ? window : globalThis
+    // eslint-disable-next-line ts/no-explicit-any
     const devtoolsHook = (target as any).__VUE_DEVTOOLS_GLOBAL_HOOK__
 
     if (!devtoolsHook) {
@@ -131,6 +140,7 @@ export class DevToolsIntegration {
     }
 
     try {
+      // eslint-disable-next-line ts/no-explicit-any
       this.devtoolsApi.on.setupDevtoolsPlugin?.((api: any) => {
         api.addInspector({
           id: 'ldesign-engine',
@@ -140,6 +150,7 @@ export class DevToolsIntegration {
         })
 
         // 提供检查器树
+        // eslint-disable-next-line ts/no-explicit-any
         api.on.getInspectorTree((payload: any) => {
           if (payload.inspectorId === 'ldesign-engine') {
             payload.rootNodes = this.getInspectorTree()
@@ -147,6 +158,7 @@ export class DevToolsIntegration {
         })
 
         // 提供检查器状态
+        // eslint-disable-next-line ts/no-explicit-any
         api.on.getInspectorState((payload: any) => {
           if (payload.inspectorId === 'ldesign-engine') {
             payload.state = this.getInspectorState(payload.nodeId)
@@ -154,6 +166,7 @@ export class DevToolsIntegration {
         })
 
         // 处理状态编辑
+        // eslint-disable-next-line ts/no-explicit-any
         api.on.editInspectorState((payload: any) => {
           if (payload.inspectorId === 'ldesign-engine') {
             this.editInspectorState(payload)
@@ -174,6 +187,7 @@ export class DevToolsIntegration {
     }
 
     try {
+      // eslint-disable-next-line ts/no-explicit-any
       this.devtoolsApi.on.setupDevtoolsPlugin?.((api: any) => {
         // 性能时间线
         if (this.options.trackPerformance) {
@@ -234,7 +248,7 @@ export class DevToolsIntegration {
   /**
    * 获取检查器树
    */
-  private getInspectorTree(): any[] {
+  private getInspectorTree(): DevToolsInspectorTreeNode[] {
     if (!this.engine) {
       return []
     }
@@ -326,7 +340,7 @@ export class DevToolsIntegration {
   /**
    * 编辑检查器状态
    */
-  private editInspectorState(payload: any): void {
+  private editInspectorState(_payload: unknown): void {
     // 实现状态编辑
   }
 
@@ -348,6 +362,7 @@ export class DevToolsIntegration {
 
     // 发送到 DevTools
     try {
+      // eslint-disable-next-line ts/no-explicit-any
       this.devtoolsApi.on.setupDevtoolsPlugin?.((api: any) => {
         api.addTimelineEvent({
           layerId,

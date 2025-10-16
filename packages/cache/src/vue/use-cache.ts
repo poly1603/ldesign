@@ -304,8 +304,8 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
    * const userCache = useReactiveCache<User>('user:123', { name: '', age: 0 })
    *
    * // 响应式访问缓存值
-   * console.log(userCache.value.value) // 当前缓存值
-   * console.log(userCache.loading.value) // 是否正在加载
+   *  // 当前缓存值
+   *  // 是否正在加载
    *
    * // 设置新值
    * await userCache.set({ name: 'John', age: 30 })

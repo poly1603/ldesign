@@ -41,7 +41,7 @@ export class DeepSeekClient {
    * 检查配置是否有效
    */
   isConfigured(): boolean {
-    return !!(this.config.apiKey && this.config.apiKey.trim().length > 0)
+    return !!(this.config?.apiKey && this.config?.apiKey.trim().length > 0)
   }
 
   /**
@@ -56,7 +56,7 @@ export class DeepSeekClient {
     }
 
     const request: ChatCompletionRequest = {
-      model: options?.model || this.config.model || 'deepseek-chat',
+      model: options?.model || this.config?.model || 'deepseek-chat',
       messages,
       temperature: options?.temperature ?? 1,
       max_tokens: options?.max_tokens,
@@ -68,14 +68,14 @@ export class DeepSeekClient {
       const controller = new AbortController()
       const timeoutId = setTimeout(
         () => controller.abort(),
-        this.config.timeout || 60000
+        this.config?.timeout || 60000
       )
 
-      const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
+      const response = await fetch(`${this.config?.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiKey}`
+          'Authorization': `Bearer ${this.config?.apiKey}`
         },
         body: JSON.stringify(request),
         signal: controller.signal
@@ -114,7 +114,7 @@ export class DeepSeekClient {
     }
 
     const request: ChatCompletionRequest = {
-      model: options?.model || this.config.model || 'deepseek-chat',
+      model: options?.model || this.config?.model || 'deepseek-chat',
       messages,
       temperature: options?.temperature ?? 1,
       max_tokens: options?.max_tokens,
@@ -123,11 +123,11 @@ export class DeepSeekClient {
     }
 
     try {
-      const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
+      const response = await fetch(`${this.config?.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiKey}`
+          'Authorization': `Bearer ${this.config?.apiKey}`
         },
         body: JSON.stringify(request)
       })

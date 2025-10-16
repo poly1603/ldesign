@@ -158,7 +158,7 @@ export function kebabCase(str: string): string {
 /**
  * 防抖函数
  */
-export function debounce<T extends (...args: unknown[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -178,7 +178,7 @@ export function debounce<T extends (...args: unknown[]) => any>(
 /**
  * 节流函数
  */
-export function throttle<T extends (...args: unknown[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -331,7 +331,7 @@ export class MessageConfigBuilder implements IMessageConfigBuilder {
   }
 
   build(): MessageConfig {
-    if (!this.config.content) {
+    if (!this.config?.content) {
       throw new Error('Message content is required')
     }
 
@@ -343,8 +343,8 @@ export class MessageConfigBuilder implements IMessageConfigBuilder {
       showClose: true,
       html: false,
       ...this.config,
-      content: this.config.content,
-      id: this.config.id || generateMessageId(),
+      content: this.config?.content,
+      id: this.config?.id || generateMessageId(),
     }
   }
 }

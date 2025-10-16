@@ -48,7 +48,7 @@ export type BatchEventHandler<T = unknown> = (batch: BatchEventData<T>) => void 
  * const emitter = new ThrottledEventEmitter({ batchSize: 10, flushInterval: 100 })
  * 
  * emitter.on('data', (batch) => {
- *   console.log('Received batch:', batch.events.length)
+ *   
  * })
  * 
  * // 发送多个事件
@@ -147,7 +147,7 @@ export class ThrottledEventEmitter<EventMap extends Record<string, unknown> = Re
    * @param data - 事件数据
    */
   emit<K extends keyof EventMap>(event: K & string, data: EventMap[K]): void {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       // 如果未启用节流，直接触发
       this.triggerListeners(event, data)
       return
@@ -160,7 +160,7 @@ export class ThrottledEventEmitter<EventMap extends Record<string, unknown> = Re
     this.queues.get(event)!.push(data)
 
     // 检查是否需要立即刷新
-    if (this.queues.get(event)!.length >= this.config.batchSize) {
+    if (this.queues.get(event)!.length >= this.config?.batchSize) {
       this.flush(event)
     }
     else {
@@ -230,7 +230,7 @@ export class ThrottledEventEmitter<EventMap extends Record<string, unknown> = Re
 
     const timer = setTimeout(() => {
       this.flush(event)
-    }, this.config.flushInterval)
+    }, this.config?.flushInterval)
 
     this.timers.set(event, timer)
   }
@@ -385,7 +385,7 @@ export function createThrottledEmitter<EventMap extends Record<string, unknown> 
  * @example
  * ```typescript
  * const throttled = throttle(
- *   (items) => console.log('Batch:', items),
+ *   (items) => ,
  *   { batchSize: 10, flushInterval: 100 }
  * )
  * 

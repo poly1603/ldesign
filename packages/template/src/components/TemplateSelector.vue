@@ -47,8 +47,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useTemplateList } from '@ldesign/template'
-import type { DeviceType } from '@ldesign/template'
+import { useTemplateList } from '../composables'
+import type { DeviceType } from '../types'
 
 interface Props {
   category: string

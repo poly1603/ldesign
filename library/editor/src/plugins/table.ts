@@ -1704,3 +1704,7 @@ export const TablePlugin: Plugin = createPlugin({
     }, 100)
   }
 })
+
+
+// Export table plugins as array
+export const tablePlugins = []

@@ -12,11 +12,11 @@
  * })
  *
  * // 添加带优先级的监听器
- * emitter.on('data', (data) => console.log('Low priority:', data), { priority: 1 })
- * emitter.on('data', (data) => console.log('High priority:', data), { priority: 10 })
+ * emitter.on('data', (data) => , { priority: 1 })
+ * emitter.on('data', (data) => , { priority: 10 })
  *
  * // 添加带命名空间的监听器
- * emitter.on('user:login', (user) => console.log('User logged in:', user))
+ * emitter.on('user:login', (user) => )
  *
  * // 发射事件
  * emitter.emit('data', { message: 'Hello' })
@@ -24,7 +24,7 @@
  *
  * // 获取统计信息
  * const stats = emitter.getEventStats('data')
- * console.log(`Event 'data' was emitted ${stats.emitCount} times`)
+ * 
  * ```
  */
 

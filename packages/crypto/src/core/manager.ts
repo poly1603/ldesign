@@ -94,7 +94,7 @@ export class CryptoManager {
     algorithm?: EncryptionAlgorithm,
     options?: any,
   ): Promise<EncryptResult> {
-    const targetAlgorithm = algorithm || this.config.defaultAlgorithm
+    const targetAlgorithm = algorithm || this.config?.defaultAlgorithm
 
     try {
       this.log('debug', `Encrypting data with ${targetAlgorithm}`)
@@ -159,7 +159,7 @@ export class CryptoManager {
   async batchEncrypt(
     operations: BatchOperation[],
   ): Promise<Array<{ id: string, result: EncryptResult }>> {
-    if (!this.config.enableParallel || operations.length <= 1) {
+    if (!this.config?.enableParallel || operations.length <= 1) {
       // 串行处理
       const results = []
       for (const op of operations) {
@@ -184,7 +184,7 @@ export class CryptoManager {
   async batchDecrypt(
     operations: BatchOperation[],
   ): Promise<Array<{ id: string, result: DecryptResult }>> {
-    if (!this.config.enableParallel || operations.length <= 1) {
+    if (!this.config?.enableParallel || operations.length <= 1) {
       // 串行处理
       const results = []
       for (const op of operations) {
@@ -318,10 +318,10 @@ export class CryptoManager {
     message: string,
     data?: any,
   ): void {
-    if (!this.config.debug) { return }
+    if (!this.config?.debug) { return }
 
     const levels = ['error', 'warn', 'info', 'debug']
-    const currentLevelIndex = levels.indexOf(this.config.logLevel)
+    const currentLevelIndex = levels.indexOf(this.config?.logLevel)
     const messageLevelIndex = levels.indexOf(level)
 
     if (messageLevelIndex <= currentLevelIndex) {

@@ -11,7 +11,6 @@ import { Logger } from '../../utils/logger'
 import { FileSystem } from '../../utils/file-system'
 import { PathUtils } from '../../utils/path-utils'
 import { ViteLauncher } from '../../core/ViteLauncher'
-import { networkInterfaces } from 'node:os'
 import { getPreferredLocalIP } from '../../utils/network.js'
 import type { CliCommandDefinition, CliContext } from '../../types'
 import { DEFAULT_HOST, DEFAULT_OUT_DIR } from '../../constants'
@@ -156,10 +155,10 @@ export class PreviewCommand implements CliCommandDefinition {
 
       // 立即输出环境标识，不依赖logger
       if (!context.options.silent) {
-        console.log(`\n👁️  ${pc.cyan('LDesign Launcher')} - ${envLabel}`)
-        console.log(`📁 ${pc.gray('工作目录:')} ${context.cwd}`)
-        console.log(`⚙️  ${pc.gray('模式:')} preview`)
-        console.log('')
+        } - ${envLabel}`)
+        } ${context.cwd}`)
+        } preview`)
+        
       }
 
       logger.info('正在启动预览服务器...')
@@ -342,9 +341,9 @@ export class PreviewCommand implements CliCommandDefinition {
 
             if (terminalQR && typeof terminalQR === 'string') {
               logger.info(pc.dim('二维码（扫码在手机上打开）：'))
-              console.log()
-              console.log(terminalQR)
-              console.log()
+              
+              
+              
               printed = true
             }
           } catch (e1) {
@@ -389,7 +388,7 @@ export class PreviewCommand implements CliCommandDefinition {
                     ''
                   ].join('\n')
 
-                  console.log(borderedQR)
+                  
                   printed = true
                 }
               }
@@ -538,7 +537,7 @@ async function collectFileStats(dir: string, stats: any): Promise<void> {
     }
   } catch (error) {
     // 忽略无法访问的目录
-    console.debug(`无法访问目录 ${dir}:`, error)
+    
   }
 }
 

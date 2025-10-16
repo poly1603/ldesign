@@ -51,7 +51,7 @@ export interface BatchSetItem<T = SerializableValue> {
  * 
  * for (const [key, value] of results) {
  *   if (value !== null) {
- *     console.log(`${key}: ${value}`)
+ *     
  *   }
  * }
  * ```
@@ -115,7 +115,7 @@ export async function batchGet<T extends SerializableValue = SerializableValue>(
  *   { key: 'user:3', value: { name: 'Charlie' } },
  * ])
  * 
- * console.log(`成功: ${result.success}, 失败: ${result.failed}`)
+ * 
  * ```
  */
 export async function batchSet<T extends SerializableValue = SerializableValue>(
@@ -185,7 +185,7 @@ export async function batchSet<T extends SerializableValue = SerializableValue>(
  * ```typescript
  * const cache = createCache()
  * const result = await batchRemove(cache, ['old:key1', 'old:key2', 'old:key3'])
- * console.log(`成功删除 ${result.success} 个键`)
+ * 
  * ```
  */
 export async function batchRemove(
@@ -249,7 +249,7 @@ export async function batchRemove(
  * const exists = await batchHas(cache, ['key1', 'key2', 'key3'])
  * 
  * for (const [key, exists] of exists) {
- *   console.log(`${key} ${exists ? '存在' : '不存在'}`)
+ *   
  * }
  * ```
  */

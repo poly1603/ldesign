@@ -5,3 +5,4 @@
 export { TemplateScanner, getScanner, scanTemplates } from './scanner'
 export { TemplateLoader, getLoader, loadTemplate, preloadTemplate } from './loader'
 export { TemplateManager, getManager, createTemplateManager } from './manager'
+export { loadComponentStyle, loadStyles, loadGlobalStyles, clearLoadedStyles } from './style-loader'

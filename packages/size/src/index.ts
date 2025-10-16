@@ -1,32 +1,129 @@
-// API 导出
-export * from './api'
-// 便捷导出
-export { Size } from './api'
+/**
+ * @ldesign/size - A powerful size management system for web applications
+ * 
+ * Features:
+ * - Multiple size presets (compact, comfortable, spacious, etc.)
+ * - Size calculations and conversions
+ * - CSS variable generation
+ * - Responsive size utilities
+ * - Framework agnostic
+ */
 
-// 核心功能导出
-export * from './core/animation-manager'
-export * from './core/base-tokens'
-export * from './core/cache-manager'
-export * from './core/css-generator'
-export * from './core/css-injector'
-export * from './core/keyboard-manager'
-export * from './core/performance-monitor'
-export * from './core/preset-manager'
-export * from './core/presets'
-export * from './core/size-manager'
-export * from './core/theme-manager'
+// Core exports
+export { Size, size, px, rem, em, vw, vh, percent } from './core/Size';
+export { SizeManager, defaultSizeManager, setScheme, applyPreset, getCurrentScheme, getCSSVariable, restoreScheme, resetScheme } from './core/SizeManager';
 
-// 默认导出
-export { globalSizeManager as default } from './core/size-manager'
+// Preset exports
+export {
+  compactScheme,
+  comfortableScheme,
+  spaciousScheme,
+  cozyScheme,
+  mobileScheme,
+  presetSchemes,
+  getPresetScheme,
+  getPresetSchemeNames,
+  schemeMetadata,
+  type SchemeMetadata
+} from './core/presets';
 
-// 插件系统
-export * from './plugins'
+// CSS generation exports
+export {
+  generateCSSVariables,
+  generateCSSString,
+  generateCSS,
+  injectCSS,
+  removeCSS
+} from './core/cssGenerator';
 
-// 类型导出
-export * from './types'
+// Utility exports
+export {
+  parseSizeInput,
+  formatSize,
+  convertSize,
+  scaleSize,
+  addSizes,
+  subtractSizes,
+  clampSize,
+  roundSize,
+  generateSizeScale,
+  isValidSize,
+  getCSSVarName,
+  cssVar,
+  deepMerge,
+  throttle,
+  debounce
+} from './utils';
 
-// 工具函数导出
-export * from './utils'
+// Type exports
+export type {
+  // Basic types
+  SizeValue,
+  SizeUnit,
+  ScaleFactor,
+  SizeInput,
+  
+  // Preset types
+  PresetScheme,
+  SizeCategory,
+  SizeScale,
+  
+  // Configuration types
+  FontSizeConfig,
+  SpacingConfig,
+  RadiusConfig,
+  LineHeightConfig,
+  LetterSpacingConfig,
+  ComponentSizeConfig,
+  SizeScheme,
+  
+  // Manager types
+  SizeManagerOptions,
+  SizeManagerState,
+  
+  // Operation types
+  SizeCalculationOptions,
+  SizeAnimationConfig,
+  EasingFunction,
+  
+  // CSS types
+  CSSVariableOptions,
+  GeneratedCSS,
+  
+  // Utility types
+  DeepPartial,
+  SizeModifier,
+  SizeValidator,
+  
+  // Event types
+  SizeChangeEvent,
+  SizeErrorEvent,
+  
+  // Plugin types
+  SizePlugin,
+  PluginOptions
+} from './types';
 
-// Vue 支持（主要的 Vue 支持已通过 plugins 导出）
-// 这里不再导出以避免与 plugins/vue 冲突
+/**
+ * Quick start function
+ */
+export function initSize(options?: import('./types').SizeManagerOptions): SizeManager {
+  return new SizeManager(options);
+}
+
+/**
+ * Version
+ */
+export const version = '1.0.0';
+
+/**
+ * Default export
+ */
+export default {
+  Size,
+  SizeManager,
+  defaultSizeManager,
+  initSize,
+  presets: presetSchemes,
+  version
+};

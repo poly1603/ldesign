@@ -35,11 +35,8 @@ async function createApplication() {
     app.mount('#app')
 
     // 开发环境下的调试信息
-    if (import.meta.env.DEV) {
-      console.log('🚀 @ldesign/router 示例项目启动成功')
-      console.log('📱 当前设备类型:', navigator.userAgent)
-      console.log('🔗 路由器实例:', router)
-      
+    if (import.meta.env?.DEV) {
+                        
       // 将路由器实例挂载到全局，方便调试
       ;(window as any).__ROUTER__ = router
     }

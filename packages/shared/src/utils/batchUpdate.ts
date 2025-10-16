@@ -35,7 +35,7 @@ export interface BatchUpdateConfig {
  *   batchSize: 100,
  *   delay: 16,
  *   onUpdate: (items) => {
- *     console.log(`处理 ${items.length} 个项目`)
+ *     
  *   }
  * })
  * 

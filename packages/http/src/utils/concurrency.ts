@@ -48,7 +48,7 @@ export class ConcurrencyManager {
     config: RequestConfig,
   ): Promise<ResponseData<T>> {
     // 如果启用了去重功能
-    if (this.config.deduplication) {
+    if (this.config?.deduplication) {
       const deduplicationKey = this.keyGenerator.generate(config)
 
       // 使用去重管理器执行请求
@@ -81,13 +81,13 @@ export class ConcurrencyManager {
       }
 
       // 检查队列大小限制
-      if (this.requestQueue.length >= this.config.maxQueueSize) {
+      if (this.requestQueue.length >= this.config?.maxQueueSize) {
         reject(new Error('Request queue is full'))
         return
       }
 
       // 如果当前并发数未达到限制，直接执行
-      if (this.activeRequests.size < this.config.maxConcurrent) {
+      if (this.activeRequests.size < this.config?.maxConcurrent) {
         this.executeTask(task)
       }
       else {
@@ -131,7 +131,7 @@ export class ConcurrencyManager {
       // 批量处理多个任务，直到达到并发限制
       while (
         this.requestQueue.length > 0
-        && this.activeRequests.size < this.config.maxConcurrent
+        && this.activeRequests.size < this.config?.maxConcurrent
       ) {
         const nextTask = this.requestQueue.shift()
         if (nextTask) {
@@ -167,8 +167,8 @@ export class ConcurrencyManager {
     return {
       activeCount: this.activeRequests.size,
       queuedCount: this.requestQueue.length,
-      maxConcurrent: this.config.maxConcurrent,
-      maxQueueSize: this.config.maxQueueSize,
+      maxConcurrent: this.config?.maxConcurrent,
+      maxQueueSize: this.config?.maxQueueSize,
       deduplication: this.deduplicationManager.getStats(),
     }
   }
@@ -753,45 +753,45 @@ export class DeduplicationKeyGenerator {
    * 实际生成键的逻辑
    */
   private generateKey(requestConfig: RequestConfig): string {
-    if (this.config.customGenerator) {
-      return this.config.customGenerator(requestConfig)
+    if (this.config?.customGenerator) {
+      return this.config?.customGenerator(requestConfig)
     }
 
     const parts: string[] = []
 
-    if (this.config.includeMethod && requestConfig.method) {
+    if (this.config?.includeMethod && requestConfig.method) {
       parts.push(`method:${requestConfig.method.toUpperCase()}`)
     }
 
-    if (this.config.includeUrl && requestConfig.url) {
+    if (this.config?.includeUrl && requestConfig.url) {
       parts.push(`url:${requestConfig.url}`)
     }
 
-    if (this.config.includeParams && requestConfig.params) {
+    if (this.config?.includeParams && requestConfig.params) {
       const paramsStr = this.serializeParams(requestConfig.params)
       if (paramsStr) {
         parts.push(`params:${paramsStr}`)
       }
     }
 
-    if (this.config.includeData && requestConfig.data) {
+    if (this.config?.includeData && requestConfig.data) {
       const dataStr = this.serializeData(requestConfig.data)
       if (dataStr) {
         parts.push(`data:${dataStr}`)
       }
     }
 
-    if (this.config.includeHeaders && requestConfig.headers) {
+    if (this.config?.includeHeaders && requestConfig.headers) {
       const headersStr = this.serializeHeaders(requestConfig.headers)
       if (headersStr) {
         parts.push(`headers:${headersStr}`)
       }
     }
 
-    if (this.config.specificHeaders.length > 0 && requestConfig.headers) {
+    if (this.config?.specificHeaders.length > 0 && requestConfig.headers) {
       const specificHeadersStr = this.serializeSpecificHeaders(
         requestConfig.headers,
-        this.config.specificHeaders,
+        this.config?.specificHeaders,
       )
       if (specificHeadersStr) {
         parts.push(`specific-headers:${specificHeadersStr}`)

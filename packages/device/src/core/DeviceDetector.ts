@@ -39,12 +39,12 @@ import { ModuleLoader } from './ModuleLoader'
  *
  * // 监听设备变化
  * detector.on('deviceChange', (deviceInfo) => {
- *   console.log('设备信息更新:', deviceInfo)
+ *   
  * })
  *
  * // 获取当前设备信息
  * const deviceInfo = detector.getDeviceInfo()
- * console.log('当前设备类型:', deviceInfo.type)
+ * 
  * ```
  */
 export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
@@ -163,11 +163,11 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
    * const detector = new DeviceDetector()
    * const deviceInfo = detector.getDeviceInfo()
    *
-   * console.log('设备类型:', deviceInfo.type) // 'mobile' | 'tablet' | 'desktop'
-   * console.log('屏幕宽度:', deviceInfo.screen.width)
-   * console.log('浏览器:', deviceInfo.browser.name)
-   * console.log('操作系统:', deviceInfo.os.name)
-   * console.log('是否支持触摸:', deviceInfo.features.touch)
+   *  // 'mobile' | 'tablet' | 'desktop'
+   * 
+   * 
+   * 
+   * 
    * ```
    */
   getDeviceInfo(): DeviceInfo {

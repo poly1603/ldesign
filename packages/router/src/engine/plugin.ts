@@ -297,13 +297,7 @@ export function createRouterEnginePlugin(
     base = '/',
     scrollBehavior,
     linkActiveClass,
-    linkExactActiveClass,
-    preload: _preload,
-    cache: _cache,
-    animation: _animation,
-    performance: _performance,
-    development: _development,
-    security: _security,
+    linkExactActiveClass
   } = mergedOptions
 
   return {

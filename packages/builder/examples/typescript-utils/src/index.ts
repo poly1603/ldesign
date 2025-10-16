@@ -46,7 +46,7 @@ export const LIBRARY_INFO = {
  * import { getLibraryInfo } from '@ldesign/typescript-utils-example'
  * 
  * const info = getLibraryInfo()
- * console.log(info.name) // '@ldesign/typescript-utils-example'
+ *  // '@ldesign/typescript-utils-example'
  * ```
  */
 export function getLibraryInfo() {
@@ -64,11 +64,7 @@ export function getLibraryInfo() {
  * ```
  */
 export function printLibraryInfo(): void {
-  console.log(`
-╭─────────────────────────────────────────────────────────────╮
-│                    TypeScript Utils Example                 │
-├─────────────────────────────────────────────────────────────┤
-│ Name:        ${LIBRARY_INFO.name.padEnd(43)} │
+  } │
 │ Version:     ${LIBRARY_INFO.version.padEnd(43)} │
 │ Description: ${LIBRARY_INFO.description.slice(0, 43).padEnd(43)} │
 │ Author:      ${LIBRARY_INFO.author.padEnd(43)} │

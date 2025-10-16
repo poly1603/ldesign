@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { AbstractBaseManager, BaseManager, ManagerRegistry } from '../../src/core/base-manager'
 import type { Engine } from '../../src/types/engine'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { AbstractBaseManager, BaseManager, ManagerRegistry } from '../../src/core/base-manager'
 
 // Mock Engine
 const mockEngine: Engine = {
@@ -47,7 +47,7 @@ class ErrorManager extends AbstractBaseManager {
   }
 }
 
-describe('AbstractBaseManager', () => {
+describe('abstractBaseManager', () => {
   let manager: TestManager
 
   beforeEach(() => {
@@ -178,7 +178,7 @@ describe('AbstractBaseManager', () => {
   })
 })
 
-describe('BaseManager', () => {
+describe('baseManager', () => {
   let baseManager: BaseManager
 
   beforeEach(() => {
@@ -228,7 +228,7 @@ describe('BaseManager', () => {
   })
 })
 
-describe('ManagerRegistry', () => {
+describe('managerRegistry', () => {
   let registry: ManagerRegistry
   let manager1: TestManager
   let manager2: TestManager

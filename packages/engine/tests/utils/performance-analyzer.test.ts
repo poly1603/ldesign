@@ -1,17 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  PerformanceAnalyzer,
+  BatchProcessor,
+  debounce,
   globalPerformanceAnalyzer,
   measurePerformance,
-  debounce,
-  throttle,
   ObjectPool,
-  BatchProcessor,
+  PerformanceAnalyzer,
   type PerformanceMeasure,
-  type PerformanceReport
+  throttle
 } from '../../src/utils/performance-analyzer'
 
-describe('PerformanceAnalyzer', () => {
+describe('performanceAnalyzer', () => {
   let analyzer: PerformanceAnalyzer
 
   beforeEach(() => {
@@ -139,13 +138,13 @@ describe('PerformanceAnalyzer', () => {
     it('应该能够按元数据分组', () => {
       const report = analyzer.generateReport()
       
-      expect(report.metadataGroups['database']).toBeDefined()
-      expect(report.metadataGroups['database'].count).toBe(2)
-      expect(report.metadataGroups['database'].totalDuration).toBe(250)
+      expect(report.metadataGroups.database).toBeDefined()
+      expect(report.metadataGroups.database.count).toBe(2)
+      expect(report.metadataGroups.database.totalDuration).toBe(250)
       
-      expect(report.metadataGroups['api']).toBeDefined()
-      expect(report.metadataGroups['api'].count).toBe(1)
-      expect(report.metadataGroups['api'].totalDuration).toBe(50)
+      expect(report.metadataGroups.api).toBeDefined()
+      expect(report.metadataGroups.api.count).toBe(1)
+      expect(report.metadataGroups.api.totalDuration).toBe(50)
     })
   })
 
@@ -204,7 +203,7 @@ describe('PerformanceAnalyzer', () => {
   })
 })
 
-describe('Debounce功能', () => {
+describe('debounce功能', () => {
   beforeEach(() => {
     vi.useFakeTimers()
   })
@@ -254,7 +253,7 @@ describe('Debounce功能', () => {
   })
 })
 
-describe('Throttle功能', () => {
+describe('throttle功能', () => {
   beforeEach(() => {
     vi.useFakeTimers()
   })
@@ -299,7 +298,7 @@ describe('Throttle功能', () => {
   })
 })
 
-describe('ObjectPool功能', () => {
+describe('objectPool功能', () => {
   it('应该能够创建和回收对象', () => {
     const pool = new ObjectPool(() => ({ value: 0 }), obj => { obj.value = 0 })
     
@@ -348,7 +347,7 @@ describe('ObjectPool功能', () => {
   })
 })
 
-describe('BatchProcessor功能', () => {
+describe('batchProcessor功能', () => {
   beforeEach(() => {
     vi.useFakeTimers()
   })

@@ -130,36 +130,36 @@ export class CacheCommand implements CliCommandDefinition {
     try {
       const stats = cacheManager.getStats()
       
-      console.log(chalk.cyan('\n缓存状态信息:\n'))
+      )
       
       // 基本统计
-      console.log(chalk.bold('总体统计:'))
-      console.log(`  总缓存项数量: ${chalk.green(stats.totalItems.toLocaleString())}`)
-      console.log(`  总缓存大小: ${chalk.green(formatSize(stats.totalSize))}`)
-      console.log(`  缓存命中率: ${chalk.green((stats.hitRate * 100).toFixed(1))}%`)
+      )
+      )}`)
+      )}`)
+      .toFixed(1))}%`)
       
       if (stats.lastCleanup) {
         const lastCleanup = new Date(stats.lastCleanup).toLocaleString()
-        console.log(`  最近清理时间: ${chalk.gray(lastCleanup)}`)
+        }`)
       }
 
       // 按类型统计
-      console.log()
-      console.log(chalk.bold('按类型统计:'))
+      
+      )
       
       const types = Object.keys(stats.byType) as CacheType[]
       if (types.length === 0) {
-        console.log('  无缓存数据')
+        
       } else {
         types.forEach(type => {
           const typeStats = stats.byType[type]
           if (typeStats.count > 0) {
-            console.log(`  ${type.padEnd(10)}: ${chalk.cyan(typeStats.count.toString().padStart(6))} 项 (${chalk.yellow(formatSize(typeStats.size))})`)
+            }: ${chalk.cyan(typeStats.count.toString().padStart(6))} 项 (${chalk.yellow(formatSize(typeStats.size))})`)
           }
         })
       }
 
-      console.log()
+      
 
     } catch (error) {
       logger.error('获取缓存状态失败', error)
@@ -256,36 +256,36 @@ export class CacheCommand implements CliCommandDefinition {
     try {
       const stats = cacheManager.getStats()
       
-      console.log(chalk.cyan('\n缓存分析报告:\n'))
+      )
       
       // 使用效率分析
-      console.log(chalk.bold('使用效率分析:'))
+      )
       
       if (stats.hitRate >= 0.8) {
-        console.log(`  ${chalk.green('✓')} 缓存命中率良好 (${(stats.hitRate * 100).toFixed(1)}%)`)
+        } 缓存命中率良好 (${(stats.hitRate * 100).toFixed(1)}%)`)
       } else if (stats.hitRate >= 0.6) {
-        console.log(`  ${chalk.yellow('!')} 缓存命中率中等 (${(stats.hitRate * 100).toFixed(1)}%)`)
+        } 缓存命中率中等 (${(stats.hitRate * 100).toFixed(1)}%)`)
       } else {
-        console.log(`  ${chalk.red('✗')} 缓存命中率较低 (${(stats.hitRate * 100).toFixed(1)}%)`)
+        } 缓存命中率较低 (${(stats.hitRate * 100).toFixed(1)}%)`)
       }
 
       // 空间使用分析
-      console.log()
-      console.log(chalk.bold('空间使用分析:'))
+      
+      )
       
       const totalSizeMB = stats.totalSize / (1024 * 1024)
       
       if (totalSizeMB < 100) {
-        console.log(`  ${chalk.green('✓')} 缓存大小合理 (${formatSize(stats.totalSize)})`)
+        } 缓存大小合理 (${formatSize(stats.totalSize)})`)
       } else if (totalSizeMB < 500) {
-        console.log(`  ${chalk.yellow('!')} 缓存大小中等 (${formatSize(stats.totalSize)})`)
+        } 缓存大小中等 (${formatSize(stats.totalSize)})`)
       } else {
-        console.log(`  ${chalk.red('✗')} 缓存占用空间较大 (${formatSize(stats.totalSize)})`)
+        } 缓存占用空间较大 (${formatSize(stats.totalSize)})`)
       }
 
       // 类型分布分析
-      console.log()
-      console.log(chalk.bold('类型分布:'))
+      
+      )
       
       const types = Object.keys(stats.byType) as CacheType[]
       const sortedTypes = types
@@ -293,20 +293,20 @@ export class CacheCommand implements CliCommandDefinition {
         .sort((a, b) => stats.byType[b].size - stats.byType[a].size)
 
       if (sortedTypes.length === 0) {
-        console.log('  无缓存数据')
+        
       } else {
         sortedTypes.forEach((type, index) => {
           const typeStats = stats.byType[type]
           const percentage = stats.totalSize > 0 ? (typeStats.size / stats.totalSize * 100) : 0
           const bar = '█'.repeat(Math.round(percentage / 5)) // 每5%一个方块
           
-          console.log(`  ${(index + 1).toString().padStart(2)}. ${type.padEnd(10)} ${chalk.cyan(bar.padEnd(20))} ${percentage.toFixed(1)}% (${formatSize(typeStats.size)})`)
+          .toString().padStart(2)}. ${type.padEnd(10)} ${chalk.cyan(bar.padEnd(20))} ${percentage.toFixed(1)}% (${formatSize(typeStats.size)})`)
         })
       }
 
       // 优化建议
-      console.log()
-      console.log(chalk.bold('优化建议:'))
+      
+      )
       
       const suggestions: string[] = []
 
@@ -333,14 +333,14 @@ export class CacheCommand implements CliCommandDefinition {
       }
 
       if (suggestions.length === 0) {
-        console.log(`  ${chalk.green('✓')} 缓存状态良好，无需特别优化`)
+        } 缓存状态良好，无需特别优化`)
       } else {
         suggestions.forEach((suggestion, index) => {
-          console.log(`  ${(index + 1).toString()}. ${suggestion}`)
+          .toString()}. ${suggestion}`)
         })
       }
 
-      console.log()
+      
 
     } catch (error) {
       logger.error('缓存分析失败', error)

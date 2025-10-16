@@ -461,8 +461,7 @@ export function createSVGComponentPlugin(options: SVGComponentOptions = {}): Plu
       server.watcher.add(svgDir)
       server.watcher.on('change', async (file) => {
         if (file.endsWith('.svg')) {
-          console.log('SVG 文件变更，重新生成组件...')
-          await generator.generateComponents()
+                    await generator.generateComponents()
         }
       })
     }

@@ -618,14 +618,14 @@ export class OptimizedI18n implements I18nInstance {
     if (this.isDev) {
       this.emit('missingKey', { key, locale, namespace });
       
-      if (this.config.warnOnMissing !== false) {
+      if (this.config?.warnOnMissing !== false) {
         warn(`Missing translation for key "${key}" in locale "${locale}"`);
       }
     }
     
     // Use custom handler if provided
-    if (this.config.missingKeyHandler) {
-      return this.config.missingKeyHandler(key, locale, namespace, options.defaultValue);
+    if (this.config?.missingKeyHandler) {
+      return this.config?.missingKeyHandler(key, locale, namespace, options.defaultValue);
     }
     
     // Return default value or key

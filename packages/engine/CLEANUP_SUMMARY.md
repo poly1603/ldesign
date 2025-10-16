@@ -11,7 +11,7 @@ The engine package has been cleaned up and standardized to focus on the core `cr
 - `src/core/enhanced-manager.ts` - Removed enhanced manager class
 - `src/managers.ts` - Removed manager exports file
 
-### Example and Test Files  
+### Example and Test Files
 - `examples/` - Entire examples directory removed
 - Multiple script files in `scripts/` directory for various analyses and fixes
 

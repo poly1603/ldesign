@@ -117,7 +117,7 @@ export class RequestPool {
 
     // 检查是否达到最大连接数
     const activeCount = connections.filter(c => c.state === 'active').length
-    if (activeCount >= this.config.maxConnections) {
+    if (activeCount >= this.config?.maxConnections) {
       // 等待连接释放
       return this.waitForConnection(key, config)
     }
@@ -173,12 +173,12 @@ export class RequestPool {
     this.stats.totalRequests++
 
     // 设置连接超时
-    if (this.config.connectionTimeout > 0) {
+    if (this.config?.connectionTimeout > 0) {
       setTimeout(() => {
         if (connection.state === 'active') {
           this.closeConnection(connection)
         }
-      }, this.config.connectionTimeout)
+      }, this.config?.connectionTimeout)
     }
 
     return connection
@@ -208,7 +208,7 @@ export class RequestPool {
           queue.splice(index, 1)
         }
         reject(new Error('Connection pool timeout'))
-      }, this.config.connectionTimeout)
+      }, this.config?.connectionTimeout)
 
       // 保存超时句柄以便清理
       ;(waitingRequest as any).timeout = timeout
@@ -230,13 +230,13 @@ export class RequestPool {
     const now = Date.now()
 
     // 检查连接年龄
-    if (now - connection.createdAt > this.config.maxConnectionAge) {
+    if (now - connection.createdAt > this.config?.maxConnectionAge) {
       return false
     }
 
     // 检查空闲时间
     if (connection.state === 'idle'
-      && now - connection.lastUsedAt > this.config.idleTimeout) {
+      && now - connection.lastUsedAt > this.config?.idleTimeout) {
       return false
     }
 
@@ -270,11 +270,11 @@ export class RequestPool {
 
     const idleConnections = connections.filter(c => c.state === 'idle')
 
-    if (idleConnections.length > this.config.maxIdleConnections) {
+    if (idleConnections.length > this.config?.maxIdleConnections) {
       // 按最后使用时间排序，关闭最旧的连接
       idleConnections.sort((a, b) => a.lastUsedAt - b.lastUsedAt)
 
-      const toClose = idleConnections.slice(0, idleConnections.length - this.config.maxIdleConnections,
+      const toClose = idleConnections.slice(0, idleConnections.length - this.config?.maxIdleConnections,
       )
 
       for (const conn of toClose) {

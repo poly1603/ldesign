@@ -4,8 +4,8 @@
  * 修复错误放置的import语句
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // 要扫描的目录
 const srcDir = path.join(process.cwd(), 'src');
@@ -30,7 +30,7 @@ function fixImports(filePath) {
       const importMatch = content.match(/^(import\s+\{[^}]+\}\s+from\s+['"][^'"]+['"];?)\n/m);
       
       if (importMatch) {
-        const importStatement = importMatch[1] + '\n';
+        const importStatement = `${importMatch[1]  }\n`;
         
         // 移除错误位置的import
         content = content.replace(/^\/\*\*\nimport\s+\{[^}]+\}\s+from\s+['"][^'"]+['"];?\n/m, '/**\n');
@@ -57,7 +57,7 @@ function fixImports(filePath) {
     // 检查是否有其他模式的错误import位置
     // 例如：import语句在注释块结尾之后
     const commentBlockPattern = /^\/\*\*[\s\S]*?\*\/$/gm;
-    const importPattern = /^import\s+.*?from\s+['"].*?['"];?$/gm;
+    const importPattern = /^import\s+(?:\S.*?)??from\s+['"].*?['"];?$/gm;
     
     // 重新组织文件：imports应该在文件顶部（跳过初始注释后）
     const imports = [];
@@ -167,7 +167,7 @@ function main() {
   
   scanDirectory(srcDir);
   
-  console.log('\n' + '=' .repeat(60));
+  console.log(`\n${  '=' .repeat(60)}`);
   console.log(`✅ 修复完成！共修复 ${fixedFiles} 个文件`);
   
   if (fixedFilesList.length > 0) {

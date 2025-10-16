@@ -167,7 +167,7 @@ export function createPerformancePlugin(config: PerformancePluginConfig = {}): A
           const cacheManager = (engine as any).cacheManager
           if (cacheManager && typeof cacheManager.warmup === 'function') {
             cacheManager.warmup(warmupData)
-            console.log(`🔥 Cache warmed up with ${warmupData.length} items`)
+            
           }
         }
       }
@@ -208,7 +208,7 @@ export function createPerformancePlugin(config: PerformancePluginConfig = {}): A
           if (engine.config.cache && engine.config.cache.ttl) {
             const newTTL = Math.min(engine.config.cache.ttl * 1.5, 30 * 60 * 1000) // 最大30分钟
             engine.config.cache.ttl = newTTL
-            console.log(`🔧 Auto-tuning: Increased cache TTL to ${newTTL}ms`)
+            
           }
         }
 
@@ -220,7 +220,7 @@ export function createPerformancePlugin(config: PerformancePluginConfig = {}): A
           if (engine.config.retry) {
             engine.config.retry.retries = Math.min((engine.config.retry.retries || 0) + 1, 5)
             engine.config.retry.delay = Math.max((engine.config.retry.delay || 0) * 1.2, 500)
-            console.log(`🔧 Auto-tuning: Increased retry attempts to ${engine.config.retry.retries}`)
+            
           }
         }
 
@@ -237,7 +237,7 @@ export function createPerformancePlugin(config: PerformancePluginConfig = {}): A
               // 自动调整缓存大小
               if (engine.config.cache) {
                 engine.config.cache.maxSize = Math.min((engine.config.cache.maxSize || 100) * 1.5, 1000)
-                console.log(`🔧 Auto-tuning: Increased cache size to ${engine.config.cache.maxSize}`)
+                
               }
             }
           }
@@ -246,7 +246,7 @@ export function createPerformancePlugin(config: PerformancePluginConfig = {}): A
         // 输出调优建议
         if (recommendations.length > 0) {
           console.group('🔧 Auto-tuning Recommendations')
-          recommendations.forEach(rec => console.log(`• ${rec}`))
+          recommendations.forEach(rec => )
           console.groupEnd()
         }
       }

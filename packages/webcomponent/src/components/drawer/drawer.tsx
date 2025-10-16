@@ -247,42 +247,42 @@ export class LdesignDrawer {
 
   // ==================== 状态 ====================
 
-  @State() currentState: DrawerState = 'closed';
-  @State() currentSize: string = '400px';
-  @State() isResizing: boolean = false;
-  @State() isSwiping: boolean = false;
-  @State() swipeProgress: number = 0;
-  @State() isMinimized: boolean = false;
-  @State() isMaximized: boolean = false;
-  @State() isFullscreen: boolean = false;
-  @State() isAnimating: boolean = false; // 用于控制动画触发
-  @State() isMobileDevice: boolean = false; // 是否为移动设备
-  @State() touchStartX: number = 0; // 触摸起始点
-  @State() touchStartY: number = 0;
-  @State() isDragging: boolean = false; // 是否正在拖动
+  @State() currentState!: DrawerState = 'closed';
+  @State() currentSize!: string = '400px';
+  @State() isResizing!: boolean = false;
+  @State() isSwiping!: boolean = false;
+  @State() swipeProgress!: number = 0;
+  @State() isMinimized!: boolean = false;
+  @State() isMaximized!: boolean = false;
+  @State() isFullscreen!: boolean = false;
+  @State() isAnimating!: boolean = false; // 用于控制动画触发
+  @State() isMobileDevice!: boolean = false; // 是否为移动设备
+  @State() touchStartX!: number = 0; // 触摸起始点
+  @State() touchStartY!: number = 0;
+  @State() isDragging!: boolean = false; // 是否正在拖动
 
   // ==================== 事件 ====================
 
   /** 打开前触发 */
-  @Event() drawerBeforeOpen: EventEmitter<void>;
+  @Event() drawerBeforeOpen!: EventEmitter<void>;
 
   /** 打开后触发 */
-  @Event() drawerOpen: EventEmitter<void>;
+  @Event() drawerOpen!: EventEmitter<void>;
 
   /** 关闭前触发 */
-  @Event() drawerBeforeClose: EventEmitter<{ reason: CloseReason }>;
+  @Event() drawerBeforeClose!: EventEmitter<{ reason: CloseReason }>;
 
   /** 关闭后触发 */
-  @Event() drawerClose: EventEmitter<{ reason: CloseReason }>;
+  @Event() drawerClose!: EventEmitter<{ reason: CloseReason }>;
 
   /** 状态变化 */
-  @Event() drawerStateChange: EventEmitter<{ state: DrawerState }>;
+  @Event() drawerStateChange!: EventEmitter<{ state: DrawerState }>;
 
   /** 大小变化 */
-  @Event() drawerResize: EventEmitter<{ drawerWidth: number; drawerHeight: number }>;
+  @Event() drawerResize!: EventEmitter<{ drawerWidth: number; drawerHeight: number }>;
 
   /** 滑动进度变化 */
-  @Event() drawerSwipe: EventEmitter<{ progress: number }>;
+  @Event() drawerSwipe!: EventEmitter<{ progress: number }>;
 
   // ==================== 私有属性 ====================
 
@@ -729,33 +729,33 @@ export class LdesignDrawer {
 
   private handleSwipeStart = (event: TouchEvent | MouseEvent) => {
     // 更详细的调试日志
-    console.log('[Drawer Swipe] === TOUCH START ===');
-    console.log('[Drawer Swipe] Event type:', event.type);
-    console.log('[Drawer Swipe] swipeToClose prop:', this.swipeToClose);
-    console.log('[Drawer Swipe] swipeTriggerArea:', this.swipeTriggerArea);
-    console.log('[Drawer Swipe] placement:', this.placement);
-    console.log('[Drawer Swipe] currentState:', this.currentState);
-    console.log('[Drawer Swipe] isMobileDevice:', this.isMobileDevice);
+    
+    
+    
+    
+    
+    
+    
     
     if (!this.swipeToClose) {
-      console.log('[Drawer Swipe] ❌ Exiting: swipeToClose is false');
+      
       return;
     }
 
     // 检查触发区域
     const target = event.target as HTMLElement;
-    console.log('[Drawer Swipe] Target element:', target.tagName, target.className);
+    
     
     const isTriggerArea = this.isSwipeTriggerArea(target, event);
     
-    console.log('[Drawer Swipe] isTriggerArea:', isTriggerArea);
+    
     
     if (!isTriggerArea) {
-      console.log('[Drawer Swipe] ❌ Exiting: not in trigger area');
+      
       return;
     }
     
-    console.log('[Drawer Swipe] ✅ Starting swipe...');
+    
 
     const coords = getEventCoordinates(event);
     this.swipeStartPos = coords;
@@ -784,7 +784,7 @@ export class LdesignDrawer {
     const coords = getEventCoordinates(event);
     let delta = 0;
     
-    console.log('[Drawer Swipe] Moving...', { isSwiping: this.isSwiping });
+    
     
     // 计算触摸速度（移动设备）
     if (this.isMobileDevice && event instanceof TouchEvent) {
@@ -840,7 +840,7 @@ export class LdesignDrawer {
   };
 
   private handleSwipeEnd = () => {
-    console.log('[Drawer Swipe] End', { isSwiping: this.isSwiping, swipeProgress: this.swipeProgress });
+    
     
     if (!this.isSwiping) return;
 
@@ -856,18 +856,14 @@ export class LdesignDrawer {
     // 移动设备降低阈值，更容易触发关闭
     const threshold = this.isMobileDevice ? this.swipeThreshold * 0.8 : this.swipeThreshold;
     
-    console.log('[Drawer Swipe] Check close', { 
-      progress: this.swipeProgress, 
-      velocity, 
-      threshold,
-      shouldClose: shouldTriggerSwipeClose(this.swipeProgress, velocity, threshold)
+    
     });
 
     if (shouldTriggerSwipeClose(this.swipeProgress, velocity, threshold)) {
-      console.log('[Drawer Swipe] Closing drawer...');
+      
       this.close('swipe');
     } else {
-      console.log('[Drawer Swipe] Bouncing back...');
+      
       // 弹性回弹动画
       this.animateSwipeBack();
     }
@@ -878,23 +874,23 @@ export class LdesignDrawer {
   };
 
   private isSwipeTriggerArea(target: HTMLElement, event?: TouchEvent | MouseEvent): boolean {
-    console.log('[Drawer Swipe] Checking trigger area:', this.swipeTriggerArea);
+    
     
     if (this.swipeTriggerArea === 'anywhere') {
-      console.log('[Drawer Swipe] anywhere mode - always true');
+      
       return true;
     }
 
     if (this.swipeTriggerArea === 'handle') {
       const isHandle = target.classList.contains('drawer-swipe-handle') || 
                        target.closest('.drawer-swipe-handle') !== null;
-      console.log('[Drawer Swipe] handle mode - isHandle:', isHandle);
+      
       return isHandle;
     }
 
     if (this.swipeTriggerArea === 'header') {
       const isHeader = target.closest('.drawer-header') !== null;
-      console.log('[Drawer Swipe] header mode - isHeader:', isHeader);
+      
       return isHeader;
     }
 
@@ -906,7 +902,7 @@ export class LdesignDrawer {
       // - 顶部抽屉：底边缘（向上滑动关闭）
       // - 底部抽屉：顶边缘（向下滑动关闭）
       if (!event || !this.drawerRef) {
-        console.log('[Drawer Swipe] edge mode - no event or drawerRef');
+        
         return false;
       }
       
@@ -938,18 +934,12 @@ export class LdesignDrawer {
           break;
       }
       
-      console.log('[Drawer Swipe] edge check:', {
-        placement: this.placement,
-        distance: distance,
-        isEdge: isEdge,
-        rect: { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom },
-        coords: { x: coords.x, y: coords.y }
-      });
+      
       
       return isEdge;
     }
 
-    console.log('[Drawer Swipe] Unknown trigger area, returning false');
+    
     return false;
   }
 
@@ -974,9 +964,9 @@ export class LdesignDrawer {
     // 如果用户明确设置了 swipe-trigger-area="edge"，就保持用户的选择
     if (!hasUserSpecifiedTriggerArea && this.swipeTriggerArea === 'edge') {
       this.swipeTriggerArea = 'anywhere';
-      console.log('[Drawer Mobile] Auto-adjusted swipeTriggerArea to "anywhere" for mobile');
+      
     } else if (hasUserSpecifiedTriggerArea) {
-      console.log('[Drawer Mobile] User specified swipeTriggerArea:', this.swipeTriggerArea);
+      
     }
     
     // 调整默认尺寸
@@ -1003,9 +993,9 @@ export class LdesignDrawer {
   
   // 关键修复：使用原生事件监听器绑定触摸事件
   private setupTouchListeners() {
-    console.log('[Drawer Setup] Setting up touch listeners...');
-    console.log('[Drawer Setup] swipeToClose:', this.swipeToClose);
-    console.log('[Drawer Setup] drawerRef:', this.drawerRef);
+    
+    
+    
     
     if (!this.drawerRef) {
       console.error('[Drawer Setup] drawerRef not found!');
@@ -1022,7 +1012,7 @@ export class LdesignDrawer {
     this.drawerRef.addEventListener('touchmove', this.handleSwipeMove as any, { passive: false });
     this.drawerRef.addEventListener('touchend', this.handleSwipeEnd as any, { passive: true });
     
-    console.log('[Drawer Setup] Touch listeners added successfully!');
+    
   }
   
   private shouldPreventScroll(target: HTMLElement): boolean {

@@ -4,8 +4,7 @@
  */
 
 import type { DialogAPI, DialogConfig, DialogInstance, DialogPlugin } from '../types'
-
-// import { getLogger } from '../../logger/logger' // 已移除日志
+import { getLogger } from '../../logger/logger'
 
 export interface DeleteConfirmOptions {
   /** 要删除的项目名称或描述 */
@@ -132,7 +131,7 @@ export class DeleteConfirmPlugin implements DialogPlugin {
         },
         {
           text: confirmText,
-          type: confirmButtonType as any,
+          type: confirmButtonType as 'primary' | 'secondary' | 'danger',
           disabled: confirmButtonDisabled,
           onClick: async (dialog: DialogInstance) => {
             if (onConfirm) {
@@ -168,7 +167,11 @@ export class DeleteConfirmPlugin implements DialogPlugin {
       </div>
     `
 
-    const instance = await this.dialogAPI!.open({
+    if (!this.dialogAPI) {
+      throw new Error('Dialog API is not initialized')
+    }
+
+    const instance = await this.dialogAPI.open({
       ...dialogConfig,
       content: contentHTML,
       html: true,
@@ -197,7 +200,6 @@ export class DeleteConfirmPlugin implements DialogPlugin {
     onCancel?: () => void
   ): Promise<boolean> {
     return new Promise((resolve) => {
-      const confirmButtonDisabled = true
       let dialogInstance: DialogInstance | null = null
 
       const dialogConfig: DialogConfig = {
@@ -225,7 +227,7 @@ export class DeleteConfirmPlugin implements DialogPlugin {
           },
           {
             text: confirmText,
-            type: confirmButtonType as any,
+            type: confirmButtonType as 'primary' | 'secondary' | 'danger',
             disabled: true,
             onClick: async (dialog: DialogInstance) => {
               if (onConfirm) {
@@ -273,7 +275,11 @@ export class DeleteConfirmPlugin implements DialogPlugin {
         </div>
       `
 
-      this.dialogAPI!.open({
+      if (!this.dialogAPI) {
+        throw new Error('Dialog API is not initialized')
+      }
+
+      this.dialogAPI.open({
         ...dialogConfig,
         content: contentHTML,
         html: true,

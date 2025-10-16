@@ -13,7 +13,6 @@ import { PathUtils } from '../../utils/path-utils'
 import { ViteLauncher } from '../../core/ViteLauncher'
 import type { CliCommandDefinition, CliContext } from '../../types'
 import { DEFAULT_OUT_DIR, DEFAULT_BUILD_TARGET } from '../../constants'
-import pc from 'picocolors'
 
 /**
  * Build 命令类
@@ -197,10 +196,10 @@ export class BuildCommand implements CliCommandDefinition {
 
       // 立即输出环境标识，不依赖logger
       if (!context.options.silent) {
-        console.log(`\n🏗️  ${pc.cyan('LDesign Launcher')} - ${envLabel}`)
-        console.log(`📁 ${pc.gray('工作目录:')} ${context.cwd}`)
-        console.log(`⚙️  ${pc.gray('模式:')} ${context.options.mode || 'production'}`)
-        console.log('')
+        } - ${envLabel}`)
+        } ${context.cwd}`)
+        } ${context.options.mode || 'production'}`)
+        
       }
 
       logger.info('正在执行生产构建...')

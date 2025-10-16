@@ -313,16 +313,14 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
     const selectedPath = stdout.trim()
 
     if (selectedPath) {
-      console.log('用户选择的目录:', selectedPath)
-      res.json({
+            res.json({
         success: true,
         data: {
           path: selectedPath
         }
       })
     } else {
-      console.log('用户取消了目录选择')
-      res.json({
+            res.json({
         success: false,
         message: '未选择目录'
       })

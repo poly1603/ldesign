@@ -41,15 +41,17 @@ export class MiddlewareManagerImpl implements MiddlewareManager {
     }
   }
 
-  async execute(
-    contextOrName: MiddlewareContext | string,
-    context?: MiddlewareContext
-  ): Promise<any> {
+  async execute(context: MiddlewareContext): Promise<void>
+  async execute(name: string, context: MiddlewareContext): Promise<unknown>
+  async execute(contextOrName: MiddlewareContext | string, context?: MiddlewareContext): Promise<void | unknown> {
     // 重载处理
     if (typeof contextOrName === 'string') {
       // 执行特定名称的中间件
       const name = contextOrName
-      const ctx = context!
+      if (!context) {
+        throw new Error('Context is required when executing middleware by name')
+      }
+      const ctx = context
       const middleware = this.middleware.find(m => m.name === name)
 
       if (!middleware) {

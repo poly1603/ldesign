@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsx scripts/build-packages.ts",
+    "build": "tsx scripts/build-all.ts",
     "build:all": "tsx scripts/build-all.ts",
     "build:all:clean": "tsx scripts/build-all.ts --clean",
     "build:all:verbose": "tsx scripts/build-all.ts --verbose",
@@ -13,7 +13,9 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
+    "@types/glob": "^9.0.0",
     "@types/node": "^20.0.0",
+    "glob": "^11.0.3",
     "tsx": "^4.7.0",
     "typescript": "^5.0.0"
   },

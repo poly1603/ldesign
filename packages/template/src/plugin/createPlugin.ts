@@ -6,6 +6,7 @@
 
 import type { App } from 'vue'
 import { TemplateManager } from '../core'
+import { loadStyles } from '../core/style-loader'
 import type { TemplateManagerOptions } from '../types'
 
 /**
@@ -241,12 +242,12 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
       await manager.initialize()
       
       // Preload templates if enabled
+      // Note: preloadAll and preloadCommon are not implemented in TemplateManager
+      // Use preloadByFilter instead if needed
       if (mergedOptions.preload) {
-        if (mergedOptions.preloadStrategy === 'eager') {
-          await manager.preloadAll()
-        } else if (mergedOptions.preloadStrategy === 'smart') {
-          await manager.preloadCommon()
-        }
+        // You can implement specific preloading logic here
+        // For example, preload login templates:
+        // await manager.preloadByFilter({ category: 'login' })
       }
     } catch (error) {
       mergedOptions.hooks?.onError?.(error as Error)
@@ -348,7 +349,7 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
           // Try to load the preferred template
           const template = await manager.loadTemplate(category, device, userPref)
           if (template) {
-            console.log(`[Template Plugin] Loading user preferred template: ${userPref} for ${category}/${device}`)
+            
             return { name: userPref, component: template }
           }
         } catch (error) {
@@ -391,6 +392,17 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
       // Also expose to window for easy access by components
       if (typeof window !== 'undefined') {
         (window as any).__TEMPLATE_PLUGIN__ = plugin
+        
+        // 自动加载主样式文件
+        try {
+          // 在构建环境中，尝试加载样式
+          const baseUrl = new URL(import.meta.url)
+          const indexCssPath = new URL('../index.css', baseUrl)
+          loadStyles([indexCssPath.href])
+          
+        } catch (error) {
+          console.warn('[Template Plugin] 无法自动加载样式，请手动导入 @ldesign/template/index.css', error)
+        }
       }
 
       // Register global components

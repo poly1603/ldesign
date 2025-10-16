@@ -40,8 +40,8 @@ export interface RequestQueueConfig {
  * const result2 = await queue.enqueue({ url: '/api/data2' }, 2) // 高优先级
  *
  * // 查看队列状态
- * console.log(queue.pending.value) // 2
- * console.log(queue.active.value) // 3
+ *  // 2
+ *  // 3
  * ```
  */
 export function useRequestQueue<T = any>(

@@ -71,7 +71,7 @@ export class SmartCacheStrategy {
       ...config,
     }
 
-    if (this.config.enabled && this.config.autoAdjustInterval > 0) {
+    if (this.config?.enabled && this.config?.autoAdjustInterval > 0) {
       this.startAutoAdjust()
     }
   }
@@ -80,7 +80,7 @@ export class SmartCacheStrategy {
    * 记录访问
    */
   recordAccess(key: string): void {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return
     }
 
@@ -103,7 +103,7 @@ export class SmartCacheStrategy {
     stats.accessTimestamps.push(now)
 
     // 保持窗口大小
-    if (stats.accessTimestamps.length > this.config.statsWindowSize) {
+    if (stats.accessTimestamps.length > this.config?.statsWindowSize) {
       stats.accessTimestamps.shift()
     }
 
@@ -125,7 +125,7 @@ export class SmartCacheStrategy {
    * 获取建议的TTL
    */
   getSuggestedTTL(key: string, baseTTL: number): number {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return baseTTL
     }
 
@@ -135,9 +135,9 @@ export class SmartCacheStrategy {
       case CachePriority.CRITICAL:
         return baseTTL * 10 // 10倍TTL
       case CachePriority.HIGH:
-        return baseTTL * this.config.hotDataTTLMultiplier
+        return baseTTL * this.config?.hotDataTTLMultiplier
       case CachePriority.LOW:
-        return baseTTL * this.config.coldDataTTLMultiplier
+        return baseTTL * this.config?.coldDataTTLMultiplier
       default:
         return baseTTL
     }
@@ -195,7 +195,7 @@ export class SmartCacheStrategy {
     const now = Date.now()
 
     return entries
-      .filter(([, stats]) => stats.accessCount < this.config.minAccessThreshold)
+      .filter(([, stats]) => stats.accessCount < this.config?.minAccessThreshold)
       .sort((a, b) => {
         // 按最后访问时间排序
         return (now - b[1].lastAccessTime) - (now - a[1].lastAccessTime)
@@ -250,7 +250,7 @@ export class SmartCacheStrategy {
       // 高频访问
       newPriority = CachePriority.HIGH
     }
-    else if (accessScore < this.config.minAccessThreshold) {
+    else if (accessScore < this.config?.minAccessThreshold) {
       // 低频访问
       newPriority = CachePriority.LOW
     }
@@ -266,7 +266,7 @@ export class SmartCacheStrategy {
   private startAutoAdjust(): void {
     this.adjustTimer = setInterval(() => {
       this.performAutoAdjust()
-    }, this.config.autoAdjustInterval)
+    }, this.config?.autoAdjustInterval)
   }
 
   /**

@@ -3,9 +3,9 @@
  * 使用 @ldesign/builder 提供的通用 build API 进行构建
  */
 
-import { build } from '@ldesign/builder'
-import { sep, join } from 'node:path'
 import { promises as fs } from 'node:fs'
+import { join, sep } from 'node:path'
+import { build } from '@ldesign/builder'
 
 async function fileExists(p) {
   try {

@@ -21,7 +21,6 @@ export interface DirectiveOptions {
 }
 
 export abstract class DirectiveBase implements EngineDirective {
-
   public readonly name: string
   public readonly description?: string
   public readonly version: string
@@ -108,15 +107,15 @@ export abstract class DirectiveBase implements EngineDirective {
   }
 
   // 工具方法
-  protected log(message: string, ...args: unknown[]): void {
+  protected log(_message: string, ..._args: unknown[]): void {
     // 移除日志功能以减少包体积
   }
 
-  protected warn(message: string, ...args: unknown[]): void {
+  protected warn(_message: string, ..._args: unknown[]): void {
     // 移除日志功能以减少包体积
   }
 
-  protected error_log(message: string, ...args: unknown[]): void {
+  protected error_log(_message: string, ..._args: unknown[]): void {
     // 移除日志功能以减少包体积
   }
 

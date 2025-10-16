@@ -76,10 +76,10 @@ export class LdesignCollapse {
   /** 排序变化事件 */
   @Event() ldesignSortChange!: EventEmitter<{ from: number; to: number; panelName: string }>;
 
-  @State() openKeysInternal: string[] = [];
-  @State() focusedIndex: number = -1;
-  @State() filteredPanels: string[] = [];
-  @State() draggedPanel: string | null = null;
+  @State() openKeysInternal!: string[] = [];
+  @State() focusedIndex!: number = -1;
+  @State() filteredPanels!: string[] = [];
+  @State() draggedPanel!: string | null = null;
 
   @Watch('value')
   watchValue(newVal?: string[] | string) {

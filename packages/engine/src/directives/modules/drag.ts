@@ -58,7 +58,7 @@ export class DragDirective extends DirectiveBase {
 
   public mounted(el: HTMLElement, binding: VueDirectiveBinding): void {
     const config = this.parseConfig(binding)
-    
+
     if (config.disabled) {
       return
     }
@@ -76,7 +76,7 @@ export class DragDirective extends DirectiveBase {
 
     // Get handle element
     const handle = this.getHandle(el, config.handle)
-    
+
     // Set initial position
     if (!el.style.position || el.style.position === 'static') {
       el.style.position = 'relative'
@@ -87,7 +87,7 @@ export class DragDirective extends DirectiveBase {
       if (config.disabled) return
 
       state.isDragging = true
-      
+
       const point = this.getEventPoint(e)
       state.startX = point.x - state.offsetX
       state.startY = point.y - state.offsetY
@@ -175,10 +175,10 @@ export class DragDirective extends DirectiveBase {
     // Add event listeners
     handle.addEventListener('mousedown', handleStart)
     handle.addEventListener('touchstart', handleStart, { passive: !config.preventDefault })
-    
+
     document.addEventListener('mousemove', handleMove)
     document.addEventListener('touchmove', handleMove, { passive: !config.preventDefault })
-    
+
     document.addEventListener('mouseup', handleEnd)
     document.addEventListener('touchend', handleEnd)
 
@@ -204,16 +204,20 @@ export class DragDirective extends DirectiveBase {
   }
 
   private cleanup(el: HTMLElement): void {
-    const handlers = directiveUtils.getData(el, 'drag-handlers') as any
+    const handlers = directiveUtils.getData(el, 'drag-handlers') as {
+      handleStart: EventListener
+      handleMove: EventListener
+      handleEnd: EventListener
+    } | undefined
     const handle = directiveUtils.getData(el, 'drag-handle') as HTMLElement
 
     if (handlers && handle) {
       handle.removeEventListener('mousedown', handlers.handleStart)
       handle.removeEventListener('touchstart', handlers.handleStart)
-      
+
       document.removeEventListener('mousemove', handlers.handleMove)
       document.removeEventListener('touchmove', handlers.handleMove)
-      
+
       document.removeEventListener('mouseup', handlers.handleEnd)
       document.removeEventListener('touchend', handlers.handleEnd)
     }
@@ -253,7 +257,7 @@ export class DragDirective extends DirectiveBase {
       const parent = el.parentElement
       const parentRect = parent.getBoundingClientRect()
       const elRect = el.getBoundingClientRect()
-      
+
       minX = 0
       maxX = parentRect.width - elRect.width
       minY = 0
@@ -265,7 +269,7 @@ export class DragDirective extends DirectiveBase {
       if (container) {
         const containerRect = container.getBoundingClientRect()
         const elRect = el.getBoundingClientRect()
-        
+
         minX = containerRect.left - elRect.left
         maxX = containerRect.right - elRect.right
         minY = containerRect.top - elRect.top
@@ -323,7 +327,7 @@ export class DragDirective extends DirectiveBase {
 
 <!-- With callbacks -->
 <div v-drag="{
-  onStart: (e) => console.log('Drag started', e),
+  onStart: (e) => ,
   onMove: (e) => updatePosition(e),
   onEnd: (e) => savePosition(e)
 }" class="tracked-box">

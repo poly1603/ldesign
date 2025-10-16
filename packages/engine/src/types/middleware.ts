@@ -3,10 +3,30 @@
  * 包含中间件、中间件管理器等相关类型
  */
 
+// 中间件请求对象（兼容性类型）
+export interface MiddlewareRequest {
+  method?: string
+  url?: string
+  headers?: Record<string, string>
+  body?: unknown
+  params?: Record<string, string>
+  query?: Record<string, string>
+  [key: string]: unknown
+}
+
+// 中间件响应对象（兼容性类型）
+export interface MiddlewareResponse {
+  status?: number
+  statusText?: string
+  headers?: Record<string, string>
+  body?: unknown
+  [key: string]: unknown
+}
+
 // 中间件上下文
 export interface MiddlewareContext {
-  request?: unknown
-  response?: unknown
+  request?: MiddlewareRequest
+  response?: MiddlewareResponse
   error?: Error
   [key: string]: unknown
 }
@@ -33,8 +53,8 @@ export interface MiddlewareManager {
   remove: (name: string) => void
   get: (name: string) => Middleware | undefined
   getAll: () => Middleware[]
-  execute: ((context: MiddlewareContext) => Promise<void>) &
-    ((name: string, context: MiddlewareContext) => Promise<unknown>)
+  execute(context: MiddlewareContext): Promise<void>
+  execute(name: string, context: MiddlewareContext): Promise<unknown>
 }
 
 // 中间件管道接口

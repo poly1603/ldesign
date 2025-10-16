@@ -159,9 +159,9 @@ export class PerformanceMonitor {
    * 开始监控
    */
   startMonitoring(): void {
-    if (this.config.enableMemory || this.config.enableCPU) {
+    if (this.config?.enableMemory || this.config?.enableCPU) {
       const interval = setInterval(() => {
-        if (this.config.enableMemory) {
+        if (this.config?.enableMemory) {
           const memory = this.getMemorySnapshot()
           this.recordMetric({
             name: 'memory.heapUsed',
@@ -172,7 +172,7 @@ export class PerformanceMonitor {
           })
         }
 
-        if (this.config.enableCPU) {
+        if (this.config?.enableCPU) {
           const cpu = this.getCPUSnapshot()
           this.recordMetric({
             name: 'cpu.user',
@@ -182,7 +182,7 @@ export class PerformanceMonitor {
             unit: 'microseconds',
           })
         }
-      }, this.config.sampleInterval)
+      }, this.config?.sampleInterval)
 
       // 存储 interval ID 以便后续清理
       ;(this as any).monitoringInterval = interval
@@ -392,8 +392,8 @@ export class PerformanceMonitor {
     this.metrics.push(metric)
 
     // 限制指标数量
-    if (this.metrics.length > this.config.maxMetrics) {
-      this.metrics = this.metrics.slice(-this.config.maxMetrics)
+    if (this.metrics.length > this.config?.maxMetrics) {
+      this.metrics = this.metrics.slice(-this.config?.maxMetrics)
     }
   }
 

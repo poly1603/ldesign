@@ -123,7 +123,7 @@ export interface PerformanceMetrics {
  *
  * @example
  * ```typescript
- * const debugger = new HttpDebugger({
+ * const  = new HttpDebugger({
  *   level: DebugLevel.DEBUG,
  *   logRequests: true,
  *   logResponses: true,
@@ -131,16 +131,16 @@ export interface PerformanceMetrics {
  * })
  *
  * // 应用到客户端
- * debugger.apply(httpClient)
+ * .apply(httpClient)
  *
  * // 获取日志
- * const logs = debugger.getLogs()
+ * const logs = .getLogs()
  *
  * // 获取性能报告
- * const report = debugger.getPerformanceReport()
+ * const report = .getPerformanceReport()
  *
  * // 导出日志
- * const exported = debugger.exportLogs()
+ * const exported = .exportLogs()
  * ```
  */
 export class HttpDebugger {
@@ -200,7 +200,7 @@ export class HttpDebugger {
    * 记录请求
    */
   private logRequest(config: RequestConfig): void {
-    if (!this.config.logRequests) {
+    if (!this.config?.logRequests) {
       return
     }
 
@@ -211,14 +211,14 @@ export class HttpDebugger {
       timestamp: Date.now(),
       method: config.method || 'GET',
       url: config.url || '',
-      headers: this.config.logHeaders ? config.headers : undefined,
-      data: this.config.logBody ? config.data : undefined,
+      headers: this.config?.logHeaders ? config.headers : undefined,
+      data: this.config?.logBody ? config.data : undefined,
     }
 
     this.requestLogs.set(id, log)
 
     // 开始性能计时
-    if (this.config.performance) {
+    if (this.config?.performance) {
       this.performanceData.set(id, {
         totalTime: 0,
       })
@@ -233,8 +233,8 @@ export class HttpDebugger {
     })
 
     // 控制台输出
-    if (this.config.console && this.config.level >= DebugLevel.DEBUG) {
-      console.log(`[HTTP Request] ${log.method} ${log.url}`, log)
+    if (this.config?.console && this.config?.level >= DebugLevel.DEBUG) {
+      
     }
   }
 
@@ -242,7 +242,7 @@ export class HttpDebugger {
    * 记录响应
    */
   private logResponse(response: ResponseData): void {
-    if (!this.config.logResponses) {
+    if (!this.config?.logResponses) {
       return
     }
 
@@ -253,7 +253,7 @@ export class HttpDebugger {
 
     const log: ResponseLog = {
       requestId: requestId || 'unknown',
-      response: this.config.logResponseBody ? response : {
+      response: this.config?.logResponseBody ? response : {
         ...response,
         data: '[Response Body Hidden]',
       },
@@ -267,7 +267,7 @@ export class HttpDebugger {
     this.trimLogs()
 
     // 更新性能数据
-    if (this.config.performance && requestId) {
+    if (this.config?.performance && requestId) {
       const metrics = this.performanceData.get(requestId)
       if (metrics) {
         metrics.totalTime = duration
@@ -284,9 +284,8 @@ export class HttpDebugger {
     })
 
     // 控制台输出
-    if (this.config.console && this.config.level >= DebugLevel.DEBUG) {
-      console.log(
-        `[HTTP Response] ${response.config.method} ${response.config.url} - ${response.status} (${duration}ms)`,
+    if (this.config?.console && this.config?.level >= DebugLevel.DEBUG) {
+      `,
         log,
       )
     }
@@ -321,7 +320,7 @@ export class HttpDebugger {
     })
 
     // 控制台输出
-    if (this.config.console && this.config.level >= DebugLevel.ERROR) {
+    if (this.config?.console && this.config?.level >= DebugLevel.ERROR) {
       console.error(
         `[HTTP Error] ${error.config?.method} ${error.config?.url} - ${error.message} (${duration}ms)`,
         log,
@@ -336,12 +335,12 @@ export class HttpDebugger {
     this.events.push(event)
 
     // 限制事件数量
-    if (this.events.length > this.config.maxLogs) {
+    if (this.events.length > this.config?.maxLogs) {
       this.events.shift()
     }
 
     // 调用自定义处理器
-    this.config.handler(event)
+    this.config?.handler(event)
   }
 
   /**
@@ -491,12 +490,12 @@ export class HttpDebugger {
    * 修剪日志
    */
   private trimLogs(): void {
-    if (this.responseLogs.length > this.config.maxLogs) {
-      this.responseLogs = this.responseLogs.slice(-this.config.maxLogs)
+    if (this.responseLogs.length > this.config?.maxLogs) {
+      this.responseLogs = this.responseLogs.slice(-this.config?.maxLogs)
     }
 
-    if (this.requestLogs.size > this.config.maxLogs) {
-      const excess = this.requestLogs.size - this.config.maxLogs
+    if (this.requestLogs.size > this.config?.maxLogs) {
+      const excess = this.requestLogs.size - this.config?.maxLogs
       const keys = Array.from(this.requestLogs.keys())
       for (let i = 0; i < excess; i++) {
         this.requestLogs.delete(keys[i])
@@ -546,6 +545,6 @@ export function createDebugInterceptor(config?: DebuggerConfig) {
       })
       return Promise.reject(error)
     },
-    debugger: httpDebugger,
+    : httpDebugger,
   }
 }

@@ -8,8 +8,8 @@ import type {
   ActionDefinition,
   GetterDefinition,
   StoreOptions,
-} from '@/types'
-import type { Constructor } from '@/types/decorators'
+} from '../types'
+import type { Constructor } from '../types/decorators'
 import type { BaseStore } from './BaseStore'
 import { createFunctionalStore, type FunctionalStoreOptions, type FunctionalStoreInstance } from './FunctionalStore'
 import { createCompositionStore, type CompositionStoreOptions, type CompositionStoreSetup, type CompositionStoreInstance } from './CompositionStore'

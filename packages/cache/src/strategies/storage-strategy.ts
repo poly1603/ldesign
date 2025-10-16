@@ -65,8 +65,8 @@ export class StorageStrategy {
       memory: 0,
     }
 
-    this.config.enginePriority.forEach((engine, index) => {
-      const priorityScore = (this.config.enginePriority.length - index) / this.config.enginePriority.length
+    this.config?.enginePriority.forEach((engine, index) => {
+      const priorityScore = (this.config?.enginePriority.length - index) / this.config?.enginePriority.length
       weights[engine] = 0.05 * priorityScore
     })
 
@@ -92,9 +92,9 @@ export class StorageStrategy {
     value: any,
     options?: SetOptions,
   ): Promise<StorageStrategyResult> {
-    if (!this.config.enabled) {
+    if (!this.config?.enabled) {
       return {
-        engine: this.config.enginePriority[0],
+        engine: this.config?.enginePriority[0],
         reason: 'Strategy disabled, using default engine',
         confidence: 0.5,
       }
@@ -211,7 +211,7 @@ export class StorageStrategy {
    */
   private tryQuickPath(dataSize: number, ttl: number | undefined, dataType: DataType): StorageStrategyResult | null {
     // 超大数据直接使用 IndexedDB
-    if (dataSize > this.config.sizeThresholds.large) {
+    if (dataSize > this.config?.sizeThresholds.large) {
       return {
         engine: 'indexedDB',
         reason: 'Large data size requires IndexedDB',
@@ -235,7 +235,7 @@ export class StorageStrategy {
     }
 
     // 简单类型小数据
-    if (dataSize <= this.config.sizeThresholds.small && (dataType === 'string' || dataType === 'number' || dataType === 'boolean')) {
+    if (dataSize <= this.config?.sizeThresholds.small && (dataType === 'string' || dataType === 'number' || dataType === 'boolean')) {
       return {
         engine: 'localStorage',
         reason: 'Small simple data, localStorage is optimal',
@@ -545,11 +545,11 @@ export class StorageStrategy {
       ...this.config,
       ...config,
       sizeThresholds: {
-        ...this.config.sizeThresholds,
+        ...this.config?.sizeThresholds,
         ...config.sizeThresholds,
       },
       ttlThresholds: {
-        ...this.config.ttlThresholds,
+        ...this.config?.ttlThresholds,
         ...config.ttlThresholds,
       },
     }

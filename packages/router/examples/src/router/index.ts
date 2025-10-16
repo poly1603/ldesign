@@ -25,7 +25,7 @@ export async function setupRouter() {
   // 创建路由器
   const router = createRouter({
     // 使用 HTML5 History 模式
-    history: createWebHistory(import.meta.env.BASE_URL),
+    history: createWebHistory(import.meta.env?.BASE_URL),
     
     // 路由配置
     routes,
@@ -58,19 +58,15 @@ export async function setupRouter() {
   setupGuards(router)
 
   // 开发环境下的路由调试
-  if (import.meta.env.DEV) {
+  if (import.meta.env?.DEV) {
     // 监听路由变化
     router.afterEach((to, from) => {
-      console.log(`🔗 路由变化: ${from.path} → ${to.path}`)
-      console.log('📍 当前路由:', to)
-    })
+                })
 
     // 监听路由错误
     router.onError((error, to, from) => {
       console.error('❌ 路由错误:', error)
-      console.log('📍 目标路由:', to)
-      console.log('📍 来源路由:', from)
-    })
+                })
   }
 
   return router
