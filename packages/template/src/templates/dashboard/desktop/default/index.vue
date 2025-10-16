@@ -1,3 +1,29 @@
+<script setup lang="ts">
+
+interface Props {
+  title?: string
+  username?: string
+  stats?: {
+    visits: string
+    users: string
+    orders: string
+    revenue: string
+  }
+}
+
+// eslint-disable-next-line unused-imports/no-unused-vars, ts/no-unused-vars
+const props = withDefaults(defineProps<Props>(), {
+  title: '仪表板',
+  username: '用户',
+  stats: () => ({
+    visits: '12,345',
+    users: '1,234',
+    orders: '567',
+    revenue: '89,012',
+  }),
+})
+</script>
+
 <template>
   <div class="dashboard-desktop-default">
     <header class="dashboard-header">
@@ -21,19 +47,27 @@
         <div class="stats-grid">
           <div class="stat-card">
             <h3>总访问量</h3>
-            <p class="stat-value">{{ stats.visits }}</p>
+            <p class="stat-value">
+              {{ stats.visits }}
+            </p>
           </div>
           <div class="stat-card">
             <h3>活跃用户</h3>
-            <p class="stat-value">{{ stats.users }}</p>
+            <p class="stat-value">
+              {{ stats.users }}
+            </p>
           </div>
           <div class="stat-card">
             <h3>订单数</h3>
-            <p class="stat-value">{{ stats.orders }}</p>
+            <p class="stat-value">
+              {{ stats.orders }}
+            </p>
           </div>
           <div class="stat-card">
             <h3>收入</h3>
-            <p class="stat-value">¥{{ stats.revenue }}</p>
+            <p class="stat-value">
+              ¥{{ stats.revenue }}
+            </p>
           </div>
         </div>
 
@@ -46,32 +80,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { reactive } from 'vue'
-
-interface Props {
-  title?: string
-  username?: string
-  stats?: {
-    visits: string
-    users: string
-    orders: string
-    revenue: string
-  }
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  title: '仪表板',
-  username: '用户',
-  stats: () => ({
-    visits: '12,345',
-    users: '1,234',
-    orders: '567',
-    revenue: '89,012',
-  }),
-})
-</script>
 
 <style scoped>
 .dashboard-desktop-default {

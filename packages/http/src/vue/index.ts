@@ -49,7 +49,7 @@ export {
   usePut,
   useDelete,
   usePatch,
-} from './useSimpleHttp'
+} from './useBasicHttp'
 
 // 传统的 Mutation hooks (适用于熟悉 react-query 的用户)
 export {

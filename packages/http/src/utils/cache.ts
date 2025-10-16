@@ -413,9 +413,9 @@ export class CacheManager {
 }
 
 /**
- * 高级缓存配置
+ * 增强缓存配置
  */
-export interface AdvancedCacheConfig extends CacheConfig {
+export interface EnhancedCacheConfig extends CacheConfig {
   /** 缓存策略 */
   strategy?: 'lru' | 'lfu' | 'fifo' | 'ttl'
   /** 最大缓存大小（字节） */
@@ -489,15 +489,15 @@ export interface EnhancedCacheItem extends CacheItem {
 /**
  * 增强的缓存管理器
  */
-export class AdvancedCacheManager extends CacheManager {
-  private advancedConfig: AdvancedCacheConfig
+export class EnhancedCacheManager extends CacheManager {
+  private enhancedConfig: EnhancedCacheConfig
   private accessLog = new Map<string, number>() // 访问计数
   private tagIndex = new Map<string, Set<string>>() // 标签索引
   private dependencyGraph = new Map<string, Set<string>>() // 依赖图
 
-  constructor(config: AdvancedCacheConfig = {}) {
+  constructor(config: EnhancedCacheConfig = {}) {
     super(config)
-    this.advancedConfig = {
+    this.enhancedConfig = {
       strategy: 'lru',
       maxSize: 50 * 1024 * 1024, // 50MB
       compression: false,
@@ -510,7 +510,7 @@ export class AdvancedCacheManager extends CacheManager {
    * 增强的获取方法
    */
   async get<T = any>(config: RequestConfig): Promise<ResponseData<T> | null> {
-    if (!this.advancedConfig.stats) {
+    if (!this.enhancedConfig.stats) {
       // 如果统计被禁用，直接从存储获取，不进行任何统计
       if (!this.config?.enabled) {
         return null
@@ -546,7 +546,7 @@ export class AdvancedCacheManager extends CacheManager {
   ): Promise<void> {
     await super.set(config, response)
 
-    if (this.advancedConfig.stats) {
+    if (this.enhancedConfig.stats) {
       const key = this.getCachedKey(config)
 
       // 更新标签索引
@@ -754,10 +754,12 @@ export function createCacheManager(config?: CacheConfig): CacheManager {
 }
 
 /**
- * 创建高级缓存管理器
+ * 创建增强缓存管理器
  */
-export function createAdvancedCacheManager(config?: AdvancedCacheConfig): AdvancedCacheManager {
-  return new AdvancedCacheManager(config)
+export function createEnhancedCacheManager(
+  config?: EnhancedCacheConfig,
+): EnhancedCacheManager {
+  return new EnhancedCacheManager(config)
 }
 
 /**

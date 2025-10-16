@@ -372,14 +372,18 @@ export class RequestMonitor {
    * 启用监控
    */
   enable(): void {
-    this.config?.enabled = true
+    if (this.config) {
+      this.config.enabled = true
+    }
   }
 
   /**
    * 禁用监控
    */
   disable(): void {
-    this.config?.enabled = false
+    if (this.config) {
+      this.config.enabled = false
+    }
   }
 
   /**

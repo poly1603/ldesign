@@ -1,103 +1,7 @@
-<template>
-  <div class="login-tablet-default">
-    <div class="container">
-      <!-- Logo 插槽 -->
-      <div class="logo-section" v-if="$slots.logo || showLogo">
-        <slot name="logo">
-          <div class="default-logo">
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="#667eea">
-              <circle cx="32" cy="32" r="28" opacity="0.1" />
-              <path d="M32 16 L42 32 L32 48 L22 32 Z" fill="#667eea" />
-            </svg>
-          </div>
-        </slot>
-      </div>
-
-      <!-- 头部插槽 -->
-      <div class="header-section">
-        <slot name="header" :title="title" :subtitle="subtitle">
-          <h1>{{ title }}</h1>
-          <p class="subtitle">{{ subtitle }}</p>
-        </slot>
-      </div>
-
-      <!-- 登录面板插槽 -->
-      <slot name="loginPanel"
-            :form="form"
-            :loading="loading"
-            :error="error"
-            :handleSubmit="handleSubmit">
-        <form class="login-form" @submit.prevent="handleSubmit">
-          <div class="form-group">
-            <label for="username">用户名</label>
-            <input 
-              id="username"
-              v-model="form.username" 
-              type="text" 
-              placeholder="请输入用户名或邮箱" 
-              required 
-            />
-          </div>
-          
-          <div class="form-group">
-            <label for="password">密码</label>
-            <input 
-              id="password"
-              v-model="form.password" 
-              type="password" 
-              placeholder="请输入密码" 
-              required 
-            />
-          </div>
-
-          <div class="form-options" v-if="showRememberMe">
-            <label class="remember-me">
-              <input type="checkbox" v-model="form.rememberMe" />
-              <span>记住我</span>
-            </label>
-            <a href="#" class="forgot-link" @click.prevent="handleForgot">忘记密码？</a>
-          </div>
-          
-          <button type="submit" class="btn-submit" :disabled="loading">
-            {{ loading ? '登录中...' : '登录' }}
-          </button>
-        </form>
-      </slot>
-
-      <!-- 社交登录插槽 -->
-      <div v-if="$slots.socialLogin || showSocialLogin" class="social-section">
-        <slot name="socialLogin" :providers="socialProviders">
-          <div class="social-divider">
-            <span>或使用以下方式登录</span>
-          </div>
-          <div class="social-buttons">
-            <button v-for="provider in socialProviders"
-                    :key="provider.name"
-                    @click="handleSocialLogin(provider)"
-                    class="social-btn">
-              {{ provider.label }}
-            </button>
-          </div>
-        </slot>
-      </div>
-
-      <!-- 底部插槽 -->
-      <div class="footer-section">
-        <slot name="footer">
-          <p class="footer-text">
-            还没有账号？ <a href="#" @click.prevent="handleRegister">立即注册</a>
-          </p>
-        </slot>
-      </div>
-
-      <!-- 额外内容插槽 -->
-      <slot name="extra"></slot>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
+
+interface SocialProvider { name: string; label: string; icon?: string }
 
 interface Props {
   title?: string
@@ -129,7 +33,7 @@ const emit = defineEmits<{
   submit: [data: { username: string; password: string; rememberMe?: boolean }]
   register: []
   forgot: []
-  socialLogin: [provider: any]
+  socialLogin: [provider: SocialProvider]
 }>()
 
 const form = reactive({
@@ -153,10 +57,114 @@ const handleForgot = () => {
   emit('forgot')
 }
 
-const handleSocialLogin = (provider: any) => {
+const handleSocialLogin = (provider: SocialProvider) => {
   emit('socialLogin', provider)
 }
 </script>
+
+<template>
+  <div class="login-tablet-default">
+    <div class="container">
+      <!-- Logo 插槽 -->
+      <div v-if="$slots.logo || showLogo" class="logo-section">
+        <slot name="logo">
+          <div class="default-logo">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="#667eea">
+              <circle cx="32" cy="32" r="28" opacity="0.1" />
+              <path d="M32 16 L42 32 L32 48 L22 32 Z" fill="#667eea" />
+            </svg>
+          </div>
+        </slot>
+      </div>
+
+      <!-- 头部插槽 -->
+      <div class="header-section">
+        <slot name="header" :title="title" :subtitle="subtitle">
+          <h1>{{ title }}</h1>
+          <p class="subtitle">
+            {{ subtitle }}
+          </p>
+        </slot>
+      </div>
+
+      <!-- 登录面板插槽 -->
+      <slot
+        name="loginPanel"
+        :form="form"
+        :loading="loading"
+        :error="error"
+        :handle-submit="handleSubmit"
+      >
+        <form class="login-form" @submit.prevent="handleSubmit">
+          <div class="form-group">
+            <label for="username">用户名</label>
+            <input 
+              id="username"
+              v-model="form.username" 
+              type="text" 
+              placeholder="请输入用户名或邮箱" 
+              required 
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="password">密码</label>
+            <input 
+              id="password"
+              v-model="form.password" 
+              type="password" 
+              placeholder="请输入密码" 
+              required 
+            >
+          </div>
+
+          <div v-if="showRememberMe" class="form-options">
+            <label class="remember-me">
+              <input v-model="form.rememberMe" type="checkbox">
+              <span>记住我</span>
+            </label>
+            <a href="#" class="forgot-link" @click.prevent="handleForgot">忘记密码？</a>
+          </div>
+          
+          <button type="submit" class="btn-submit" :disabled="loading">
+            {{ loading ? '登录中...' : '登录' }}
+          </button>
+        </form>
+      </slot>
+
+      <!-- 社交登录插槽 -->
+      <div v-if="$slots.socialLogin || showSocialLogin" class="social-section">
+        <slot name="socialLogin" :providers="socialProviders">
+          <div class="social-divider">
+            <span>或使用以下方式登录</span>
+          </div>
+          <div class="social-buttons">
+            <button
+              v-for="provider in socialProviders"
+              :key="provider.name"
+              class="social-btn"
+              @click="handleSocialLogin(provider)"
+            >
+              {{ provider.label }}
+            </button>
+          </div>
+        </slot>
+      </div>
+
+      <!-- 底部插槽 -->
+      <div class="footer-section">
+        <slot name="footer">
+          <p class="footer-text">
+            还没有账号？ <a href="#" @click.prevent="handleRegister">立即注册</a>
+          </p>
+        </slot>
+      </div>
+
+      <!-- 额外内容插槽 -->
+      <slot name="extra" />
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .login-tablet-default {

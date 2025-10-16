@@ -7,6 +7,8 @@ import type { ToolbarItem, Editor as EditorType } from '../types'
 import { createIcon } from './icons'
 import { showColorPicker } from './ColorPicker'
 import { showDropdown } from './Dropdown'
+import { showEmojiPicker } from './EmojiPicker'
+import { showLinkDialog } from './LinkDialog'
 import { FONT_SIZES, FONT_FAMILIES } from '../plugins/formatting/font'
 import { LINE_HEIGHTS } from '../plugins/formatting/line-height'
 import { DEFAULT_TOOLBAR_ITEMS } from './defaultToolbar'
@@ -252,6 +254,98 @@ export class Toolbar {
           ],
           onSelect: (command) => {
             this.editor.commands.execute(command)
+          }
+        })
+        return
+      }
+      
+      // 特殊处理：表情选择器
+      if (item.name === 'emoji') {
+        console.log('[Toolbar] Opening emoji picker')
+        showEmojiPicker(button, (emoji) => {
+          console.log('[Toolbar] Inserting emoji:', emoji)
+          document.execCommand('insertText', false, emoji)
+        })
+        return
+      }
+      
+      // 特殊处理：链接插入
+      if (item.name === 'link') {
+        console.log('[Toolbar] Opening link dialog')
+        
+        // 获取当前选中的文本和范围
+        const selection = window.getSelection()
+        const selectedText = selection && selection.toString().trim() || ''
+        let savedRange = null
+        
+        // 保存当前选区
+        if (selection && selection.rangeCount > 0) {
+          savedRange = selection.getRangeAt(0).cloneRange()
+        }
+        
+        showLinkDialog({
+          selectedText,
+          onConfirm: (text, url) => {
+            console.log('[Toolbar] Inserting link:', text, url)
+            
+            // 确保编辑器获得焦点
+            const editorContent = this.editor.contentElement
+            if (editorContent) {
+              editorContent.focus()
+            }
+            
+            // 恢复之前保存的选区
+            if (savedRange && selection) {
+              selection.removeAllRanges()
+              selection.addRange(savedRange)
+            }
+            
+            if (selectedText) {
+              // 如果有选中文本，为选中的文本创建链接
+              const success = document.execCommand('createLink', false, url)
+              if (!success) {
+                // 如果 execCommand 失败，使用替代方法
+                const range = selection.getRangeAt(0)
+                const link = document.createElement('a')
+                link.href = url
+                link.target = '_blank'
+                link.textContent = selectedText
+                range.deleteContents()
+                range.insertNode(link)
+                // 将光标移到链接后面
+                range.setStartAfter(link)
+                range.collapse(true)
+                selection.removeAllRanges()
+                selection.addRange(range)
+              }
+            } else {
+              // 如果没有选中文本，插入新的链接
+              const link = document.createElement('a')
+              link.href = url
+              link.target = '_blank'
+              link.textContent = text
+              
+              // 在当前光标位置插入链接
+              if (selection && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0)
+                range.deleteContents()
+                range.insertNode(link)
+                // 将光标移到链接后面
+                range.setStartAfter(link)
+                range.collapse(true)
+                selection.removeAllRanges()
+                selection.addRange(range)
+              } else {
+                // 如果没有选区，尝试使用 insertHTML
+                const linkHtml = `<a href="${url}" target="_blank">${text}</a>`
+                document.execCommand('insertHTML', false, linkHtml)
+              }
+            }
+            
+            // 触发更新事件
+            if (this.editor.emit) {
+              this.editor.emit('update')
+            }
           }
         })
         return

@@ -71,9 +71,9 @@ export type {
 
 // SSE 功能导出
 export {
+  BasicSSEClient,
+  createBasicSSEClient,
   createSSEClient,
-  createSimpleSSEClient,
-  SimpleSSEClient,
   SSEClient,
   SSEStatus,
 } from './features/sse'
@@ -191,21 +191,21 @@ export {
 
 // 缓存功能导出
 export {
-  AdvancedCacheManager,
   CacheManager,
-  createAdvancedCacheManager,
   createCacheManager,
+  createEnhancedCacheManager,
   createLocalStorage,
   createMemoryStorage,
+  EnhancedCacheManager,
   LocalStorageCacheStorage,
   MemoryCacheStorage,
 } from './utils/cache'
 
 // 导出缓存相关类型
 export type {
-  AdvancedCacheConfig,
   CacheItemMetadata,
   CacheStats,
+  EnhancedCacheConfig,
   EnhancedCacheItem,
 } from './utils/cache'
 

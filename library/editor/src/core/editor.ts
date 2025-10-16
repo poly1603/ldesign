@@ -90,10 +90,7 @@ export class Editor {
    * 获取所有默认插件
    */
   private getAllDefaultPlugins(): PluginType[] {
-    console.log('[Editor] Checking EmojiPlugin:', AllPlugins.EmojiPlugin)
-    console.log('[Editor] All available plugins:', Object.keys(AllPlugins))
-    
-    return [
+    const plugins: PluginType[] = [
       // 基础格式化
       AllPlugins.BoldPlugin,
       AllPlugins.ItalicPlugin,
@@ -136,7 +133,6 @@ export class Editor {
       AllPlugins.FindReplacePlugin,
       AllPlugins.WordCountPlugin,
       AllPlugins.ExportMarkdownPlugin,
-      AllPlugins.EmojiPlugin,        // 表情插件
       AllPlugins.MediaDialogPlugin,  // 媒体插入对话框（图片、视频、音频）
       AllPlugins.ContextMenuPlugin,
       
@@ -149,6 +145,17 @@ export class Editor {
         showDimensions: true
       })
     ]
+    
+    // 添加 EmojiPlugin（确保它被加载）
+    if (AllPlugins.EmojiPlugin) {
+      console.log('[Editor] ✅ EmojiPlugin found, adding to plugins list')
+      plugins.push(AllPlugins.EmojiPlugin)
+    } else {
+      console.warn('[Editor] ⚠️ EmojiPlugin not found in AllPlugins!')
+      console.log('[Editor] Available plugins:', Object.keys(AllPlugins).filter(k => k.includes('Plugin')))
+    }
+    
+    return plugins
   }
 
   /**

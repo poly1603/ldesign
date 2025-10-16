@@ -27,14 +27,17 @@ export class TemplateLoader {
 
     // 检查缓存
     if (this.loadedComponents.has(key)) {
-      const component = this.loadedComponents.get(key)!
-      options?.onLoad?.(component)
-      return component
+      const cached = this.loadedComponents.get(key)
+      if (cached) {
+        options?.onLoad?.(cached)
+        return cached
+      }
     }
 
     // 检查是否正在加载
     if (this.loadingPromises.has(key)) {
-      return this.loadingPromises.get(key)!
+      const pending = this.loadingPromises.get(key)
+      if (pending) return pending
     }
 
     // 从注册表获取模板
@@ -145,7 +148,7 @@ export class TemplateLoader {
       // 过滤标签
       if (filter.tags) {
         const tags = Array.isArray(filter.tags) ? filter.tags : [filter.tags]
-        if (!t.tags || !tags.some(tag => t.tags!.includes(tag))) return false
+        if (!t.tags || !tags.some(tag => t.tags?.includes(tag) === true)) return false
       }
 
       // 只返回默认模板

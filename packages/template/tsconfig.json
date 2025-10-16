@@ -22,16 +22,16 @@
     "allowImportingTsExtensions": false,
     "strict": true,
     "strictFunctionTypes": true,
-    "skipLibCheck": true,
     "strictNullChecks": true,
     "exactOptionalPropertyTypes": false,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
-    "downlevelIteration": true,
     "noImplicitReturns": true,
     "noUncheckedIndexedAccess": false,
+    "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*",

@@ -1,7 +1,18 @@
 {
   "name": "@ldesign/template",
+  "type": "module",
   "version": "0.1.0",
   "description": "🎨 多模板管理及动态渲染系统 - 为 Vue 3 而生的模板管理解决方案，支持智能预加载、懒加载、虚拟滚动等性能优化功能",
+  "author": "ldesign",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign-org/template#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign-org/template.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign-org/template/issues"
+  },
   "keywords": [
     "vue",
     "vue3",
@@ -18,17 +29,6 @@
     "performance-monitor",
     "intersection-observer"
   ],
-  "author": "ldesign",
-  "license": "MIT",
-  "homepage": "https://github.com/ldesign-org/template#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign-org/template.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ldesign-org/template/issues"
-  },
-  "type": "module",
   "exports": {
     ".": {
       "types": "./es/index.d.ts",
@@ -123,17 +123,20 @@
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
-  "types": "./es/index.d.ts",
   "unpkg": "./dist/index.min.js",
   "jsdelivr": "./dist/index.min.js",
+  "types": "./es/index.d.ts",
   "files": [
-    "README.md",
     "LICENSE",
-    "package.json",
+    "README.md",
+    "dist",
     "es",
     "lib",
-    "dist"
+    "package.json"
   ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "build": "ldesign-builder build",
     "build:watch": "ldesign-builder watch",
@@ -170,6 +173,14 @@
     "build:validate": "pnpm run build && tsx scripts/validate-build.ts",
     "build:dev": "ldesign-builder build --dev"
   },
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@ldesign/cache": "workspace:*",
     "@ldesign/device": "workspace:*",
@@ -178,9 +189,6 @@
     "@ldesign/webcomponent": "workspace:*",
     "@vueuse/core": "^13.7.0",
     "lucide-vue-next": "^0.544.0"
-  },
-  "peerDependencies": {
-    "vue": "^3.3.0"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
@@ -213,18 +221,10 @@
     "vue": "^3.4.15",
     "vue-tsc": "^3.0.5"
   },
-  "engines": {
-    "node": ">=16.0.0"
-  },
   "size-limit": [
     {
       "path": "dist/index.js",
       "limit": "55 KB"
     }
-  ],
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  }
+  ]
 }

@@ -2,8 +2,8 @@
  * Vue 组合式函数 - 模板管理
  */
 
-import { ref, computed, watch, onMounted, markRaw, type Ref, type Component } from 'vue'
-import type { TemplateFilter, TemplateLoadOptions, TemplateMetadata } from '../types'
+import type { DeviceType, TemplateFilter, TemplateLoadOptions, TemplateMetadata } from '../types'
+import { type Component, computed, markRaw, onMounted, ref, type Ref, watch } from 'vue'
 import { getManager } from '../core/manager'
 
 /**
@@ -11,7 +11,7 @@ import { getManager } from '../core/manager'
  */
 export function useTemplate(
   category: Ref<string> | string,
-  device: Ref<string> | string,
+  device: Ref<string | DeviceType> | string | DeviceType,
   name: Ref<string> | string,
   options?: TemplateLoadOptions
 ) {
@@ -49,7 +49,7 @@ export function useTemplate(
       // 获取元数据
       const templates = await manager.queryTemplates({
         category: categoryRef.value,
-        device: deviceRef.value as any,
+        device: deviceRef.value as DeviceType,
         name: nameRef.value,
       })
       metadata.value = templates[0] || null
@@ -216,7 +216,7 @@ export function useTemplateManager() {
    */
   const initialize = async () => {
     if (initialized.value) {
-      return scanResult.value!
+      return scanResult.value ?? await manager.initialize()
     }
 
     const result = await manager.initialize()

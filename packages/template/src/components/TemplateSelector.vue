@@ -1,54 +1,7 @@
-<template>
-  <div class="template-selector" :class="{ expanded }">
-    <!-- 切换按钮 -->
-    <button class="toggle-btn" @click="toggleExpanded" :title="expanded ? '收起' : '展开模板选择器'">
-      <svg v-if="!expanded" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    </button>
-
-    <!-- 选择器面板 -->
-    <div v-if="expanded" class="selector-panel">
-      <div class="panel-header">
-        <h3>选择模板</h3>
-        <div class="current-info">
-          <span class="badge">{{ deviceLabel }}</span>
-          <span class="badge">{{ category }}</span>
-        </div>
-      </div>
-
-      <div class="template-list">
-        <div
-          v-for="template in templates"
-          :key="template.name"
-          class="template-item"
-          :class="{ active: template.name === currentTemplate }"
-          @click="selectTemplate(template.name)"
-        >
-          <div class="template-name">
-            {{ template.displayName }}
-            <span v-if="template.isDefault" class="default-badge">默认</span>
-          </div>
-          <div v-if="template.description" class="template-desc">
-            {{ template.description }}
-          </div>
-        </div>
-
-        <div v-if="templates.length === 0" class="empty-state">
-          暂无可用模板
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useTemplateList } from '../composables'
 import type { DeviceType } from '../types'
+import { computed, ref, watch } from 'vue'
+import { useTemplateList } from '../composables'
 
 interface Props {
   category: string
@@ -99,6 +52,53 @@ watch(() => props.device, () => {
   expanded.value = false
 })
 </script>
+
+<template>
+  <div class="template-selector" :class="{ expanded }">
+    <!-- 切换按钮 -->
+    <button class="toggle-btn" :title="expanded ? '收起' : '展开模板选择器'" @click="toggleExpanded">
+      <svg v-if="!expanded" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
+
+    <!-- 选择器面板 -->
+    <div v-if="expanded" class="selector-panel">
+      <div class="panel-header">
+        <h3>选择模板</h3>
+        <div class="current-info">
+          <span class="badge">{{ deviceLabel }}</span>
+          <span class="badge">{{ category }}</span>
+        </div>
+      </div>
+
+      <div class="template-list">
+        <div
+          v-for="template in templates"
+          :key="template.name"
+          class="template-item"
+          :class="{ active: template.name === currentTemplate }"
+          @click="selectTemplate(template.name)"
+        >
+          <div class="template-name">
+            {{ template.displayName }}
+            <span v-if="template.isDefault" class="default-badge">默认</span>
+          </div>
+          <div v-if="template.description" class="template-desc">
+            {{ template.description }}
+          </div>
+        </div>
+
+        <div v-if="templates.length === 0" class="empty-state">
+          暂无可用模板
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .template-selector {

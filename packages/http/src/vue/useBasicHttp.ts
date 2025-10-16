@@ -4,9 +4,9 @@ import { computed, getCurrentInstance, onUnmounted, ref, unref, watch } from 'vu
 import { createHttpClient } from '../factory'
 
 /**
- * 简化的HTTP请求选项
+ * 基础HTTP请求选项
  */
-export interface SimpleHttpOptions {
+export interface BasicHttpOptions {
   /** 是否立即执行请求 */
   immediate?: boolean
   /** 是否在组件卸载时取消请求 */
@@ -20,9 +20,9 @@ export interface SimpleHttpOptions {
 }
 
 /**
- * 简化的HTTP请求返回值
+ * 基础HTTP请求返回值
  */
-export interface SimpleHttpReturn<T> {
+export interface BasicHttpReturn<T> {
   /** 响应数据 */
   data: Ref<T | null>
   /** 加载状态 */
@@ -42,9 +42,9 @@ export interface SimpleHttpReturn<T> {
 }
 
 /**
- * 创建简化的HTTP客户端
+ * 创建基础HTTP客户端
  */
-function createSimpleClient(config?: HttpClientConfig) {
+function createBasicClient(config?: HttpClientConfig) {
   // 为相对URL提供默认的baseURL
   const defaultConfig: HttpClientConfig = {
     baseURL: typeof window !== 'undefined' ? window.location.origin : 'http://localhost',
@@ -62,9 +62,9 @@ function createHttpHook<T = any, D = any>(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: SimpleHttpOptions = {},
-): SimpleHttpReturn<T> {
-  const client = createSimpleClient()
+  options: BasicHttpOptions = {},
+): BasicHttpReturn<T> {
+  const client = createBasicClient()
   const responseData = ref<T | null>(null)
   const loading = ref(false)
   const error = ref<Error | null>(null)
@@ -168,7 +168,7 @@ function createHttpHook<T = any, D = any>(
 }
 
 /**
- * 简化的HTTP GET请求hook
+ * 基础HTTP GET请求hook
  *
  * @example
  * ```ts
@@ -178,13 +178,13 @@ function createHttpHook<T = any, D = any>(
 export function useGet<T = any>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: SimpleHttpOptions = {},
-): SimpleHttpReturn<T> {
+  options: BasicHttpOptions = {},
+): BasicHttpReturn<T> {
   return createHttpHook<T>('GET', url, config, options)
 }
 
 /**
- * 简化的HTTP POST请求hook
+ * 基础HTTP POST请求hook
  *
  * @example
  * ```ts
@@ -195,40 +195,40 @@ export function useGet<T = any>(
 export function usePost<T = any, D = any>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: SimpleHttpOptions = {},
-): SimpleHttpReturn<T> {
+  options: BasicHttpOptions = {},
+): BasicHttpReturn<T> {
   return createHttpHook<T, D>('POST', url, config, options)
 }
 
 /**
- * 简化的HTTP PUT请求hook
+ * 基础HTTP PUT请求hook
  */
 export function usePut<T = any, D = any>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: SimpleHttpOptions = {},
-): SimpleHttpReturn<T> {
+  options: BasicHttpOptions = {},
+): BasicHttpReturn<T> {
   return createHttpHook<T, D>('PUT', url, config, options)
 }
 
 /**
- * 简化的HTTP DELETE请求hook
+ * 基础HTTP DELETE请求hook
  */
 export function useDelete<T = any>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: SimpleHttpOptions = {},
-): SimpleHttpReturn<T> {
+  options: BasicHttpOptions = {},
+): BasicHttpReturn<T> {
   return createHttpHook<T>('DELETE', url, config, options)
 }
 
 /**
- * 简化的HTTP PATCH请求hook
+ * 基础HTTP PATCH请求hook
  */
 export function usePatch<T = any, D = any>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: SimpleHttpOptions = {},
-): SimpleHttpReturn<T> {
+  options: BasicHttpOptions = {},
+): BasicHttpReturn<T> {
   return createHttpHook<T, D>('PATCH', url, config, options)
 }

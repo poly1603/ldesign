@@ -1,58 +1,8 @@
-<template>
-  <div class="ldesign-template-renderer">
-    <!-- 加载中 -->
-    <div v-if="loading" class="template-loading">
-      <slot name="loading">
-        <div class="loading-spinner">加载中...</div>
-      </slot>
-    </div>
-
-    <!-- 错误 -->
-    <div v-else-if="error" class="template-error">
-      <slot name="error" :error="error">
-        <div class="error-message">
-          <p>模板加载失败</p>
-          <p class="error-detail">{{ error.message }}</p>
-          <button @click="handleReload">重新加载</button>
-        </div>
-      </slot>
-    </div>
-
-    <!-- 模板组件 -->
-    <component
-      v-else-if="component"
-      :is="component"
-      v-bind="componentProps"
-      v-on="$attrs"
-    >
-      <!-- 传递所有插槽（除了保留插槽） -->
-      <template v-for="(slot, name) in availableSlots" :key="name" #[name]="slotProps">
-        <slot :name="name" v-bind="slotProps" />
-      </template>
-    </component>
-
-    <!-- 空状态 -->
-    <div v-else class="template-empty">
-      <slot name="empty">
-        <p>暂无模板</p>
-      </slot>
-    </div>
-
-    <!-- 模板选择器 -->
-    <TemplateSelector
-      v-if="showSelector && component"
-      :category="category"
-      :device="currentDevice"
-      :current-template="currentName"
-      @select="handleTemplateSelect"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, toRefs, ref, watch, onMounted, onUnmounted, useSlots, type Component, type VNode } from 'vue'
+import type { TemplatePlugin } from '../plugin/createPlugin'
+import type { DeviceType, TemplateLoadOptions, TemplateSlots } from '../types'
+import { type Component, computed, onMounted, onUnmounted, ref, type Slot, toRefs, useSlots, watch } from 'vue'
 import { useTemplate } from '../composables/useTemplate'
-import type { TemplateLoadOptions, DeviceType, TemplateSlots } from '../types'
 import { getManager } from '../core'
 import TemplateSelector from './TemplateSelector.vue'
 
@@ -64,7 +14,7 @@ const props = withDefaults(
     /** 模板分类 */
     category: string
     /** 设备类型（可选，不传则自动检测） */
-    device?: string
+    device?: DeviceType
     /** 模板名称（可选，不传则自动选择默认） */
     name?: string
     /** 是否自动检测设备（当不传device时默认开启） */
@@ -72,7 +22,7 @@ const props = withDefaults(
     /** 是否自动加载默认模板（当不传name时默认开启） */
     autoLoadDefault?: boolean
     /** 传递给模板组件的属性 */
-    componentProps?: Record<string, any>
+    componentProps?: Record<string, unknown>
     /** 加载选项 */
     loadOptions?: TemplateLoadOptions
     /** 是否显示模板选择器 */
@@ -96,13 +46,13 @@ const props = withDefaults(
  * 事件
  */
 const emit = defineEmits<{
-  load: [component: any]
+  load: [component: Component]
   error: [error: Error]
   reload: []
-  'template-change': [templateName: string]
-  'device-change': [device: string]
+  templateChange: [templateName: string]
+  deviceChange: [device: string]
   // 转发模板组件的所有事件
-  [key: string]: any[]
+  [key: string]: unknown[]
 }>()
 
 const manager = getManager()
@@ -112,7 +62,7 @@ const shouldAutoDetect = computed(() => props.autoDetect ?? !props.device)
 const shouldAutoLoadDefault = computed(() => props.autoLoadDefault ?? !props.name)
 
 // 设备类型（自动检测或手动指定）
-const currentDevice = ref<string>(props.device || 'desktop')
+const currentDevice = ref<DeviceType>(props.device as DeviceType || 'desktop')
 // 模板名称（自动选择或手动指定）
 const currentName = ref<string>(props.name || 'default')
 
@@ -126,19 +76,19 @@ const detectDevice = (): DeviceType => {
 }
 
 // 加载默认模板（或用户偏好模板）
-const loadDefaultTemplate = async (dev: string) => {
+const loadDefaultTemplate = async (dev: DeviceType | string) => {
   if (!shouldAutoLoadDefault.value) return
   
   try {
     // 尝试从插件获取用户偏好
-    const templatePlugin = (window as any).__TEMPLATE_PLUGIN__
+    const templatePlugin = (window as unknown as { __TEMPLATE_PLUGIN__?: TemplatePlugin }).__TEMPLATE_PLUGIN__
     
     if (templatePlugin?.getPreferredTemplate) {
       // 使用插件的偏好管理
       const preferred = await templatePlugin.getPreferredTemplate(props.category, dev)
       if (preferred?.name) {
         currentName.value = preferred.name
-        emit('template-change', preferred.name)
+        emit('templateChange', preferred.name)
         return
       }
     }
@@ -147,7 +97,7 @@ const loadDefaultTemplate = async (dev: string) => {
     const defaultTemplate = await manager.getDefaultTemplate(props.category, dev as DeviceType)
     if (defaultTemplate?.name) {
       currentName.value = defaultTemplate.name
-      emit('template-change', defaultTemplate.name)
+      emit('templateChange', defaultTemplate.name)
     }
   } catch (e) {
     console.error('加载模板失败:', e)
@@ -163,7 +113,7 @@ const handleResize = () => {
       const newDevice = detectDevice()
       if (currentDevice.value !== newDevice) {
         currentDevice.value = newDevice
-        emit('device-change', newDevice)
+        emit('deviceChange', newDevice)
         loadDefaultTemplate(newDevice)
       }
     }
@@ -173,7 +123,7 @@ const handleResize = () => {
 // 监听外部传入的 device 和 name 变化
 watch(() => props.device, (newDevice) => {
   if (newDevice && newDevice !== currentDevice.value) {
-    currentDevice.value = newDevice
+    currentDevice.value = newDevice as DeviceType
     if (shouldAutoLoadDefault.value) {
       loadDefaultTemplate(newDevice)
     }
@@ -197,7 +147,7 @@ onMounted(async () => {
     // 自动检测设备
     if (shouldAutoDetect.value) {
       currentDevice.value = detectDevice()
-      emit('device-change', currentDevice.value)
+      emit('deviceChange', currentDevice.value)
     }
     
     // 自动加载默认模板
@@ -225,10 +175,10 @@ onUnmounted(() => {
  * 使用模板
  */
 const { category } = toRefs(props)
-const { component, loading, error, load, reload } = useTemplate(
+const { component, loading, error, reload } = useTemplate(
   category,
-  currentDevice as any,
-  currentName as any,
+  currentDevice,
+  currentName,
   props.loadOptions
 )
 
@@ -241,30 +191,15 @@ const handleReload = async () => {
 }
 
 /**
- * 处理事件转发
- */
-const handleEvent = (eventName: string, ...args: any[]) => {
-  emit(eventName as any, ...args)
-}
-
-/**
- * 事件名称列表（用于 v-on）
- */
-const eventName = computed(() => {
-  // Vue 3 会自动处理事件转发
-  return ''
-})
-
-/**
  * 处理模板选择
  */
 const handleTemplateSelect = (templateName: string) => {
   // 更新当前模板
   currentName.value = templateName
-  emit('template-change', templateName)
+  emit('templateChange', templateName)
   
   // 保存用户偏好
-  const templatePlugin = (window as any).__TEMPLATE_PLUGIN__
+  const templatePlugin = (window as unknown as { __TEMPLATE_PLUGIN__?: TemplatePlugin }).__TEMPLATE_PLUGIN__
   if (templatePlugin?.savePreference) {
     templatePlugin.savePreference(props.category, currentDevice.value, templateName)
   }
@@ -280,18 +215,76 @@ const slots = useSlots()
  */
 const availableSlots = computed(() => {
   const reserved = ['loading', 'error', 'empty']
-  const result: Record<string, any> = {}
+  const result: Record<string, Slot> = {}
   
   // 传递所有非保留插槽
   for (const slotName in slots) {
     if (!reserved.includes(slotName)) {
-      result[slotName] = slots[slotName]
+      const s = slots[slotName]
+      if (s) result[slotName] = s
     }
   }
   
   return result
 })
 </script>
+
+<template>
+  <div class="ldesign-template-renderer">
+    <!-- 加载中 -->
+    <div v-if="loading" class="template-loading">
+      <slot name="loading">
+        <div class="loading-spinner">
+          加载中...
+        </div>
+      </slot>
+    </div>
+
+    <!-- 错误 -->
+    <div v-else-if="error" class="template-error">
+      <slot name="error" :error="error">
+        <div class="error-message">
+          <p>模板加载失败</p>
+          <p class="error-detail">
+            {{ error.message }}
+          </p>
+          <button @click="handleReload">
+            重新加载
+          </button>
+        </div>
+      </slot>
+    </div>
+
+    <!-- 模板组件 -->
+    <component
+      :is="component"
+      v-else-if="component"
+      v-bind="componentProps"
+      v-on="$attrs"
+    >
+      <!-- 传递所有插槽（除了保留插槽） -->
+      <template v-for="(slot, slotName) in availableSlots" :key="slotName" #[slotName]="slotProps">
+        <slot :name="slotName" v-bind="slotProps" />
+      </template>
+    </component>
+
+    <!-- 空状态 -->
+    <div v-else class="template-empty">
+      <slot name="empty">
+        <p>暂无模板</p>
+      </slot>
+    </div>
+
+    <!-- 模板选择器 -->
+    <TemplateSelector
+      v-if="showSelector && component"
+      :category="category"
+      :device="currentDevice"
+      :current-template="currentName"
+      @select="handleTemplateSelect"
+    />
+  </div>
+</template>
 
 <style scoped>
 .ldesign-template-renderer {

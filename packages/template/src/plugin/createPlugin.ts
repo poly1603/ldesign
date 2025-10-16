@@ -4,10 +4,10 @@
  * Template management plugin for Vue 3 applications
  */
 
-import type { App } from 'vue'
-import { TemplateManager } from '../core'
+import type { App, Component } from 'vue'
+import type { TemplateManagerOptions, TemplateMetadata, TemplateRegistryItem } from '../types'
+import { TemplateManager } from '../core/manager'
 import { loadStyles } from '../core/style-loader'
-import type { TemplateManagerOptions } from '../types'
 
 /**
  * Template plugin configuration options
@@ -92,7 +92,7 @@ export interface TemplatePluginOptions {
    */
   hooks?: {
     beforeLoad?: (templatePath: string) => void | Promise<void>
-    afterLoad?: (templatePath: string, component: any) => void | Promise<void>
+    afterLoad?: (templatePath: string, component: Component) => void | Promise<void>
     onError?: (error: Error) => void
   }
 }
@@ -128,17 +128,17 @@ export interface TemplatePlugin {
   /**
    * Load a template
    */
-  loadTemplate: (category: string, device: string, name: string) => Promise<any>
+  loadTemplate: (category: string, device: string, name: string) => Promise<Component>
 
   /**
    * Get default template
    */
-  getDefaultTemplate: (category: string, device: string) => Promise<any>
+  getDefaultTemplate: (category: string, device: string) => Promise<TemplateMetadata | null>
 
   /**
    * Get preferred template (from user preferences or default)
    */
-  getPreferredTemplate: (category: string, device: string) => Promise<any>
+  getPreferredTemplate: (category: string, device: string) => Promise<{ name: string } | null>
 
   /**
    * Save user preference
@@ -158,7 +158,7 @@ export interface TemplatePlugin {
   /**
    * Scan templates
    */
-  scanTemplates: () => Promise<Map<string, any>>
+  scanTemplates: () => Promise<Map<string, TemplateRegistryItem>>
 
   /**
    * Clear cache
@@ -256,7 +256,7 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
   }
 
   // Load template with hooks
-  const loadTemplate = async (category: string, device: string, name: string): Promise<any> => {
+  const loadTemplate = async (category: string, device: string, name: string): Promise<Component> => {
     const templatePath = `${category}/${device}/${name}`
     
     try {
@@ -271,7 +271,7 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
   }
 
   // Get default template
-  const getDefaultTemplate = async (category: string, device: string): Promise<any> => {
+  const getDefaultTemplate = async (category: string, device: string): Promise<TemplateMetadata | null> => {
     try {
       const template = await manager.getDefaultTemplate(category, device)
       return template
@@ -340,7 +340,7 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
   }
 
   // Get preferred template (from preferences or default)
-  const getPreferredTemplate = async (category: string, device: string): Promise<any> => {
+  const getPreferredTemplate = async (category: string, device: string): Promise<{ name: string } | null> => {
     // First, check user preferences
     if (mergedOptions.rememberPreferences) {
       const userPref = preferences[category]?.[device]
@@ -391,7 +391,7 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
       
       // Also expose to window for easy access by components
       if (typeof window !== 'undefined') {
-        (window as any).__TEMPLATE_PLUGIN__ = plugin
+        (window as unknown as { __TEMPLATE_PLUGIN__?: TemplatePlugin }).__TEMPLATE_PLUGIN__ = plugin
         
         // 自动加载主样式文件
         try {

@@ -4,7 +4,7 @@
 
 import type { TemplateConfig } from '../../../../types'
 
-export default {
+const config: TemplateConfig = {
   name: 'default',
   displayName: '平板端登录',
   description: '适配平板端的默认登录页面',
@@ -45,4 +45,6 @@ export default {
       description: '额外自定义区域'
     }
   ]
-} as TemplateConfig
+}
+
+export default config

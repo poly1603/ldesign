@@ -159,21 +159,20 @@ async function bootstrap() {
     // Size 插件配置（尺寸管理系统）
     const sizeOptions = {
       storageKey: 'ldesign-size',
+      locale: 'zh-CN', // 默认语言，与应用 i18n 保持一致
       presets: [
         {
           name: 'extra-compact',
           label: 'Extra Compact',
           description: 'Very high density for maximum content',
           baseSize: 12,
-          scale: 0.85,
           category: 'high-density'
         },
         {
           name: 'extra-spacious',
           label: 'Extra Spacious',
           description: 'Very low density for enhanced readability',
-          baseSize: 18,
-          scale: 1.25,
+          baseSize: 20,
           category: 'low-density'
         }
       ]

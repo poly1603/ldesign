@@ -2,13 +2,17 @@
 import { TemplateRenderer } from '@ldesign/template'
 
 // 处理登录
+// eslint-disable-next-line ts/no-explicit-any
 const handleSubmit = (data: any) => {
+  // eslint-disable-next-line no-console
   console.log('登录数据:', data)
+  // eslint-disable-next-line no-alert
   alert(`登录成功！\n用户名: ${data.username}`)
 }
 
 // 处理注册
 const handleRegister = () => {
+  // eslint-disable-next-line no-alert
   alert('跳转到注册页面')
 }
 </script>

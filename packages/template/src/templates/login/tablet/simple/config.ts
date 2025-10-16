@@ -4,7 +4,7 @@
 
 import type { TemplateConfig } from '../../../../types'
 
-export default {
+const config: TemplateConfig = {
   name: 'simple',
   displayName: '简洁平板登录',
   description: '简洁平板登录模板',
@@ -45,4 +45,6 @@ export default {
       description: '额外自定义区域'
     }
   ]
-} as TemplateConfig
+}
+
+export default config

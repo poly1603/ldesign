@@ -91,40 +91,39 @@ const mapConfigs = [
 // 初始化所有地图
 function initAllMaps() {
   console.log('Initializing all maps...');
-
+  
   mapConfigs.forEach(config => {
     const container = document.getElementById(config.containerId);
-
+    
     if (!container) {
       console.error(`Container ${config.containerId} not found!`);
       return;
     }
-
+    
     try {
-      // 创建地图渲染器
+      // 创建地图渲染器，禁用 autoFit 以避免裁剪
       const mapRenderer = new MapRenderer(container, {
         mode: '2d',
-        autoFit: true
+        autoFit: false,  // 关闭自动适配，使用固定视口
+        longitude: 113.28,
+        latitude: 23.13,
+        zoom: 8.5
       });
-
+      
       // 渲染 GeoJSON 数据
       mapRenderer.renderGeoJSON(guangzhouData, {
         id: config.layerId,
         showLabels: true,
-        colorScheme: config.colorScheme,
-        labelOptions: {
-          getColor: 'auto',  // 自动计算文本颜色
-          fontSize: 14       // 基础字体大小，会根据 zoom 动态调整
-        }
+        colorScheme: config.colorScheme
       });
-
+      
       console.log(`Map ${config.containerId} initialized successfully`);
-
+      
     } catch (error) {
       console.error(`Error initializing map ${config.containerId}:`, error);
     }
   });
-
+  
   console.log('All maps initialized!');
 }
 

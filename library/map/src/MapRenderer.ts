@@ -127,6 +127,28 @@ export class MapRenderer {
   }
 
   /**
+   * Calculate luminance of an RGB color
+   */
+  private calculateLuminance(rgb: number[]): number {
+    const [r, g, b] = rgb.map(val => {
+      const normalized = val / 255;
+      return normalized <= 0.03928
+        ? normalized / 12.92
+        : Math.pow((normalized + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+  
+  /**
+   * Get contrasting text color (black or white) based on background color
+   */
+  private getContrastingTextColor(backgroundColor: number[]): number[] {
+    const luminance = this.calculateLuminance(backgroundColor);
+    // 使用 WCAG 标准：亮度 > 0.5 使用黑色文本，否则使用白色文本
+    return luminance > 0.5 ? [33, 33, 33, 255] : [255, 255, 255, 255];
+  }
+  
+  /**
    * Get tooltip HTML content
    */
   private getTooltipHTML(object: Feature): string {
@@ -559,14 +581,43 @@ export class MapRenderer {
   private addTextLabels(geoJson: FeatureCollection, options: LayerOptions = {}): void {
     const labelOptions = options.labelOptions || {};
     
+    // 获取当前 zoom 级别用于动态调整文本大小
+    const currentZoom = this.viewState.zoom || 8;
+    
+    // 根据 zoom 计算基础文本大小（zoom 越大，文本越大）
+    const baseFontSize = labelOptions.fontSize || 14;
+    const zoomFactor = Math.pow(1.15, currentZoom - 8); // 以 zoom=8 为基准，每增加 1 级放大 15%
+    const dynamicFontSize = baseFontSize * zoomFactor;
+    
+    // 获取或创建颜色函数
+    let fillColorFunction: any;
+    if (options.colorScheme) {
+      fillColorFunction = this.createColorFunction(options.colorScheme, geoJson);
+    } else if (options.getFillColor) {
+      fillColorFunction = options.getFillColor;
+    } else {
+      fillColorFunction = this.getDefaultFillColor.bind(this);
+    }
+    
     // 计算每个区域的中心点作为文本位置
-    const labelData = geoJson.features?.map(feature => {
+    const labelData = geoJson.features?.map((feature, index) => {
       const center = this.calculatePolygonCenter(feature);
       const name = this.getFeatureName(feature);
+      
+      // 如果颜色设置为 'auto'，计算背景色并选择对比色
+      let textColor = labelOptions.getColor;
+      if (textColor === 'auto' || (Array.isArray(textColor) && textColor[0] === 'auto')) {
+        const bgColor = fillColorFunction(feature, { index });
+        textColor = this.getContrastingTextColor(bgColor);
+      } else if (!textColor) {
+        textColor = [33, 33, 33, 255]; // 默认颜色
+      }
+      
       return {
         position: center,
         text: name,
-        feature
+        feature,
+        color: textColor
       };
     }).filter(item => item.text && item.position) || [];
     
@@ -576,16 +627,16 @@ export class MapRenderer {
       pickable: labelOptions.pickable !== false,
       getPosition: (d: any) => d.position,
       getText: (d: any) => d.text,
-      getSize: labelOptions.getSize || labelOptions.fontSize || 14,
+      getSize: labelOptions.getSize || dynamicFontSize,
       getAngle: labelOptions.getAngle || 0,
       getTextAnchor: labelOptions.getTextAnchor || 'middle',
       getAlignmentBaseline: labelOptions.getAlignmentBaseline || 'center',
-      getColor: labelOptions.getColor || [33, 33, 33, 255],
+      getColor: (d: any) => d.color,
       fontFamily: labelOptions.fontFamily || '"Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif',
       fontWeight: labelOptions.fontWeight || '600',
       sizeScale: labelOptions.sizeScale || 1,
-      sizeMinPixels: labelOptions.sizeMinPixels || 10,
-      sizeMaxPixels: labelOptions.sizeMaxPixels || 32,
+      sizeMinPixels: labelOptions.sizeMinPixels || Math.max(8, dynamicFontSize * 0.6),
+      sizeMaxPixels: labelOptions.sizeMaxPixels || Math.min(48, dynamicFontSize * 1.8),
       billboard: labelOptions.billboard !== false,  // 3D模式下始终面向相机
       characterSet: labelOptions.characterSet || 'auto'
     } as any);
@@ -786,7 +837,7 @@ export class MapRenderer {
   }
   
   /**
-   * Fit view to GeoJSON bounds
+   * Fit view to GeoJSON bounds with proper padding
    */
   private fitToGeoJson(): void {
     if (!this.geoJsonBounds) return;
@@ -795,32 +846,54 @@ export class MapRenderer {
     const centerLng = (minLng + maxLng) / 2;
     const centerLat = (minLat + maxLat) / 2;
     
-    // 计算适合的缩放级别
+    // 获取容器尺寸
+    const rect = this.container.getBoundingClientRect();
+    const width = rect.width || this.container.offsetWidth || 800;
+    const height = rect.height || this.container.offsetHeight || 600;
+    
+    // 计算 GeoJSON 边界的实际距离（经度和纬度）
     const lngDiff = maxLng - minLng;
     const latDiff = maxLat - minLat;
-    const maxDiff = Math.max(lngDiff, latDiff);
     
-    let zoom = 8.8;
-    if (maxDiff < 0.5) {
-      zoom = 9.5;
-    } else if (maxDiff < 1.0) {
-      zoom = 9.0;
-    } else if (maxDiff < 2.0) {
-      zoom = 8.5;
-    } else if (maxDiff < 3.0) {
-      zoom = 8.0;
+    // 添加 15% 的 padding 确保地图不被裁剪
+    const paddingFactor = 0.15;
+    const lngPadding = lngDiff * paddingFactor;
+    const latPadding = latDiff * paddingFactor;
+    
+    const paddedLngDiff = lngDiff + 2 * lngPadding;
+    const paddedLatDiff = latDiff + 2 * latPadding;
+    
+    // 计算容器的宽高比
+    const containerAspect = width / height;
+    
+    // 计算数据的宽高比（考虑纬度压缩）
+    // 在中纬度，经度和纬度的实际距离比例约为 cos(latitude)
+    const avgLat = (minLat + maxLat) / 2;
+    const cosLat = Math.cos((avgLat * Math.PI) / 180);
+    const dataAspect = (paddedLngDiff * cosLat) / paddedLatDiff;
+    
+    // 根据宽高比决定缩放策略
+    let zoom: number;
+    if (dataAspect > containerAspect) {
+      // 数据更宽，基于宽度计算 zoom
+      // deck.gl 的 zoom 级别和像素关系：pixels = 512 * 2^zoom * degrees / 360
+      zoom = Math.log2((width * 360) / (paddedLngDiff * 512 * cosLat));
     } else {
-      zoom = 7.5;
+      // 数据更高，基于高度计算 zoom
+      zoom = Math.log2((height * 360) / (paddedLatDiff * 512));
     }
     
-    // 考虑容器宽高比
-    const rect = this.container.getBoundingClientRect();
-    const aspectRatio = rect.width / rect.height;
-    if (aspectRatio > 1.5) {
-      zoom -= 0.2;
-    } else if (aspectRatio < 0.8) {
-      zoom += 0.2;
-    }
+    // 限制 zoom 的范围，避免过度缩放
+    zoom = Math.max(1, Math.min(20, zoom));
+    
+    console.log('Fitting to GeoJSON:', {
+      bounds: this.geoJsonBounds,
+      center: [centerLng, centerLat],
+      zoom,
+      containerSize: { width, height },
+      dataSize: { lngDiff, latDiff },
+      paddedSize: { paddedLngDiff, paddedLatDiff }
+    });
     
     this.setViewState({ longitude: centerLng, latitude: centerLat, zoom });
   }
@@ -961,6 +1034,21 @@ export class MapRenderer {
     const layerIndex = this.layers.findIndex(layer => layer.id === layerId);
     if (layerIndex !== -1) {
       this.layers[layerIndex] = newLayer;
+      
+      // 同时更新文本标签层（如果存在）
+      const labelLayerId = `${layerId}-labels`;
+      const labelLayer = this.layers.find(layer => layer.id === labelLayerId);
+      if (labelLayer) {
+        // 移除旧标签层
+        this.removeLayer(labelLayerId);
+        // 重新添加标签层，使用新的配色方案
+        this.addTextLabels(geoJsonData, {
+          id: layerId,
+          colorScheme: colorScheme,
+          labelOptions: originalProps.labelOptions || { getColor: 'auto' }
+        });
+      }
+      
       this.updateLayers();
       console.log(`Color scheme updated for layer ${layerId}`);
     }

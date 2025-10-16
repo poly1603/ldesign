@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { nextTick, ref } from 'vue'
-import { useGet, usePost, usePut, useDelete, usePatch } from '../../../src/vue/useSimpleHttp'
+import { useGet, usePost, usePut, useDelete, usePatch } from '../../../src/vue/useBasicHttp'
 
 // Mock HTTP client
 const mockClient = {
@@ -15,7 +15,7 @@ vi.mock('../../../src/factory', () => ({
   createHttpClient: () => mockClient,
 }))
 
-describe('useSimpleHttp', () => {
+describe('useBasicHttp', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })

@@ -280,7 +280,7 @@ export class WarmupManager {
     for (let retry = 0; retry < maxRetries && result.failed.length > 0; retry++) {
       const failedUrls = result.failed.map(f => f.url)
 
-      ...`)
+      console.log(`Retrying ${failedUrls.length} failed URLs...`)
 
       const retryResult = await this.warmup({
         ...config,

@@ -68,9 +68,8 @@ export default defineConfig({
   build: {
     // 绂佺敤鏋勫缓璀﹀憡
     rollupOptions: {
-      onwarn: (warning, warn) => {
+      onwarn: (_warning, _warn) => {
         // 瀹屽叏闈欓粯锛屼笉杈撳嚭浠讳綍璀﹀憡
-
       },
     },
   },

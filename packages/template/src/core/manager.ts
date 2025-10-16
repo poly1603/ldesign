@@ -4,13 +4,16 @@
 
 import type { Component } from 'vue'
 import type {
+  DeviceType,
   TemplateFilter,
   TemplateLoadOptions,
+  TemplateManagerOptions,
   TemplateMetadata,
+  TemplateRegistryItem,
   TemplateScanResult,
 } from '../types'
-import { getScanner } from './scanner'
 import { getLoader } from './loader'
+import { getScanner } from './scanner'
 
 /**
  * 模板管理器类
@@ -18,13 +21,21 @@ import { getLoader } from './loader'
 export class TemplateManager {
   private initialized = false
   private scanResult: TemplateScanResult | null = null
+  private options: TemplateManagerOptions
+
+  /**
+   * 构造函数
+   */
+  constructor(options: TemplateManagerOptions = {}) {
+    this.options = options
+  }
 
   /**
    * 初始化（扫描所有模板）
    */
   async initialize(): Promise<TemplateScanResult> {
-    if (this.initialized) {
-      return this.scanResult!
+    if (this.initialized && this.scanResult) {
+      return this.scanResult
     }
 
     const scanner = getScanner()
@@ -85,17 +96,17 @@ export class TemplateManager {
   /**
    * 获取指定设备的所有模板
    */
-  async getTemplatesByDevice(device: string): Promise<TemplateMetadata[]> {
-    return this.queryTemplates({ device: device as any })
+  async getTemplatesByDevice(device: DeviceType): Promise<TemplateMetadata[]> {
+    return this.queryTemplates({ device })
   }
 
   /**
    * 获取默认模板
    */
-  async getDefaultTemplate(category: string, device: string): Promise<TemplateMetadata | null> {
+  async getDefaultTemplate(category: string, device: DeviceType | string): Promise<TemplateMetadata | null> {
     const templates = await this.queryTemplates({
       category,
-      device: device as any,
+      device: device as DeviceType,
       defaultOnly: true,
     })
     return templates[0] || null
@@ -135,6 +146,16 @@ export class TemplateManager {
   }
 
   /**
+   * 扫描模板（别名方法）
+   */
+  async scanTemplates(): Promise<Map<string, TemplateRegistryItem>> {
+    await this.initialize()
+    // 返回注册表的 Map 格式
+    const scanner = getScanner()
+    return scanner.getRegistry()
+  }
+
+  /**
    * 重新扫描模板
    */
   async rescan(): Promise<TemplateScanResult> {
@@ -164,7 +185,7 @@ export class TemplateManager {
 
       if (filter.tags) {
         const tags = Array.isArray(filter.tags) ? filter.tags : [filter.tags]
-        if (!t.tags || !tags.some(tag => t.tags!.includes(tag))) return false
+        if (!t.tags || !tags.some(tag => t.tags?.includes(tag) === true)) return false
       }
 
       if (filter.defaultOnly && !t.isDefault) return false

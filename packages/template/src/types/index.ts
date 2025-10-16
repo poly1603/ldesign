@@ -46,8 +46,19 @@ export interface TemplateMetadata {
  * 模板配置（config.ts 中导出的格式）
  */
 export interface TemplateConfig extends Omit<TemplateMetadata, 'category' | 'device'> {
-  /** 支持的插槽定义 */
-  slots?: {
+  /** 支持的插槽定义 - 可以是数组或对象形式 */
+  slots?: Array<{
+    /** 插槽名称 */
+    name: string
+    /** 插槽描述 */
+    description?: string
+    /** 插槽示例 */
+    example?: string
+    /** 插槽接受的props */
+    props?: string[] | Record<string, any>
+    /** 是否必需 */
+    required?: boolean
+  }> | {
     [key: string]: {
       /** 插槽名称 */
       name: string
@@ -160,4 +171,44 @@ export interface TemplateScanResult {
   scanTime: number
   /** 所有模板的元数据列表 */
   templates: TemplateMetadata[]
+}
+
+/**
+ * 模板扫描选项
+ */
+export interface TemplateScanOptions {
+  /** 扫描模式 */
+  pattern?: string
+  /** 基础路径 */
+  basePath?: string
+}
+
+/**
+ * 模板加载器选项
+ */
+export interface TemplateLoaderOptions {
+  /** 是否启用缓存 */
+  cache?: boolean
+  /** 缓存过期时间（毫秒） */
+  cacheTtl?: number
+  /** 缓存最大数量 */
+  cacheMaxSize?: number
+  /** 是否启用性能监控 */
+  performance?: boolean
+}
+
+/**
+ * 模板管理器配置选项
+ */
+export interface TemplateManagerOptions {
+  /** 扫描选项 */
+  scanOptions?: TemplateScanOptions
+  /** 加载器选项 */
+  loaderOptions?: TemplateLoaderOptions
+  /** 默认策略 */
+  defaultStrategy?: 'lazy' | 'eager' | 'smart'
+  /** 是否预加载 */
+  preload?: boolean
+  /** 预加载策略 */
+  preloadStrategy?: 'lazy' | 'eager' | 'smart'
 }

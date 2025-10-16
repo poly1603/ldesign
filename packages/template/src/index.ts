@@ -8,42 +8,42 @@
  * - Vue 集成：提供 Vue 组合式函数和组件
  */
 
-// 类型导出
-export type * from './types'
-
-// 核心模块
-export {
-  TemplateScanner,
-  TemplateLoader,
-  TemplateManager,
-  getScanner,
-  getLoader,
-  getManager,
-  scanTemplates,
-  loadTemplate,
-  preloadTemplate,
-  createTemplateManager,
-} from './core'
+// Vue 组件
+export { TemplateRenderer, TemplateSelector } from './components'
 
 // Vue 组合式函数
 export {
+  useDefaultTemplate,
   useTemplate,
   useTemplateList,
-  useDefaultTemplate,
   useTemplateManager,
 } from './composables'
 
-// Vue 组件
-export { TemplateRenderer, TemplateSelector } from './components'
+// 核心模块
+export {
+  createTemplateManager,
+  getLoader,
+  getManager,
+  getScanner,
+  loadTemplate,
+  preloadTemplate,
+  scanTemplates,
+  TemplateLoader,
+  TemplateManager,
+  TemplateScanner,
+} from './core'
+
+// 默认导出
+export { getManager as default } from './core'
 
 // 插件系统
 export {
   createTemplatePlugin,
-  useTemplatePlugin,
-  TemplatePluginSymbol,
   type TemplatePlugin,
   type TemplatePluginOptions,
+  TemplatePluginSymbol,
+  useTemplatePlugin,
 } from './plugin'
 
-// 默认导出
-export { getManager as default } from './core'
+// 类型导出
+export type * from './types'

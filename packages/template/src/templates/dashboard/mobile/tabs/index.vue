@@ -1,22 +1,25 @@
-<template>
-  <div class="dashboard-mobile-tabs">
-    <div class="container">
-      <h1>{{ title }}</h1>
-      <p class="subtitle">标签移动仪表板</p>
-      <slot />
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 interface Props {
   title?: string
 }
 
+// eslint-disable-next-line unused-imports/no-unused-vars, ts/no-unused-vars
 const props = withDefaults(defineProps<Props>(), {
   title: '标签移动仪表板',
 })
 </script>
+
+<template>
+  <div class="dashboard-mobile-tabs">
+    <div class="container">
+      <h1>{{ title }}</h1>
+      <p class="subtitle">
+        标签移动仪表板
+      </p>
+      <slot />
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .dashboard-mobile-tabs {

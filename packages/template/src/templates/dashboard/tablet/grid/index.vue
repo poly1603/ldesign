@@ -1,22 +1,25 @@
-<template>
-  <div class="dashboard-tablet-grid">
-    <div class="container">
-      <h1>{{ title }}</h1>
-      <p class="subtitle">网格平板仪表板</p>
-      <slot />
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 interface Props {
   title?: string
 }
 
+// eslint-disable-next-line unused-imports/no-unused-vars, ts/no-unused-vars
 const props = withDefaults(defineProps<Props>(), {
   title: '网格平板仪表板',
 })
 </script>
+
+<template>
+  <div class="dashboard-tablet-grid">
+    <div class="container">
+      <h1>{{ title }}</h1>
+      <p class="subtitle">
+        网格平板仪表板
+      </p>
+      <slot />
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .dashboard-tablet-grid {

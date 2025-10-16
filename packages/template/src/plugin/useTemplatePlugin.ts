@@ -5,7 +5,7 @@
  */
 
 import { inject } from 'vue'
-import { TemplatePluginSymbol, type TemplatePlugin } from './index'
+import { type TemplatePlugin, TemplatePluginSymbol } from './index'
 
 /**
  * Use template plugin

@@ -3,8 +3,8 @@
  */
 
 export {
+  useDefaultTemplate,
   useTemplate,
   useTemplateList,
-  useDefaultTemplate,
   useTemplateManager,
 } from './useTemplate'

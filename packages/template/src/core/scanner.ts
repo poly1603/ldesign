@@ -3,7 +3,7 @@
  */
 
 import type { Component } from 'vue'
-import type { TemplateConfig, TemplateMetadata, TemplateRegistryItem, TemplateScanResult } from '../types'
+import type { DeviceType, TemplateConfig, TemplateMetadata, TemplateRegistryItem, TemplateScanResult } from '../types'
 
 /**
  * 模板路径解析结果
@@ -57,8 +57,8 @@ function getBuiltComponentPath(configPath: string): string {
  * 模板扫描器类
  */
 export class TemplateScanner {
-  private configModules: Record<string, any> = {}
-  private componentModules: Record<string, any> = {}
+  private configModules: Record<string, unknown> = {}
+  private componentModules: Record<string, unknown> = {}
   private registry: Map<string, TemplateRegistryItem> = new Map()
 
   /**
@@ -100,13 +100,16 @@ export class TemplateScanner {
       }
 
       // 获取配置（支持 default export 和直接 export）
-      const config: TemplateConfig = (module as any).default || module
+      const mod = module as unknown as { default?: TemplateConfig } | TemplateConfig
+      const config: TemplateConfig = (mod && typeof mod === 'object' && 'default' in mod)
+        ? (mod.default as TemplateConfig)
+        : (mod as TemplateConfig)
 
       // 构建完整的元数据
       const metadata: TemplateMetadata = {
         ...config,
         category: pathInfo.category,
-        device: pathInfo.device as any,
+        device: pathInfo.device as DeviceType,
         name: config.name || pathInfo.name,
       }
 
@@ -132,8 +135,9 @@ export class TemplateScanner {
       const registryItem: TemplateRegistryItem = {
         metadata,
         loader: async () => {
-          const mod = await componentLoader()
-          return (mod as any).default || mod
+          const mod = await (componentLoader as () => Promise<unknown>)()
+          const m = mod as { default?: Component }
+          return (m.default ?? (mod as Component))
         },
         configPath: path,
         componentPath: actualComponentPath,

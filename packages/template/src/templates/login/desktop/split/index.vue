@@ -1,114 +1,7 @@
-<template>
-  <div class="login-desktop-split">
-    <!-- 左侧面板 -->
-    <div class="left-panel" :style="{ backgroundImage: `url(${bgImage})` }">
-      <slot name="leftPanel" :brand="brandName" :slogan="slogan">
-        <div class="overlay">
-          <slot name="brand">
-            <h1 class="brand">{{ brandName }}</h1>
-            <p class="slogan">{{ slogan }}</p>
-          </slot>
-          
-          <!-- 左侧额外内容 -->
-          <slot name="leftExtra"></slot>
-        </div>
-      </slot>
-    </div>
-
-    <!-- 右侧登录区域 -->
-    <div class="right-panel">
-      <div class="login-box">
-        <!-- Logo 插槽 -->
-        <div class="logo-area" v-if="$slots.logo || showLogo">
-          <slot name="logo">
-            <div class="default-logo">
-              <svg width="40" height="40" viewBox="0 0 40 40" fill="currentColor">
-                <circle cx="20" cy="20" r="18" opacity="0.1" />
-                <path d="M20 10 L28 20 L20 30 L12 20 Z" fill="currentColor" />
-              </svg>
-            </div>
-          </slot>
-        </div>
-
-        <!-- 标题区域 -->
-        <slot name="header" :title="title" :subtitle="subtitle">
-          <h2>{{ title }}</h2>
-          <p class="subtitle">{{ subtitle }}</p>
-        </slot>
-
-        <!-- 登录面板插槽 -->
-        <slot name="loginPanel" 
-              :form="form"
-              :loading="loading"
-              :error="error"
-              :handleSubmit="handleSubmit">
-          <form class="login-form" @submit.prevent="handleSubmit">
-            <div class="form-group">
-              <input
-                v-model="form.username"
-                type="text"
-                placeholder="用户名或邮箱"
-                required
-              />
-            </div>
-
-            <div class="form-group">
-              <input
-                v-model="form.password"
-                type="password"
-                placeholder="密码"
-                required
-              />
-            </div>
-
-            <div class="form-options">
-              <label class="checkbox">
-                <input v-model="form.remember" type="checkbox" />
-                <span>记住我</span>
-              </label>
-              <a href="#" class="forgot-link" @click.prevent="handleForgot">忘记密码？</a>
-            </div>
-
-            <button type="submit" class="btn-submit" :disabled="loading">
-              {{ loading ? '登录中...' : '登录' }}
-            </button>
-          </form>
-        </slot>
-
-        <!-- 社交登录插槽 -->
-        <div v-if="$slots.socialLogin || showSocialLogin" class="social-section">
-          <slot name="socialLogin" :providers="socialProviders">
-            <div class="divider">
-              <span>或</span>
-            </div>
-            <div class="social-buttons">
-              <button v-for="provider in socialProviders"
-                      :key="provider.name"
-                      @click="handleSocialLogin(provider)"
-                      class="social-btn">
-                {{ provider.label }}
-              </button>
-            </div>
-          </slot>
-        </div>
-
-        <!-- 底部插槽 -->
-        <div class="footer-text">
-          <slot name="footer">
-            还没有账号？
-            <a href="#" @click.prevent="handleRegister">立即注册</a>
-          </slot>
-        </div>
-
-        <!-- 额外内容 -->
-        <slot name="extra"></slot>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
+
+interface SocialProvider { name: string; label: string; icon?: string }
 
 interface Props {
   title?: string
@@ -144,7 +37,7 @@ const emit = defineEmits<{
   submit: [data: { username: string; password: string; remember: boolean }]
   register: []
   forgot: []
-  socialLogin: [provider: any]
+  socialLogin: [provider: SocialProvider]
 }>()
 
 const form = reactive({
@@ -168,10 +61,129 @@ const handleForgot = () => {
   emit('forgot')
 }
 
-const handleSocialLogin = (provider: any) => {
+const handleSocialLogin = (provider: SocialProvider) => {
   emit('socialLogin', provider)
 }
 </script>
+
+<template>
+  <div class="login-desktop-split">
+    <!-- 左侧面板 -->
+    <div class="left-panel" :style="{ backgroundImage: `url(${bgImage})` }">
+      <slot name="leftPanel" :brand="brandName" :slogan="slogan">
+        <div class="overlay">
+          <slot name="brand">
+            <h1 class="brand">
+              {{ brandName }}
+            </h1>
+            <p class="slogan">
+              {{ slogan }}
+            </p>
+          </slot>
+          
+          <!-- 左侧额外内容 -->
+          <slot name="leftExtra" />
+        </div>
+      </slot>
+    </div>
+
+    <!-- 右侧登录区域 -->
+    <div class="right-panel">
+      <div class="login-box">
+        <!-- Logo 插槽 -->
+        <div v-if="$slots.logo || showLogo" class="logo-area">
+          <slot name="logo">
+            <div class="default-logo">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="currentColor">
+                <circle cx="20" cy="20" r="18" opacity="0.1" />
+                <path d="M20 10 L28 20 L20 30 L12 20 Z" fill="currentColor" />
+              </svg>
+            </div>
+          </slot>
+        </div>
+
+        <!-- 标题区域 -->
+        <slot name="header" :title="title" :subtitle="subtitle">
+          <h2>{{ title }}</h2>
+          <p class="subtitle">
+            {{ subtitle }}
+          </p>
+        </slot>
+
+        <!-- 登录面板插槽 -->
+        <slot
+          name="loginPanel" 
+          :form="form"
+          :loading="loading"
+          :error="error"
+          :handle-submit="handleSubmit"
+        >
+          <form class="login-form" @submit.prevent="handleSubmit">
+            <div class="form-group">
+              <input
+                v-model="form.username"
+                type="text"
+                placeholder="用户名或邮箱"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <input
+                v-model="form.password"
+                type="password"
+                placeholder="密码"
+                required
+              >
+            </div>
+
+            <div class="form-options">
+              <label class="checkbox">
+                <input v-model="form.remember" type="checkbox">
+                <span>记住我</span>
+              </label>
+              <a href="#" class="forgot-link" @click.prevent="handleForgot">忘记密码？</a>
+            </div>
+
+            <button type="submit" class="btn-submit" :disabled="loading">
+              {{ loading ? '登录中...' : '登录' }}
+            </button>
+          </form>
+        </slot>
+
+        <!-- 社交登录插槽 -->
+        <div v-if="$slots.socialLogin || showSocialLogin" class="social-section">
+          <slot name="socialLogin" :providers="socialProviders">
+            <div class="divider">
+              <span>或</span>
+            </div>
+            <div class="social-buttons">
+              <button
+                v-for="provider in socialProviders"
+                :key="provider.name"
+                class="social-btn"
+                @click="handleSocialLogin(provider)"
+              >
+                {{ provider.label }}
+              </button>
+            </div>
+          </slot>
+        </div>
+
+        <!-- 底部插槽 -->
+        <div class="footer-text">
+          <slot name="footer">
+            还没有账号？
+            <a href="#" @click.prevent="handleRegister">立即注册</a>
+          </slot>
+        </div>
+
+        <!-- 额外内容 -->
+        <slot name="extra" />
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .login-desktop-split {

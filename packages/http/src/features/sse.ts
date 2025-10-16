@@ -437,9 +437,9 @@ export function createSSEClient(config: SSEClientConfig): SSEClient {
 }
 
 /**
- * SSE 客户端包装器（用于简化使用）
+ * 基础 SSE 客户端包装器
  */
-export class SimpleSSEClient {
+export class BasicSSEClient {
   private client: SSEClient
   private handlers: Map<string, SSEEventListener[]> = new Map()
 
@@ -516,8 +516,8 @@ export class SimpleSSEClient {
 }
 
 /**
- * 创建简单的 SSE 客户端
+ * 创建基础 SSE 客户端
  */
-export function createSimpleSSEClient(url: string, options?: Partial<SSEClientConfig>): SimpleSSEClient {
-  return new SimpleSSEClient(url, options)
+export function createBasicSSEClient(url: string, options?: Partial<SSEClientConfig>): BasicSSEClient {
+  return new BasicSSEClient(url, options)
 }

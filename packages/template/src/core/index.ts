@@ -2,7 +2,7 @@
  * 核心模块导出
  */
 
-export { TemplateScanner, getScanner, scanTemplates } from './scanner'
-export { TemplateLoader, getLoader, loadTemplate, preloadTemplate } from './loader'
-export { TemplateManager, getManager, createTemplateManager } from './manager'
-export { loadComponentStyle, loadStyles, loadGlobalStyles, clearLoadedStyles } from './style-loader'
+export { getLoader, loadTemplate, preloadTemplate, TemplateLoader } from './loader'
+export { createTemplateManager, getManager, TemplateManager } from './manager'
+export { getScanner, scanTemplates, TemplateScanner } from './scanner'
+export { clearLoadedStyles, loadComponentStyle, loadGlobalStyles, loadStyles } from './style-loader'

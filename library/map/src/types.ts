@@ -26,12 +26,12 @@ export interface MapRendererOptions {
 
 export interface TextLabelOptions {
   pickable?: boolean;
-  fontSize?: number;
+  fontSize?: number;  // 基础字体大小，会根据 zoom 级别动态调整
   getSize?: number | ((d: any) => number);
   getAngle?: number | ((d: any) => number);
   getTextAnchor?: string | ((d: any) => string);
   getAlignmentBaseline?: string | ((d: any) => string);
-  getColor?: number[] | ((d: any) => number[]);
+  getColor?: 'auto' | number[] | ((d: any) => number[]);  // 支持 'auto' 自动计算对比色
   getBackgroundColor?: number[] | ((d: any) => number[]);
   backgroundColor?: boolean;
   backgroundPadding?: number[];

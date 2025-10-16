@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
-  AdvancedCacheManager,
-  createAdvancedCacheManager,
+  EnhancedCacheManager,
+  createEnhancedCacheManager,
 } from '../../../src/utils/cache'
 import type { RequestConfig, ResponseData } from '../../../src/types'
 
-describe('AdvancedCacheManager', () => {
-  let cacheManager: AdvancedCacheManager
+describe('EnhancedCacheManager', () => {
+  let cacheManager: EnhancedCacheManager
 
   beforeEach(() => {
-    cacheManager = createAdvancedCacheManager({
+    cacheManager = createEnhancedCacheManager({
       enabled: true,
       ttl: 5000,
       stats: true,
@@ -216,7 +216,7 @@ describe('AdvancedCacheManager', () => {
 
   describe('Cache Preloading', () => {
     it('should preload cache for specified URLs', async () => {
-      const preloadManager = createAdvancedCacheManager({
+      const preloadManager = createEnhancedCacheManager({
         enabled: true,
         preload: {
           enabled: true,
@@ -243,7 +243,7 @@ describe('AdvancedCacheManager', () => {
     it('should handle preload failures gracefully', async () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-      const preloadManager = createAdvancedCacheManager({
+      const preloadManager = createEnhancedCacheManager({
         enabled: true,
         preload: {
           enabled: true,
@@ -260,7 +260,7 @@ describe('AdvancedCacheManager', () => {
 
   describe('Advanced Configuration', () => {
     it('should respect advanced cache configuration', () => {
-      const advancedManager = createAdvancedCacheManager({
+      const advancedManager = createEnhancedCacheManager({
         enabled: true,
         strategy: 'lru',
         maxSize: 1024 * 1024, // 1MB
@@ -272,11 +272,11 @@ describe('AdvancedCacheManager', () => {
         }
       })
 
-      expect(advancedManager).toBeInstanceOf(AdvancedCacheManager)
+      expect(advancedManager).toBeInstanceOf(EnhancedCacheManager)
     })
 
     it('should handle disabled stats', async () => {
-      const noStatsManager = createAdvancedCacheManager({
+      const noStatsManager = createEnhancedCacheManager({
         enabled: true,
         stats: false
       })
