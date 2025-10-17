@@ -258,28 +258,28 @@ export class LdesignModal {
   /**
    * 模态框状态
    */
-  @State() isVisible!: boolean = false;
+  @State() isVisible: boolean = false;
 
   /**
    * 是否正在动画中
    */
-  @State() isAnimating!: boolean = false;
+  @State() isAnimating: boolean = false;
 
   /**
    * 是否正在关闭动画中
    */
-  @State() isClosing!: boolean = false;
+  @State() isClosing: boolean = false;
 
   /**
    * 是否最大化
    */
-  @State() isMaximized!: boolean = false;
+  @State() isMaximized: boolean = false;
 
   /**
    * 滚动阴影状态
    */
-  @State() showHeaderShadow!: boolean = false;
-  @State() showFooterShadow!: boolean = false;
+  @State() showHeaderShadow: boolean = false;
+  @State() showFooterShadow: boolean = false;
 
   /**
    * 模态框元素引用

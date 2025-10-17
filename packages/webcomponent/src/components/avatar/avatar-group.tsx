@@ -25,7 +25,7 @@ export class LdesignAvatarGroup {
   /** 边框颜色（用于实现“描边”效果以区分重叠） */
   @Prop() borderColor: string = '#fff';
 
-  @State() overflowCount!: number = 0;
+  @State() overflowCount: number = 0;
 
   componentDidLoad() {
     this.applyDefaults();
@@ -43,7 +43,7 @@ export class LdesignAvatarGroup {
 
   private applyDefaults() {
     try {
-      const items = Array.from(this.el.querySelectorAll('ldesign-avatar')) as HTMLElement[];
+      const items = Array.from(this.el.querySelectorAll('ldesign-avatar')) as any[];
       items.forEach((it) => {
         if (this.size != null && !it.hasAttribute('size')) {
           it.setAttribute('size', String(this.size));
@@ -57,7 +57,7 @@ export class LdesignAvatarGroup {
 
   private updateOverflow() {
     // 仅统计用户提供的子项，排除由本组件渲染的“+N”占位头像
-    const items = Array.from(this.el.querySelectorAll('ldesign-avatar:not(.ldesign-avatar-group__extra)')) as HTMLElement[];
+    const items = Array.from(this.el.querySelectorAll('ldesign-avatar:not(.ldesign-avatar-group__extra)')) as any[];
     const max = typeof this.max === 'number' && this.max > 0 ? this.max : items.length;
     const hidden = items.slice(max);
     this.overflowCount = Math.max(0, items.length - max);

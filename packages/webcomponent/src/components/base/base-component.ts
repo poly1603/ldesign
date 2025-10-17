@@ -41,12 +41,12 @@ export class BaseComponent {
   /**
    * 内部状态：组件是否已初始化
    */
-  @State() initialized!: boolean = false;
+  @State() initialized: boolean = false;
 
   /**
    * 内部状态：组件唯一ID
    */
-  @State() internalId!: string;
+  @State() internalId: string;
 
   /**
    * 监听disabled属性变化

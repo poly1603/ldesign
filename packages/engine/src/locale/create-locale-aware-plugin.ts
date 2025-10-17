@@ -89,6 +89,7 @@ export function createLocaleAwarePlugin<T extends LocaleAwarePlugin>(
       }
 
       // 2. 注册到 LocaleManager（如果启用同步且 LocaleManager 存在）
+      // @deprecated - 保留用于兼容旧代码
       if (syncLocale && engine.localeManager) {
         engine.localeManager.register(name, plugin)
         engine.logger.debug(`Plugin "${name}" registered to LocaleManager`)

@@ -70,10 +70,10 @@ export class LdesignImagePreview {
   @Event() ldesignPreviewError!: EventEmitter<{ index: number, image: string }>;
 
   // ── State ─────────────────────────────────────────────
-  @State() isAnimating!: boolean = false;
-  @State() currentSrc!: string = '';
-  @State() isLoading!: boolean = false;
-  @State() hasError!: boolean = false;
+  @State() isAnimating: boolean = false;
+  @State() currentSrc: string = '';
+  @State() isLoading: boolean = false;
+  @State() hasError: boolean = false;
 
   private draggableRef?: any;
   private overlayRef?: HTMLElement;

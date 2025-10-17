@@ -13,6 +13,7 @@ export * from './text'
 
 // 表格插件
 export * from './table'
+export * from './table-enhanced'
 
 // 工具插件
 export * from './utils'
@@ -72,5 +73,6 @@ export const extendedPlugins = [
   'MediaContextMenuPlugin',
   'ImageResizePlugin',
   'EmojiPlugin',
-  'ContextMenuPlugin'
+  'ContextMenuPlugin',
+  'EnhancedTablePlugin'
 ]

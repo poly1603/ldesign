@@ -92,8 +92,8 @@ export class LdesignRadioGroup {
    * 可用单选项列表
    */
   private getEnabledRadios(): HTMLElement[] {
-    const all = Array.from(this.el.querySelectorAll('ldesign-radio')) as HTMLElement[];
-    return all.filter((r: any) => !r.disabled);
+    const all = Array.from(this.el.querySelectorAll('ldesign-radio'));
+    return (all as any[]).filter((r: any) => !r.disabled);
   }
 
   /**
@@ -131,7 +131,7 @@ export class LdesignRadioGroup {
     const radios = this.getEnabledRadios();
     if (radios.length === 0) return;
 
-    const active = (event.target as HTMLElement)?.closest('ldesign-radio') as HTMLElement | null;
+      const active = (event.target as HTMLElement)?.closest('ldesign-radio') as any as HTMLElement | null;
 
     let currentIndex = radios.findIndex(r => r === active);
     if (currentIndex === -1) {

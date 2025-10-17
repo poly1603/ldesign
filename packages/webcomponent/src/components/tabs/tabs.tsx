@@ -82,14 +82,14 @@ export class LdesignTabs {
   @Event() ldesignReorder!: EventEmitter<{ items: TabMeta[] }>; 
 
   @State() currentName?: string;
-  @State() items!: TabMeta[] = [];
-  @State() inkStyle!: { [k: string]: string } = {};
-  @State() canScrollPrev!: boolean = false;
-  @State() canScrollNext!: boolean = false;
-  @State() showDropdown!: boolean = false;
-  @State() overflowItems!: TabMeta[] = [];
-  @State() currentBreakpoint!: Breakpoint = 'desktop';
-  @State() isDragging!: boolean = false;
+  @State() items: TabMeta[] = [];
+  @State() inkStyle: { [k: string]: string } = {};
+  @State() canScrollPrev: boolean = false;
+  @State() canScrollNext: boolean = false;
+  @State() showDropdown: boolean = false;
+  @State() overflowItems: TabMeta[] = [];
+  @State() currentBreakpoint: Breakpoint = 'desktop';
+  @State() isDragging: boolean = false;
 
   private uid = `ld-tabs-${++tabsIdSeed}`;
   private slotEl?: HTMLSlotElement;
@@ -219,8 +219,8 @@ export class LdesignTabs {
   };
 
 private getPanels(): (HTMLElement & { name?: string; label?: string; disabled?: boolean; active?: boolean })[] {
-    const nodes = Array.from(this.el.querySelectorAll('ldesign-tab-panel')) as HTMLLdesignTabPanelElement[];
-    return nodes;
+    const nodes = Array.from(this.el.querySelectorAll('ldesign-tab-panel'));
+    return nodes as any[];
   }
 
   private ensureIdFor(panel: HTMLElement & { 

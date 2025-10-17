@@ -57,11 +57,11 @@ export class DropdownPanel {
    */
   @Event() visibleChange!: EventEmitter<boolean>;
 
-  @State() triggerRect!: DOMRect | null = null;
-  @State() panelHeight!: number = 0;
-  @State() actualPlacement!: 'top' | 'bottom' = 'bottom';
-  @State() isReady!: boolean = false;
-  @State() disableTransition!: boolean = false; // 禁用过渡效果的标志
+  @State() triggerRect: DOMRect | null = null;
+  @State() panelHeight: number = 0;
+  @State() actualPlacement: 'top' | 'bottom' = 'bottom';
+  @State() isReady: boolean = false;
+  @State() disableTransition: boolean = false; // 禁用过渡效果的标志
 
   private triggerRef?: HTMLDivElement;
   private panelRef?: HTMLDivElement;

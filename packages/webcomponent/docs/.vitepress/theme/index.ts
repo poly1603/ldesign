@@ -1,8 +1,6 @@
 import DefaultTheme from 'vitepress/theme'
 import type { Theme } from 'vitepress'
 import './custom.css'
-// 直接导入组件库CSS
-import '../../../dist/ldesign-webcomponent/ldesign-webcomponent.css'
 // 主题内注册自定义 Vue 组件（供 Markdown 使用）
 import IconGallery from './components/IconGallery.vue'
 // 确保自定义元素被注册
@@ -350,22 +348,27 @@ export default {
       }
 
       const loadLibrary = async () => {
-        // 优先使用 dist（dev 脱机时减少红字）；失败再尝试 dev；最后使用 loader
-        try {
-          await loadFromDist()
-          console.log('LDesign WebComponent 组件库已从 dist 加载')
+        // 优先尝试使用 loader（开发模式）
+        const loaderOk = await tryLoader()
+        if (loaderOk) {
+          console.log('LDesign WebComponent 已通过 loader 加载（开发模式）')
           return
-        } catch {}
+        }
+        
+        // 如果 loader 不可用，尝试 dev server
         try {
           await loadFromDev()
           console.log('LDesign WebComponent 组件库已从 dev server 加载')
           return
+        } catch {}
+        
+        // 最后尝试 dist
+        try {
+          await loadFromDist()
+          console.log('LDesign WebComponent 组件库已从 dist 加载')
+          return
         } catch (err) {
-          console.warn('dev/dist 均不可用，尝试使用 loader.defineCustomElements()', err)
-          const ok = await tryLoader()
-          if (!ok) {
-            console.error('加载 LDesign WebComponent 失败：dev/dist/loader 均不可用')
-          }
+          console.error('加载 LDesign WebComponent 失败：loader/dev/dist 均不可用', err)
         }
       }
 

@@ -247,62 +247,64 @@ function initMarkersMap() {
     let markersVisible = true;
     let markerCount = 0;
     
-    // 添加地标按钮
+    // 添加地标按钮 - 展示水波纹效果
     document.getElementById('add-landmarks')?.addEventListener('click', () => {
       const landmarks = [
-        { name: '广州塔', position: [113.3241, 23.1063], style: 'pin', color: [255, 87, 34, 255], size: 25 },
-        { name: '白云山', position: [113.3020, 23.1756], style: 'triangle', color: [76, 175, 80, 255], size: 22 },
-        { name: '珠江新城', position: [113.3210, 23.1188], style: 'square', color: [33, 150, 243, 255], size: 20 },
-        { name: '陈家祠', position: [113.2506, 23.1253], style: 'diamond', color: [156, 39, 176, 255], size: 18 },
-        { name: '越秀公园', position: [113.2668, 23.1388], style: 'circle', color: [255, 193, 7, 255], size: 20, animation: 'ripple' },
-        { name: '海心沙', position: [113.3184, 23.1139], style: 'circle', color: [0, 188, 212, 255], size: 18, animation: 'ripple' },
-        { name: '黄埔古港', position: [113.4036, 23.0936], style: 'square', color: [121, 85, 72, 255], size: 16 },
-        { name: '长隆旅游度假区', position: [113.3300, 23.0050], style: 'diamond', color: [233, 30, 99, 255], size: 22 }
+        { name: '广州塔', position: [113.3241, 23.1063], style: 'circle', color: [255, 59, 48, 255], size: 15, animation: 'ripple' },
+        { name: '白云山', position: [113.3020, 23.1756], style: 'circle', color: [52, 199, 89, 255], size: 14, animation: 'ripple' },
+        { name: '珠江新城', position: [113.3210, 23.1188], style: 'circle', color: [0, 122, 255, 255], size: 13, animation: 'ripple' },
+        { name: '陈家祠', position: [113.2506, 23.1253], style: 'circle', color: [175, 82, 222, 255], size: 12, animation: 'ripple' },
+        { name: '越秀公园', position: [113.2668, 23.1388], style: 'circle', color: [255, 204, 0, 255], size: 13, animation: 'ripple' },
+        { name: '海心沙', position: [113.3184, 23.1139], style: 'circle', color: [90, 200, 250, 255], size: 12, animation: 'ripple' },
+        { name: '黄埔古港', position: [113.4036, 23.0936], style: 'circle', color: [255, 149, 0, 255], size: 11, animation: 'ripple' },
+        { name: '长隆旅游度假区', position: [113.3300, 23.0050], style: 'circle', color: [255, 45, 85, 255], size: 14, animation: 'ripple' }
       ];
       
-      landmarks.forEach(landmark => {
-        mapRenderer.addMarker({
-          position: landmark.position,
-          style: landmark.style,
-          size: landmark.size,
-          color: landmark.color,
-          animation: landmark.animation || 'none',
-          label: {
-            text: landmark.name,
-            offset: [0, -0.004],
-            fontSize: 14,
-            color: [33, 33, 33, 255],
-            backgroundColor: [255, 255, 255, 220],
-            backgroundPadding: [6, 3],
-            visible: true
-          },
-          data: { name: landmark.name },
-          onClick: (marker) => {
-            infoDiv.textContent = `点击了: ${marker.data.name} (${marker.position[0].toFixed(4)}, ${marker.position[1].toFixed(4)})`;
-          },
-          onHover: (marker) => {
-            mapRenderer.highlightMarker(marker.id, [255, 255, 0, 255]);
-            setTimeout(() => mapRenderer.unhighlightMarker(marker.id), 1000);
-          }
-        });
-      });
+      // 使用 addMarkers 批量添加标记
+      const markerConfigs = landmarks.map((landmark, index) => ({
+        position: landmark.position,
+        style: landmark.style || 'circle',
+        size: landmark.size,
+        color: landmark.color,
+        animation: 'ripple', // 确保水波纹动画
+        opacity: 1,
+        label: {
+          text: landmark.name,
+          offset: [0, -0.005],
+          fontSize: 15,
+          fontWeight: '600',
+          color: [255, 255, 255, 255],
+          backgroundColor: [33, 33, 33, 230],
+          backgroundPadding: [8, 4],
+          visible: true
+        },
+        data: { name: landmark.name, originalColor: landmark.color, originalSize: landmark.size },
+        onClick: (marker) => {
+          infoDiv.textContent = `点击了: ${marker.data.name} (${marker.position[0].toFixed(4)}, ${marker.position[1].toFixed(4)})`;
+        },
+        onHover: (marker) => {
+          infoDiv.textContent = `悬停: ${marker.data.name}`;
+        }
+      }));
+      
+      mapRenderer.addMarkers(markerConfigs);
       
       markerCount += landmarks.length;
-      infoDiv.textContent = `已添加 ${landmarks.length} 个地标，总计 ${markerCount} 个标记`;
+      infoDiv.textContent = `已添加 ${landmarks.length} 个带水波纹动画的地标，总计 ${markerCount} 个标记`;
     });
     
-    // 添加随机标记按钮
+      // 添加随机标记按钮
     document.getElementById('add-random-markers')?.addEventListener('click', () => {
       const styles = ['circle', 'square', 'triangle', 'diamond', 'pin'];
       const beautifulColors = [
-        [255, 87, 34, 220],    // 深橙色
-        [33, 150, 243, 220],   // 蓝色
-        [76, 175, 80, 220],    // 绿色
-        [255, 193, 7, 220],    // 琥珀色
-        [156, 39, 176, 220],   // 紫色
-        [0, 188, 212, 220],    // 青色
-        [233, 30, 99, 220],    // 粉红色
-        [63, 81, 181, 220],    // 靛蓝色
+        [255, 87, 34, 255],    // 深橙色
+        [33, 150, 243, 255],   // 蓝色
+        [76, 175, 80, 255],    // 绿色
+        [255, 193, 7, 255],    // 琥珀色
+        [156, 39, 176, 255],   // 紫色
+        [0, 188, 212, 255],    // 青色
+        [233, 30, 99, 255],    // 粉红色
+        [63, 81, 181, 255],    // 靛蓝色
       ];
       
       // 获取当前地图的可视范围 (基于广州的实际范围)

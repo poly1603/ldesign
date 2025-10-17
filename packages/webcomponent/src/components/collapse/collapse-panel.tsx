@@ -85,13 +85,13 @@ export class LdesignCollapsePanel {
   @Event() ldesignPanelDragLeave!: EventEmitter<{ name: string; event: DragEvent }>;
   @Event() ldesignPanelDrop!: EventEmitter<{ name: string; event: DragEvent }>;
 
-  @State() hasRendered!: boolean = false;
-  @State() contentHeight!: string = '0px';
-  @State() isAnimating!: boolean = false;
-  @State() contentVisible!: boolean = false;
-  @State() iconRotationDeg!: number = 0;
-  @State() touchStartY!: number = 0;
-  @State() swipeDirection!: 'up' | 'down' | null = null;
+  @State() hasRendered: boolean = false;
+  @State() contentHeight: string = '0px';
+  @State() isAnimating: boolean = false;
+  @State() contentVisible: boolean = false;
+  @State() iconRotationDeg: number = 0;
+  @State() touchStartY: number = 0;
+  @State() swipeDirection: 'up' | 'down' | null = null;
 
   private headerId = `ld-col-h-${++idSeed}`;
   private contentId = `ld-col-c-${idSeed}`;

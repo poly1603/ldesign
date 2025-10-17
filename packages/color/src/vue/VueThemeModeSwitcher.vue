@@ -48,6 +48,14 @@ const systemPreference = ref<'light' | 'dark'>('light')
 // 响应式国际化支持
 const appLocale = inject<any>('app-locale', null)
 
+// 调试日志
+if (import.meta.env.DEV) {
+  console.log('[VueThemeModeSwitcher] appLocale injected:', appLocale)
+  if (appLocale) {
+    console.log('[VueThemeModeSwitcher] appLocale.value:', appLocale.value)
+  }
+}
+
 const currentLocale = computed(() => {
   if (appLocale && appLocale.value) {
     return appLocale.value
@@ -56,6 +64,13 @@ const currentLocale = computed(() => {
 })
 
 const locale = computed(() => getLocale(currentLocale.value))
+
+// 监听语言变化
+watch(currentLocale, (newLocale) => {
+  if (import.meta.env.DEV) {
+    console.log('[VueThemeModeSwitcher] locale changed to:', newLocale)
+  }
+})
 
 const modes = computed(() => [
   { value: 'light' as const, label: locale.value.themeMode.light, icon: Sun },

@@ -271,6 +271,7 @@ export class SidebarManager {
   private async renderThumbnail(pageNumber: number, canvas: HTMLCanvasElement): Promise<void> {
     try {
       if (!this.viewer.document) {
+        console.error('No PDF document available for thumbnail rendering');
         return;
       }
 
@@ -278,35 +279,50 @@ export class SidebarManager {
 
       // Define target display size for thumbnails
       const TARGET_WIDTH = 180; // Max display width in pixels
-      const RENDER_SCALE = 2; // Render at 2x for better quality
+      const RENDER_SCALE = 1.5; // Reduced scale for better performance
 
       // Get original page dimensions
       const originalViewport = page.getViewport({ scale: 1 });
       const pageAspectRatio = originalViewport.width / originalViewport.height;
 
       // Calculate proper scale to fit within target width
-      const scale = (TARGET_WIDTH * RENDER_SCALE) / originalViewport.width;
-      const viewport = page.getViewport({ scale });
+      const scale = TARGET_WIDTH / originalViewport.width;
+      const viewport = page.getViewport({ scale: scale * RENDER_SCALE });
 
       // Set canvas internal resolution (for rendering)
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+      canvas.width = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
 
       // Set canvas display size (via inline styles)
       canvas.style.width = `${TARGET_WIDTH}px`;
-      canvas.style.height = `${TARGET_WIDTH / pageAspectRatio}px`;
+      canvas.style.height = `${Math.floor(TARGET_WIDTH / pageAspectRatio)}px`;
+      canvas.style.maxWidth = '100%';
+      canvas.style.display = 'block';
 
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d', { alpha: false });
       if (ctx) {
-        // Set white background
+        // Clear canvas and set white background
+        ctx.save();
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+        // Enable image smoothing for better quality
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
         // Render PDF page
-        await page.render({
+        const renderTask = page.render({
           canvasContext: ctx,
-          viewport: viewport
-        }).promise;
+          viewport: viewport,
+          intent: 'display'
+        });
+        
+        await renderTask.promise;
+        ctx.restore();
+        
+        console.log(`Thumbnail ${pageNumber} rendered successfully`);
+      } else {
+        console.error(`Failed to get canvas context for thumbnail ${pageNumber}`);
       }
     } catch (error) {
       console.error(`Failed to render thumbnail for page ${pageNumber}:`, error);

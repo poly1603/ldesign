@@ -409,7 +409,7 @@ export function confirmModal(options: ModalConfirmOptions | string): Promise<boo
     okBtn.setAttribute('type', okStyle);
     okBtn.textContent = opts.okText || '确定';
     // 兜底：若 gap 样式未生效，给确定按钮一个左外边距
-    (okBtn as HTMLElement).style.marginLeft = '12px';
+    (okBtn as any as HTMLElement).style.marginLeft = '12px';
     okBtn.addEventListener('click', () => {
       modal.visible = false;
       scheduleRemoval(modal);
@@ -507,7 +507,7 @@ export function promptModal(options: ModalPromptOptions | string): Promise<strin
     const okBtn = document.createElement('ldesign-button');
     okBtn.setAttribute('type', (opts.okType || 'primary') as string);
     okBtn.textContent = opts.okText || '确定';
-    (okBtn as HTMLElement).style.marginLeft = '12px';
+    (okBtn as any as HTMLElement).style.marginLeft = '12px';
     okBtn.addEventListener('click', async () => {
       const val = input.value;
       if (opts.validate) {

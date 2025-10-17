@@ -1,6 +1,13 @@
 /**
  * LocaleManager - 统一的多语言管理中心
  * 
+ * @deprecated 请使用新的架构：i18n 插件的 localeRef + 各插件接收 locale 参数
+ * @see docs/architecture/locale-management.md
+ * 
+ * 保留此类仅用于向后兼容。新项目请使用：
+ * 1. 创建 i18n 插件并获取 localeRef
+ * 2. 将 localeRef 传递给其他插件
+ * 
  * 职责:
  * - 管理全局语言状态
  * - 注册和同步所有支持多语言的插件

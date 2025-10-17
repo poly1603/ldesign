@@ -390,7 +390,7 @@ ldesign-picker
 | Event           | Description        | Type                                                                                                                                     |
 | --------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `ldesignChange` | 选中项变化（最终吸附后触发）     | `CustomEvent<{ value: string; option?: PickerOption; }>`                                                                                 |
-| `ldesignPick`   | 选择过程事件（滚动/拖拽中也会触发） | `CustomEvent<{ value: string; option?: PickerOption; context: { trigger: "scroll" \| "click" \| "wheel" \| "keyboard" \| "touch"; }; }>` |
+| `ldesignPick`   | 选择过程事件（滚动/拖拽中也会触发） | `CustomEvent<{ value: string; option?: PickerOption; context: { trigger: "click" \| "scroll" \| "wheel" \| "keyboard" \| "touch"; }; }>` |
 
 
 ## Methods
@@ -420,7 +420,7 @@ Type: `Promise<void>`
 | Name    | Type                                                                                                                       | Description |
 | ------- | -------------------------------------------------------------------------------------------------------------------------- | ----------- |
 | `index` | `number`                                                                                                                   |             |
-| `opts`  | `{ trigger?: "scroll" \| "click" \| "wheel" \| "keyboard" \| "touch" \| "program"; animate?: boolean; silent?: boolean; }` |             |
+| `opts`  | `{ trigger?: "click" \| "scroll" \| "wheel" \| "keyboard" \| "touch" \| "program"; animate?: boolean; silent?: boolean; }` |             |
 
 #### Returns
 
@@ -437,7 +437,7 @@ Type: `Promise<void>`
 | Name    | Type                                                                                                                       | Description |
 | ------- | -------------------------------------------------------------------------------------------------------------------------- | ----------- |
 | `value` | `string`                                                                                                                   |             |
-| `opts`  | `{ trigger?: "scroll" \| "click" \| "wheel" \| "keyboard" \| "touch" \| "program"; animate?: boolean; silent?: boolean; }` |             |
+| `opts`  | `{ trigger?: "click" \| "scroll" \| "wheel" \| "keyboard" \| "touch" \| "program"; animate?: boolean; silent?: boolean; }` |             |
 
 #### Returns
 

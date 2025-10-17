@@ -19,7 +19,7 @@ export class LdesignGridItem {
   @Prop({ reflect: true }) span: number = 1;
 
   /** 父容器的列数（内部维护，用于限制 span） */
-  @State() parentCols!: number = 24;
+  @State() parentCols: number = 24;
 
   private parentObserver?: MutationObserver;
 
@@ -35,7 +35,7 @@ export class LdesignGridItem {
   }
 
   private updateParentCols() {
-    const grid = this.el.closest('ldesign-grid') as HTMLElement | null;
+    const grid = this.el.closest('ldesign-grid') as any as HTMLElement | null;
     if (grid) {
       const val = grid.getAttribute('cols');
       const n = val ? parseInt(val, 10) : NaN;

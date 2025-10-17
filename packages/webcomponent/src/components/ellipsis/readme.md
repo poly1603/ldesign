@@ -34,7 +34,7 @@ ldesign-ellipsis 文本省略/展开组件
 | `fadeWidth`                | `fade-width`                   | 渐变遮罩宽度（如 40% 或 120）                               | `number \| string`                                        | `'40%'`     |
 | `inlineGap`                | `inline-gap`                   | 同行放置时，文本与"收起"的间距（像素）                              | `number`                                                  | `8`         |
 | `lines`                    | `lines`                        | 折叠时显示的行数                                          | `number`                                                  | `3`         |
-| `linesMap`                 | `lines-map`                    | 响应式行数，根据屏宽选择不同行数                                  | `{ sm?: number; md?: number; lg?: number; xl?: number; }` | `undefined` |
+| `linesMap`                 | --                             | 响应式行数，根据屏宽选择不同行数                                  | `{ sm?: number; md?: number; lg?: number; xl?: number; }` | `undefined` |
 | `scrollIntoViewOnCollapse` | `scroll-into-view-on-collapse` | 收起时滚动到组件顶部                                        | `boolean`                                                 | `false`     |
 | `scrollIntoViewOnExpand`   | `scroll-into-view-on-expand`   | 展开时滚动到组件顶部                                        | `boolean`                                                 | `false`     |
 | `showFade`                 | `show-fade`                    | 折叠态是否显示渐变遮罩                                       | `boolean`                                                 | `true`      |

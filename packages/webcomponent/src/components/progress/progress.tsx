@@ -2,8 +2,8 @@ import { Component, Prop, h, Host, State, Event, EventEmitter, Watch } from '@st
 import { Size } from '../../types';
 
 /**
- * Progress 进度条
- * 支持：线形、环形、仪表盘、步骤条，多尺寸/状态/文本/自定义颜色等
+ * Progress 进度�?
+ * 支持：线形、环形、仪表盘、步骤条，多尺寸/状�?文本/自定义颜色等
  */
 @Component({
   tag: 'ldesign-progress',
@@ -14,7 +14,7 @@ export class LdesignProgress {
   /** 类型：line（默认）| circle | dashboard | steps | semicircle */
   @Prop() type: 'line' | 'circle' | 'dashboard' | 'steps' | 'semicircle' = 'line';
 
-  /** 百分比 0-100 */
+  /** 百分�?0-100 */
   @Prop({ mutable: true, reflect: true }) percent: number = 0;
 
   /** 成功进度（用于分段显示成功部分）0-100 */
@@ -29,7 +29,7 @@ export class LdesignProgress {
   /** 线形文本位置 */
   @Prop() infoPosition: 'right' | 'left' | 'inside' | 'bottom' = 'right';
 
-  /** 文本格式化，使用 {percent} 占位符，例如："{percent} / 100" */
+  /** 文本格式化，使用 {percent} 占位符，例如�?{percent} / 100" */
   @Prop() format: string = '{percent}%';
 
   /** 组件尺寸 */
@@ -41,57 +41,57 @@ export class LdesignProgress {
   /** 外径宽度（仅 circle/dashboard），单位 px */
   @Prop() width?: number = 120;
 
-  /** 进度颜色（可为任意 css 颜色） */
+  /** 进度颜色（可为任�?css 颜色�?*/
   @Prop() strokeColor?: string;
 
-  /** 未完成轨道颜色 */
+  /** 未完成轨道颜�?*/
   @Prop() trailColor?: string;
 
   /** 成功颜色 */
   @Prop() successColor?: string = 'var(--ldesign-success-color, #42bd42)';
 
-  /** 端点样式：round | square | butt（仅 circle 有效，line 以圆角呈现 round） */
+  /** 端点样式：round | square | butt（仅 circle 有效，line 以圆角呈�?round�?*/
   @Prop() strokeLinecap: 'round' | 'square' | 'butt' = 'round';
 
-  /** 环形渐变（可选，仅 circle/dashboard）：起止色 */
+  /** 环形渐变（可选，�?circle/dashboard）：起止�?*/
   @Prop() gradientFrom?: string;
   @Prop() gradientTo?: string;
   /** 渐变方向：horizontal | vertical | diagonal */
   @Prop() gradientDirection: 'horizontal' | 'vertical' | 'diagonal' = 'horizontal';
 
-  /** 仪表盘缺口角度（0-360，仅 circle/dashboard） */
+  /** 仪表盘缺口角度（0-360，仅 circle/dashboard�?*/
   @Prop() gapDegree?: number;
 
-  /** 缺口位置（top/right/bottom/left，仅 circle/dashboard） */
+  /** 缺口位置（top/right/bottom/left，仅 circle/dashboard�?*/
   @Prop() gapPosition: 'top' | 'right' | 'bottom' | 'left' = 'top';
 
-  /** 半圆位置（type=semicircle），top 表示显示上半圆，bottom 表示下半圆 */
+  /** 半圆位置（type=semicircle），top 表示显示上半圆，bottom 表示下半�?*/
   @Prop() semiPosition: 'top' | 'bottom' = 'top';
 
-  /** 步骤数（type=steps 或设置 steps>0 都渲染步骤条） */
+  /** 步骤数（type=steps 或设�?steps>0 都渲染步骤条�?*/
   @Prop() steps?: number;
 
   /** 圆形分段步数（用于环形步进样式） */
   @Prop() circleSteps?: number;
-  /** 圆形分段之间的间隔角度（度数） */
+  /** 圆形分段之间的间隔角度（度数�?*/
   @Prop() circleStepGapDegree: number = 2;
 
-  /** 步骤间隙 px（仅 steps） */
+  /** 步骤间隙 px（仅 steps�?*/
   @Prop() stepsGap: number = 2;
 
-  /** 步骤条的块圆角 */
-  @Prop() stepsRadius: number = 100; // 大圆角
+  /** 步骤条的块圆�?*/
+  @Prop() stepsRadius: number = 100; // 大圆�?
 
   /** 条纹动画（active 状态下默认开启） */
   @Prop() striped: boolean = true;
 
-  /** 不确定状态（显示循环动画，忽略 percent） */
+  /** 不确定状态（显示循环动画，忽�?percent�?*/
   @Prop() indeterminate: boolean = false;
 
-  /** 启用百分比过渡动画 */
-  @Prop() animate: boolean = false;
+  /** 启用百分比过渡动�?*/
+  @Prop() animated: boolean = false;
 
-  /** 进度条阴影 */
+  /** 进度条阴�?*/
   @Prop() shadow: boolean = false;
 
   /** 发光效果 */
@@ -105,10 +105,10 @@ export class LdesignProgress {
   /** 仪表盘变体（仅dashboard类型）：standard | bottom | left | right | fan */
   @Prop() dashboardVariant: 'standard' | 'bottom' | 'left' | 'right' | 'fan' = 'standard';
   
-  /** 波浪动画（仅line类型） */
+  /** 波浪动画（仅line类型�?*/
   @Prop() wave: boolean = false;
   
-  /** 3D效果（仅line类型） */
+  /** 3D效果（仅line类型�?*/
   @Prop() effect3d: boolean = false;
   
   /** 多层进度（用于显示多个数据） */
@@ -123,7 +123,7 @@ export class LdesignProgress {
   /** 百分比变化时触发 */
   @Event() percentChange!: EventEmitter<number>;
 
-  /** 进度完成时触发 */
+  /** 进度完成时触�?*/
   @Event() complete!: EventEmitter<void>;
 
   @State() private hideInnerText: boolean = false;
@@ -140,7 +140,7 @@ export class LdesignProgress {
       if (newVal >= 100 && oldVal < 100) {
         this.complete.emit();
       }
-      if (this.animate) {
+      if (this.animated) {
         this.animatePercent(oldVal, newVal);
       } else {
         this.animatedPercent = newVal;
@@ -184,8 +184,8 @@ export class LdesignProgress {
   }
 
   private get mergedPercent() {
-    if (this.indeterminate) return 30; // 不确定状态显示30%
-    return this.clamp(this.animate ? this.animatedPercent : this.percent);
+    if (this.indeterminate) return 30; // 不确定状态显�?0%
+    return this.clamp(this.animated ? this.animatedPercent : this.percent);
   }
 
   private get mergedSuccess() {
@@ -217,7 +217,7 @@ export class LdesignProgress {
   }
 
   private getStatus(): 'success' | 'exception' | 'active' | 'normal' {
-    // 百分百自动视为成功（除非显式指定异常）
+    // 百分百自动视为成功（除非显式指定异常�?
     if (this.status !== 'exception' && this.mergedPercent >= 100) return 'success';
     return this.status;
   }
@@ -225,7 +225,7 @@ export class LdesignProgress {
   private getInfoContent() {
     const status = this.getStatus();
     const isDefaultFormat = this.format === '{percent}%';
-    const displayPercent = Math.round(this.animate ? this.animatedPercent : this.mergedPercent);
+    const displayPercent = Math.round(this.animated ? this.animatedPercent : this.mergedPercent);
     let content: any = this.format.replace('{percent}', String(displayPercent));
     if (isDefaultFormat) {
       if (status === 'success') {
@@ -300,7 +300,7 @@ export class LdesignProgress {
 
     const info = this.renderInfo();
     
-    // 渲染多层进度条
+    // 渲染多层进度�?
     const renderLayers = () => {
       if (!this.layers || this.layers.length === 0) return null;
       return this.layers.map((layer, idx) => (
@@ -311,8 +311,8 @@ export class LdesignProgress {
             height: `${height}px`,
             background: layer.color,
             borderRadius: `${height / 2}px`,
-            opacity: 0.8 - idx * 0.1,
-            zIndex: this.layers.length - idx,
+            opacity: (0.8 - idx * 0.1).toString(),
+            zIndex: (this.layers.length - idx).toString(),
           }}
         >
           {layer.label && <span class="ldesign-progress__layer-label">{layer.label}</span>}
@@ -320,7 +320,7 @@ export class LdesignProgress {
       ));
     };
     
-    // 渲染标记点
+    // 渲染标记�?
     const renderMarkers = () => {
       if (!this.markers || this.markers.length === 0) return null;
       return this.markers.map(marker => (
@@ -402,7 +402,7 @@ export class LdesignProgress {
     );
   }
 
-  // 计算环形/仪表盘绘制（采用 100x100 视口的圆）
+  // 计算环形/仪表盘绘制（采用 100x100 视口的圆�?
   private getCircleGeometry() {
     const strokeWidth = this.getCircleStroke();
     const r = 50 - strokeWidth / 2; // 半径
@@ -412,7 +412,7 @@ export class LdesignProgress {
     const gapLen = (gapDegree / 360) * circumference;
     const visibleLen = circumference - gapLen;
 
-    // 偏移量保证缺口居中
+    // 偏移量保证缺口居�?
     const dashOffset = gapLen / 2;
 
     return { r, strokeWidth, circumference, gapDegree, visibleLen, dashOffset };
@@ -422,7 +422,7 @@ export class LdesignProgress {
     if (this.type === 'semicircle') {
       return this.semiPosition === 'top' ? 'bottom' : 'top';
     }
-    // 处理dashboard变体的缺口位置
+    // 处理dashboard变体的缺口位�?
     if (this.type === 'dashboard' && this.dashboardVariant !== 'standard') {
       const variantMap: any = {
         'bottom': 'bottom',
@@ -495,7 +495,7 @@ export class LdesignProgress {
       pattern.push(Math.max(0, circumference - consumed));
       trackDash = pattern.map(n => `${n}`).join(' ');
 
-      // 计算主进度填充 pattern
+      // 计算主进度填�?pattern
       const filledLen = (visibleLen * percent) / 100;
       const segTotal = segOn + segGapLen;
       let remain = filledLen;
@@ -505,7 +505,7 @@ export class LdesignProgress {
         fillPattern.push(take);
         remain -= take;
         if (remain <= 0) break;
-        // 仍需越过一个 gap（不可见）
+        // 仍需越过一�?gap（不可见�?
         fillPattern.push(segGapLen);
         remain -= segGapLen;
       }
@@ -535,7 +535,7 @@ export class LdesignProgress {
     const hostStyle: any = this.type === 'semicircle' ? { width: `${sizePx}px`, height: `${Math.round(sizePx / 2)}px` } : { width: `${sizePx}px`, height: `${sizePx}px` };
 
     const showInnerText = this.showInfo && !this.hideInnerText && sizePx > 20 && !this.indeterminate;
-    const displayPercent = Math.round(this.animate ? this.animatedPercent : percent);
+    const displayPercent = Math.round(this.animated ? this.animatedPercent : percent);
     const text = this.format.replace('{percent}', String(displayPercent));
     const isDefaultFormat = this.format === '{percent}%';
 
@@ -656,11 +656,11 @@ export class LdesignProgress {
   }
 
   componentWillLoad() {
-    // 生成固定的 gradientId（避免每次 render 都变化）
+    // 生成固定�?gradientId（避免每�?render 都变化）
     this.gradientId = `ldp-grad-${Math.random().toString(36).slice(2, 9)}`;
     // 决定是否在环形内隐藏文本（width 太小时）
     this.hideInnerText = (this.width || 0) <= 20;
-    // 规范化初始值
+    // 规范化初始�?
     this.percent = this.clamp(this.percent);
     this.animatedPercent = this.percent;
     this.prevPercent = this.percent;
@@ -673,7 +673,7 @@ export class LdesignProgress {
   }
 
   render() {
-    // steps 优先（若显式传入 steps>0）
+    // steps 优先（若显式传入 steps>0�?
     if (this.type === 'steps' || (this.steps && this.steps > 0)) {
       return this.renderSteps();
     }

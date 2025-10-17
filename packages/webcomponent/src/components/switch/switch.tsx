@@ -84,7 +84,7 @@ export class LdesignSwitch {
   /**
    * 内部状态：是否聚焦
    */
-  @State() isFocused!: boolean = false;
+  @State() isFocused: boolean = false;
 
   /**
    * 当绑定值变化时触发的事件

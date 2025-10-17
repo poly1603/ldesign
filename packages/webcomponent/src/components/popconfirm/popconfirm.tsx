@@ -89,7 +89,7 @@ export class LdesignPopconfirm {
   @Event() ldesignVisibleChange!: EventEmitter<boolean>;
   
   /** 内部状态：确认按钮处理中 */
-  @State() isConfirming!: boolean = false;
+  @State() isConfirming: boolean = false;
 
   private hideInnerPopup() {
     const popup = this.getInnerPopup();

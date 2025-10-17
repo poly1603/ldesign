@@ -178,7 +178,7 @@ export class LdesignGrid {
 
   private ensureToggle() {
     if (!this.toggleEl) {
-      this.toggleEl = document.createElement('ldesign-grid-item');
+      this.toggleEl = document.createElement('ldesign-grid-item') as any;
       this.toggleEl.setAttribute('data-toggle', 'true');
       const btn = document.createElement('button');
       btn.type = 'button';

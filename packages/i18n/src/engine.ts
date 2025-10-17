@@ -3,6 +3,7 @@
  * Provides basic integration with @ldesign/engine
  */
 
+import { ref, type Ref } from 'vue';
 import type { App } from 'vue';
 import type { I18nConfig, I18nInstance } from './types';
 import { createVueI18n } from './adapters/vue';
@@ -40,22 +41,33 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
 
   let i18nInstance: I18nInstance;
   let vuePlugin: any;
+  
+  // 确定初始 locale
+  let initialLocale = i18nConfig.locale || 'zh-CN';
+  
+  // 从 localStorage 恢复（优先级最高）
+  if (persistLanguage && typeof window !== 'undefined') {
+    const savedLocale = localStorage.getItem(storageKey);
+    if (savedLocale) {
+      initialLocale = savedLocale;
+    }
+  }
+  
+  // 自动检测浏览器语言（优先级次之）
+  if (detectBrowserLanguage && !i18nConfig.locale && typeof window !== 'undefined') {
+    const browserLang = navigator.language; // 使用完整的语言代码，如 zh-CN
+    if (browserLang) {
+      initialLocale = browserLang;
+    }
+  }
+  
+  // 响应式的 locale 状态 - 作为唯一的语言状态源
+  const localeRef = ref(initialLocale);
 
   // 初始化函数
   const initialize = () => {
-    // 从 localStorage 恢复语言设置
-    if (persistLanguage && typeof window !== 'undefined') {
-      const savedLocale = localStorage.getItem(storageKey);
-      if (savedLocale) {
-        i18nConfig.locale = savedLocale;
-      }
-    }
-
-    // 自动检测浏览器语言
-    if (detectBrowserLanguage && !i18nConfig.locale && typeof window !== 'undefined') {
-      const browserLang = navigator.language.split('-')[0];
-      i18nConfig.locale = browserLang;
-    }
+    // 使用 localeRef 的值作为初始语言
+    i18nConfig.locale = localeRef.value;
 
     // 创建 i18n 实例和 Vue 插件
     vuePlugin = createVueI18n(i18nConfig);
@@ -64,6 +76,10 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
     // 监听语言变化，持久化到 localStorage
     i18nInstance.on('localeChanged', ({ locale }) => {
       if (!locale) return;
+      
+      // 更新响应式 locale (单一状态源)
+      localeRef.value = locale;
+      
       if (persistLanguage && typeof window !== 'undefined') {
         localStorage.setItem(storageKey, locale);
       }
@@ -88,6 +104,9 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
   return {
     name: '@ldesign/i18n',
     version: '3.0.0',
+    
+    // 暴露响应式 locale - 其他插件可以直接使用
+    localeRef,
     
     // Engine 插件的 install 方法
     async install(context: any) {

@@ -26,7 +26,7 @@
 | `focusTrap`         | `focus-trap`         | 焦点捕获                | `boolean`                                          | `true`          |
 | `footerAlign`       | `footer-align`       | 底部按钮对齐方式            | `"center" \| "left" \| "right" \| "space-between"` | `'right'`       |
 | `footerBorder`      | `footer-border`      | 是否显示底部边框            | `boolean`                                          | `true`          |
-| `footerButtons`     | `footer-buttons`     | 底部按钮配置              | `DrawerButton[]`                                   | `[]`            |
+| `footerButtons`     | --                   | 底部按钮配置              | `DrawerButton[]`                                   | `[]`            |
 | `fullscreen`        | `fullscreen`         | 是否全屏                | `boolean`                                          | `false`         |
 | `fullscreenable`    | `fullscreenable`     | 是否可全屏切换             | `boolean`                                          | `false`         |
 | `gpuAcceleration`   | `gpu-acceleration`   | 性能优化：GPU 加速         | `boolean`                                          | `true`          |
@@ -53,7 +53,7 @@
 | `showBack`          | `show-back`          | 是否显示返回按钮            | `boolean`                                          | `false`         |
 | `showSizeHint`      | `show-size-hint`     | 是否显示尺寸提示            | `boolean`                                          | `true`          |
 | `size`              | `size`               | 抽屉大小                | `number \| string`                                 | `'md'`          |
-| `snapPoints`        | `snap-points`        | 吸附点                 | `SnapPoint[]`                                      | `[]`            |
+| `snapPoints`        | --                   | 吸附点                 | `SnapPoint[]`                                      | `[]`            |
 | `snapThreshold`     | `snap-threshold`     | 吸附阈值                | `number`                                           | `30`            |
 | `subtitle`          | `subtitle`           | 副标题                 | `string`                                           | `undefined`     |
 | `swipeThreshold`    | `swipe-threshold`    | 滑动阈值（0-1）           | `number`                                           | `0.3`           |

@@ -112,9 +112,9 @@ export class LdesignDropdown {
   /** 对外转发可见性变化 */
   @Event() ldesignVisibleChange!: EventEmitter<boolean>;
 
-  @State() parsedNodes!: DropdownNode[] = [];
+  @State() parsedNodes: DropdownNode[] = [];
   @State() currentKey?: string;
-  @State() highlightIndex!: number = -1; // PC 键盘高亮
+  @State() highlightIndex: number = -1; // PC 键盘高亮
   @State() computedContentWidth?: number;
 
   private listEl?: HTMLElement;

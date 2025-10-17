@@ -21,7 +21,7 @@ ldesign-mention 提及组件（contenteditable 版本）
 | `controlled`     | `controlled`      | 受控模式（为 true 时不在内部修改 value）                 | `boolean`                                                                | `false`     |
 | `defaultValue`   | `default-value`   | 默认值（非受控）                                   | `string`                                                                 | `undefined` |
 | `disabled`       | `disabled`        | 是否禁用                                       | `boolean`                                                                | `false`     |
-| `filterOption`   | `filter-option`   | 自定义过滤函数（返回 true 表示保留）                      | `(input: string, option: MentionItem) => boolean`                        | `undefined` |
+| `filterOption`   | --                | 自定义过滤函数（返回 true 表示保留）                      | `(input: string, option: MentionItem) => boolean`                        | `undefined` |
 | `loading`        | `loading`         | 加载中（用于异步搜索）                                | `boolean`                                                                | `false`     |
 | `maxHeight`      | `max-height`      | 列表最大高度                                     | `number`                                                                 | `240`       |
 | `maxRows`        | `max-rows`        | 最大可见行数（超过后出现滚动条）；不设置则不限制                   | `number`                                                                 | `undefined` |

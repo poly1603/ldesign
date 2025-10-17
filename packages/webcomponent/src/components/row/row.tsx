@@ -37,7 +37,7 @@ export class LdesignRow {
   }
 
   private readFromGrid(): { cols?: number; x?: string; y?: string; dense?: boolean } {
-    const grid = this.el.closest('ldesign-grid') as HTMLElement | null;
+    const grid = this.el.closest('ldesign-grid') as any as HTMLElement | null;
     if (!grid) return {};
 
     const colsAttr = grid.getAttribute('cols');

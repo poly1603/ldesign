@@ -247,19 +247,19 @@ export class LdesignDrawer {
 
   // ==================== 状态 ====================
 
-  @State() currentState!: DrawerState = 'closed';
-  @State() currentSize!: string = '400px';
-  @State() isResizing!: boolean = false;
-  @State() isSwiping!: boolean = false;
-  @State() swipeProgress!: number = 0;
-  @State() isMinimized!: boolean = false;
-  @State() isMaximized!: boolean = false;
-  @State() isFullscreen!: boolean = false;
-  @State() isAnimating!: boolean = false; // 用于控制动画触发
-  @State() isMobileDevice!: boolean = false; // 是否为移动设备
-  @State() touchStartX!: number = 0; // 触摸起始点
-  @State() touchStartY!: number = 0;
-  @State() isDragging!: boolean = false; // 是否正在拖动
+  @State() currentState: DrawerState = 'closed';
+  @State() currentSize: string = '400px';
+  @State() isResizing: boolean = false;
+  @State() isSwiping: boolean = false;
+  @State() swipeProgress: number = 0;
+  @State() isMinimized: boolean = false;
+  @State() isMaximized: boolean = false;
+  @State() isFullscreen: boolean = false;
+  @State() isAnimating: boolean = false; // 用于控制动画触发
+  @State() isMobileDevice: boolean = false; // 是否为移动设备
+  @State() touchStartX: number = 0; // 触摸起始点
+  @State() touchStartY: number = 0;
+  @State() isDragging: boolean = false; // 是否正在拖动
 
   // ==================== 事件 ====================
 
@@ -856,9 +856,6 @@ export class LdesignDrawer {
     // 移动设备降低阈值，更容易触发关闭
     const threshold = this.isMobileDevice ? this.swipeThreshold * 0.8 : this.swipeThreshold;
     
-    
-    });
-
     if (shouldTriggerSwipeClose(this.swipeProgress, velocity, threshold)) {
       
       this.close('swipe');

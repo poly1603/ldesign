@@ -156,20 +156,20 @@ export class LdesignImage {
   @Event() ldesignDownload!: EventEmitter<{ src: string; filename: string }>;
 
   // 内部状态
-  @State() intersected!: boolean = false;
-  @State() loaded!: boolean = false;
-  @State() error!: boolean = false;
-  @State() usingFallback!: boolean = false;
+  @State() intersected: boolean = false;
+  @State() loaded: boolean = false;
+  @State() error: boolean = false;
+  @State() usingFallback: boolean = false;
   /** 已解析到的原图比例（naturalWidth / naturalHeight） */
   @State() naturalRatio?: number;
 
   // 预览状态
-  @State() previewVisible!: boolean = false;
-  @State() previewScale!: number = 1;
-  @State() previewOffsetX!: number = 0;
-  @State() previewOffsetY!: number = 0;
-  @State() previewRotate!: number = 0;
-  @State() isFullscreen!: boolean = false;
+  @State() previewVisible: boolean = false;
+  @State() previewScale: number = 1;
+  @State() previewOffsetX: number = 0;
+  @State() previewOffsetY: number = 0;
+  @State() previewRotate: number = 0;
+  @State() isFullscreen: boolean = false;
   private dragging = false;
   private dragStartX = 0;
   private dragStartY = 0;
@@ -181,12 +181,12 @@ export class LdesignImage {
   private initialScale = 1;
 
   // 加载进度状态
-  @State() loadProgress!: number = 0;
+  @State() loadProgress: number = 0;
   @State() imageSize?: number;
-  @State() retryCount!: number = 0;
+  @State() retryCount: number = 0;
   
   // 对比模式状态
-  @State() comparisonPosition!: number = 50; // 百分比
+  @State() comparisonPosition: number = 50; // 百分比
   private isDraggingComparison = false;
 
   private io?: IntersectionObserver;
@@ -195,7 +195,7 @@ export class LdesignImage {
 
   private isGifSrc(src?: string): boolean { return !!src && /\.gif(\?|$)/i.test(src); }
 
-  @State() isGifPlaying!: boolean = false;
+  @State() isGifPlaying: boolean = false;
 
   // 监听 src 变更，重置状态
   @Watch('src')

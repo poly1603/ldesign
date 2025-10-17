@@ -24,7 +24,7 @@ ldesign-image-preview
 | -------------------- | --------------------- | ----------- | ---------- | ------- |
 | `currentIndex`       | `current-index`       | 当前显示的图片索引   | `number`   | `0`     |
 | `enableRotate`       | `enable-rotate`       | 是否启用旋转      | `boolean`  | `true`  |
-| `images`             | `images`              | 当前预览的图片列表   | `string[]` | `[]`    |
+| `images`             | --                    | 当前预览的图片列表   | `string[]` | `[]`    |
 | `initialScale`       | `initial-scale`       | 初始缩放比例      | `number`   | `1`     |
 | `keyboard`           | `keyboard`            | 是否启用键盘操作    | `boolean`  | `true`  |
 | `loop`               | `loop`                | 是否循环切换      | `boolean`  | `true`  |

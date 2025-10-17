@@ -14,7 +14,7 @@ Input 输入框组件
 
 | Property       | Attribute       | Description             | Type                                                                          | Default     |
 | -------------- | --------------- | ----------------------- | ----------------------------------------------------------------------------- | ----------- |
-| `allowInput`   | `allow-input`   | 输入限制，只允许输入指定字符          | `((value: string) => boolean) \| RegExp`                                      | `undefined` |
+| `allowInput`   | --              | 输入限制，只允许输入指定字符          | `((value: string) => boolean) \| RegExp`                                      | `undefined` |
 | `autosize`     | `autosize`      | 自适应内容高度（仅对 textarea 有效） | `boolean \| { minRows?: number; maxRows?: number; }`                          | `false`     |
 | `clearable`    | `clearable`     | 是否可清空                   | `boolean`                                                                     | `false`     |
 | `controlled`   | `controlled`    | 是否受控组件                  | `boolean`                                                                     | `false`     |

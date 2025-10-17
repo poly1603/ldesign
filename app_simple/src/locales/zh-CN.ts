@@ -3,6 +3,14 @@
  */
 
 export default {
+  // 自定义主题
+  customThemes: {
+    sunset: '日落橙',
+    forest: '森林绿',
+    midnight: '午夜蓝',
+    lavender: '薰衣草紫',
+    coral: '珊瑚红'
+  },
   // 应用信息
   app: {
     name: 'LDesign 简单应用',

@@ -84,7 +84,7 @@ export class LdesignTooltip {
   @Prop() tooltipTitle?: string;
   
   /** 内部状态 */
-  @State() isManualControl!: boolean = false;
+  @State() isManualControl: boolean = false;
   
   componentWillLoad() {
     this.isManualControl = this.trigger === 'manual';

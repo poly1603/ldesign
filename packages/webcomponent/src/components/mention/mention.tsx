@@ -86,11 +86,11 @@ export class LdesignMention {
   @Event() ldesignFocus!: EventEmitter<FocusEvent>;
   @Event() ldesignBlur!: EventEmitter<FocusEvent>;
 
-  @State() parsedOptions!: MentionItem[] = [];
-  @State() parsedTriggerConfigs!: MentionTriggerConfig[] = [];
-  @State() open!: boolean = false;
-  @State() highlightIndex!: number = -1;
-  @State() searchText!: string = '';
+  @State() parsedOptions: MentionItem[] = [];
+  @State() parsedTriggerConfigs: MentionTriggerConfig[] = [];
+  @State() open: boolean = false;
+  @State() highlightIndex: number = -1;
+  @State() searchText: string = '';
 
   private editableMinH = 0; // px
   private editableMaxH: number | null = null; // px

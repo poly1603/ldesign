@@ -16,7 +16,7 @@ export class LdesignCol {
   /** 占用的列数 */
   @Prop() span: number = 1;
 
-  @State() parentCols!: number = 24;
+  @State() parentCols: number = 24;
 
   private rowObserver?: MutationObserver;
   private gridObserver?: MutationObserver;
@@ -38,8 +38,8 @@ export class LdesignCol {
   }
 
   private updateParentCols(setupWatchers = false) {
-    const row = this.el.closest('ldesign-row') as HTMLElement | null;
-    const grid = this.el.closest('ldesign-grid') as HTMLElement | null;
+    const row = this.el.closest('ldesign-row') as any as HTMLElement | null;
+    const grid = this.el.closest('ldesign-grid') as any as HTMLElement | null;
 
     const fromRow = this.parseColsFrom(row);
     const fromGrid = this.parseColsFrom(grid);
@@ -70,7 +70,7 @@ export class LdesignCol {
         this.gridObserver = new MutationObserver((mutations) => {
           for (const m of mutations) {
             if (m.type === 'attributes' && m.attributeName === 'cols') {
-              const nextFromRow = this.parseColsFrom(this.el.closest('ldesign-row') as HTMLElement | null);
+              const nextFromRow = this.parseColsFrom(this.el.closest('ldesign-row') as any as HTMLElement | null);
               if (nextFromRow !== undefined) {
                 this.parentCols = nextFromRow;
               } else {

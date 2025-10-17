@@ -31,7 +31,7 @@ export class LdesignImageGroup {
   private applyShapeToChildren() {
     try {
       if (!this.shape) return;
-      const items = Array.from(this.el.querySelectorAll('ldesign-image')) as HTMLElement[];
+      const items = Array.from(this.el.querySelectorAll('ldesign-image')) as any[];
       items.forEach(it => {
         if (!it.hasAttribute('shape')) {
           it.setAttribute('shape', this.shape!);

@@ -85,7 +85,7 @@
 | `clearable`       | `clearable`         |             | `boolean`                                            | `true`         |
 | `defaultValue`    | `default-value`     |             | `string`                                             | `undefined`    |
 | `disabled`        | `disabled`          |             | `boolean`                                            | `false`        |
-| `disabledDate`    | `disabled-date`     |             | `(d: Date) => boolean`                               | `undefined`    |
+| `disabledDate`    | --                  |             | `(d: Date) => boolean`                               | `undefined`    |
 | `firstDayOfWeek`  | `first-day-of-week` |             | `0 \| 1 \| 2 \| 3 \| 4 \| 5 \| 6`                    | `1`            |
 | `format`          | `format`            |             | `string`                                             | `'YYYY-MM-DD'` |
 | `maxDate`         | `max-date`          |             | `string`                                             | `undefined`    |

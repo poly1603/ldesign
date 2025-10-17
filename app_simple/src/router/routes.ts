@@ -9,11 +9,8 @@ import type { RouteRecordRaw } from '@ldesign/router'
 const Main = () => import('@/views/Main.vue')
 const Home = () => import('@/views/Home.vue')
 const Login = () => import('@/views/Login.vue')
-const LoginTest = () => import('@/views/LoginTest.vue')
 const Dashboard = () => import('@/views/Dashboard.vue')
 const About = () => import('@/views/About.vue')
-const I18nTest = () => import('@/views/I18nTest.vue')
-const I18nEngineTest = () => import('@/views/I18nEngineTest.vue')
 
 /**
  * 公开路由
@@ -50,26 +47,6 @@ export const publicRoutes: RouteRecordRaw[] = [
           layout: 'default'
         }
       },
-      {
-        path: 'i18n-test',
-        name: 'I18nTest',
-        component: I18nTest,
-        meta: {
-          titleKey: 'nav.i18nTest',
-          requiresAuth: false,
-          layout: 'default'
-        }
-      },
-      {
-        path: 'i18n-engine-test',
-        name: 'I18nEngineTest',
-        component: I18nEngineTest,
-        meta: {
-          titleKey: 'nav.i18nEngineTest',
-          requiresAuth: false,
-          layout: 'default'
-        }
-      },
     ]
   },
   {
@@ -80,16 +57,6 @@ export const publicRoutes: RouteRecordRaw[] = [
       titleKey: 'nav.login',
       requiresAuth: false,
       layout: 'blank'  // 登录页面使用全屏布局，不显示导航栏和页脚
-    }
-  },
-  {
-    path: '/login-test',
-    name: 'login-test',
-    component: LoginTest, // 测试页面
-    meta: {
-      titleKey: 'Login Test',
-      requiresAuth: false,
-      layout: 'default'
     }
   },
 ]

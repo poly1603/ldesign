@@ -89,23 +89,23 @@ export class LdesignImageViewer {
   @Event() ldesignChange!: EventEmitter<{ index: number }>;
 
   // ── State ───────────────────────────────────────────────────────
-  @State() list!: ImageViewerItem[] = [];
-  @State() index!: number = 0;
-  @State() scale!: number = 1;
-  @State() rotate!: number = 0;
-  @State() offsetX!: number = 0;
-  @State() offsetY!: number = 0;
-  @State() flipX!: boolean = false;
-  @State() flipY!: boolean = false;
-  @State() dragging!: boolean = false;
-  @State() gesturing!: boolean = false;
-  @State() crossfading!: boolean = false;
-  @State() loading!: boolean = false;
+  @State() list: ImageViewerItem[] = [];
+  @State() index: number = 0;
+  @State() scale: number = 1;
+  @State() rotate: number = 0;
+  @State() offsetX: number = 0;
+  @State() offsetY: number = 0;
+  @State() flipX: boolean = false;
+  @State() flipY: boolean = false;
+  @State() dragging: boolean = false;
+  @State() gesturing: boolean = false;
+  @State() crossfading: boolean = false;
+  @State() loading: boolean = false;
   /** 关闭动画期间保持渲染 */
-  @State() isClosing!: boolean = false;
+  @State() isClosing: boolean = false;
   /** 打开/关闭动效状态 */
-  @State() motion!: 'opening' | 'open' | 'closing' = 'open';
-  @State() uiHidden!: boolean = false; // 移动端自动隐藏 UI
+  @State() motion: 'opening' | 'open' | 'closing' = 'open';
+  @State() uiHidden: boolean = false; // 移动端自动隐藏 UI
 
   // —— 与 Draggable 对接相关 ——
   private draggableEl?: any; // <ldesign-draggable> 实例引用

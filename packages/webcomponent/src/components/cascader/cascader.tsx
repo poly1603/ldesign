@@ -58,10 +58,10 @@ export class LdesignCascader {
   @Event() ldesignVisibleChange!: EventEmitter<boolean>;
 
   // state
-  @State() parsed!: CascaderOption[] = [];
-  @State() activePath!: string[] = []; // 当前面板内的选中链
-  @State() drawerVisible!: boolean = false; // overlay for drawer when trigger!=='manual'
-  @State() hoveredPath!: string[] = []; // hover 状态下展开的路径
+  @State() parsed: CascaderOption[] = [];
+  @State() activePath: string[] = []; // 当前面板内的选中链
+  @State() drawerVisible: boolean = false; // overlay for drawer when trigger!=='manual'
+  @State() hoveredPath: string[] = []; // hover 状态下展开的路径
   
   private hoverTimer: any = null; // hover 延迟计时器
   private leaveTimer: any = null; // 离开延迟计时器

@@ -77,9 +77,9 @@ export class LdesignSelect {
   /** 对外转发可见性变化 */
   @Event() ldesignVisibleChange!: EventEmitter<boolean>;
 
-  @State() parsedOptions!: SelectOption[] = [];
-  @State() currentValues!: string[] = [];
-  @State() highlightIndex!: number = -1;
+  @State() parsedOptions: SelectOption[] = [];
+  @State() currentValues: string[] = [];
+  @State() highlightIndex: number = -1;
 
   private listEl?: HTMLElement;
 

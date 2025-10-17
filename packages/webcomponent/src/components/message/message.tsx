@@ -39,9 +39,9 @@ export class LdesignMessage {
   @Prop() message?: string;
   
   /** 标题内容 */
-  @Prop() title?: string;
+  @Prop() messageTitle?: string;
 
-  /** 悬浮时是否暂停计时 */
+  /** 消息内容 */
   @Prop() pauseOnHover: boolean = true;
 
   /** 出现位置 */
@@ -54,7 +54,7 @@ export class LdesignMessage {
   @Prop() html: boolean = false;
   
   /** 自定义类名 */
-  @Prop() className?: string;
+  @Prop() customClass?: string;
 
   /** 内部：是否可见（用于过渡动画） */
   @State() private isVisible = false;

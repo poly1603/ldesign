@@ -3,6 +3,14 @@
  */
 
 export default {
+  // Custom themes
+  customThemes: {
+    sunset: 'Sunset Orange',
+    forest: 'Forest Green',
+    midnight: 'Midnight Blue',
+    lavender: 'Lavender Dream',
+    coral: 'Coral Reef'
+  },
   // App Info
   app: {
     name: 'LDesign Simple App',

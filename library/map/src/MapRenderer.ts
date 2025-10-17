@@ -50,6 +50,8 @@ export class MapRenderer {
   
   // MarkerRenderer instance
   private markerRenderer: MarkerRenderer;
+  private animationFrameId: number | null = null;
+  private isAnimating: boolean = false;
 
   constructor(container: HTMLElement | string, options: MapRendererOptions = {}) {
     this.container = typeof container === 'string' 
@@ -121,6 +123,9 @@ export class MapRenderer {
     this.markerRenderer = new MarkerRenderer();
 
     this.initDeck();
+    
+    // 启动动画循环
+    this.startAnimationLoop();
   }
 
   /**
@@ -901,15 +906,13 @@ export class MapRenderer {
       // 合并地图层和标记层
       const markerLayers = this.markerRenderer.getLayers();
       const allLayers = [...this.layers, ...markerLayers];
-      console.log('Updating deck layers, map layers:', this.layers.length, 'marker layers:', markerLayers.length);
       
-      // 使用新数组确保deck.gl检测到变化
+      // 使用新数组确保 deck.gl 检测到变化
       this.deck.setProps({ 
         layers: allLayers
       });
       // 强制重绘
       this.deck.redraw();
-      console.log('Deck layers updated');
     } else {
       console.error('Deck not initialized!');
     }
@@ -1181,7 +1184,45 @@ export class MapRenderer {
   addMarker(marker: MarkerOptions): string {
     const markerId = this.markerRenderer.addMarker(marker);
     this.updateLayers();
+    
+    // 如果有水波纹动画，启动动画循环
+    if (marker.animation === 'ripple') {
+      this.startAnimationLoop();
+    }
+    
     return markerId;
+  }
+  
+  /**
+   * 启动动画循环
+   */
+  private startAnimationLoop(): void {
+    if (this.animationFrameId !== null) return;
+    
+    const animate = () => {
+      this.updateLayers();
+      
+      const hasAnimatedMarkers = this.markerRenderer.getAllMarkers()
+        .some(m => m.animation && m.animation !== 'none');
+      
+      if (hasAnimatedMarkers) {
+        this.animationFrameId = requestAnimationFrame(animate);
+      } else {
+        this.stopAnimationLoop();
+      }
+    };
+    
+    this.animationFrameId = requestAnimationFrame(animate);
+  }
+  
+  /**
+   * 停止动画循环
+   */
+  private stopAnimationLoop(): void {
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
   }
   
   /**
@@ -1190,6 +1231,12 @@ export class MapRenderer {
   addMarkers(markers: MarkerOptions[]): string[] {
     const markerIds = this.markerRenderer.addMarkers(markers);
     this.updateLayers();
+    
+    // 检查是否有水波纹动画
+    if (markers.some(m => m.animation === 'ripple')) {
+      this.startAnimationLoop();
+    }
+    
     return markerIds;
   }
   
@@ -1229,6 +1276,7 @@ export class MapRenderer {
    * Clear all markers
    */
   clearMarkers(): void {
+    this.stopAnimationLoop();
     this.markerRenderer.clearMarkers();
     this.updateLayers();
   }
@@ -1634,6 +1682,37 @@ export class MapRenderer {
           labelOptions
         });
       }
+    }
+  }
+  
+  /**
+   * Start animation loop for ripple effects
+   */
+  private startAnimationLoop(): void {
+    if (this.isAnimating) return;
+    this.isAnimating = true;
+    
+    const animate = () => {
+      if (!this.isAnimating) return;
+      
+      // Update layers which will trigger ripple animation updates
+      this.updateLayers();
+      
+      // Continue animation loop
+      this.animationFrameId = requestAnimationFrame(animate);
+    };
+    
+    animate();
+  }
+  
+  /**
+   * Stop animation loop
+   */
+  private stopAnimationLoop(): void {
+    this.isAnimating = false;
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
     }
   }
   

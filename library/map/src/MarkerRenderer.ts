@@ -96,6 +96,8 @@ export class MarkerRenderer {
   private markerLayers: DeckGLLayer[] = [];
   private customRenderers: Map<MarkerStyle, CustomMarkerRenderer> = new Map();
   private markerIdCounter = 0;
+  private animationTimer: number | null = null;
+  private lastAnimationTime = 0;
   
   /**
    * 添加单个标记
@@ -105,6 +107,12 @@ export class MarkerRenderer {
     const markerWithId = { ...marker, id: markerId };
     this.markers.set(markerId, markerWithId);
     this.updateMarkerLayers();
+    
+    // 如果添加的标记有动画，启动动画循环
+    if (marker.animation && marker.animation !== 'none') {
+      this.startAnimationLoop();
+    }
+    
     return markerId;
   }
   
@@ -174,6 +182,7 @@ export class MarkerRenderer {
     this.markers.clear();
     this.markerGroups.clear();
     this.markerLayers = [];
+    this.stopAnimationLoop();
   }
   
   /**
@@ -187,24 +196,87 @@ export class MarkerRenderer {
    * 更新标记图层
    */
   private updateMarkerLayers(): void {
-    this.markerLayers = [];
+    const newLayers: DeckGLLayer[] = [];
     
-    // 按样式分组标记
+    // 首先添加水波纹图层（在底层）
+    const allMarkers = Array.from(this.markers.values());
+    const rippleMarkers = allMarkers.filter(m => m.animation === 'ripple' && m.style === 'circle' && m.visible !== false);
+    
+    if (rippleMarkers.length > 0) {
+      // 为每个水波纹标记创建3个环
+      rippleMarkers.forEach((marker, markerIndex) => {
+        for (let ringIndex = 0; ringIndex < 3; ringIndex++) {
+          const rippleLayer = new ScatterplotLayer({
+            id: `ripple-${marker.id}-ring-${ringIndex}`,
+            data: [{
+              ...marker,
+              position: marker.position,
+              _ringIndex: ringIndex,
+              _animationPhase: ringIndex * 0.33  // 相位差，让3个环错开
+            }],
+            pickable: false,
+            opacity: 1,
+            stroked: true,
+            filled: false,
+            radiusScale: 1,
+            radiusMinPixels: 10,
+            radiusMaxPixels: 150,  // 增大最大半径
+            lineWidthMinPixels: 2,  // 增加线宽
+            lineWidthMaxPixels: 4,
+            getPosition: (d: any) => d.position,
+            getRadius: (d: any) => {
+              const baseRadius = d.size || 15;
+              const time = Date.now() / 2000;  // 减慢速度
+              const phase = d._animationPhase || 0;
+              // 使用模运算创建循环动画
+              const animProgress = ((time + phase) % 1.0);  // 0到1循环
+              // 让半径从基础大小扩展到3倍
+              return baseRadius * (1 + animProgress * 3);
+            },
+            getLineColor: (d: any) => {
+              const time = Date.now() / 2000;  // 减慢速度
+              const phase = d._animationPhase || 0;
+              const animProgress = ((time + phase) % 1.0);  // 0到1循环
+              // 透明度从0.8逐渐降到0
+              const opacity = Math.max(0, 0.8 * (1 - animProgress));
+              const color = d.color || [0, 150, 255, 255];
+              return [color[0], color[1], color[2], Math.floor(opacity * 255)];
+            },
+            getLineWidth: (d: any) => {
+              const time = Date.now() / 2000;
+              const phase = d._animationPhase || 0;
+              const animProgress = ((time + phase) % 1.0);
+              // 线宽从3逐渐变细到1
+              return 3 * (1 - animProgress * 0.7);
+            },
+            updateTriggers: {
+              getRadius: [Date.now()],
+              getLineColor: [Date.now()],
+              getLineWidth: [Date.now()]
+            }
+          } as any);
+          newLayers.push(rippleLayer);
+        }
+      });
+    }
+    
+    // 然后按样式分组标记创建主图层
     const markersByStyle = this.groupMarkersByStyle();
     
-    // 为每种样式创建对应的图层
     markersByStyle.forEach((markers, style) => {
-      const layer = this.createLayerForStyle(style, markers);
+      const layer = this.createMainLayerForStyle(style, markers);
       if (layer) {
-        this.markerLayers.push(layer);
+        newLayers.push(layer);
       }
     });
     
     // 创建标签图层
     const labelLayer = this.createLabelLayer();
     if (labelLayer) {
-      this.markerLayers.push(labelLayer);
+      newLayers.push(labelLayer);
     }
+    
+    this.markerLayers = newLayers;
   }
   
   /**
@@ -225,9 +297,9 @@ export class MarkerRenderer {
   }
   
   /**
-   * 根据样式创建图层
+   * 根据样式创建主图层（不包含水波纹）
    */
-  private createLayerForStyle(style: MarkerStyle, markers: MarkerOptions[]): DeckGLLayer | null {
+  private createMainLayerForStyle(style: MarkerStyle, markers: MarkerOptions[]): DeckGLLayer | null {
     // 过滤可见的标记
     const visibleMarkers = markers.filter(m => m.visible !== false);
     
@@ -240,7 +312,7 @@ export class MarkerRenderer {
       case 'square':
       case 'triangle':
       case 'diamond':
-        return this.createShapeLayer(style, visibleMarkers);
+        return this.createMainShapeLayer(style, visibleMarkers);
       
       case 'pin':
         return this.createPinLayer(visibleMarkers);
@@ -249,169 +321,79 @@ export class MarkerRenderer {
         return this.createIconLayer(visibleMarkers);
       
       case 'custom':
-        return this.createCustomLayer(visibleMarkers);
+        return this.createMainShapeLayer('circle', visibleMarkers);
       
       default:
-        return this.createShapeLayer('circle', visibleMarkers);
+        return this.createMainShapeLayer('circle', visibleMarkers);
     }
   }
   
+  
   /**
-   * 创建形状图层（圆形、方形、三角形、菱形）
+   * 创建主形状图层
    */
-  private createShapeLayer(shape: string, markers: MarkerOptions[]): ScatterplotLayer {
-    // 为带动画的标记增加特殊效果
-    const animatedMarkers = markers.map(marker => {
-      // 为所有标记添加动画相位，用于创建流畅的动画
-      return {
-        ...marker,
-        _animationPhase: Math.random() * Math.PI * 2,
-        _pulsePhase: Math.random() * Math.PI * 2,
-        _hoverScale: 1.0
-      };
-    });
-    
+  private createMainShapeLayer(shape: string, markers: MarkerOptions[]): ScatterplotLayer {
     return new ScatterplotLayer({
       id: `marker-${shape}-layer`,
-      data: animatedMarkers,
+      data: markers,
       pickable: true,
-      opacity: 0.8,
+      opacity: 1,  // 完全不透明
       stroked: true,
       filled: true,
       radiusScale: 1,
-      radiusMinPixels: 10,  // 增大最小半径到 10 像素
-      radiusMaxPixels: 150,  // 增大最大半径
-      lineWidthMinPixels: 3,  // 增加边框最小宽度
+      radiusMinPixels: 8,  // 合适的最小半径
+      radiusMaxPixels: 100,  // 合适的最大半径
+      lineWidthMinPixels: 2,  // 边框宽度
       getPosition: (d: MarkerOptions) => d.position,
       getRadius: (d: MarkerOptions) => {
-        const baseRadius = (d.size || 15) * 2; // 大幅增大基础尺寸
-        const time = Date.now() / 1000;
-        const phase = (d as any)._animationPhase || 0;
-        let scale = (d as any)._hoverScale || 1.0;
-        
-        // 根据不同动画类型应用不同效果
-        if (d.animation === 'ripple' && shape === 'circle') {
-          scale *= 1 + 0.3 * Math.sin(time * 2 + phase);
-        } else if (d.animation === 'pulse') {
-          scale *= 1 + 0.2 * Math.sin(time * 3 + phase);
-        } else if (d.animation === 'bounce') {
-          scale *= 1 + 0.15 * Math.abs(Math.sin(time * 4 + phase));
-        } else {
-          // 即使没有动画，也添加微妙的呼吸效果
-          scale *= 1 + 0.05 * Math.sin(time * 1.5 + phase);
-        }
-        
-        return baseRadius * scale;
+        const baseRadius = d.size || 15; // 使用原始大小
+        return baseRadius;
       },
       getFillColor: (d: MarkerOptions) => {
-        let color = d.color || [255, 0, 0, 200];
+        let color = d.color || [255, 0, 0, 255];  // 默认完全不透明
         if (typeof d.color === 'function') {
           color = d.color(d);
         }
         
         if (Array.isArray(color)) {
-          const time = Date.now() / 1000;
-          const phase = (d as any)._animationPhase || 0;
-          const hoverScale = (d as any)._hoverScale || 1.0;
-          
-          // 基础发光效果
-          let brightness = 1.0;
-          let opacity = (color[3] || 255) / 255;
-          
-          // 根据不同动画类型调整颜色
-          if (d.animation === 'ripple' && shape === 'circle') {
-            opacity *= 0.7 + 0.3 * Math.sin(time * 2 + phase);
-            brightness = 1.0 + 0.2 * Math.sin(time * 2 + phase);
-          } else if (d.animation === 'pulse') {
-            opacity *= 0.8 + 0.2 * Math.sin(time * 3 + phase);
-            brightness = 1.0 + 0.15 * Math.sin(time * 3 + phase);
-          } else {
-            // 添加微妙的呼吸光效
-            opacity *= 0.9 + 0.1 * Math.sin(time * 1.5 + phase);
-          }
-          
-          // 悬停时增加亮度
-          if (hoverScale > 1.0) {
-            brightness *= 1.3;
-          }
-          
+          // 确保颜色是纯色，不透明
           return [
-            Math.min(255, color[0] * brightness),
-            Math.min(255, color[1] * brightness),
-            Math.min(255, color[2] * brightness),
-            Math.floor(255 * opacity)
+            color[0],
+            color[1],
+            color[2],
+            255  // 完全不透明
           ];
         }
         return color;
       },
       getLineColor: (d: MarkerOptions) => {
-        const time = Date.now() / 1000;
-        const phase = (d as any)._animationPhase || 0;
-        const hoverScale = (d as any)._hoverScale || 1.0;
-        
-        // 创建发光边框效果
-        let opacity = 1.0;
-        if (d.animation === 'ripple' && shape === 'circle') {
-          opacity = 0.8 + 0.2 * Math.sin(time * 2 + phase);
-        } else if (d.animation) {
-          opacity = 0.9 + 0.1 * Math.sin(time * 3 + phase);
-        }
-        
-        // 悬停时边框更亮
-        if (hoverScale > 1.0) {
-          return [255, 255, 100, Math.floor(255 * opacity)];
-        }
-        
-        return [255, 255, 255, Math.floor(255 * opacity * 0.9)];
+        // 白色边框，完全不透明
+        return [255, 255, 255, 255];
       },
       lineWidthScale: 1,
       getLineWidth: (d: MarkerOptions) => {
-        const hoverScale = (d as any)._hoverScale || 1.0;
-        let width = 2;
-        
-        // 动画时边框更粗
-        if (d.animation === 'ripple' && shape === 'circle') {
-          width = 3;
-        } else if (d.animation) {
-          width = 2.5;
-        }
-        
-        // 悬停时边框加粗
-        if (hoverScale > 1.0) {
-          width *= 1.5;
-        }
-        
-        return width;
+        return 2; // 固定边框宽度
       },
       onClick: (info: any) => {
         const marker = info.object as MarkerOptions;
-        if (marker.onClick) {
-          // 添加点击动画反馈
-          (marker as any)._hoverScale = 1.5;
-          setTimeout(() => {
-            (marker as any)._hoverScale = 1.0;
-          }, 300);
+        if (marker && marker.onClick) {
           marker.onClick(marker, info);
         }
       },
       onHover: (info: any) => {
-        const marker = info.object as MarkerOptions;
         if (info.picked) {
-          // 悬停时放大
-          (marker as any)._hoverScale = 1.3;
           document.body.style.cursor = 'pointer';
         } else {
-          // 离开时恢复
-          (marker as any)._hoverScale = 1.0;
           document.body.style.cursor = 'default';
         }
-        if (marker.onHover) {
+        const marker = info.object as MarkerOptions;
+        if (marker && marker.onHover) {
           marker.onHover(marker, info);
         }
       },
       updateTriggers: {
         getRadius: [shape],
-        getFillColor: [markers]
+        getFillColor: [shape]
       }
     } as any);
   }
@@ -523,14 +505,6 @@ export class MarkerRenderer {
     } as any);
   }
   
-  /**
-   * 创建自定义图层
-   */
-  private createCustomLayer(markers: MarkerOptions[]): DeckGLLayer | null {
-    // 这里可以扩展支持自定义渲染器
-    // 暂时返回默认圆形图层
-    return this.createShapeLayer('circle', markers);
-  }
   
   /**
    * 创建标签图层
@@ -576,10 +550,44 @@ export class MarkerRenderer {
   }
   
   /**
-   * 获取所有标记图层
+   * 获取所有图层
    */
   getLayers(): DeckGLLayer[] {
     return this.markerLayers;
+  }
+  
+  /**
+   * 启动动画循环
+   */
+  private startAnimationLoop(): void {
+    if (this.animationTimer !== null) return;
+    
+    const animate = () => {
+      // 触发图层更新以刷新动画
+      this.updateMarkerLayers();
+      
+      // 检查是否还有需要动画的标记
+      const hasAnimatedMarkers = Array.from(this.markers.values())
+        .some(m => m.animation && m.animation !== 'none');
+      
+      if (hasAnimatedMarkers) {
+        this.animationTimer = requestAnimationFrame(animate);
+      } else {
+        this.stopAnimationLoop();
+      }
+    };
+    
+    this.animationTimer = requestAnimationFrame(animate);
+  }
+  
+  /**
+   * 停止动画循环
+   */
+  private stopAnimationLoop(): void {
+    if (this.animationTimer) {
+      cancelAnimationFrame(this.animationTimer);
+      this.animationTimer = null;
+    }
   }
   
   /**

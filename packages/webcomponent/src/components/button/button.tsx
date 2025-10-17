@@ -147,12 +147,12 @@ export class LdesignButton {
   /**
    * 内部加载状态
    */
-  @State() innerLoading!: boolean = false;
+  @State() innerLoading: boolean = false;
 
   /**
    * 是否包含两个中文字符
    */
-  @State() hasTwoCNChar!: boolean = false;
+  @State() hasTwoCNChar: boolean = false;
 
   // ==================== Events ====================
   /**
@@ -261,34 +261,52 @@ export class LdesignButton {
     const prefixCls = 'ldesign-button';
     const sizeSuffix = getSizeSuffix(this.size);
     
-    // 如果有 variant，优先使用 variant 系统
-    if (this.variant) {
-      // 如果没有指定 color，默认使用 'default'
-      const effectiveColor = this.color || (this.danger ? 'danger' : 'default');
-      
-      return combineClasses(
-        prefixCls,
-        `${prefixCls}--variant-${this.variant}`,
-        `${prefixCls}--color-${effectiveColor}`,
-        this.shape !== 'default' && `${prefixCls}--${this.shape}`,
-        sizeSuffix && `${prefixCls}--${sizeSuffix}`,
-        this.ghost && `${prefixCls}--ghost`,
-        this.disabled && `${prefixCls}--disabled`,
-        this.innerLoading && `${prefixCls}--loading`,
-        this.block && `${prefixCls}--block`,
-        this.hasTwoCNChar && this.autoInsertSpace && `${prefixCls}--two-chinese-chars`,
-        !this.el?.textContent?.trim() && (this.icon || this.innerLoading) && `${prefixCls}--icon-only`,
-        this.iconPosition === 'end' && `${prefixCls}--icon-end`
-      );
+    // 智能映射：type -> variant + color
+    let effectiveVariant = this.variant;
+    let effectiveColor = this.color;
+    
+    // 如果没有指定 variant，根据 type 推断
+    if (!effectiveVariant) {
+      switch (this.type) {
+        case 'primary':
+          effectiveVariant = 'solid';
+          effectiveColor = effectiveColor || 'primary';
+          break;
+        case 'dashed':
+          effectiveVariant = 'dashed';
+          effectiveColor = effectiveColor || 'default';
+          break;
+        case 'text':
+          effectiveVariant = 'text';
+          effectiveColor = effectiveColor || 'default';
+          break;
+        case 'link':
+          effectiveVariant = 'link';
+          effectiveColor = effectiveColor || 'primary';
+          break;
+        case 'default':
+        default:
+          effectiveVariant = 'outlined';
+          effectiveColor = effectiveColor || 'default';
+          break;
+      }
     }
     
-    // 否则使用 type 系统（语法糖）
+    // 处理 danger 属性
+    if (this.danger && !effectiveColor) {
+      effectiveColor = 'danger';
+    }
+    
+    // 默认颜色
+    if (!effectiveColor) {
+      effectiveColor = 'default';
+    }
+    
     return combineClasses(
       prefixCls,
-      // 类型（直接使用 type）
-      `${prefixCls}--${this.type}`,
-      // 危险状态
-      this.danger && `${prefixCls}--danger`,
+      // 变体和颜色（统一系统）
+      `${prefixCls}--variant-${effectiveVariant}`,
+      `${prefixCls}--color-${effectiveColor}`,
       // 形状
       this.shape !== 'default' && `${prefixCls}--${this.shape}`,
       // 尺寸
@@ -303,9 +321,7 @@ export class LdesignButton {
       // 仅图标
       !this.el?.textContent?.trim() && (this.icon || this.innerLoading) && `${prefixCls}--icon-only`,
       // 图标位置
-      this.iconPosition === 'end' && `${prefixCls}--icon-end`,
-      // 渐变特殊处理
-      this.type === 'gradient' && `${prefixCls}--gradient`
+      this.iconPosition === 'end' && `${prefixCls}--icon-end`
     );
   }
 

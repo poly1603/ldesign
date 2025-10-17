@@ -245,13 +245,13 @@
 | ------------------- | --------------------- | ------------------------------------------------- | --------------------------------- | ------------ |
 | `accordion`         | `accordion`           | 手风琴模式：同层级只允许展开一个                                  | `boolean`                         | `false`      |
 | `collapse`          | `collapse`            | 折叠模式：仅显示一级图标，悬停右侧弹出；无子级时显示 tooltip（仅纵向）           | `boolean`                         | `false`      |
-| `defaultOpenKeys`   | `default-open-keys`   | 默认打开的子菜单 key 列表（非受控）                              | `string[]`                        | `[]`         |
+| `defaultOpenKeys`   | --                    | 默认打开的子菜单 key 列表（非受控）                              | `string[]`                        | `[]`         |
 | `defaultValue`      | `default-value`       | 默认选中项（非受控）                                        | `string`                          | `undefined`  |
 | `indent`            | `indent`              | 子级缩进（px）                                          | `number`                          | `16`         |
 | `items`             | `items`               | 菜单数据（可传入 JSON 字符串或对象数组）                           | `MenuItem[] \| string`            | `[]`         |
 | `mode`              | `mode`                | 展示模式：vertical（纵向）\| horizontal（横向）                | `"horizontal" \| "vertical"`      | `'vertical'` |
 | `moreLabel`         | `more-label`          | 横向模式下 “更多” 文案                                     | `string`                          | `'更多'`       |
-| `openKeys`          | `open-keys`           | 当前打开的子菜单 key 列表（受控）                               | `string[]`                        | `undefined`  |
+| `openKeys`          | --                    | 当前打开的子菜单 key 列表（受控）                               | `string[]`                        | `undefined`  |
 | `requireTopIcon`    | `require-top-icon`    | 顶层（一级）是否强制显示图标占位（保证对齐）。若条目没有 icon，将渲染一个占位。        | `boolean`                         | `true`       |
 | `submenuTrigger`    | `submenu-trigger`     | 弹出子菜单的触发方式（仅在 flyout/mixed 生效；横向模式同样适用）           | `"click" \| "hover"`              | `'hover'`    |
 | `topLevelExclusive` | `top-level-exclusive` | 纵向模式：顶层互斥展开（无论 inline 或 flyout），默认开启              | `boolean`                         | `true`       |

@@ -11,7 +11,7 @@ export interface SizePluginOptions {
   customLocale?: Partial<SizeLocale>
 }
 
-export const SIZE_MANAGER_KEY: InjectionKey<SizeManager> = Symbol('size-manager')
+export const SIZE_MANAGER_KEY: InjectionKey<SizeManager> = Symbol.for('size-manager')
 export const SIZE_LOCALE_KEY: InjectionKey<string> = Symbol('size-locale')
 export const SIZE_CUSTOM_LOCALE_KEY: InjectionKey<Partial<SizeLocale>> = Symbol('size-custom-locale')
 

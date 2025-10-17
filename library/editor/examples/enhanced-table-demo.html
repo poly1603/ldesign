@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>增强表格插入功能演示 - LDesign Editor</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .header p {
+      font-size: 18px;
+      opacity: 0.95;
+    }
+    
+    .editor-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    
+    /* 编辑器样式 */
+    .ldesign-editor {
+      border: none;
+      min-height: 500px;
+    }
+    
+    .ldesign-editor-toolbar {
+      background: #f8f9fa;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .ldesign-editor-content {
+      padding: 20px;
+      min-height: 400px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    
+    /* 工具栏按钮样式 */
+    .toolbar-button {
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+    }
+    
+    .toolbar-button:hover {
+      background: #f3f4f6;
+      border-color: #9ca3af;
+    }
+    
+    .toolbar-button.active {
+      background: #3b82f6;
+      color: white;
+      border-color: #2563eb;
+    }
+    
+    .toolbar-button[data-name="table"],
+    .toolbar-button[data-name="enhancedTable"] {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      font-weight: 500;
+      width: auto;
+      padding: 8px 16px;
+    }
+    
+    .toolbar-button[data-name="table"]:hover,
+    .toolbar-button[data-name="enhancedTable"]:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* 表格样式 */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 15px 0;
+    }
+    
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 10px 0;
+    }
+    
+    table th,
+    table td {
+      border: 1px solid #e5e7eb;
+      padding: 12px;
+      text-align: left;
+    }
+    
+    table th {
+      background: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+    }
+    
+    table tr:nth-child(even) {
+      background: #f9fafb;
+    }
+    
+    table tr:hover {
+      background: #f3f4f6;
+    }
+    
+    /* 下拉框动画 */
+    @keyframes dropdown-open {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .editor-dropdown {
+      animation: dropdown-open 0.2s ease-out;
+    }
+    
+    /* 功能说明 */
+    .features {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      margin-top: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .features h2 {
+      color: #1f2937;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+    
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    
+    .feature-item {
+      padding: 15px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+    
+    .feature-item h3 {
+      color: #374151;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+    
+    .feature-item p {
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎯 增强表格插入功能</h1>
+      <p>使用下拉网格选择器，像 Word/Office 一样优雅地插入表格</p>
+    </div>
+    
+    <div class="editor-container">
+      <div class="ldesign-editor">
+        <div class="ldesign-editor-toolbar">
+          <button class="toolbar-button" data-name="bold" title="加粗">
+            <strong>B</strong>
+          </button>
+          <button class="toolbar-button" data-name="italic" title="斜体">
+            <em>I</em>
+          </button>
+          <button class="toolbar-button" data-name="underline" title="下划线">
+            <u>U</u>
+          </button>
+          <span style="width: 1px; height: 24px; background: #d1d5db; margin: 0 4px;"></span>
+          <button class="toolbar-button" data-name="enhancedTable" title="插入表格（增强版）">
+            📊 表格
+          </button>
+        </div>
+        <div class="ldesign-editor-content" contenteditable="true">
+          <p>点击工具栏中的 <strong>"📊 表格"</strong> 按钮来体验增强的表格插入功能！</p>
+          <p>功能特点：</p>
+          <ul>
+            <li>鼠标悬停预览表格大小</li>
+            <li>动态扩展网格（最大 15×15）</li>
+            <li>实时显示表格尺寸</li>
+            <li>点击确认插入</li>
+            <li>支持键盘操作（方向键选择，Enter确认，ESC取消）</li>
+          </ul>
+          <p><br></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="features">
+      <h2>✨ 功能特色</h2>
+      <div class="feature-list">
+        <div class="feature-item">
+          <h3>🖱️ 直观的鼠标操作</h3>
+          <p>移动鼠标即可选择表格大小，所见即所得的视觉反馈</p>
+        </div>
+        <div class="feature-item">
+          <h3>📏 动态网格扩展</h3>
+          <p>初始显示 5×5 网格，鼠标移动到边缘自动扩展至 15×15</p>
+        </div>
+        <div class="feature-item">
+          <h3>🎨 优雅的视觉设计</h3>
+          <p>渐变色高亮显示，流畅的动画过渡效果</p>
+        </div>
+        <div class="feature-item">
+          <h3>⌨️ 键盘快捷操作</h3>
+          <p>支持方向键精确选择，Enter确认，ESC取消</p>
+        </div>
+        <div class="feature-item">
+          <h3>📱 响应式布局</h3>
+          <p>自动适应不同屏幕大小，保持最佳显示效果</p>
+        </div>
+        <div class="feature-item">
+          <h3>⚡ 高性能渲染</h3>
+          <p>优化的DOM操作，确保流畅的交互体验</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module">
+    // 导入增强的表格插件
+    import { EnhancedTablePlugin } from '../src/plugins/table-enhanced.js'
+    import { showEnhancedTableGridSelector } from '../src/ui/TableGridSelector.js'
+    
+    // 初始化编辑器
+    document.addEventListener('DOMContentLoaded', () => {
+      const editorContent = document.querySelector('.ldesign-editor-content')
+      const tableButton = document.querySelector('[data-name="enhancedTable"]')
+      
+      // 表格按钮点击事件
+      tableButton?.addEventListener('click', (e) => {
+        e.preventDefault()
+        
+        // 保存当前选区
+        const selection = window.getSelection()
+        let savedRange = null
+        
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0)
+          if (editorContent.contains(range.commonAncestorContainer)) {
+            savedRange = range.cloneRange()
+          }
+        }
+        
+        // 显示表格选择器
+        showEnhancedTableGridSelector({
+          button: tableButton,
+          onSelect: (rows, cols) => {
+            console.log(`插入 ${rows}×${cols} 表格`)
+            
+            // 创建表格
+            const wrapper = document.createElement('div')
+            wrapper.className = 'table-wrapper'
+            
+            const table = document.createElement('table')
+            
+            // 创建表头
+            const thead = document.createElement('thead')
+            const headerRow = document.createElement('tr')
+            for (let j = 0; j < cols; j++) {
+              const th = document.createElement('th')
+              th.textContent = `列 ${j + 1}`
+              th.contentEditable = 'true'
+              headerRow.appendChild(th)
+            }
+            thead.appendChild(headerRow)
+            table.appendChild(thead)
+            
+            // 创建表体
+            const tbody = document.createElement('tbody')
+            for (let i = 0; i < rows; i++) {
+              const tr = document.createElement('tr')
+              for (let j = 0; j < cols; j++) {
+                const td = document.createElement('td')
+                td.innerHTML = '&nbsp;'
+                td.contentEditable = 'true'
+                tr.appendChild(td)
+              }
+              tbody.appendChild(tr)
+            }
+            table.appendChild(tbody)
+            
+            wrapper.appendChild(table)
+            
+            // 插入表格
+            editorContent.focus()
+            
+            if (savedRange) {
+              const currentSelection = window.getSelection()
+              currentSelection.removeAllRanges()
+              currentSelection.addRange(savedRange)
+              
+              try {
+                savedRange.deleteContents()
+                savedRange.insertNode(wrapper)
+              } catch (error) {
+                editorContent.appendChild(wrapper)
+              }
+            } else {
+              editorContent.appendChild(wrapper)
+            }
+            
+            // 添加空段落
+            const p = document.createElement('p')
+            p.innerHTML = '<br>'
+            wrapper.insertAdjacentElement('afterend', p)
+            
+            // 触发更新
+            const event = new Event('input', { bubbles: true })
+            editorContent.dispatchEvent(event)
+            
+            // 滚动到表格
+            wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+          }
+        })
+      })
+      
+      // 其他工具栏按钮
+      document.querySelector('[data-name="bold"]')?.addEventListener('click', () => {
+        document.execCommand('bold')
+      })
+      
+      document.querySelector('[data-name="italic"]')?.addEventListener('click', () => {
+        document.execCommand('italic')
+      })
+      
+      document.querySelector('[data-name="underline"]')?.addEventListener('click', () => {
+        document.execCommand('underline')
+      })
+    })
+  </script>
+</body>
+</html>

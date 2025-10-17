@@ -3,7 +3,7 @@
  * 使用模块化的项目结构
  */
 
-import { ref, watch } from 'vue'
+import { watch } from 'vue'
 import { createEngineApp } from '@ldesign/engine'
 import { createI18nEnginePlugin } from './i18n'
 import App from './App.vue'
@@ -11,29 +11,8 @@ import { createRouter } from './router'
 import { engineConfig } from './config/app.config'
 import { auth } from './composables/useAuth'
 import { createColorPlugin } from '@ldesign/color/plugin'
-import { sizePlugin } from '@ldesign/size/vue'
+import { createSizePlugin } from '@ldesign/size/plugin'
 import { createTemplatePlugin } from '@ldesign/template'
-
-// 全局 locale 状态
-// 从 localStorage 读取上次保存的语言，与 i18n 保持一致
-const getInitialLocale = () => {
-  try {
-    return localStorage.getItem('app-locale') || 'zh-CN'
-  } catch {
-    return 'zh-CN'
-  }
-}
-const globalLocale = ref(getInitialLocale())
-
-// 监听 globalLocale 变化，自动保存到 localStorage
-watch(globalLocale, (newLocale) => {
-  try {
-    localStorage.setItem('app-locale', newLocale)
-    console.log('[locale] saved to localStorage:', newLocale)
-  } catch (error) {
-    console.error('[locale] failed to save:', error)
-  }
-})
 
 /**
  * 启动应用
@@ -48,21 +27,22 @@ async function bootstrap() {
     // 创建路由器插件
     const routerPlugin = createRouter()
 
-    // 创建 i18n 插件
+    // ===== 核心：创建 i18n 插件 (唯一的语言状态源) =====
     const i18nPlugin = createI18nEnginePlugin({
-      locale: globalLocale.value,  // 使用 zh-CN
-      fallbackLocale: 'zh-CN',  // 后备语言也改为中文
+      locale: 'zh-CN',
+      fallbackLocale: 'zh-CN',
       detectBrowserLanguage: true,
       persistLanguage: true,
-      showMissingKeys: import.meta.env.DEV,
-      // 语言变化时的回调
-      onLocaleChange: (locale: string) => {
-        // 更新全局响应式 locale
-        globalLocale.value = locale
-        // 通过 engine.state 传播语言变化（将在 onReady 中设置）
-        if ((window as any).__ENGINE__?.state) {
-          (window as any).__ENGINE__.state.set('locale', locale)
-        }
+      showMissingKeys: import.meta.env.DEV
+    })
+    
+    // 获取 i18n 的响应式 locale (单一数据源)
+    const localeRef = i18nPlugin.localeRef
+    
+    // 监听 locale 变化，用于日志或其他副作用
+    watch(localeRef, (newLocale) => {
+      if (import.meta.env.DEV) {
+        console.log('[locale] changed:', newLocale)
       }
     })
 
@@ -187,30 +167,16 @@ async function bootstrap() {
       performance: import.meta.env.DEV    // 开发环境开启性能监控
     })
 
-    // Size 插件配置（支持响应式国际化）
-    const sizeOptions = {
-      defaultLocale: globalLocale.value, // 初始语言（修正：使用 defaultLocale）
-      storageKey: 'ldesign-size',
-      presets: [
-        {
-          name: 'extra-compact',
-          label: 'Extra Compact',
-          description: 'Very high density for maximum content',
-          baseSize: 12,
-          category: 'high-density'
-        },
-        {
-          name: 'extra-spacious',
-          label: 'Extra Spacious',
-          description: 'Very low density for enhanced readability',
-          baseSize: 20,
-          category: 'low-density'
-        }
-      ]
+    // ===== 创建 Color 插件 (传入响应式 locale) =====
+    // 创建一个函数来获取当前语言的自定义主题标签
+    const getCustomThemeLabel = (name: string) => {
+      const messages = i18nPlugin.api.i18n?.messages as any
+      const locale = localeRef.value
+      return messages?.[locale]?.customThemes?.[name] || name
     }
-
-    // 创建 Color 插件（支持响应式国际化）
+    
     const colorPlugin = createColorPlugin({
+      locale: localeRef,  // 单向数据流：i18n → color
       prefix: 'ld',
       storageKey: 'ldesign-theme',
       persistence: true,
@@ -219,11 +185,11 @@ async function bootstrap() {
       defaultTheme: 'blue',
       includeSemantics: true,
       includeGrays: true,
-      // 自定义主题配置
+      // 注意：自定义主题的 label 目前是静态的，但可以通过 nameMap 映射
       customThemes: [
         {
           name: 'sunset',
-          label: 'Sunset Orange',
+          label: 'Sunset Orange',  // 默认标签
           color: '#ff6b35',
           custom: true,
           order: 100
@@ -266,8 +232,28 @@ async function bootstrap() {
       }
     })
     
-    // 绑定 Color 插件的 locale 到全局 locale
-    colorPlugin.currentLocale = globalLocale
+    // ===== 创建 Size 插件 (传入响应式 locale) =====
+    const sizePlugin = createSizePlugin({
+      locale: localeRef,  // 单向数据流：i18n → size
+      storageKey: 'ldesign-size',
+      defaultSize: 'default',
+      presets: [
+        {
+          name: 'extra-compact',
+          label: 'Extra Compact',
+          description: 'Very high density for maximum content',
+          baseSize: 12,
+          category: 'high-density'
+        },
+        {
+          name: 'extra-spacious',
+          label: 'Extra Spacious',
+          description: 'Very low density for enhanced readability',
+          baseSize: 20,
+          category: 'low-density'
+        }
+      ]
+    })
 
     // 创建应用引擎
     const engine = await createEngineApp({
@@ -283,29 +269,34 @@ async function bootstrap() {
 
       // Vue应用配置
       setupApp: async (app) => {
-        // Provide 全局响应式 locale - 必须在插件安装之前
-        app.provide('app-locale', globalLocale)
+        // 步骤1：首先提供全局响应式 locale，让所有组件都能访问
+        app.provide('app-locale', localeRef)
         
-        // 安装模板插件 - 一行代码完成所有配置
+        // 调试日志
+        if (import.meta.env.DEV) {
+          console.log('[main] Provided app-locale:', localeRef)
+          console.log('[main] Initial locale value:', localeRef.value)
+        }
+        
+        // 步骤2：安装模板插件
         app.use(templatePlugin)
 
-        // 安装 Color 主题插件（插件会自动检测并绑定 app-locale）
+        // 步骤3：安装 Color 主题插件（已绑定 localeRef，自动响应）
         app.use(colorPlugin)
 
-        // 安装 Size 尺寸插件（插件会自动检测并绑定 app-locale）
-        app.use(sizePlugin, sizeOptions)
+        // 步骤4：安装 Size 尺寸插件（已绑定 localeRef，自动响应，并提供 useSize 功能）
+        app.use(sizePlugin)
 
         // 手动安装 i18n Vue 插件
         if (i18nPlugin.setupVueApp) {
           i18nPlugin.setupVueApp(app);
         }
         
-        // 设置全局语言切换方法
-        app.config.globalProperties.$getLocale = () => globalLocale.value
+        // 设置全局语言切换方法（简化版）
+        app.config.globalProperties.$getLocale = () => localeRef.value
         app.config.globalProperties.$setLocale = (locale: string) => {
-          globalLocale.value = locale
-          // 同时更新 i18n 的 locale
-          if (i18nPlugin.api?.i18n) {
+          // 只需要更新 i18n，其他插件会自动响应
+          if (i18nPlugin.api?.changeLocale) {
             i18nPlugin.api.changeLocale(locale)
           }
         }
@@ -322,20 +313,13 @@ async function bootstrap() {
       onReady: (engine) => {
         console.log('✅ 引擎已就绪')
         
-        // 设置初始 locale 到 engine.state
+        // 可选：同步到 engine.state (用于兼容旧代码)
         if (engine.state) {
-          engine.state.set('locale', globalLocale.value)
+          engine.state.set('locale', localeRef.value)
           
-          // 监听 engine.state 中 locale 的变化
-          engine.state.watch('locale', (newLocale: string) => {
-            if (newLocale !== globalLocale.value) {
-              globalLocale.value = newLocale
-              
-              // 同步到 i18n
-              if (i18nPlugin.api?.changeLocale) {
-                i18nPlugin.api.changeLocale(newLocale)
-              }
-            }
+          // 监听 localeRef 变化，同步到 engine.state
+          watch(localeRef, (newLocale) => {
+            engine.state.set('locale', newLocale)
           })
         }
 
@@ -367,6 +351,17 @@ async function bootstrap() {
         if (import.meta.env.DEV) {
           // 开发环境暴露引擎实例
           ; (window as any).__ENGINE__ = engine
+          
+          // 暴露多语言调试工具
+          ; (window as any).__LOCALE__ = {
+            ref: localeRef,
+            change: (locale: string) => i18nPlugin.api?.changeLocale(locale),
+            get: () => localeRef.value,
+            plugins: {
+              color: colorPlugin,
+              size: sizePlugin
+            }
+          }
         }
       },
 

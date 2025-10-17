@@ -3413,10 +3413,6 @@ export namespace Components {
      */
     interface LdesignMessage {
         /**
-          * 自定义类名
-         */
-        "className"?: string;
-        /**
           * 是否显示关闭按钮
           * @default false
          */
@@ -3425,6 +3421,10 @@ export namespace Components {
           * 手动关闭（带高度收起动画，带动后续消息平滑上移）
          */
         "close": () => Promise<void>;
+        /**
+          * 自定义类名
+         */
+        "customClass"?: string;
         /**
           * 自动关闭的时长（毫秒）；设为 0 则不自动关闭
           * @default 3000
@@ -3444,7 +3444,11 @@ export namespace Components {
          */
         "message"?: string;
         /**
-          * 悬浮时是否暂停计时
+          * 标题内容
+         */
+        "messageTitle"?: string;
+        /**
+          * 消息内容
           * @default true
          */
         "pauseOnHover": boolean;
@@ -3458,10 +3462,6 @@ export namespace Components {
           * @default true
          */
         "showIcon": boolean;
-        /**
-          * 标题内容
-         */
-        "title"?: string;
         /**
           * 提示类型
           * @default 'info'
@@ -4413,17 +4413,17 @@ export namespace Components {
         "width"?: number | string;
     }
     /**
-     * Progress 进度条
-     * 支持：线形、环形、仪表盘、步骤条，多尺寸/状态/文本/自定义颜色等
+     * Progress 进度�?
+     * 支持：线形、环形、仪表盘、步骤条，多尺寸/状�?文本/自定义颜色等
      */
     interface LdesignProgress {
         /**
-          * 启用百分比过渡动画
+          * 启用百分比过渡动�?
           * @default false
          */
-        "animate": boolean;
+        "animated": boolean;
         /**
-          * 圆形分段之间的间隔角度（度数）
+          * 圆形分段之间的间隔角度（度数�?
           * @default 2
          */
         "circleStepGapDegree": number;
@@ -4437,21 +4437,21 @@ export namespace Components {
          */
         "dashboardVariant": 'standard' | 'bottom' | 'left' | 'right' | 'fan';
         /**
-          * 3D效果（仅line类型）
+          * 3D效果（仅line类型�?
           * @default false
          */
         "effect3d": boolean;
         /**
-          * 文本格式化，使用 {percent} 占位符，例如："{percent} / 100"
+          * 文本格式化，使用 {percent} 占位符，例如�?{percent} / 100"
           * @default '{percent}%'
          */
         "format": string;
         /**
-          * 仪表盘缺口角度（0-360，仅 circle/dashboard）
+          * 仪表盘缺口角度（0-360，仅 circle/dashboard�?
          */
         "gapDegree"?: number;
         /**
-          * 缺口位置（top/right/bottom/left，仅 circle/dashboard）
+          * 缺口位置（top/right/bottom/left，仅 circle/dashboard�?
           * @default 'top'
          */
         "gapPosition": 'top' | 'right' | 'bottom' | 'left';
@@ -4466,7 +4466,7 @@ export namespace Components {
          */
         "gradientDirection": 'horizontal' | 'vertical' | 'diagonal';
         /**
-          * 环形渐变（可选，仅 circle/dashboard）：起止色
+          * 环形渐变（可选，�?circle/dashboard）：起止�?
          */
         "gradientFrom"?: string;
         /**
@@ -4475,7 +4475,7 @@ export namespace Components {
         "gradientSegments"?: Array<{offset: number; color: string}>;
         "gradientTo"?: string;
         /**
-          * 不确定状态（显示循环动画，忽略 percent）
+          * 不确定状态（显示循环动画，忽�?percent�?
           * @default false
          */
         "indeterminate": boolean;
@@ -4493,7 +4493,7 @@ export namespace Components {
          */
         "markers"?: Array<{position: number; color?: string; label?: string}>;
         /**
-          * 百分比 0-100
+          * 百分�?0-100
           * @default 0
          */
         "percent": number;
@@ -4503,12 +4503,12 @@ export namespace Components {
          */
         "pulse": boolean;
         /**
-          * 半圆位置（type=semicircle），top 表示显示上半圆，bottom 表示下半圆
+          * 半圆位置（type=semicircle），top 表示显示上半圆，bottom 表示下半�?
           * @default 'top'
          */
         "semiPosition": 'top' | 'bottom';
         /**
-          * 进度条阴影
+          * 进度条阴�?
           * @default false
          */
         "shadow": boolean;
@@ -4528,16 +4528,16 @@ export namespace Components {
          */
         "status": 'normal' | 'active' | 'success' | 'exception';
         /**
-          * 步骤数（type=steps 或设置 steps>0 都渲染步骤条）
+          * 步骤数（type=steps 或设�?steps>0 都渲染步骤条�?
          */
         "steps"?: number;
         /**
-          * 步骤间隙 px（仅 steps）
+          * 步骤间隙 px（仅 steps�?
           * @default 2
          */
         "stepsGap": number;
         /**
-          * 步骤条的块圆角
+          * 步骤条的块圆�?
           * @default 100
          */
         "stepsRadius": number;
@@ -4547,11 +4547,11 @@ export namespace Components {
          */
         "striped": boolean;
         /**
-          * 进度颜色（可为任意 css 颜色）
+          * 进度颜色（可为任�?css 颜色�?
          */
         "strokeColor"?: string;
         /**
-          * 端点样式：round | square | butt（仅 circle 有效，line 以圆角呈现 round）
+          * 端点样式：round | square | butt（仅 circle 有效，line 以圆角呈�?round�?
           * @default 'round'
          */
         "strokeLinecap": 'round' | 'square' | 'butt';
@@ -4574,7 +4574,7 @@ export namespace Components {
          */
         "theme": 'default' | 'neon' | 'gradient3d' | 'candy' | 'water' | 'glass' | 'metallic';
         /**
-          * 未完成轨道颜色
+          * 未完成轨道颜�?
          */
         "trailColor"?: string;
         /**
@@ -4583,7 +4583,7 @@ export namespace Components {
          */
         "type": 'line' | 'circle' | 'dashboard' | 'steps' | 'semicircle';
         /**
-          * 波浪动画（仅line类型）
+          * 波浪动画（仅line类型�?
           * @default false
          */
         "wave": boolean;
@@ -7351,8 +7351,8 @@ declare global {
         "complete": void;
     }
     /**
-     * Progress 进度条
-     * 支持：线形、环形、仪表盘、步骤条，多尺寸/状态/文本/自定义颜色等
+     * Progress 进度�?
+     * 支持：线形、环形、仪表盘、步骤条，多尺寸/状�?文本/自定义颜色等
      */
     interface HTMLLdesignProgressElement extends Components.LdesignProgress, HTMLStencilElement {
         addEventListener<K extends keyof HTMLLdesignProgressElementEventMap>(type: K, listener: (this: HTMLLdesignProgressElement, ev: LdesignProgressCustomEvent<HTMLLdesignProgressElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
@@ -11371,14 +11371,14 @@ declare namespace LocalJSX {
      */
     interface LdesignMessage {
         /**
-          * 自定义类名
-         */
-        "className"?: string;
-        /**
           * 是否显示关闭按钮
           * @default false
          */
         "closable"?: boolean;
+        /**
+          * 自定义类名
+         */
+        "customClass"?: string;
         /**
           * 自动关闭的时长（毫秒）；设为 0 则不自动关闭
           * @default 3000
@@ -11398,6 +11398,10 @@ declare namespace LocalJSX {
          */
         "message"?: string;
         /**
+          * 标题内容
+         */
+        "messageTitle"?: string;
+        /**
           * 点击事件
          */
         "onLdesignClick"?: (event: LdesignMessageCustomEvent<void>) => void;
@@ -11406,7 +11410,7 @@ declare namespace LocalJSX {
          */
         "onLdesignClose"?: (event: LdesignMessageCustomEvent<void>) => void;
         /**
-          * 悬浮时是否暂停计时
+          * 消息内容
           * @default true
          */
         "pauseOnHover"?: boolean;
@@ -11420,10 +11424,6 @@ declare namespace LocalJSX {
           * @default true
          */
         "showIcon"?: boolean;
-        /**
-          * 标题内容
-         */
-        "title"?: string;
         /**
           * 提示类型
           * @default 'info'
@@ -12390,17 +12390,17 @@ declare namespace LocalJSX {
         "width"?: number | string;
     }
     /**
-     * Progress 进度条
-     * 支持：线形、环形、仪表盘、步骤条，多尺寸/状态/文本/自定义颜色等
+     * Progress 进度�?
+     * 支持：线形、环形、仪表盘、步骤条，多尺寸/状�?文本/自定义颜色等
      */
     interface LdesignProgress {
         /**
-          * 启用百分比过渡动画
+          * 启用百分比过渡动�?
           * @default false
          */
-        "animate"?: boolean;
+        "animated"?: boolean;
         /**
-          * 圆形分段之间的间隔角度（度数）
+          * 圆形分段之间的间隔角度（度数�?
           * @default 2
          */
         "circleStepGapDegree"?: number;
@@ -12414,21 +12414,21 @@ declare namespace LocalJSX {
          */
         "dashboardVariant"?: 'standard' | 'bottom' | 'left' | 'right' | 'fan';
         /**
-          * 3D效果（仅line类型）
+          * 3D效果（仅line类型�?
           * @default false
          */
         "effect3d"?: boolean;
         /**
-          * 文本格式化，使用 {percent} 占位符，例如："{percent} / 100"
+          * 文本格式化，使用 {percent} 占位符，例如�?{percent} / 100"
           * @default '{percent}%'
          */
         "format"?: string;
         /**
-          * 仪表盘缺口角度（0-360，仅 circle/dashboard）
+          * 仪表盘缺口角度（0-360，仅 circle/dashboard�?
          */
         "gapDegree"?: number;
         /**
-          * 缺口位置（top/right/bottom/left，仅 circle/dashboard）
+          * 缺口位置（top/right/bottom/left，仅 circle/dashboard�?
           * @default 'top'
          */
         "gapPosition"?: 'top' | 'right' | 'bottom' | 'left';
@@ -12443,7 +12443,7 @@ declare namespace LocalJSX {
          */
         "gradientDirection"?: 'horizontal' | 'vertical' | 'diagonal';
         /**
-          * 环形渐变（可选，仅 circle/dashboard）：起止色
+          * 环形渐变（可选，�?circle/dashboard）：起止�?
          */
         "gradientFrom"?: string;
         /**
@@ -12452,7 +12452,7 @@ declare namespace LocalJSX {
         "gradientSegments"?: Array<{offset: number; color: string}>;
         "gradientTo"?: string;
         /**
-          * 不确定状态（显示循环动画，忽略 percent）
+          * 不确定状态（显示循环动画，忽�?percent�?
           * @default false
          */
         "indeterminate"?: boolean;
@@ -12470,7 +12470,7 @@ declare namespace LocalJSX {
          */
         "markers"?: Array<{position: number; color?: string; label?: string}>;
         /**
-          * 进度完成时触发
+          * 进度完成时触�?
          */
         "onComplete"?: (event: LdesignProgressCustomEvent<void>) => void;
         /**
@@ -12478,7 +12478,7 @@ declare namespace LocalJSX {
          */
         "onPercentChange"?: (event: LdesignProgressCustomEvent<number>) => void;
         /**
-          * 百分比 0-100
+          * 百分�?0-100
           * @default 0
          */
         "percent"?: number;
@@ -12488,12 +12488,12 @@ declare namespace LocalJSX {
          */
         "pulse"?: boolean;
         /**
-          * 半圆位置（type=semicircle），top 表示显示上半圆，bottom 表示下半圆
+          * 半圆位置（type=semicircle），top 表示显示上半圆，bottom 表示下半�?
           * @default 'top'
          */
         "semiPosition"?: 'top' | 'bottom';
         /**
-          * 进度条阴影
+          * 进度条阴�?
           * @default false
          */
         "shadow"?: boolean;
@@ -12513,16 +12513,16 @@ declare namespace LocalJSX {
          */
         "status"?: 'normal' | 'active' | 'success' | 'exception';
         /**
-          * 步骤数（type=steps 或设置 steps>0 都渲染步骤条）
+          * 步骤数（type=steps 或设�?steps>0 都渲染步骤条�?
          */
         "steps"?: number;
         /**
-          * 步骤间隙 px（仅 steps）
+          * 步骤间隙 px（仅 steps�?
           * @default 2
          */
         "stepsGap"?: number;
         /**
-          * 步骤条的块圆角
+          * 步骤条的块圆�?
           * @default 100
          */
         "stepsRadius"?: number;
@@ -12532,11 +12532,11 @@ declare namespace LocalJSX {
          */
         "striped"?: boolean;
         /**
-          * 进度颜色（可为任意 css 颜色）
+          * 进度颜色（可为任�?css 颜色�?
          */
         "strokeColor"?: string;
         /**
-          * 端点样式：round | square | butt（仅 circle 有效，line 以圆角呈现 round）
+          * 端点样式：round | square | butt（仅 circle 有效，line 以圆角呈�?round�?
           * @default 'round'
          */
         "strokeLinecap"?: 'round' | 'square' | 'butt';
@@ -12559,7 +12559,7 @@ declare namespace LocalJSX {
          */
         "theme"?: 'default' | 'neon' | 'gradient3d' | 'candy' | 'water' | 'glass' | 'metallic';
         /**
-          * 未完成轨道颜色
+          * 未完成轨道颜�?
          */
         "trailColor"?: string;
         /**
@@ -12568,7 +12568,7 @@ declare namespace LocalJSX {
          */
         "type"?: 'line' | 'circle' | 'dashboard' | 'steps' | 'semicircle';
         /**
-          * 波浪动画（仅line类型）
+          * 波浪动画（仅line类型�?
           * @default false
          */
         "wave"?: boolean;
@@ -14637,8 +14637,8 @@ declare module "@stencil/core" {
              */
             "ldesign-popup": LocalJSX.LdesignPopup & JSXBase.HTMLAttributes<HTMLLdesignPopupElement>;
             /**
-             * Progress 进度条
-             * 支持：线形、环形、仪表盘、步骤条，多尺寸/状态/文本/自定义颜色等
+             * Progress 进度�?
+             * 支持：线形、环形、仪表盘、步骤条，多尺寸/状�?文本/自定义颜色等
              */
             "ldesign-progress": LocalJSX.LdesignProgress & JSXBase.HTMLAttributes<HTMLLdesignProgressElement>;
             /**

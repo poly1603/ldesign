@@ -16,12 +16,12 @@ InputNumber 数字输入框
 | Property      | Attribute     | Description                | Type                                         | Default     |
 | ------------- | ------------- | -------------------------- | -------------------------------------------- | ----------- |
 | `disabled`    | `disabled`    | 是否禁用                       | `boolean`                                    | `false`     |
-| `formatter`   | `formatter`   | 自定义显示格式化                   | `(value: number) => string`                  | `undefined` |
+| `formatter`   | --            | 自定义显示格式化                   | `(value: number) => string`                  | `undefined` |
 | `keyboard`    | `keyboard`    | 是否启用键盘增减（方向键/页键）           | `boolean`                                    | `true`      |
 | `max`         | `max`         | 最大值（可不设）                   | `number`                                     | `undefined` |
 | `min`         | `min`         | 最小值（可不设）                   | `number`                                     | `undefined` |
 | `mouseWheel`  | `mouse-wheel` | 是否允许鼠标滚轮调整                 | `boolean`                                    | `false`     |
-| `parser`      | `parser`      | 自定义解析（将输入字符串转成数值）          | `(input: string) => number`                  | `undefined` |
+| `parser`      | --            | 自定义解析（将输入字符串转成数值）          | `(input: string) => number`                  | `undefined` |
 | `placeholder` | `placeholder` | 占位符                        | `string`                                     | `undefined` |
 | `precision`   | `precision`   | 精度（小数位数）。不设则按 step 与输入自动推断 | `number`                                     | `undefined` |
 | `readonly`    | `readonly`    | 是否只读（可选，禁用输入但可复制）          | `boolean`                                    | `false`     |

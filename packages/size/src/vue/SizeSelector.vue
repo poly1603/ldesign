@@ -67,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, inject, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useSize } from './useSize'
 import { SIZE_LOCALE_KEY, SIZE_CUSTOM_LOCALE_KEY } from './plugin'
 import { getLocale } from '../locales'
@@ -87,6 +87,15 @@ const selectorRef = ref<HTMLElement>()
 const appLocale = inject<any>('app-locale', null)
 const pluginLocale = inject(SIZE_LOCALE_KEY, 'zh-CN')
 const customLocale = inject<Partial<SizeLocale> | undefined>(SIZE_CUSTOM_LOCALE_KEY, undefined)
+
+// 调试日志
+if (import.meta.env.DEV) {
+  console.log('[SizeSelector] appLocale injected:', appLocale)
+  if (appLocale) {
+    console.log('[SizeSelector] appLocale.value:', appLocale.value)
+  }
+  console.log('[SizeSelector] pluginLocale:', pluginLocale)
+}
 
 // 使用响应式 locale
 const currentLocale = computed(() => {
@@ -108,6 +117,13 @@ const t = computed(() => {
     title: customLocale.title || baseLocale.title,
     presets: { ...baseLocale.presets, ...customLocale.presets },
     descriptions: { ...baseLocale.descriptions, ...customLocale.descriptions }
+  }
+})
+
+// 监听语言变化
+watch(currentLocale, (newLocale) => {
+  if (import.meta.env.DEV) {
+    console.log('[SizeSelector] locale changed to:', newLocale)
   }
 })
 

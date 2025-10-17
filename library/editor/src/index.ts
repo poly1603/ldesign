@@ -30,6 +30,7 @@ export {
 } from './ui/UnifiedDialog'
 export { showTableDialog } from './ui/TableDialog'
 export { createFindReplaceDialog, showFindReplaceDialog } from './ui/FindReplaceDialog'
+export { showTableGridSelector, showEnhancedTableGridSelector } from './ui/TableGridSelector'
 
 // 类型
 export type * from './types'
@@ -39,3 +40,15 @@ import './styles/editor.css'
 
 // 默认导出
 export { Editor as default } from './core/Editor'
+
+// 应用表格补丁 - 自动替换旧的表格插入功能
+import { patchTableInsertCommand } from './plugins/table-patch'
+export { patchTableInsertCommand } from './plugins/table-patch'
+
+// 自动应用补丁
+if (typeof window !== 'undefined') {
+  // 延迟执行，确保编辑器已初始化
+  setTimeout(() => {
+    patchTableInsertCommand()
+  }, 500)
+}

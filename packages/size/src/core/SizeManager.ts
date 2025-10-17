@@ -118,6 +118,18 @@ export class SizeManager {
   getCurrentPreset(): string {
     return this.currentPresetName
   }
+  
+  getCurrentSize(): string {
+    return this.currentPresetName
+  }
+  
+  setSize(size: string): void {
+    this.applyPreset(size)
+  }
+  
+  getSizes(): string[] {
+    return Array.from(this.presets.keys())
+  }
 
   getPresets(): SizePreset[] {
     return Array.from(this.presets.values())
@@ -455,6 +467,10 @@ export class SizeManager {
   subscribe(listener: SizeChangeListener): () => void {
     this.listeners.add(listener)
     return () => this.listeners.delete(listener)
+  }
+  
+  onChange(listener: SizeChangeListener): () => void {
+    return this.subscribe(listener)
   }
 
   private notifyListeners(): void {

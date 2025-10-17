@@ -35,10 +35,10 @@ export class LdesignBacktop {
   @Prop() visibilityHeight: number = 200;
 
   /** 是否可见（根据滚动距离控制） */
-  @State() visible!: boolean = false;
+  @State() visible: boolean = false;
 
   /** 内联定位样式（用于 target 容器时固定在容器内部） */
-  @State() positionStyle!: any = {};
+  @State() positionStyle: any = {};
 
   private scrollContainer: HTMLElement | Window = typeof window !== 'undefined' ? window : (undefined as any);
   private buttonEl?: HTMLElement;

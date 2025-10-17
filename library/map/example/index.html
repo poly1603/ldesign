@@ -81,7 +81,7 @@
       height: 100vh;
       position: relative;
       overflow: hidden;  /* 防止地图溢出 */
-      background: #e8f4f8;
+      background: linear-gradient(135deg, #e8f4f8 0%, #f0f8ff 100%);
     }
     
     /* 特殊样式：标记点示例使用更大的地图 */
@@ -89,6 +89,19 @@
       height: 100vh;
       min-height: 500px;
       overflow: hidden;  /* 防止地图溢出 */
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    /* 美化水波纹动画样式 */
+    @keyframes ripple {
+      from {
+        transform: scale(0.8);
+        opacity: 0.8;
+      }
+      to {
+        transform: scale(2.5);
+        opacity: 0;
+      }
     }
 
     /* 不同配色方案的标题渐变色 */

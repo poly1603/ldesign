@@ -27,12 +27,12 @@ export class LdesignDatePicker {
   @Event() ldesignVisibleChange!: EventEmitter<boolean>;
 
   // state
-  @State() visible!: boolean = false;
-  @State() viewYear!: number = new Date().getFullYear();
-  @State() viewMonth!: number = new Date().getMonth();
-  @State() currentView!: 'year' | 'month' | 'date' = 'date';
+  @State() visible: boolean = false;
+  @State() viewYear: number = new Date().getFullYear();
+  @State() viewMonth: number = new Date().getMonth();
+  @State() currentView: 'year' | 'month' | 'date' = 'date';
   @State() selected?: Date;
-  @State() yearSelectorOpen!: boolean = false;
+  @State() yearSelectorOpen: boolean = false;
 
   private get parsedMin() { const d = parseDate(this.minDate as any); return d || undefined; }
   private get parsedMax() { const d = parseDate(this.maxDate as any); return d || undefined; }

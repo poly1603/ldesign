@@ -16,6 +16,12 @@ import type { ColorLocale } from '../locales'
  */
 export interface ColorPluginOptions {
   /**
+   * 响应式的 locale 参数 (可选)
+   * 如果提供，插件会自动监听并响应语言变化
+   */
+  locale?: Ref<string>
+  
+  /**
    * CSS variable prefix
    * @default 'ld'
    */
@@ -201,10 +207,6 @@ export interface ColorPlugin {
    */
   install: (app: App) => void
   
-  /**
-   * Set locale
-   */
-  setLocale: (locale: string) => void
 }
 
 /**
@@ -216,17 +218,10 @@ export const ColorPluginSymbol = Symbol('ColorPlugin')
  * Create color plugin
  */
 export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin {
-  // Reactive locale support - will be linked to global locale
-  // Try to get initial locale from engine.state or default to 'en-US'
-  let initialLocale = 'en-US'
-  if (typeof window !== 'undefined' && (window as any).__ENGINE__?.state) {
-    const engineLocale = (window as any).__ENGINE__.state.get('locale')
-    if (engineLocale) {
-      initialLocale = engineLocale
-    }
-  }
-  
-  let currentLocale = ref(initialLocale)
+  // 响应式 locale 支持
+  // 如果传入了 locale ref，直接使用（单向数据流）
+  // 否则创建一个新的 ref
+  let currentLocale = options.locale || ref('en-US')
   const localeMessages = computed(() => getLocale(currentLocale.value))
   
   // Merge options with defaults
@@ -502,43 +497,22 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
     addCustomTheme,
     removeCustomTheme,
     getSortedPresets,
-    setLocale: (locale: string) => {
-      currentLocale.value = locale
-    },
 
     install(app: App) {
       // Provide plugin instance
       app.provide(ColorPluginSymbol, plugin)
       
-      // Use existing app-locale if available
-      const existingLocale = app._context?.provides?.['app-locale']
-      if (existingLocale && typeof existingLocale.value !== 'undefined') {
-        // Bind to the shared global locale
-        plugin.currentLocale = existingLocale
-        currentLocale = existingLocale
-      }
-      
-      // Sync with engine.state locale and listen to changes
-      if (typeof window !== 'undefined' && (window as any).__ENGINE__?.state) {
-        const engine = (window as any).__ENGINE__
-        
-        // Get initial locale from engine.state
-        const initialLocale = engine.state.get('locale')
-        if (initialLocale && currentLocale.value !== initialLocale) {
-          currentLocale.value = initialLocale
+      // 如果没有传入 locale，尝试使用应用级的 locale
+      if (!options.locale) {
+        const existingLocale = app._context?.provides?.['app-locale']
+        if (existingLocale && typeof existingLocale.value !== 'undefined') {
+          // 绑定到共享的全局 locale
+          plugin.currentLocale = existingLocale
+          currentLocale = existingLocale
         }
-        
-        // Listen to future changes
-        engine.state.watch('locale', (newLocale: string) => {
-          if (currentLocale.value !== newLocale) {
-            currentLocale.value = newLocale
-          }
-        })
       }
       
       // Provide color locale for consumers
-      app.provide('color-locale', localeMessages)
-      
       app.provide('color-locale', localeMessages)
 
       // Add global property

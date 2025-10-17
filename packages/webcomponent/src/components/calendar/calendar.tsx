@@ -75,8 +75,8 @@ export class LdesignCalendar {
   @Event() ldesignEventDelete!: EventEmitter<{ event: any }>; // 删除日程
 
   // state
-  @State() viewYear!: number = new Date().getFullYear();
-  @State() viewMonth!: number = new Date().getMonth();
+  @State() viewYear: number = new Date().getFullYear();
+  @State() viewMonth: number = new Date().getMonth();
   @State() selected?: Date;
   // 触发刷新以渲染按需加载的农历
   @State() private _lunarTick: number = 0;

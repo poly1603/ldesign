@@ -14,6 +14,12 @@ import { getLocale, type SizeLocale } from '../locales'
  */
 export interface SizePluginOptions {
   /**
+   * 响应式的 locale 参数 (可选)
+   * 如果提供，插件会自动监听并响应语言变化
+   */
+  locale?: Ref<string>
+  
+  /**
    * Initial size preset
    * @default 'medium'
    */
@@ -103,10 +109,6 @@ export interface SizePlugin {
    */
   getSize: () => string
 
-  /**
-   * Set locale
-   */
-  setLocale: (locale: string) => void
 
   /**
    * Listen to size changes
@@ -128,8 +130,10 @@ export const SizePluginSymbol = Symbol('SizePlugin')
  * Create size plugin
  */
 export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
-  // Reactive locale support
-  const currentLocale = ref(options.defaultLocale || 'zh-CN')
+  // 响应式 locale 支持
+  // 如果传入了 locale ref，直接使用（单向数据流）
+  // 否则创建一个新的 ref
+  const currentLocale = options.locale || ref(options.defaultLocale || 'zh-CN')
   const localeMessages = computed(() => getLocale(currentLocale.value))
 
   // Merge options with defaults
@@ -144,7 +148,7 @@ export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
   }
 
   // Create size manager
-  const manager = new SizeManager(mergedOptions.presets)
+  const manager = new SizeManager({ presets: mergedOptions.presets })
 
   // Reactive current size
   const currentSize = ref(mergedOptions.defaultSize)
@@ -263,29 +267,22 @@ export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
     currentSize,
     setSize,
     getSize,
-    setLocale: (locale: string) => {
-      currentLocale.value = locale
-    },
     onChange,
 
     install(app: App) {
       // Provide plugin instance
       app.provide(SizePluginSymbol, plugin)
-
-      // Use existing app-locale if available
-      const existingLocale = app._context?.provides?.['app-locale']
-      if (existingLocale && typeof existingLocale.value !== 'undefined') {
-        plugin.currentLocale = existingLocale
-        currentLocale.value = existingLocale.value
-      }
       
-      // Listen to engine.state locale changes
-      if (typeof window !== 'undefined' && (window as any).__ENGINE__?.state) {
-        (window as any).__ENGINE__.state.watch('locale', (newLocale: string) => {
-          if (currentLocale.value !== newLocale) {
-            currentLocale.value = newLocale
-          }
-        })
+      // 同时提供 Vue 插件所需的 SIZE_MANAGER_KEY，让 useSize 能正常工作
+      const SIZE_MANAGER_KEY = Symbol.for('size-manager')
+      app.provide(SIZE_MANAGER_KEY, manager)
+
+      // 如果没有传入 locale，尝试使用应用级的 locale
+      if (!options.locale) {
+        const existingLocale = app._context?.provides?.['app-locale']
+        if (existingLocale && typeof existingLocale.value !== 'undefined') {
+          plugin.currentLocale = existingLocale
+        }
       }
 
       // Provide size locale
@@ -293,9 +290,7 @@ export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
 
       // Add global property
       app.config.globalProperties.$size = plugin
-      app.config.globalProperties.$setSizeLocale = (locale: string) => {
-        plugin.setLocale(locale)
-      }
+      app.config.globalProperties.$sizeManager = manager
 
       // Load size on initialization
       if (typeof window !== 'undefined') {

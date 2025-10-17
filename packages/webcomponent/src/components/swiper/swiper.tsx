@@ -139,7 +139,7 @@ export class LdesignSwiper {
 
   // ── Core ──────────────────────────────────────────────
   private collectSlides() {
-    const nodes = Array.from(this.host.querySelectorAll('ldesign-swiper-slide')) as HTMLElement[];
+    const nodes = Array.from(this.host.querySelectorAll('ldesign-swiper-slide')) as any[];
     this.slides = nodes;
     this.slideCount = nodes.length;
   }

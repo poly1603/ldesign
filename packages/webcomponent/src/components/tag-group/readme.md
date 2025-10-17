@@ -27,7 +27,7 @@ TagGroup 标签组
 | `maxVisible`       | `max-visible`       | more 模式下最多展示的项数（超出将折叠）         | `number`                                                               | `5`         |
 | `morePrefix`       | `more-prefix`       | more 展示文本前缀，例如 "+"             | `string`                                                               | `'+'`       |
 | `overflow`         | `overflow`          | 溢出策略：wrap（自动换行） \| more（+N 收纳） | `"more" \| "wrap"`                                                     | `'wrap'`    |
-| `tags`             | `tags`              | 标签数据（受控模式）                     | `TagData[]`                                                            | `[]`        |
+| `tags`             | --                  | 标签数据（受控模式）                     | `TagData[]`                                                            | `[]`        |
 
 
 ## Events
