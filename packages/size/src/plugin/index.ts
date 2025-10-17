@@ -4,9 +4,9 @@
  * Size system plugin for Vue 3 applications
  */
 
-import type { App, Ref, ComputedRef } from 'vue'
-import { ref, computed, inject, provide } from 'vue'
-import { SizeManager, type SizePreset, type SizeConfig } from '../core/SizeManager'
+import type { App, ComputedRef, Ref } from 'vue'
+import { inject, ref } from 'vue'
+import { SizeManager, type SizePreset } from '../core/SizeManager'
 import { getLocale, type SizeLocale } from '../locales'
 
 /**
@@ -19,10 +19,10 @@ export interface SizePluginOptions {
    * 如果传入 string 或不传，将创建新的 Ref（独立模式）
    */
   locale?: string | Ref<string>
-  
+
   /**
    * Initial size preset
-   * @default 'medium'
+   * @default 'default'
    */
   defaultSize?: string
 
@@ -66,6 +66,18 @@ export interface SizePluginOptions {
    * @default 'zh-CN'
    */
   defaultLocale?: string
+
+  /**
+   * Enable automatic detection based on device
+   * @default false
+   */
+  autoDetect?: boolean
+
+  /**
+   * Enable CSS variable generation
+   * @default true
+   */
+  cssVariables?: boolean
 }
 
 /**
@@ -135,20 +147,52 @@ const isRef = <T>(v: any): v is Ref<T> => {
 }
 
 /**
+ * 智能获取locale
+ * 支持多种方式：传入值、inject、全局事件
+ */
+function useSmartLocale(options: SizePluginOptions): Ref<string> {
+  // 优先级1：使用传入的locale
+  if (options.locale) {
+    return isRef(options.locale) ? options.locale : ref(options.locale)
+  }
+
+  // 优先级2：从Vue上下文inject（如果在组件内）
+  try {
+    const injected = inject<Ref<string> | null>('app-locale', null)
+    if (injected && injected.value) {
+      return injected
+    }
+  } catch { }
+
+  // 优先级3：创建独立的locale并监听全局事件
+  const locale = ref(options.defaultLocale || 'zh-CN')
+
+  // 从localStorage恢复
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('app-locale')
+    if (stored) {
+      locale.value = stored
+    }
+
+    // 监听全局语言变化事件
+    window.addEventListener('app:locale-changed', (e: Event) => {
+      const customEvent = e as CustomEvent<{ locale: string }>
+      if (customEvent.detail?.locale) {
+        locale.value = customEvent.detail.locale
+      }
+    })
+  }
+
+  return locale
+}
+
+/**
  * Create size plugin
  */
 export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
-  // 智能处理 locale
-  let currentLocale: Ref<string>
-  
-  if (isRef(options.locale)) {
-    // 传入的是 Ref，直接使用（共享模式）
-    currentLocale = options.locale
-  } else {
-    // 传入的是 string 或未传入，创建新 Ref（独立模式）
-    currentLocale = ref(options.locale || options.defaultLocale || 'zh-CN')
-  }
-  
+  // 使用智能locale获取
+  let currentLocale = useSmartLocale(options)
+
   // 懒加载 locale 数据（性能优化）
   let localeCache: { key: string; data: any } | null = null
   const getLocaleData = () => {
@@ -157,7 +201,7 @@ export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
     }
     return localeCache.data
   }
-  
+
   // 兼容旧的 computed 接口
   const localeMessages = {
     get value() { return getLocaleData() }
@@ -165,15 +209,17 @@ export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
 
   // Merge options with defaults
   const mergedOptions = {
-    defaultSize: options.defaultSize || 'medium',
+    defaultSize: options.defaultSize || 'default',
     presets: options.presets || [],
     storageKey: options.storageKey || 'ldesign-size',
     persistence: options.persistence !== false,
     storage: options.storage,
     hooks: options.hooks,
-    defaultLocale: options.defaultLocale || 'zh-CN'
+    defaultLocale: options.defaultLocale || 'zh-CN',
+    autoDetect: options.autoDetect || false,
+    cssVariables: options.cssVariables !== false,
+    locale: options.locale || currentLocale.value
   }
-
   // Create size manager
   const manager = new SizeManager({ presets: mergedOptions.presets })
 
@@ -274,12 +320,12 @@ export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
 
   // Listen to size changes
   const listeners = new Set<(size: string) => void>()
-  
-  manager.onChange((size) => {
-    currentSize.value = size
-    listeners.forEach(listener => listener(size))
-  })
 
+  manager.onChange((config) => {
+    const newSize = manager.getCurrentSize()
+    currentSize.value = newSize
+    listeners.forEach(listener => listener(newSize))
+  })
   const onChange = (listener: (size: string) => void): (() => void) => {
     listeners.add(listener)
     return () => listeners.delete(listener)
@@ -300,13 +346,13 @@ export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
       // 智能共享：如果没有传入 Ref，尝试自动共享
       if (!isRef(options.locale)) {
         // 尝试从 app context 获取共享的 locale
-        const sharedLocale = app._context?.provides?.['locale'] as Ref<string> | undefined
-        
+        const sharedLocale = app._context?.provides?.locale as Ref<string> | undefined
+
         if (sharedLocale && sharedLocale.value !== undefined) {
           // 发现共享的 locale，使用它
           currentLocale = sharedLocale
           plugin.currentLocale = sharedLocale
-          
+
           // 清除缓存以触发重新计算
           localeCache = null
         } else {
@@ -314,14 +360,26 @@ export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
           app.provide('locale', currentLocale)
         }
       }
-      
+
       // Provide plugin instance
       app.provide(SizePluginSymbol, plugin)
       app.provide('size', plugin)
-      
+
       // 同时提供 Vue 插件所需的 SIZE_MANAGER_KEY，让 useSize 能正常工作
       const SIZE_MANAGER_KEY = Symbol.for('size-manager')
-      app.provide(SIZE_MANAGER_KEY, manager)
+      // 提供一个包装对象，确保方法绑定正确
+      app.provide(SIZE_MANAGER_KEY, {
+        manager,
+        getConfig: () => manager.getConfig(),
+        getCurrentPreset: () => manager.getCurrentPreset(),
+        setBaseSize: (baseSize: number) => manager.setBaseSize(baseSize),
+        applyPreset: (presetName: string) => manager.applyPreset(presetName),
+        getPresets: () => manager.getPresets(),
+        subscribe: (listener: any) => {
+          // 确保 this 绑定正确
+          return manager.subscribe(listener)
+        }
+      })
 
       // Provide size locale
       app.provide('size-locale', localeMessages)

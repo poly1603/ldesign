@@ -191,7 +191,6 @@ export const MINIFY_PRESETS: Record<MinifyLevel, MinifyOptions> = {
       mangle: false,
       compress: {
         drop_console: false,
-        drop_: true,
         dead_code: true,
         inline: false
       },
@@ -228,7 +227,6 @@ export const MINIFY_PRESETS: Record<MinifyLevel, MinifyOptions> = {
       },
       compress: {
         drop_console: true,
-        drop_: true,
         dead_code: true,
         inline: true
       },

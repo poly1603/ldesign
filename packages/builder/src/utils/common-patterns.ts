@@ -134,7 +134,7 @@ export function deepMerge<T extends Record<string, any>>(
     }
   }
   
-  return deepMerge(target, ...sources)
+  return sources.length > 0 ? deepMerge(target, ...sources) : target
 }
 
 /**
@@ -179,7 +179,7 @@ export function createTimer(label?: string) {
     end: () => {
       const duration = performance.now() - startTime
       if (label) {
-        }`)
+        console.log(`[Timer] ${label}: ${duration.toFixed(2)}ms`)
       }
       return duration
     },
@@ -226,3 +226,5 @@ export class ConcurrencyLimiter {
     }
   }
 }
+
+// 去掉上面的unterminated string literal，现在文件正确结束

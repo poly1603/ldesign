@@ -7,6 +7,8 @@ export interface SizeConfig {
   baseSize: number
 }
 
+export type SizeScheme = SizeConfig
+
 export interface SizePreset {
   name: string
   label: string
@@ -92,13 +94,26 @@ export class SizeManager {
   }
 
   setConfig(config: Partial<SizeConfig>): void {
+    // Validate config
+    if (config.baseSize !== undefined) {
+      if (typeof config.baseSize !== 'number' || config.baseSize <= 0 || config.baseSize > 100) {
+        throw new Error('Invalid baseSize: must be a positive number between 0 and 100')
+      }
+    }
+
     this.config = {
       ...this.config,
       ...config
     }
-    this.applySize()
-    this.saveToStorage()
-    this.notifyListeners()
+
+    try {
+      this.applySize()
+      this.saveToStorage()
+      this.notifyListeners()
+    } catch (error) {
+      console.error('[SizeManager] Failed to apply config:', error)
+      throw error
+    }
   }
 
   setBaseSize(baseSize: number): void {
@@ -107,26 +122,29 @@ export class SizeManager {
 
   applyPreset(presetName: string): void {
     const preset = this.presets.get(presetName)
-    if (preset) {
-      this.currentPresetName = presetName
-      this.setConfig({
-        baseSize: preset.baseSize
-      })
+    if (!preset) {
+      console.warn(`[SizeManager] Preset '${presetName}' not found, available presets:`, Array.from(this.presets.keys()))
+      return
     }
+
+    this.currentPresetName = presetName
+    this.setConfig({
+      baseSize: preset.baseSize
+    })
   }
 
   getCurrentPreset(): string {
     return this.currentPresetName
   }
-  
+
   getCurrentSize(): string {
     return this.currentPresetName
   }
-  
+
   setSize(size: string): void {
     this.applyPreset(size)
   }
-  
+
   getSizes(): string[] {
     return Array.from(this.presets.keys())
   }
@@ -156,12 +174,19 @@ export class SizeManager {
   private generateCSS(): string {
     const { baseSize } = this.config
     // 确保所有计算出来的值都是整数
-    const s = (multiplier: number) => `${Math.round(baseSize * multiplier)}px`
+    const s = (multiplier: number) => {
+      const value = Math.round(baseSize * multiplier)
+      return value === 0 ? '0' : `${value}px`
+    }
+
+    const r = (value: number) => `${value / 16}rem`
 
     return `
       :root {
         /* Base Configuration */
         --size-base: ${baseSize}px;
+        --size-base-rem: ${baseSize / 16}rem;
+        --size-scale: ${baseSize / 16};
 
         /* Base Size Tokens (TDesign style - 2px increment) */
         --size-0: 0px;
@@ -193,12 +218,24 @@ export class SizeManager {
         --size-64: ${s(32)};
 
         /* Font Sizes */
-        --size-font-tiny: ${s(0.625)};
-        --size-font-small: ${s(0.75)};
-        --size-font-medium: ${s(0.875)};
-        --size-font-large: ${s(1)};
-        --size-font-huge: ${s(1.125)};
-        --size-font-giant: ${s(1.25)};
+        --size-font-2xs: ${s(0.625)}; /* 10px */
+        --size-font-xs: ${s(0.6875)}; /* 11px */
+        --size-font-sm: ${s(0.75)};   /* 12px */
+        --size-font-base: ${s(0.875)}; /* 14px */
+        --size-font-md: ${s(1)};       /* 16px */
+        --size-font-lg: ${s(1.125)};   /* 18px */
+        --size-font-xl: ${s(1.25)};    /* 20px */
+        --size-font-2xl: ${s(1.5)};    /* 24px */
+        --size-font-3xl: ${s(1.875)};  /* 30px */
+        --size-font-4xl: ${s(2.25)};   /* 36px */
+        
+        /* Legacy Support */
+        --size-font-tiny: var(--size-font-2xs);
+        --size-font-small: var(--size-font-sm);
+        --size-font-medium: var(--size-font-base);
+        --size-font-large: var(--size-font-md);
+        --size-font-huge: var(--size-font-lg);
+        --size-font-giant: var(--size-font-xl);
         
         /* Heading Sizes */
         --size-font-h1: ${s(1.75)};
@@ -218,19 +255,28 @@ export class SizeManager {
         --size-font-overline: ${s(0.625)};
         --size-font-code: ${s(0.8125)};
 
-        /* Spacing System */
+        /* Spacing System - Semantic */
         --size-spacing-none: 0;
-        --size-spacing-tiny: ${s(0.125)};
-        --size-spacing-small: ${s(0.25)};
-        --size-spacing-medium: ${s(0.5)};
-        --size-spacing-large: ${s(0.75)};
-        --size-spacing-huge: ${s(1)};
-        --size-spacing-giant: ${s(1.5)};
-        --size-spacing-massive: ${s(2)};
-        --size-spacing-colossal: ${s(3)};
-        --size-spacing-half: ${s(0.375)};
-        --size-spacing-quarter: ${s(0.1875)};
-        --size-spacing-double: ${s(1)};
+        --size-spacing-3xs: ${s(0.0625)};  /* 1px */
+        --size-spacing-2xs: ${s(0.125)};   /* 2px */
+        --size-spacing-xs: ${s(0.25)};     /* 4px */
+        --size-spacing-sm: ${s(0.375)};    /* 6px */
+        --size-spacing-md: ${s(0.5)};      /* 8px */
+        --size-spacing-lg: ${s(0.75)};     /* 12px */
+        --size-spacing-xl: ${s(1)};        /* 16px */
+        --size-spacing-2xl: ${s(1.5)};     /* 24px */
+        --size-spacing-3xl: ${s(2)};       /* 32px */
+        --size-spacing-4xl: ${s(3)};       /* 48px */
+        
+        /* Legacy Support */
+        --size-spacing-tiny: var(--size-spacing-2xs);
+        --size-spacing-small: var(--size-spacing-xs);
+        --size-spacing-medium: var(--size-spacing-md);
+        --size-spacing-large: var(--size-spacing-lg);
+        --size-spacing-huge: var(--size-spacing-xl);
+        --size-spacing-giant: var(--size-spacing-2xl);
+        --size-spacing-massive: var(--size-spacing-3xl);
+        --size-spacing-colossal: var(--size-spacing-4xl);
 
         /* Component Heights */
         --size-comp-size-xxxs: var(--size-6);
@@ -281,14 +327,23 @@ export class SizeManager {
         --size-comp-margin-xxxl: var(--size-10);
         --size-comp-margin-xxxxl: var(--size-12);
 
-        /* Border Radius */
+        /* Border Radius - Consistent System */
         --size-radius-none: 0;
-        --size-radius-small: ${s(0.125)};
-        --size-radius-medium: ${s(0.25)};
-        --size-radius-large: ${s(0.5)};
-        --size-radius-huge: ${s(0.75)};
+        --size-radius-xs: ${s(0.125)};     /* 2px */
+        --size-radius-sm: ${s(0.25)};      /* 4px */
+        --size-radius-md: ${s(0.375)};     /* 6px */
+        --size-radius-lg: ${s(0.5)};       /* 8px */
+        --size-radius-xl: ${s(0.75)};      /* 12px */
+        --size-radius-2xl: ${s(1)};        /* 16px */
+        --size-radius-3xl: ${s(1.5)};      /* 24px */
         --size-radius-full: 9999px;
         --size-radius-circle: 50%;
+        
+        /* Legacy Support */
+        --size-radius-small: var(--size-radius-sm);
+        --size-radius-medium: var(--size-radius-md);
+        --size-radius-large: var(--size-radius-lg);
+        --size-radius-huge: var(--size-radius-xl);
 
         /* Line Heights */
         --size-line-none: 1.0;
@@ -465,10 +520,14 @@ export class SizeManager {
   }
 
   subscribe(listener: SizeChangeListener): () => void {
+    if (!this.listeners) {
+      console.warn('SizeManager listeners not initialized')
+      return () => { }
+    }
     this.listeners.add(listener)
     return () => this.listeners.delete(listener)
   }
-  
+
   onChange(listener: SizeChangeListener): () => void {
     return this.subscribe(listener)
   }

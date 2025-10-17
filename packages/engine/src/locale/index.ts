@@ -5,14 +5,14 @@
  */
 
 export {
-  LocaleManager,
-  createLocaleManager,
-  type LocaleAwarePlugin,
-  type LocaleManagerOptions
-} from './locale-manager'
+  createLocaleAwarePlugin,
+  type CreateLocaleAwarePluginOptions,
+  createSimpleLocaleAwarePlugin
+} from './create-locale-aware-plugin'
 
 export {
-  createLocaleAwarePlugin,
-  createSimpleLocaleAwarePlugin,
-  type CreateLocaleAwarePluginOptions
-} from './create-locale-aware-plugin'
+  createLocaleManager,
+  type LocaleAwarePlugin,
+  LocaleManager,
+  type LocaleManagerOptions
+} from './locale-manager'

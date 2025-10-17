@@ -52,9 +52,7 @@ export const createColorConfig = (localeRef: Ref<string>) => ({
   ],
   hooks: {
     afterChange: (theme: any) => {
-      if (import.meta.env.DEV) {
-        console.log('[theme] changed ->', theme.themeName || theme.primaryColor)
-      }
+      // 主题已切换（调试日志已禁用）
     }
   }
 })

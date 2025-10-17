@@ -68,28 +68,28 @@ export interface RouterEnginePluginOptions {
   preset?: RouterPreset
   /** 是否启用预加载 */
   preload?:
-    | boolean
-    | {
-      strategy?: 'hover' | 'visible' | 'idle'
-      delay?: number
-      enabled?: boolean
-    }
+  | boolean
+  | {
+    strategy?: 'hover' | 'visible' | 'idle'
+    delay?: number
+    enabled?: boolean
+  }
   /** 是否启用缓存 */
   cache?:
-    | boolean
-    | {
-      maxSize?: number
-      strategy?: 'memory' | 'session' | 'local'
-      enabled?: boolean
-    }
+  | boolean
+  | {
+    maxSize?: number
+    strategy?: 'memory' | 'session' | 'local'
+    enabled?: boolean
+  }
   /** 动画配置 */
   animation?:
-    | boolean
-    | {
-      type?: 'fade' | 'slide' | 'scale' | 'flip'
-      duration?: number
-      enabled?: boolean
-    }
+  | boolean
+  | {
+    type?: 'fade' | 'slide' | 'scale' | 'flip'
+    duration?: number
+    enabled?: boolean
+  }
   /** 性能配置 */
   performance?: {
     enableLazyLoading?: boolean
@@ -216,9 +216,9 @@ function mergeOptions(
       preload:
         typeof userOptions.preload === 'object' && userOptions.preload !== null
           ? {
-              ...(presetConfig.preload as any),
-              ...(userOptions.preload as any),
-            }
+            ...(presetConfig.preload as any),
+            ...(userOptions.preload as any),
+          }
           : userOptions.preload ?? presetConfig.preload,
       cache:
         typeof userOptions.cache === 'object' && userOptions.cache !== null
@@ -226,11 +226,11 @@ function mergeOptions(
           : userOptions.cache ?? presetConfig.cache,
       animation:
         typeof userOptions.animation === 'object'
-        && userOptions.animation !== null
+          && userOptions.animation !== null
           ? {
-              ...(presetConfig.animation as any),
-              ...(userOptions.animation as any),
-            }
+            ...(presetConfig.animation as any),
+            ...(userOptions.animation as any),
+          }
           : userOptions.animation ?? presetConfig.animation,
       performance: {
         ...presetConfig.performance,
@@ -320,13 +320,7 @@ export function createRouterEnginePlugin(
             )
           }
 
-          // 记录插件安装开始
-          engine.logger.info(`Installing ${name} plugin...`, {
-            version,
-            mode,
-            base,
-            routesCount: routes.length,
-          })
+          // Installing router plugin (日志已禁用)
 
           // 创建历史管理器
           let history
@@ -425,15 +419,12 @@ export function createRouterEnginePlugin(
           // 等待路由器准备就绪（在测试环境中跳过）
           const isTestEnv = nodeProcess?.env?.NODE_ENV === 'test'
           if (!isTestEnv) {
-            engine.logger.info('Waiting for router to be ready...')
+            // Waiting for router to be ready (日志已禁用)
             await router.isReady()
-            engine.logger.info('Router is ready!')
+            // Router is ready (日志已禁用)
           }
 
-          // 记录插件安装完成
-          engine.logger.info(`${name} plugin installed successfully`, {
-            currentRoute: router.currentRoute.value?.path || '/',
-          })
+          // Router plugin installed successfully (日志已禁用)
 
           // 触发插件安装完成事件
           if (engine.events) {
@@ -463,7 +454,7 @@ export function createRouterEnginePlugin(
             }
           })
 
-          engine.logger.info(`${name} plugin registered, waiting for Vue app creation...`)
+          // Router plugin registered (日志已禁用)
         }
       }
       catch (error) {

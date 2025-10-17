@@ -2,7 +2,7 @@
  * @ldesign/size - Utility Functions
  */
 
-import type { SizeInput, SizeValue, SizeUnit } from '../types';
+import type { SizeInput, SizeUnit, SizeValue } from '../types';
 
 /**
  * Parse size input to SizeValue
@@ -17,9 +17,9 @@ export function parseSizeInput(input: SizeInput): SizeValue {
   }
 
   if (typeof input === 'string') {
-    const match = input.match(/^(-?\d*\.?\d+)(px|rem|em|vw|vh|%|pt|vmin|vmax)?$/);
+    const match = input.match(/^(-?(?:\d+(?:\.\d+)?|\.\d+))(px|rem|em|vw|vh|%|pt|vmin|vmax)?$/);
     if (match) {
-      const value = parseFloat(match[1]);
+      const value = Number.parseFloat(match[1]);
       const unit = (match[2] || 'px') as SizeUnit;
       return { value, unit };
     }
@@ -161,7 +161,7 @@ export function clampSize(
  * Round size value to specified precision
  */
 export function roundSize(size: SizeValue, precision = 2): SizeValue {
-  const factor = Math.pow(10, precision);
+  const factor = 10**precision;
   return {
     value: Math.round(size.value * factor) / factor,
     unit: size.unit
@@ -181,7 +181,7 @@ export function generateSizeScale(
   
   // Generate sizes below base
   for (let i = steps; i > 0; i--) {
-    const value = base / Math.pow(ratio, i);
+    const value = base / ratio**i;
     sizes.push({ value: Math.round(value * 100) / 100, unit });
   }
   
@@ -190,7 +190,7 @@ export function generateSizeScale(
   
   // Generate sizes above base
   for (let i = 1; i <= steps; i++) {
-    const value = base * Math.pow(ratio, i);
+    const value = base * ratio**i;
     sizes.push({ value: Math.round(value * 100) / 100, unit });
   }
   
@@ -202,11 +202,11 @@ export function generateSizeScale(
  */
 export function isValidSize(input: any): input is SizeInput {
   if (typeof input === 'number') {
-    return !isNaN(input) && isFinite(input);
+    return !Number.isNaN(input) && Number.isFinite(input);
   }
 
   if (typeof input === 'string') {
-    const match = input.match(/^(-?\d*\.?\d+)(px|rem|em|vw|vh|%|pt|vmin|vmax)?$/);
+    const match = input.match(/^(-?(?:\d+(?:\.\d+)?|\.\d+))(px|rem|em|vw|vh|%|pt|vmin|vmax)?$/);
     return !!match;
   }
 
@@ -253,7 +253,7 @@ export function deepMerge<T extends Record<string, any>>(
     for (const key in source) {
       if (isObject(source[key])) {
         if (!target[key]) Object.assign(target, { [key]: {} });
-        deepMerge(target[key], source[key]);
+        deepMerge(target[key] as any, source[key] as any);
       } else {
         Object.assign(target, { [key]: source[key] });
       }
@@ -268,6 +268,108 @@ export function deepMerge<T extends Record<string, any>>(
  */
 function isObject(item: any): item is Record<string, any> {
   return item && typeof item === 'object' && !Array.isArray(item);
+}
+
+/**
+ * Memoize function for performance optimization
+ */
+export function memoize<T extends (...args: any[]) => any>(
+  fn: T,
+  getKey?: (...args: Parameters<T>) => string
+): T {
+  const cache = new Map<string, ReturnType<T>>();
+  
+  return function (this: any, ...args: Parameters<T>): ReturnType<T> {
+    const key = getKey ? getKey(...args) : JSON.stringify(args);
+    
+    if (cache.has(key)) {
+      return cache.get(key)!;
+    }
+    
+    const result = fn.apply(this, args);
+    cache.set(key, result);
+    
+    // Limit cache size to prevent memory leaks
+    if (cache.size > 100) {
+      const firstKey = cache.keys().next().value;
+      if (firstKey !== undefined) {
+        cache.delete(firstKey);
+      }
+    }
+    
+    return result;
+  } as T;
+}
+
+/**
+ * Batch process size values for performance
+ */
+export function batchProcessSizes<T>(
+  items: T[],
+  processor: (item: T) => void,
+  batchSize = 10
+): Promise<void> {
+  return new Promise((resolve) => {
+    let index = 0;
+    
+    function processBatch() {
+      const end = Math.min(index + batchSize, items.length);
+      
+      for (; index < end; index++) {
+        processor(items[index]);
+      }
+      
+      if (index < items.length) {
+        requestAnimationFrame(processBatch);
+      } else {
+        resolve();
+      }
+    }
+    
+    processBatch();
+  });
+}
+
+/**
+ * Request idle callback polyfill
+ */
+export const requestIdleCallback = 
+  typeof window !== 'undefined' && 'requestIdleCallback' in window
+    ? window.requestIdleCallback
+    : (callback: IdleRequestCallback) => setTimeout(() => callback({ didTimeout: false, timeRemaining: () => 50 } as IdleDeadline), 1);
+
+/**
+ * Optimize CSS variable generation with deduplication
+ */
+export function optimizeCSSVariables(variables: Record<string, string>): Record<string, string> {
+  const optimized: Record<string, string> = {};
+  const valueMap = new Map<string, string[]>();
+  
+  // Group variables by value
+  Object.entries(variables).forEach(([key, value]) => {
+    if (!valueMap.has(value)) {
+      valueMap.set(value, []);
+    }
+    valueMap.get(value)!.push(key);
+  });
+  
+  // Create references for duplicate values
+  valueMap.forEach((keys, value) => {
+    if (keys.length > 1) {
+      // Use the first key as the base
+      const baseKey = keys[0];
+      optimized[baseKey] = value;
+      
+      // Reference the base for others
+      keys.slice(1).forEach(key => {
+        optimized[key] = `var(${baseKey})`;
+      });
+    } else {
+      optimized[keys[0]] = value;
+    }
+  });
+  
+  return optimized;
 }
 
 /**

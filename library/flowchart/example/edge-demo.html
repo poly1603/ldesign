@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>连线样式演示 - FlowChart</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .description {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .controls {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .control-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .control-group label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      padding: 8px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      transition: all 0.3s;
+    }
+
+    .control-group label:hover {
+      border-color: #2196f3;
+      background: #e3f2fd;
+    }
+
+    .control-group input[type="radio"]:checked + span {
+      color: #2196f3;
+      font-weight: 600;
+    }
+
+    .control-group input[type="radio"] {
+      display: none;
+    }
+
+    .control-group input[type="radio"]:checked ~ label {
+      border-color: #2196f3;
+      background: #e3f2fd;
+    }
+
+    .section-title {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    #flowchart-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      height: 600px;
+      overflow: hidden;
+    }
+
+    .legend {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .legend h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .legend ul {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .legend li {
+      padding: 5px 0;
+      color: #666;
+    }
+
+    .legend li strong {
+      color: #2196f3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 连线样式演示</h1>
+    <p class="description">展示不同的连线类型和动画效果</p>
+
+    <div class="controls">
+      <div class="control-group">
+        <span class="section-title">连线类型:</span>
+        <label>
+          <input type="radio" name="edgeType" value="bezier" checked>
+          <span>贝塞尔曲线</span>
+        </label>
+        <label>
+          <input type="radio" name="edgeType" value="straight">
+          <span>直线</span>
+        </label>
+        <label>
+          <input type="radio" name="edgeType" value="smooth">
+          <span>平滑曲线</span>
+        </label>
+        <label>
+          <input type="radio" name="edgeType" value="polyline">
+          <span>折线</span>
+        </label>
+        <label>
+          <input type="radio" name="edgeType" value="step">
+          <span>阶梯线</span>
+        </label>
+        <label>
+          <input type="radio" name="edgeType" value="orthogonal">
+          <span>正交线</span>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <span class="section-title">动画效果:</span>
+        <label>
+          <input type="radio" name="animation" value="none" checked>
+          <span>无动画</span>
+        </label>
+        <label>
+          <input type="radio" name="animation" value="flow">
+          <span>流动效果</span>
+        </label>
+        <label>
+          <input type="radio" name="animation" value="dash">
+          <span>虚线流动</span>
+        </label>
+        <label>
+          <input type="radio" name="animation" value="pulse">
+          <span>脉冲效果</span>
+        </label>
+        <label>
+          <input type="radio" name="animation" value="glow">
+          <span>发光效果</span>
+        </label>
+      </div>
+    </div>
+
+    <div id="flowchart-container"></div>
+
+    <div class="legend">
+      <h3>📖 连线类型说明</h3>
+      <ul>
+        <li><strong>贝塞尔曲线:</strong> 经典的平滑曲线，适合大多数场景</li>
+        <li><strong>直线:</strong> 最简单直接的连接方式</li>
+        <li><strong>平滑曲线:</strong> 水平方向优化的平滑连线</li>
+        <li><strong>折线:</strong> 带圆角的折线，清晰明了</li>
+        <li><strong>阶梯线:</strong> 阶梯式连接，适合层级关系</li>
+        <li><strong>正交线:</strong> 直角折线，适合规整的布局</li>
+      </ul>
+    </div>
+  </div>
+
+  <script type="module">
+    import { FlowChart, NodeType, EdgeType, EdgeAnimationType } from '../dist/flowchart.esm.js';
+
+    let flowChart;
+    let currentEdgeType = 'bezier';
+    let currentAnimation = 'none';
+
+    // 初始化流程图
+    function initFlowChart() {
+      const container = document.getElementById('flowchart-container');
+      container.innerHTML = '';
+
+      flowChart = new FlowChart({
+        container: '#flowchart-container',
+        autoLayout: false,
+        enableZoom: true,
+        enablePan: true
+      });
+
+      // 创建节点
+      const nodes = [
+        {
+          id: 'start',
+          type: NodeType.START,
+          label: '开始',
+          position: { x: -300, y: -200 }
+        },
+        {
+          id: 'process1',
+          type: NodeType.PROCESS,
+          label: '流程 1',
+          position: { x: -100, y: -200 }
+        },
+        {
+          id: 'condition',
+          type: NodeType.CONDITION,
+          label: '条件判断',
+          position: { x: 100, y: -200 }
+        },
+        {
+          id: 'process2',
+          type: NodeType.APPROVAL,
+          label: '审批',
+          position: { x: 300, y: -100 }
+        },
+        {
+          id: 'process3',
+          type: NodeType.PROCESS,
+          label: '流程 2',
+          position: { x: 300, y: -300 }
+        },
+        {
+          id: 'merge',
+          type: NodeType.MERGE,
+          label: '合并',
+          position: { x: 500, y: -200 }
+        },
+        {
+          id: 'end',
+          type: NodeType.END,
+          label: '结束',
+          position: { x: 700, y: -200 }
+        }
+      ];
+
+      // 创建边
+      const edges = [
+        {
+          id: 'e1',
+          source: 'start',
+          target: 'process1',
+          style: {
+            type: currentEdgeType,
+            animated: currentAnimation !== 'none',
+            animationType: currentAnimation,
+            strokeColor: '#2196f3',
+            strokeWidth: 2
+          }
+        },
+        {
+          id: 'e2',
+          source: 'process1',
+          target: 'condition',
+          style: {
+            type: currentEdgeType,
+            animated: currentAnimation !== 'none',
+            animationType: currentAnimation,
+            strokeColor: '#9c27b0',
+            strokeWidth: 2
+          }
+        },
+        {
+          id: 'e3',
+          source: 'condition',
+          target: 'process2',
+          label: '通过',
+          style: {
+            type: currentEdgeType,
+            animated: currentAnimation !== 'none',
+            animationType: currentAnimation,
+            strokeColor: '#4caf50',
+            strokeWidth: 2
+          }
+        },
+        {
+          id: 'e4',
+          source: 'condition',
+          target: 'process3',
+          label: '拒绝',
+          style: {
+            type: currentEdgeType,
+            animated: currentAnimation !== 'none',
+            animationType: currentAnimation,
+            strokeColor: '#f44336',
+            strokeWidth: 2
+          }
+        },
+        {
+          id: 'e5',
+          source: 'process2',
+          target: 'merge',
+          style: {
+            type: currentEdgeType,
+            animated: currentAnimation !== 'none',
+            animationType: currentAnimation,
+            strokeColor: '#ff9800',
+            strokeWidth: 2
+          }
+        },
+        {
+          id: 'e6',
+          source: 'process3',
+          target: 'merge',
+          style: {
+            type: currentEdgeType,
+            animated: currentAnimation !== 'none',
+            animationType: currentAnimation,
+            strokeColor: '#ff9800',
+            strokeWidth: 2
+          }
+        },
+        {
+          id: 'e7',
+          source: 'merge',
+          target: 'end',
+          style: {
+            type: currentEdgeType,
+            animated: currentAnimation !== 'none',
+            animationType: currentAnimation,
+            strokeColor: '#607d8b',
+            strokeWidth: 2
+          }
+        }
+      ];
+
+      flowChart.load(nodes, edges);
+    }
+
+    // 监听连线类型变化
+    document.querySelectorAll('input[name="edgeType"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        currentEdgeType = e.target.value;
+        initFlowChart();
+      });
+    });
+
+    // 监听动画效果变化
+    document.querySelectorAll('input[name="animation"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        currentAnimation = e.target.value;
+        initFlowChart();
+      });
+    });
+
+    // 初始化
+    initFlowChart();
+  </script>
+</body>
+</html>
+
+
+

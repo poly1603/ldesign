@@ -1,35 +1,51 @@
-#  Dependencies
+# 依赖
 node_modules/
-.pnpm-store/
+example/node_modules/
 
-#  Build  outputs
+# 构建输出
 dist/
-*.tsbuildinfo
+example/dist/
 
-#  IDE
-.vscode/
-.idea/
+# 日志
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 编辑器
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea
 *.swp
 *.swo
 *~
-
-#  OS
 .DS_Store
-Thumbs.db
 
-#  Logs
-*.log
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# 测试覆盖率
+coverage/
+.nyc_output/
 
-#  Environment
+# 临时文件
+*.tmp
+*.temp
+.cache/
+
+# 环境变量
 .env
 .env.local
 .env.*.local
 
-#  Temporary  files
-.tmp/
-temp/
-*.tmp
+# 系统文件
+Thumbs.db
+Desktop.ini
+
+# 打包文件
+*.tgz
+*.zip
+*.tar.gz

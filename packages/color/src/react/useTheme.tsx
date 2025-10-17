@@ -108,7 +108,7 @@ export function useTheme(options: UseThemeOptions = {}) {
 /**
  * Create a theme provider context
  */
-import React, { createContext, useContext, ReactNode } from 'react'
+import { createContext, useContext, ReactNode } from 'react'
 
 interface ThemeContextValue {
   currentTheme: ThemeState | null

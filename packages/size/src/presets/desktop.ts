@@ -170,9 +170,7 @@ export const desktopCompact: Preset = {
       'switch-height': '22px',
       'checkbox-size': '16px',
       'radio-size': '16px'
-    }
-  }
-};
+    },
     
     grid: {
       columns: 24,

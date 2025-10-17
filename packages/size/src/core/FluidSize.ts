@@ -5,14 +5,14 @@
  */
 
 import type { 
-  SizeValue, 
-  SizeUnit, 
-  FluidSize,
+  DeviceType, 
+  FluidSize, 
   ResponsiveSize,
-  DeviceType,
+  SizeUnit,
+  SizeValue,
   Viewport
 } from '../types';
-import { parseSizeInput, formatSize } from '../utils';
+import { formatSize, parseSizeInput } from '../utils';
 import { getDeviceDetector } from './DeviceDetector';
 
 /**
@@ -129,7 +129,7 @@ export class FluidSizeCalculator {
     const sizes: string[] = [];
     
     for (let i = -steps; i <= steps; i++) {
-      const value = base * Math.pow(ratio, i);
+      const value = base * ratio**i;
       sizes.push(`${value.toFixed(3)}${unit}`);
     }
     
@@ -148,8 +148,8 @@ export class FluidSizeCalculator {
     const scales: string[] = [];
     
     for (let i = -steps; i <= steps; i++) {
-      const minValue = baseMin * Math.pow(ratio, i);
-      const maxValue = baseMax * Math.pow(ratio, i);
+      const minValue = baseMin * ratio**i;
+      const maxValue = baseMax * ratio**i;
       
       const fluid = this.createFluidSize({
         min: { value: minValue, unit: 'rem' },

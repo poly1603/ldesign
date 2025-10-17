@@ -8,6 +8,7 @@
  */
 
 import path from 'path'
+import fs from 'fs-extra'
 import { formatBytes, formatDuration } from './performance-utils'
 import { Logger } from './logger'
 

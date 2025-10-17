@@ -222,7 +222,7 @@ export class Logger {
    */
   newLine(): void {
     if (this.shouldLog(LogLevelEnum.INFO)) {
-      
+      console.log('')
     }
   }
 
@@ -231,7 +231,7 @@ export class Logger {
    */
   divider(char: string = '-', length: number = 50): void {
     if (this.shouldLog(LogLevelEnum.INFO)) {
-      ))
+      console.log(char.repeat(length))
     }
   }
 
@@ -261,7 +261,7 @@ export class Logger {
    */
   private log(type: string, message: string, colorFn: (str: string) => string, ...args: any[]): void {
     const formattedMessage = this.formatMessage(type, message, colorFn)
-    
+    console.log(formattedMessage, ...args)
   }
 
   /**

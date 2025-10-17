@@ -166,38 +166,37 @@ export class ValidationReporter implements IValidationReporter {
   ): Promise<void> {
     const { summary } = report
 
-    )
-    
-    )
+    console.log('\n' + '='.repeat(50))
+    console.log('验证报告')
+    console.log('='.repeat(50))
 
     // 状态
     const statusIcon = summary.status === 'passed' ? '✅' : '❌'
     const statusText = summary.status === 'passed' ? '通过' : '失败'
-    
+    console.log(`\n${statusIcon} 状态: ${statusText}`)
 
     // 统计信息
-    
-    
-    
-    
-    }s`)
+    console.log(`\n📊 统计信息:`)
+    console.log(`  - 文件: ${summary.passedFiles}/${summary.totalFiles}`)
+    console.log(`  - 测试: ${summary.passedTests}/${summary.totalTests}`)
+    console.log(`  - 耗时: ${(summary.duration / 1000).toFixed(2)}s`)
 
     // 建议
     if (report.recommendations.length > 0) {
-      
+      console.log(`\n💡 建议:`)
       report.recommendations.forEach((rec, index) => {
         const icon = this.getRecommendationIcon(rec.type)
-        
+        console.log(`  ${index + 1}. ${icon} ${rec.title}`)
         if (config.verbose) {
-          
+          console.log(`     说明: ${rec.description}`)
           if (rec.solution) {
-            
+            console.log(`     解决方案: ${rec.solution}`)
           }
         }
       })
     }
 
-     + '\n')
+    console.log('='.repeat(50) + '\n')
   }
 
   /**

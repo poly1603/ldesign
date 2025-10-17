@@ -1,8 +1,8 @@
-import type { App, Ref } from 'vue'
-import type { Plugin } from '../types/plugin'
+import type { App } from 'vue'
 import type { I18nAdapter } from '../types/base'
 import type { Engine } from '../types/engine'
-import { ref, watch } from 'vue'
+import type { Plugin, PluginContext } from '../types/plugin'
+import { ref } from 'vue'
 
 export interface I18nEnginePluginOptions {
   adapter?: I18nAdapter
@@ -33,59 +33,72 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}): P
     name: 'i18n-engine-plugin',
     version: '1.0.0',
 
-    async install(engine: Engine, app: App) {
+    async install(context: PluginContext<Engine>) {
+      const { engine } = context
+      const app = (engine as any).app as App
+      
       // 如果提供了适配器，设置它
-      if (options.adapter) {
-        engine.setI18n(options.adapter)
-        engine.logger.info('I18n adapter installed')
+      if (options.adapter && (engine as any).setI18n) {
+        (engine as any).setI18n(options.adapter);
+        (engine as any).logger?.info('I18n adapter installed')
       }
 
       // 设置全局响应式语言状态
       const defaultLocale = options.defaultLocale || 'en'
-      engine.state.set('i18n.locale', defaultLocale)
-      engine.state.set('i18n.fallbackLocale', defaultLocale)
+      if ((engine as any).state) {
+        (engine as any).state.set('i18n.locale', defaultLocale);
+        (engine as any).state.set('i18n.fallbackLocale', defaultLocale)
+      }
       
       // 创建响应式语言引用
       const currentLocale = ref(defaultLocale)
       
       // 监听 engine state 的语言变化
-      const unwatch = engine.state.watch('i18n.locale', async (newLocale: string, oldLocale: string) => {
-        if (newLocale && newLocale !== oldLocale) {
-          currentLocale.value = newLocale
-          
-          // 调用语言变更钩子
-          if (options.onLocaleChange) {
-            try {
-              await options.onLocaleChange(newLocale, oldLocale)
-            } catch (error) {
-              engine.logger.error('Error in locale change hook', { error })
+      let unwatch = () => {}
+      if ((engine as any).state?.watch) {
+        unwatch = (engine as any).state.watch('i18n.locale', async (newLocale: string, oldLocale: string) => {
+          if (newLocale && newLocale !== oldLocale) {
+            currentLocale.value = newLocale
+            
+            // 调用语言变更钩子
+            if (options.onLocaleChange) {
+              try {
+                await options.onLocaleChange(newLocale, oldLocale)
+              } catch (error) {
+                (engine as any).logger?.error('Error in locale change hook', { error })
+              }
+            }
+            
+            // 触发语言变更事件
+            if ((engine as any).events?.emit) {
+              (engine as any).events.emit('i18n:locale-changed', { 
+                newLocale, 
+                oldLocale,
+                timestamp: Date.now() 
+              })
             }
           }
-          
-          // 触发语言变更事件
-          engine.events.emit('i18n:locale-changed', { 
-            newLocale, 
-            oldLocale,
-            timestamp: Date.now() 
-          })
-        }
-      })
+        })
+      }
       
       // 提供全局方法来改变语言
       const setLocale = (locale: string) => {
-        engine.state.set('i18n.locale', locale)
-        if (engine.i18n?.setLocale) {
-          engine.i18n.setLocale(locale)
+        if ((engine as any).state) {
+          (engine as any).state.set('i18n.locale', locale)
+        }
+        if ((engine as any).i18n?.setLocale) {
+          (engine as any).i18n.setLocale(locale)
         }
       }
       
       // 提供全局方法来获取当前语言
       const getLocale = (): string => {
-        return engine.state.get('i18n.locale') || defaultLocale
+        const localeValue = (engine as any).state?.get('i18n.locale')
+        return typeof localeValue === 'string' ? localeValue : defaultLocale
       }
       
       // 将方法注入到 Vue 应用中
-      app.provide('engine-i18n', engine.i18n)
+      app.provide('engine-i18n', (engine as any).i18n)
       app.provide('engine-locale', currentLocale)
       app.provide('setEngineLocale', setLocale)
       app.provide('getEngineLocale', getLocale)
@@ -95,11 +108,15 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}): P
       app.config.globalProperties.$setEngineLocale = setLocale
       app.config.globalProperties.$getEngineLocale = getLocale
 
-      engine.logger.debug('I18n engine plugin installed with reactive locale support')
+      ;(engine as any).logger?.debug('I18n engine plugin installed with reactive locale support')
       
-      // 清理函数
-      app.onUnmounted = () => {
-        unwatch()
+      // 清理函数 - use onUnmount instead
+      if (app.unmount) {
+        const originalUnmount = app.unmount
+        app.unmount = function() {
+          unwatch()
+          originalUnmount.call(this)
+        }
       }
     },
   }

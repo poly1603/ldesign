@@ -18,6 +18,7 @@ import { Editor } from '@/core/Editor'
 import { HeadingPlugin } from '@/plugins/text/heading'  // 重要！标题插件
 import { MediaCommandsPlugin } from '@/plugins/media'
 import { FormattingCommandsPlugin } from '@/plugins/formatting'
+import { AIPlugin } from '@/plugins/ai'  // AI 插件
 import FullscreenPlugin from '@/plugins/utils/fullscreen'
 import HistoryPlugin from '@/plugins/utils/history'
 import FindReplacePlugin from '@/plugins/utils/find-replace'
@@ -37,6 +38,8 @@ const editor = new Editor({
     MediaCommandsPlugin,
     // 格式化插件
     FormattingCommandsPlugin,
+    // AI 插件 - 提供 AI 功能
+    AIPlugin,
     // 工具插件
     FullscreenPlugin,
     HistoryPlugin,

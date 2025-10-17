@@ -1,13 +1,12 @@
 /**
  * @ldesign/router RouterView 组件
  *
- * 增强版本 - 核心功能 + 适度增强
+ * 完整优化版本 - 包含所有增强功能
  */
 
-import type { Component, Router } from '../types'
-import { defineComponent, h, inject, KeepAlive, markRaw, type PropType, provide, ref, Transition, watch } from 'vue'
-import { useRoute } from '../composables'
-import { ROUTER_INJECTION_SYMBOL } from '../core/constants'
+import type { Component, Router, RouteLocationNormalized } from '../types'
+import { defineComponent, h, inject, KeepAlive, markRaw, type PropType, provide, ref, Transition, watch, type Ref } from 'vue'
+import { ROUTER_INJECTION_SYMBOL, ROUTE_INJECTION_SYMBOL } from '../core/constants'
 
 // RouterView 深度注入键
 const ROUTER_VIEW_DEPTH_SYMBOL = Symbol('RouterViewDepth')
@@ -21,7 +20,7 @@ export const RouterView = defineComponent({
     },
     // keep-alive 支持
     keepAlive: {
-      type: Boolean,
+      type: [Boolean, Object] as PropType<boolean | KeepAliveProps>,
       default: false,
     },
     include: {
@@ -38,18 +37,51 @@ export const RouterView = defineComponent({
     },
     // transition 动画支持
     transition: {
-      type: [String, Object] as PropType<string | object>,
+      type: [String, Object] as PropType<string | TransitionProps>,
       default: undefined,
+    },
+    // 新增：mode 属性用于过渡
+    mode: {
+      type: String as PropType<'in-out' | 'out-in' | 'default'>,
+      default: 'out-in',
     },
     // loading 状态支持
     loading: {
       type: Boolean,
       default: false,
     },
+    // 新增：懒加载配置
+    lazy: {
+      type: Boolean,
+      default: true,
+    },
+    // 新增：错误处理
+    onError: {
+      type: Function as PropType<(error: Error) => void>,
+      default: undefined,
+    },
+    // 新增：Suspense 支持
+    suspense: {
+      type: Boolean,
+      default: false,
+    },
+    // 新增：超时控制
+    timeout: {
+      type: Number,
+      default: undefined,
+    },
+    // 新增：缓存策略
+    cacheStrategy: {
+      type: String as PropType<'always' | 'matched' | 'custom'>,
+      default: 'matched',
+    },
   },
+
+  // 提供子组件可能需要的数据
+  inheritAttrs: false,
   setup(props, { slots }) {
     const router = inject<Router>(ROUTER_INJECTION_SYMBOL)
-    const route = useRoute()
+    const route = inject<Ref<RouteLocationNormalized>>(ROUTE_INJECTION_SYMBOL)
 
     // 获取当前RouterView的嵌套深度
     const parentDepth = inject<number>(ROUTER_VIEW_DEPTH_SYMBOL, 0)
@@ -58,7 +90,7 @@ export const RouterView = defineComponent({
     // 为子RouterView提供深度信息
     provide(ROUTER_VIEW_DEPTH_SYMBOL, currentDepth)
 
-    if (!router) {
+    if (!router || !route) {
       throw new Error('RouterView must be used within a Router')
     }
 
@@ -96,7 +128,7 @@ export const RouterView = defineComponent({
 
     // 监听路由变化
     watch(
-      () => route?.value,
+      () => route.value,
       async (newRoute) => {
         if (!newRoute?.matched?.length) {
           currentComponent.value = null
@@ -165,8 +197,8 @@ export const RouterView = defineComponent({
         // 对于父路由组件，使用路由名称而不是完整路径作为key
         // 这样子路由切换时父组件不会重新挂载
         const matchedIndex = currentDepth - 1
-        const matched = route?.value?.matched?.[matchedIndex]
-        const componentKey = matched?.name || route?.value?.path || 'default'
+        const matched = route.value?.matched?.[matchedIndex]
+        const componentKey = matched?.name || route.value?.path || 'default'
 
         return h(component, {
           key: componentKey,
@@ -205,7 +237,7 @@ export const RouterView = defineComponent({
       if (slots.default) {
         const slotContent = slots.default({
           Component: component,
-          route: route?.value || {},
+          route: route.value || {},
         })
         return wrapWithKeepAlive(slotContent)
       }

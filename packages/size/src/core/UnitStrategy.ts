@@ -5,11 +5,11 @@
  */
 
 import type {
-  SizeUnit,
-  SizeContext,
-  UnitStrategy,
   DeviceType,
-  SizeValue
+  SizeContext,
+  SizeUnit,
+  SizeValue,
+  UnitStrategy
 } from '../types';
 import { getDeviceDetector } from './DeviceDetector';
 
@@ -289,7 +289,7 @@ export class UnitStrategyManager {
     
     switch (context.type) {
       case 'font':
-        alternatives = ['rem', 'em', 'clamp'];
+        alternatives = ['rem', 'em', '%'];
         avoid = ['px', 'cm', 'mm', 'in'];
         break;
       case 'spacing':
@@ -297,7 +297,7 @@ export class UnitStrategyManager {
         avoid = ['cm', 'mm', 'in', 'pt'];
         break;
       case 'layout':
-        alternatives = ['%', 'vw', 'vh', 'fr', 'ch'];
+        alternatives = ['%', 'vw', 'vh', 'ch'];
         avoid = ['px', 'pt', 'cm', 'mm', 'in'];
         break;
       case 'component':

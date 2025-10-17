@@ -28,7 +28,21 @@
     "declarationMap": true,
     "emitDeclarationOnly": false,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    
+    /* Path mapping */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@core/*": ["src/core/*"],
+      "@ui/*": ["src/ui/*"],
+      "@plugins/*": ["src/plugins/*"],
+      "@utils/*": ["src/utils/*"],
+      "@config/*": ["src/config/*"],
+      "@types/*": ["src/types/*"],
+      "@ai/*": ["src/ai/*"],
+      "@styles/*": ["src/styles/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
   "exclude": ["node_modules", "dist", "docs", "examples"]

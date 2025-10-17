@@ -17,7 +17,6 @@ import { handleAppError } from './error-handler'
  */
 export async function bootstrap() {
   try {
-    console.log('🚀 启动应用...')
 
     // 初始化认证状态
     auth.initAuth()
@@ -42,6 +41,11 @@ export async function bootstrap() {
 
       // Vue应用配置
       setupApp: async (app) => {
+        // 第一时间设置warnHandler，抑制所有Vue警告
+        app.config.warnHandler = () => {
+          // 静默处理所有警告，保持控制台干净
+        }
+
         setupVueApp(app, {
           localeRef,
           i18nPlugin,
@@ -65,7 +69,7 @@ export async function bootstrap() {
 
       // 应用挂载完成
       onMounted: () => {
-        console.log('✅ 应用已挂载')
+        // 应用已挂载
       }
     })
 

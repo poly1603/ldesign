@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>增强水波纹动画效果</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      overflow: hidden;
+    }
+    
+    #map {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+    
+    .controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      z-index: 1000;
+      min-width: 280px;
+      max-width: 320px;
+    }
+    
+    .controls h3 {
+      margin: 0 0 20px 0;
+      font-size: 18px;
+      color: #333;
+      font-weight: 600;
+    }
+    
+    .control-group {
+      margin-bottom: 20px;
+    }
+    
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .control-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #666;
+      font-weight: 500;
+    }
+    
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    button:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    button:last-child {
+      margin-bottom: 0;
+    }
+    
+    button.secondary {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    button.success {
+      background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+    
+    button.warning {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+    
+    button.danger {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    }
+    
+    .slider-container {
+      margin-bottom: 15px;
+    }
+    
+    input[type="range"] {
+      width: 100%;
+      margin: 10px 0;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      background: linear-gradient(to right, #667eea 0%, #764ba2 100%);
+      outline: none;
+      border-radius: 3px;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border: 3px solid #667eea;
+      cursor: pointer;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: white;
+      border: 3px solid #667eea;
+      cursor: pointer;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .value-display {
+      text-align: right;
+      font-size: 12px;
+      color: #667eea;
+      font-weight: 600;
+    }
+    
+    .info {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.85);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      min-width: 300px;
+    }
+    
+    .info-title {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+    
+    .info-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: #43e97b;
+    }
+    
+    .stats {
+      display: flex;
+      gap: 20px;
+    }
+    
+    .stat-item {
+      flex: 1;
+    }
+    
+    .color-picker {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .color-option {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 3px solid transparent;
+    }
+    
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+    
+    .color-option.selected {
+      border-color: #333;
+      box-shadow: 0 0 0 2px white, 0 0 0 4px #333;
+    }
+    
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, #ddd, transparent);
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  
+  <div class="controls">
+    <h3>🌊 水波纹动画控制台</h3>
+    
+    <div class="control-group">
+      <label class="control-label">预设效果</label>
+      <button id="add-single">添加单个水波纹</button>
+      <button id="add-multiple" class="secondary">添加多重水波纹</button>
+      <button id="add-rainbow" class="success">彩虹水波纹</button>
+      <button id="add-pulse" class="warning">脉冲波纹组</button>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div class="control-group">
+      <label class="control-label">动画参数调节</label>
+      
+      <div class="slider-container">
+        <label class="control-label">基础半径</label>
+        <input type="range" id="radius-slider" min="10" max="100" value="40">
+        <div class="value-display" id="radius-value">40</div>
+      </div>
+      
+      <div class="slider-container">
+        <label class="control-label">波纹数量</label>
+        <input type="range" id="count-slider" min="1" max="6" value="3">
+        <div class="value-display" id="count-value">3</div>
+      </div>
+      
+      <div class="slider-container">
+        <label class="control-label">动画速度(ms)</label>
+        <input type="range" id="speed-slider" min="1000" max="5000" value="3000" step="100">
+        <div class="value-display" id="speed-value">3000</div>
+      </div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div class="control-group">
+      <label class="control-label">颜色选择</label>
+      <div class="color-picker">
+        <div class="color-option selected" data-color="255,0,0" style="background: rgb(255,0,0)"></div>
+        <div class="color-option" data-color="0,255,0" style="background: rgb(0,255,0)"></div>
+        <div class="color-option" data-color="0,0,255" style="background: rgb(0,0,255)"></div>
+        <div class="color-option" data-color="255,255,0" style="background: rgb(255,255,0)"></div>
+        <div class="color-option" data-color="255,0,255" style="background: rgb(255,0,255)"></div>
+        <div class="color-option" data-color="0,255,255" style="background: rgb(0,255,255)"></div>
+        <div class="color-option" data-color="255,128,0" style="background: rgb(255,128,0)"></div>
+        <div class="color-option" data-color="128,0,255" style="background: rgb(128,0,255)"></div>
+      </div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div class="control-group">
+      <button id="clear-all" class="danger">清除所有水波纹</button>
+    </div>
+  </div>
+  
+  <div class="info">
+    <div class="stats">
+      <div class="stat-item">
+        <div class="info-title">活动标记</div>
+        <div class="info-value" id="marker-count">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="info-title">动画FPS</div>
+        <div class="info-value" id="fps">60</div>
+      </div>
+      <div class="stat-item">
+        <div class="info-title">状态</div>
+        <div class="info-value" id="status">就绪</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { MapRenderer } from '../dist/map-renderer.esm.js';
+    
+    // 初始化地图
+    const mapRenderer = new MapRenderer('map', {
+      mode: '2d',
+      longitude: 113.324,
+      latitude: 23.106,
+      zoom: 11,
+      smoothZoom: true,
+      showTooltip: false
+    });
+    
+    let markerCount = 0;
+    let currentColor = [255, 0, 0];
+    let nextMarkerId = 1;
+    
+    // FPS 计算
+    let lastTime = performance.now();
+    let frames = 0;
+    
+    function calculateFPS() {
+      frames++;
+      const currentTime = performance.now();
+      if (currentTime >= lastTime + 1000) {
+        const fps = Math.round((frames * 1000) / (currentTime - lastTime));
+        document.getElementById('fps').textContent = fps;
+        frames = 0;
+        lastTime = currentTime;
+      }
+      requestAnimationFrame(calculateFPS);
+    }
+    calculateFPS();
+    
+    // 获取当前滑块值
+    function getSliderValues() {
+      return {
+        baseRadius: parseInt(document.getElementById('radius-slider').value),
+        rippleCount: parseInt(document.getElementById('count-slider').value),
+        animationSpeed: parseInt(document.getElementById('speed-slider').value)
+      };
+    }
+    
+    // 更新显示值
+    document.getElementById('radius-slider').addEventListener('input', (e) => {
+      document.getElementById('radius-value').textContent = e.target.value;
+    });
+    
+    document.getElementById('count-slider').addEventListener('input', (e) => {
+      document.getElementById('count-value').textContent = e.target.value;
+    });
+    
+    document.getElementById('speed-slider').addEventListener('input', (e) => {
+      document.getElementById('speed-value').textContent = e.target.value;
+    });
+    
+    // 颜色选择
+    document.querySelectorAll('.color-option').forEach(option => {
+      option.addEventListener('click', () => {
+        document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+        option.classList.add('selected');
+        currentColor = option.dataset.color.split(',').map(Number);
+      });
+    });
+    
+    // 更新统计信息
+    function updateStats() {
+      document.getElementById('marker-count').textContent = markerCount;
+      document.getElementById('status').textContent = markerCount > 0 ? '动画中' : '就绪';
+    }
+    
+    // 添加单个水波纹
+    document.getElementById('add-single').addEventListener('click', () => {
+      const values = getSliderValues();
+      const id = `marker-${nextMarkerId++}`;
+      
+      mapRenderer.addRippleMarker(id, 113.324, 23.106, currentColor, values);
+      
+      markerCount++;
+      updateStats();
+    });
+    
+    // 添加多重水波纹
+    document.getElementById('add-multiple').addEventListener('click', () => {
+      const values = getSliderValues();
+      const positions = [
+        { lng: 113.299, lat: 23.082 },
+        { lng: 113.349, lat: 23.082 },
+        { lng: 113.324, lat: 23.056 },
+        { lng: 113.324, lat: 23.156 },
+        { lng: 113.274, lat: 23.106 },
+        { lng: 113.374, lat: 23.106 }
+      ];
+      
+      const markers = positions.map((pos, i) => ({
+        id: `multi-${nextMarkerId++}-${i}`,
+        longitude: pos.lng,
+        latitude: pos.lat,
+        color: currentColor,
+        options: {
+          ...values,
+          animationSpeed: values.animationSpeed + (i * 200) // 错开动画时间
+        }
+      }));
+      
+      mapRenderer.addRippleMarkers(markers);
+      markerCount += markers.length;
+      updateStats();
+    });
+    
+    // 彩虹水波纹
+    document.getElementById('add-rainbow').addEventListener('click', () => {
+      const values = getSliderValues();
+      const colors = [
+        [255, 0, 0],     // 红
+        [255, 128, 0],   // 橙
+        [255, 255, 0],   // 黄
+        [0, 255, 0],     // 绿
+        [0, 255, 255],   // 青
+        [0, 0, 255],     // 蓝
+        [128, 0, 255]    // 紫
+      ];
+      
+      const markers = colors.map((color, i) => {
+        const angle = (i / colors.length) * Math.PI * 2;
+        const radius = 0.08;
+        const centerLng = 113.324;
+        const centerLat = 23.106;
+        
+        return {
+          id: `rainbow-${nextMarkerId++}-${i}`,
+          longitude: centerLng + Math.cos(angle) * radius,
+          latitude: centerLat + Math.sin(angle) * radius,
+          color: color,
+          options: values
+        };
+      });
+      
+      mapRenderer.addRippleMarkers(markers);
+      markerCount += markers.length;
+      updateStats();
+    });
+    
+    // 脉冲波纹组
+    document.getElementById('add-pulse').addEventListener('click', () => {
+      const values = getSliderValues();
+      const baseSpeed = values.animationSpeed;
+      
+      // 创建同心圆分布的标记
+      const markers = [];
+      for (let ring = 0; ring < 3; ring++) {
+        const pointsInRing = 6 + ring * 2;
+        const ringRadius = 0.03 * (ring + 1);
+        
+        for (let i = 0; i < pointsInRing; i++) {
+          const angle = (i / pointsInRing) * Math.PI * 2;
+          const lng = 113.324 + Math.cos(angle) * ringRadius;
+          const lat = 23.106 + Math.sin(angle) * ringRadius;
+          
+          markers.push({
+            id: `pulse-${nextMarkerId++}-${ring}-${i}`,
+            longitude: lng,
+            latitude: lat,
+            color: currentColor,
+            options: {
+              baseRadius: values.baseRadius * (1 - ring * 0.2),
+              rippleCount: values.rippleCount,
+              animationSpeed: baseSpeed * (1 + ring * 0.3) // 外圈速度更慢
+            }
+          });
+        }
+      }
+      
+      mapRenderer.addRippleMarkers(markers);
+      markerCount += markers.length;
+      updateStats();
+    });
+    
+    // 清除所有
+    document.getElementById('clear-all').addEventListener('click', () => {
+      mapRenderer.clearRippleMarkers();
+      markerCount = 0;
+      nextMarkerId = 1;
+      updateStats();
+    });
+    
+    // 初始化时添加一个示例
+    setTimeout(() => {
+      document.getElementById('add-single').click();
+    }, 500);
+  </script>
+</body>
+</html>

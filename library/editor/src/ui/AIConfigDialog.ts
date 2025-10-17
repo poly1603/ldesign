@@ -284,15 +284,24 @@ export function showAIConfigDialog(
     </div>
   `
   
-  showUnifiedDialog(editor, {
+  showUnifiedDialog({
     title: 'AI 设置',
     content: dialogContent,
     width: 600,
-    confirmText: '保存',
-    cancelText: '取消',
-    onConfirm: () => {
-      // 收集配置
-      const newConfig: AIConfig = {
+    buttons: [
+      {
+        id: 'cancel',
+        label: '取消',
+        type: 'secondary',
+        closeOnClick: true
+      },
+      {
+        id: 'save',
+        label: '保存',
+        type: 'primary',
+        onClick: () => {
+          // 收集配置
+          const newConfig: AIConfig = {
         enabled: (document.getElementById('ai-enabled') as HTMLInputElement).checked,
         defaultProvider: (document.getElementById('default-provider') as HTMLSelectElement).value as AIProvider,
         providers: {
@@ -328,11 +337,14 @@ export function showAIConfigDialog(
           textContinuation: (document.getElementById('shortcut-text-continuation') as HTMLInputElement).value,
           textRewrite: (document.getElementById('shortcut-text-rewrite') as HTMLInputElement).value
         }
+          }
+          
+          onSave(newConfig)
+          return true
+        },
+        closeOnClick: true
       }
-      
-      onSave(newConfig)
-      return true
-    },
+    ],
     onOpen: () => {
       // 添加标签切换功能
       const tabs = document.querySelectorAll('.ldesign-ai-config-tab')

@@ -28,12 +28,13 @@ import { type TemplatePlugin, TemplatePluginSymbol } from './index'
  * </script>
  * ```
  */
-export function useTemplatePlugin(): TemplatePlugin {
-  const plugin = inject<TemplatePlugin>(TemplatePluginSymbol)
-
-  if (!plugin) {
-    throw new Error(
-      '[Template Plugin] useTemplatePlugin() must be used inside a component with template plugin installed.\n' +
+export function useTemplatePlugin(): TemplatePlugin | null {
+  const plugin = inject<TemplatePlugin>(TemplatePluginSymbol, null)
+  
+  // 返回 null 而不是抛出错误，让组件可以降级处理
+  if (!plugin && process.env.NODE_ENV !== 'production') {
+    console.warn(
+      '[Template Plugin] useTemplatePlugin() called without plugin installed.\n' +
       'Make sure you have called app.use(templatePlugin) before using this composable.'
     )
   }

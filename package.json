@@ -12,6 +12,7 @@
     "build:all:dry": "tsx scripts/build-all.ts --dry-run"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/glob": "^9.0.0",
     "@types/node": "^20.0.0",

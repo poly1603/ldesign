@@ -4,7 +4,6 @@
  * Size presets optimized for mobile devices
  */
 
-import type { SizeScheme } from '../types';
 import type { Preset } from './types';
 import { getDeviceDetector } from '../core/DeviceDetector';
 import { fluid } from '../core/FluidSize';

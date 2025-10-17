@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF文本选择和复制示例</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: #333;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .toolbar {
+            background: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .toolbar button {
+            padding: 0.5rem 1rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .toolbar button:hover {
+            background: #0056b3;
+        }
+
+        .toolbar button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .pdf-container {
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+            min-height: calc(100vh - 200px);
+        }
+
+        #pdfViewer {
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* PDF.js 文本层样式 - 关键！ */
+        .textLayer {
+            position: absolute;
+            text-align: initial;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            opacity: 0.2;
+            line-height: 1;
+            -webkit-text-size-adjust: none;
+            -moz-text-size-adjust: none;
+            text-size-adjust: none;
+            forced-color-adjust: none;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+        }
+
+        .textLayer span,
+        .textLayer br {
+            color: transparent;
+            position: absolute;
+            white-space: pre;
+            cursor: text;
+            transform-origin: 0% 0%;
+        }
+
+        /* 选中文本的样式 */
+        .textLayer ::selection {
+            background: rgba(0, 0, 255, 0.3);
+        }
+
+        .textLayer ::-moz-selection {
+            background: rgba(0, 0, 255, 0.3);
+        }
+
+        /* 高亮效果 */
+        .textLayer .highlight {
+            background-color: yellow;
+            opacity: 0.3;
+        }
+
+        .page-info {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            color: #333;
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 1rem;
+            margin: 1rem 2rem;
+            border-radius: 4px;
+        }
+
+        .instructions h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .instructions ul {
+            margin-left: 1.5rem;
+        }
+
+        .instructions li {
+            margin: 0.3rem 0;
+        }
+
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        /* 错误提示 */
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            margin: 1rem 2rem;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>PDF查看器 - 支持文本选择和复制</h1>
+    </div>
+
+    <div class="instructions">
+        <h3>📝 使用说明：</h3>
+        <ul>
+            <li>✅ 可以选择PDF中的文本</li>
+            <li>✅ 可以复制选中的文本 (Ctrl+C / Cmd+C)</li>
+            <li>✅ 支持搜索文本 (Ctrl+F / Cmd+F)</li>
+            <li>✅ 支持缩放和翻页</li>
+        </ul>
+    </div>
+
+    <div class="toolbar">
+        <button id="prevPage">上一页</button>
+        <button id="nextPage">下一页</button>
+        <button id="zoomIn">放大</button>
+        <button id="zoomOut">缩小</button>
+        <button id="zoomReset">重置缩放</button>
+        <input type="file" id="fileInput" accept=".pdf" style="display: none;">
+        <button id="loadFile">选择PDF文件</button>
+    </div>
+
+    <div class="page-info">
+        <span id="pageInfo">页面: <span id="currentPage">1</span> / <span id="totalPages">-</span></span>
+        <span style="margin-left: 2rem;">缩放: <span id="zoomLevel">100%</span></span>
+    </div>
+
+    <div class="pdf-container">
+        <div id="pdfViewer">
+            <div class="loading" id="loadingMessage">正在加载PDF</div>
+        </div>
+    </div>
+
+    <!-- 引入 PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <script>
+        // 配置 PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // 全局变量
+        let pdfDoc = null;
+        let currentPage = 1;
+        let pageRendering = false;
+        let pageNumPending = null;
+        let scale = 1.0;
+        const DEFAULT_SCALE = 1.0;
+        const MIN_SCALE = 0.5;
+        const MAX_SCALE = 3.0;
+
+        // 获取DOM元素
+        const container = document.getElementById('pdfViewer');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const prevBtn = document.getElementById('prevPage');
+        const nextBtn = document.getElementById('nextPage');
+        const zoomInBtn = document.getElementById('zoomIn');
+        const zoomOutBtn = document.getElementById('zoomOut');
+        const zoomResetBtn = document.getElementById('zoomReset');
+        const fileInput = document.getElementById('fileInput');
+        const loadFileBtn = document.getElementById('loadFile');
+        const currentPageSpan = document.getElementById('currentPage');
+        const totalPagesSpan = document.getElementById('totalPages');
+        const zoomLevelSpan = document.getElementById('zoomLevel');
+
+        // 渲染页面（包含文本层）
+        async function renderPage(pageNum) {
+            pageRendering = true;
+            
+            try {
+                // 获取页面
+                const page = await pdfDoc.getPage(pageNum);
+                const viewport = page.getViewport({ scale });
+
+                // 清空容器
+                container.innerHTML = '';
+                
+                // 创建页面容器
+                const pageContainer = document.createElement('div');
+                pageContainer.style.position = 'relative';
+                pageContainer.style.width = viewport.width + 'px';
+                pageContainer.style.height = viewport.height + 'px';
+                container.appendChild(pageContainer);
+
+                // 创建Canvas
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                pageContainer.appendChild(canvas);
+
+                // 渲染PDF内容到Canvas
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+                await page.render(renderContext).promise;
+
+                // 创建文本层容器
+                const textLayerDiv = document.createElement('div');
+                textLayerDiv.className = 'textLayer';
+                pageContainer.appendChild(textLayerDiv);
+
+                // 获取文本内容
+                const textContent = await page.getTextContent();
+
+                // 渲染文本层（这是关键！）
+                await pdfjsLib.renderTextLayer({
+                    textContent: textContent,
+                    container: textLayerDiv,
+                    viewport: viewport,
+                    textDivs: []
+                });
+
+                // 更新页面信息
+                currentPageSpan.textContent = pageNum;
+                zoomLevelSpan.textContent = Math.round(scale * 100) + '%';
+                
+                // 更新按钮状态
+                prevBtn.disabled = pageNum <= 1;
+                nextBtn.disabled = pageNum >= pdfDoc.numPages;
+                
+            } catch (error) {
+                console.error('渲染页面出错:', error);
+                showError('渲染页面失败: ' + error.message);
+            }
+            
+            pageRendering = false;
+            
+            // 如果有待渲染的页面
+            if (pageNumPending !== null) {
+                renderPage(pageNumPending);
+                pageNumPending = null;
+            }
+        }
+
+        // 排队渲染页面
+        function queueRenderPage(pageNum) {
+            if (pageRendering) {
+                pageNumPending = pageNum;
+            } else {
+                renderPage(pageNum);
+            }
+        }
+
+        // 上一页
+        function onPrevPage() {
+            if (currentPage <= 1) return;
+            currentPage--;
+            queueRenderPage(currentPage);
+        }
+
+        // 下一页
+        function onNextPage() {
+            if (currentPage >= pdfDoc.numPages) return;
+            currentPage++;
+            queueRenderPage(currentPage);
+        }
+
+        // 放大
+        function onZoomIn() {
+            if (scale >= MAX_SCALE) return;
+            scale = Math.min(scale * 1.2, MAX_SCALE);
+            queueRenderPage(currentPage);
+        }
+
+        // 缩小
+        function onZoomOut() {
+            if (scale <= MIN_SCALE) return;
+            scale = Math.max(scale / 1.2, MIN_SCALE);
+            queueRenderPage(currentPage);
+        }
+
+        // 重置缩放
+        function onZoomReset() {
+            scale = DEFAULT_SCALE;
+            queueRenderPage(currentPage);
+        }
+
+        // 加载PDF文件
+        async function loadPDF(url) {
+            try {
+                loadingMessage.style.display = 'block';
+                
+                // 加载PDF文档
+                const loadingTask = pdfjsLib.getDocument(url);
+                pdfDoc = await loadingTask.promise;
+                
+                // 更新总页数
+                totalPagesSpan.textContent = pdfDoc.numPages;
+                
+                // 渲染第一页
+                loadingMessage.style.display = 'none';
+                renderPage(currentPage);
+                
+            } catch (error) {
+                console.error('加载PDF失败:', error);
+                showError('加载PDF失败: ' + error.message);
+                loadingMessage.style.display = 'none';
+            }
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            container.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        // 处理文件选择
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                const fileURL = URL.createObjectURL(file);
+                currentPage = 1;
+                scale = DEFAULT_SCALE;
+                loadPDF(fileURL);
+            } else {
+                showError('请选择一个有效的PDF文件');
+            }
+        }
+
+        // 绑定事件
+        prevBtn.addEventListener('click', onPrevPage);
+        nextBtn.addEventListener('click', onNextPage);
+        zoomInBtn.addEventListener('click', onZoomIn);
+        zoomOutBtn.addEventListener('click', onZoomOut);
+        zoomResetBtn.addEventListener('click', onZoomReset);
+        loadFileBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') onPrevPage();
+            else if (e.key === 'ArrowRight') onNextPage();
+            else if (e.key === '+' || e.key === '=') onZoomIn();
+            else if (e.key === '-' || e.key === '_') onZoomOut();
+            else if (e.key === '0') onZoomReset();
+        });
+
+        // 加载示例PDF（你可以替换为你的PDF文件路径）
+        // loadPDF('path/to/your/sample.pdf');
+        
+        // 显示初始提示
+        container.innerHTML = '<div class="loading">请点击"选择PDF文件"按钮加载PDF</div>';
+    </script>
+</body>
+</html>

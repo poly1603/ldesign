@@ -28,16 +28,19 @@ export interface PluginsResult {
 export function initializePlugins(): PluginsResult {
   // 创建 i18n 插件（使用旧的 Engine 插件）
   const i18nPlugin = createI18nEnginePlugin(i18nConfig)
-  
+
   // 获取响应式 locale（从 Engine 插件）
   const localeRef = i18nPlugin.localeRef
-  
-  // 监听语言变化（开发环境）
-  if (import.meta.env.DEV) {
-    watch(localeRef, (newLocale) => {
-      console.log('[locale] changed:', newLocale)
-    })
-  }
+
+  // 监听语言变化并广播事件
+  watch(localeRef, (newLocale, oldLocale) => {
+    // 广播全局事件（支持动态加载的组件）
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('app:locale-changed', {
+        detail: { locale: newLocale, oldLocale }
+      }))
+    }
+  })
 
   // 创建模板插件
   const templatePlugin = createTemplatePlugin(templateConfig)
@@ -47,7 +50,7 @@ export function initializePlugins(): PluginsResult {
     ...createColorConfig(localeRef),
     locale: localeRef  // 传入共享的 ref
   })
-  
+
   // 创建 Size 插件（使用新的优化版本，传入共享的 locale）
   const sizePlugin = createSizePlugin({
     ...createSizeConfig(localeRef),

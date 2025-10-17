@@ -1,4 +1,4 @@
-﻿import { defineConfig } from '@ldesign/builder'
+import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
   // Output format config
@@ -20,13 +20,14 @@ export default defineConfig({
   // 娓呯悊杈撳嚭鐩綍
   clean: true,
 
-  // 鐢熶骇鐜鍘嬬缉浠ｇ爜
-  minify: process.env.NODE_ENV === 'production',
+  // 鐢熶骇鐜鍘嬬缉浠ｇ爜
+  minify: globalThis.process?.env?.NODE_ENV === 'production',
 
   // UMD 鏋勫缓閰嶇疆
   umd: {
     enabled: true,
-    minify: true, // UMD鐗堟湰鍚敤鍘嬬缉
+    entry: 'src/index.ts', // 指定UMD入口文件
+    minify: true, // UMD鐗堟湰鍚敤鍘嬬缉
     fileName: 'index.js', // 鍘绘帀 .umd 鍚庣紑
   },
 

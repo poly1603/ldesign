@@ -1,18 +1,8 @@
 {
   "name": "@ldesign/size",
+  "type": "module",
   "version": "0.1.0",
   "description": "页面尺寸缩放功能包 - 支持动态切换页面整体尺寸，提供完整的Vue生态支持",
-  "keywords": [
-    "ldesign",
-    "vue3",
-    "typescript",
-    "size",
-    "scale",
-    "responsive",
-    "css-variables",
-    "theme",
-    "ui-scale"
-  ],
   "author": "LDesign Team",
   "license": "MIT",
   "homepage": "https://github.com/ldesign/ldesign/tree/main/packages/size#readme",
@@ -24,7 +14,17 @@
   "bugs": {
     "url": "https://github.com/ldesign/ldesign/issues"
   },
-  "type": "module",
+  "keywords": [
+    "ldesign",
+    "vue3",
+    "typescript",
+    "size",
+    "scale",
+    "responsive",
+    "css-variables",
+    "theme",
+    "ui-scale"
+  ],
   "sideEffects": false,
   "exports": {
     ".": {
@@ -32,40 +32,40 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
-    "./api": {
-      "types": "./es/api/index.d.ts",
-      "import": "./es/api/index.js",
-      "require": "./lib/api/index.cjs"
-    },
-    "./api/*": {
-      "types": "./es/api/*.d.ts",
-      "import": "./es/api/*.js",
-      "require": "./lib/api/*.cjs"
-    },
     "./core/*": {
       "types": "./es/core/*.d.ts",
       "import": "./es/core/*.js",
       "require": "./lib/core/*.cjs"
     },
-    "./plugins": {
-      "types": "./es/plugins/index.d.ts",
-      "import": "./es/plugins/index.js",
-      "require": "./lib/plugins/index.cjs"
+    "./locales": {
+      "types": "./es/locales/index.d.ts",
+      "import": "./es/locales/index.js",
+      "require": "./lib/locales/index.cjs"
     },
-    "./plugins/*": {
-      "types": "./es/plugins/*.d.ts",
-      "import": "./es/plugins/*.js",
-      "require": "./lib/plugins/*.cjs"
+    "./locales/*": {
+      "types": "./es/locales/*.d.ts",
+      "import": "./es/locales/*.js",
+      "require": "./lib/locales/*.cjs"
     },
-    "./types": {
-      "types": "./es/types/index.d.ts",
-      "import": "./es/types/index.js",
-      "require": "./lib/types/index.cjs"
+    "./modules/*": {
+      "types": "./es/modules/*.d.ts",
+      "import": "./es/modules/*.js",
+      "require": "./lib/modules/*.cjs"
     },
-    "./types/*": {
-      "types": "./es/types/*.d.ts",
-      "import": "./es/types/*.js",
-      "require": "./lib/types/*.cjs"
+    "./plugin": {
+      "types": "./es/plugin/index.d.ts",
+      "import": "./es/plugin/index.js",
+      "require": "./lib/plugin/index.cjs"
+    },
+    "./plugin/*": {
+      "types": "./es/plugin/*.d.ts",
+      "import": "./es/plugin/*.js",
+      "require": "./lib/plugin/*.cjs"
+    },
+    "./presets/*": {
+      "types": "./es/presets/*.d.ts",
+      "import": "./es/presets/*.js",
+      "require": "./lib/presets/*.cjs"
     },
     "./utils": {
       "types": "./es/utils/index.d.ts",
@@ -87,28 +87,21 @@
       "import": "./es/vue/*.js",
       "require": "./lib/vue/*.cjs"
     },
-    "./__tests__/*": {
-      "types": "./es/__tests__/*.d.ts",
-      "import": "./es/__tests__/*.js",
-      "require": "./lib/__tests__/*.cjs"
-    },
-    "./es/index.css": "./es/index.css",
-    "./lib/index.css": "./lib/index.css",
-    "./dist/index.css": "./dist/index.css",
-    "./dist/index.min.css": "./dist/index.min.css"
+    "./es/vue/SizeSelector.vue.css": "./es/vue/SizeSelector.vue.css",
+    "./lib/vue/SizeSelector.vue.css": "./lib/vue/SizeSelector.vue.css"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
-  "types": "./es/index.d.ts",
   "unpkg": "./dist/index.min.js",
   "jsdelivr": "./dist/index.min.js",
+  "types": "./es/index.d.ts",
   "files": [
-    "README.md",
     "LICENSE",
-    "package.json",
+    "README.md",
+    "dist",
     "es",
     "lib",
-    "dist"
+    "package.json"
   ],
   "scripts": {
     "build": "ldesign-builder build",
@@ -135,11 +128,16 @@
     "deploy:dry-run": "tsx ../../tools/deploy/package-deployer.ts size --dry-run",
     "build:dev": "node scripts/build.js --dev"
   },
-  "dependencies": {
-    "lucide-vue-next": "^0.542.0"
-  },
   "peerDependencies": {
     "vue": "^3.3.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "lucide-vue-next": "^0.542.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.0.0",
@@ -194,10 +192,5 @@
       "path": "lib/index.cjs",
       "limit": "150 KB"
     }
-  ],
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  }
+  ]
 }

@@ -554,8 +554,8 @@ export interface SizeErrorEvent {
 export interface SizePlugin {
   name: string;
   version: string;
-  install(manager: any): void;
-  uninstall?(): void;
+  install: (manager: any) => void;
+  uninstall?: () => void;
 }
 
 /**

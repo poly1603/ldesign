@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { DeviceType } from '../types'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, inject, type Ref } from 'vue'
 import { useTemplateList } from '../composables'
+import { useTemplatePlugin } from '../plugin/useTemplatePlugin'
+import { getLocale } from '../locales'
 
 interface Props {
   category: string
@@ -18,6 +20,14 @@ const emit = defineEmits<{
 // 状态
 const expanded = ref(false)
 
+// 获取语言配置
+const plugin = useTemplatePlugin()
+const locale = plugin?.currentLocale || inject<Ref<string>>('locale', ref('zh-CN'))
+const messages = computed(() => {
+  const localeValue = typeof locale.value === 'string' ? locale.value : 'zh-CN'
+  return getLocale(localeValue)
+})
+
 // 获取当前分类和设备下的所有模板
 const { templates: allTemplates } = useTemplateList()
 
@@ -28,12 +38,7 @@ const templates = computed(() => {
 })
 
 const deviceLabel = computed(() => {
-  const labels: Record<DeviceType, string> = {
-    desktop: '桌面',
-    tablet: '平板',
-    mobile: '移动'
-  }
-  return labels[props.device] || props.device
+  return messages.value.device[props.device] || props.device
 })
 
 // 切换展开状态
@@ -56,7 +61,7 @@ watch(() => props.device, () => {
 <template>
   <div class="template-selector" :class="{ expanded }">
     <!-- 切换按钮 -->
-    <button class="toggle-btn" :title="expanded ? '收起' : '展开模板选择器'" @click="toggleExpanded">
+    <button class="toggle-btn" :title="expanded ? messages.actions.clearCache : messages.actions.selectTemplate" @click="toggleExpanded">
       <svg v-if="!expanded" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round" />
       </svg>
@@ -68,10 +73,10 @@ watch(() => props.device, () => {
     <!-- 选择器面板 -->
     <div v-if="expanded" class="selector-panel">
       <div class="panel-header">
-        <h3>选择模板</h3>
+        <h3>{{ messages.actions.selectTemplate }}</h3>
         <div class="current-info">
           <span class="badge">{{ deviceLabel }}</span>
-          <span class="badge">{{ category }}</span>
+          <span class="badge">{{ messages.category[category] || category }}</span>
         </div>
       </div>
 
@@ -85,7 +90,7 @@ watch(() => props.device, () => {
         >
           <div class="template-name">
             {{ template.displayName }}
-            <span v-if="template.isDefault" class="default-badge">默认</span>
+            <span v-if="template.isDefault" class="default-badge">{{ messages.device.desktop === '桌面端' ? '默认' : 'Default' }}</span>
           </div>
           <div v-if="template.description" class="template-desc">
             {{ template.description }}
@@ -93,7 +98,7 @@ watch(() => props.device, () => {
         </div>
 
         <div v-if="templates.length === 0" class="empty-state">
-          暂无可用模板
+          {{ messages.messages.noTemplates }}
         </div>
       </div>
     </div>

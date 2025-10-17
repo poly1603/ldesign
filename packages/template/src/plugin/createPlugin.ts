@@ -4,10 +4,12 @@
  * Template management plugin for Vue 3 applications
  */
 
-import type { App, Component } from 'vue'
+import type { App, Component, Ref, ComputedRef } from 'vue'
+import { ref, inject } from 'vue'
 import type { TemplateManagerOptions, TemplateMetadata, TemplateRegistryItem } from '../types'
 import { TemplateManager } from '../core/manager'
 import { loadStyles } from '../core/style-loader'
+import { getLocale, type TemplateLocale } from '../locales'
 
 /**
  * Template plugin configuration options
@@ -87,6 +89,19 @@ export interface TemplatePluginOptions {
    */
   preferencesKey?: string
 
+  /**
+   * 语言设置 - 支持 string 或 Ref<string>
+   * 如果传入 Ref，将直接使用（共享模式）
+   * 如果传入 string 或不传，将创建新 Ref（独立模式）
+   */
+  locale?: string | Ref<string>
+  
+  /**
+   * Default locale
+   * @default 'zh-CN'
+   */
+  defaultLocale?: string
+  
   /**
    * Hooks
    */
@@ -169,6 +184,16 @@ export interface TemplatePlugin {
    * Detect current device
    */
   detectDevice: () => 'desktop' | 'tablet' | 'mobile'
+  
+  /**
+   * Current locale (reactive)
+   */
+  currentLocale: Ref<string>
+  
+  /**
+   * Current locale messages (computed)
+   */
+  localeMessages: ComputedRef<TemplateLocale>
 
   /**
    * Install the plugin
@@ -180,6 +205,53 @@ export interface TemplatePlugin {
  * Symbol for plugin injection
  */
 export const TemplatePluginSymbol = Symbol('TemplatePlugin')
+
+/**
+ * 判断是否为 Ref
+ */
+const isRef = <T>(v: any): v is Ref<T> => {
+  return v && typeof v === 'object' && 'value' in v && '_rawValue' in v
+}
+
+/**
+ * 智能获取locale
+ * 支持多种方式：传入值、inject、全局事件
+ */
+function useSmartLocale(options: TemplatePluginOptions): Ref<string> {
+  // 优先级1：使用传入的locale
+  if (options.locale) {
+    return isRef(options.locale) ? options.locale : ref(options.locale)
+  }
+  
+  // 优先级2：从Vue上下文inject（如果在组件内）
+  try {
+    const injected = inject<Ref<string>>('app-locale', null)
+    if (injected && injected.value) {
+      return injected
+    }
+  } catch {}
+  
+  // 优先级3：创建独立的locale并监听全局事件
+  const locale = ref(options.defaultLocale || 'zh-CN')
+  
+  // 从localStorage恢复
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('app-locale')
+    if (stored) {
+      locale.value = stored
+    }
+    
+    // 监听全局语言变化事件
+    window.addEventListener('app:locale-changed', (e: Event) => {
+      const customEvent = e as CustomEvent<{ locale: string }>
+      if (customEvent.detail?.locale) {
+        locale.value = customEvent.detail.locale
+      }
+    })
+  }
+  
+  return locale
+}
 
 /**
  * Default device detection
@@ -196,6 +268,22 @@ const defaultDetectDevice = (): 'desktop' | 'tablet' | 'mobile' => {
  * Create template plugin
  */
 export function createTemplatePlugin(options: TemplatePluginOptions = {}): TemplatePlugin {
+  // 使用智能locale获取
+  const currentLocale = useSmartLocale(options)
+  
+  // 懒加载 locale 数据（性能优化）
+  let localeCache: { key: string; data: any } | null = null
+  const getLocaleData = () => {
+    if (!localeCache || localeCache.key !== currentLocale.value) {
+      localeCache = { key: currentLocale.value, data: getLocale(currentLocale.value) }
+    }
+    return localeCache.data
+  }
+  
+  // 兼容旧的 computed 接口
+  const localeMessages = {
+    get value() { return getLocaleData() }
+  } as ComputedRef<TemplateLocale>
   // Merge options with defaults
   const mergedOptions: Required<TemplatePluginOptions> = {
     pattern: options.pattern || '**/*.vue',
@@ -214,6 +302,8 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
     detectDevice: options.detectDevice || defaultDetectDevice,
     rememberPreferences: options.rememberPreferences || false,
     preferencesKey: options.preferencesKey || 'ldesign-template-prefs',
+    locale: options.locale,
+    defaultLocale: options.defaultLocale || 'zh-CN',
     hooks: options.hooks || {},
   }
 
@@ -295,7 +385,7 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
         return preferences
       }
     } catch (error) {
-      console.error('Failed to load template preferences:', error)
+      console.error('[Template Plugin] Failed to load preferences:', error)
     }
     return {}
   }
@@ -307,7 +397,7 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
     try {
       localStorage.setItem(mergedOptions.preferencesKey, JSON.stringify(preferences))
     } catch (error) {
-      console.error('Failed to save template preferences:', error)
+      console.error('[Template Plugin] Failed to save preferences:', error)
     }
   }
 
@@ -341,29 +431,48 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
 
   // Get preferred template (from preferences or default)
   const getPreferredTemplate = async (category: string, device: string): Promise<{ name: string } | null> => {
+    // Ensure preferences are loaded
+    if (mergedOptions.rememberPreferences && Object.keys(preferences).length === 0) {
+      loadPreferences()
+    }
+    
     // First, check user preferences
     if (mergedOptions.rememberPreferences) {
       const userPref = preferences[category]?.[device]
+      
       if (userPref) {
         try {
-          // Try to load the preferred template
-          const template = await manager.loadTemplate(category, device, userPref)
-          if (template) {
-            
-            return { name: userPref, component: template }
+          // Verify that the preferred template exists
+          const templates = await manager.scanTemplates()
+          const templateKey = `${category}/${device}/${userPref}`
+          
+          if (templates.has(templateKey)) {
+            return { name: userPref }
+          } else {
+            if (process.env.NODE_ENV !== 'production') {
+              console.warn(`[Template Plugin] Preferred template ${userPref} not found, falling back to default`)
+            }
           }
         } catch (error) {
-          console.warn(`Failed to load preferred template ${userPref}, falling back to default`, error)
+          if (process.env.NODE_ENV !== 'production') {
+            console.warn(`[Template Plugin] Failed to verify preferred template ${userPref}, falling back to default`, error)
+          }
         }
       }
     }
     
     // Fall back to default template
-    return getDefaultTemplate(category, device)
+    const defaultTemplate = await getDefaultTemplate(category, device)
+    if (defaultTemplate?.name) {
+      return { name: defaultTemplate.name }
+    }
+    
+    return null
   }
 
-  // Load preferences on initialization
-  if (mergedOptions.rememberPreferences) {
+  // Load preferences on initialization (立即加载，不等待)
+  if (mergedOptions.rememberPreferences && typeof window !== 'undefined') {
+    // 立即同步加载偏好设置
     loadPreferences()
   }
 
@@ -371,6 +480,8 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
   const plugin: TemplatePlugin = {
     manager,
     options: mergedOptions,
+    currentLocale,
+    localeMessages,
     initialize,
     loadTemplate,
     getDefaultTemplate,
@@ -383,6 +494,24 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
     detectDevice: mergedOptions.detectDevice,
 
     install(app: App) {
+      // 智能共享：如果没有传入 Ref，尝试自动共享
+      if (!isRef(options.locale)) {
+        // 尝试从 app context 获取共享的 locale
+        const sharedLocale = app._context?.provides?.['app-locale'] as Ref<string> | undefined
+        
+        if (sharedLocale && sharedLocale.value !== undefined) {
+          // 发现共享的 locale，使用它
+          currentLocale.value = sharedLocale.value
+          plugin.currentLocale = sharedLocale
+          
+          // 清除缓存以触发重新计算
+          localeCache = null
+        } else {
+          // 没有共享的 locale，提供自己的
+          app.provide('app-locale', currentLocale)
+        }
+      }
+      
       // Provide plugin instance
       app.provide(TemplatePluginSymbol, plugin)
 
@@ -414,6 +543,11 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
       app.component('TemplateSelector', async () => {
         const module = await import('../components/TemplateSelector.vue')
         return module.default
+      })
+      
+      // Register template directive
+      import('../directives').then(({ installTemplateDirective }) => {
+        installTemplateDirective(app)
       })
 
       // Auto-initialize on install

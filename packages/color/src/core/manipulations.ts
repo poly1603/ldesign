@@ -118,6 +118,36 @@ export function blend(base: RGB, overlay: RGB, mode: BlendMode): RGB {
       b = b1 + b2 - 2 * b1 * b2;
       break;
       
+    case 'linear-burn':
+      r = Math.max(0, r1 + r2 - 1);
+      g = Math.max(0, g1 + g2 - 1);
+      b = Math.max(0, b1 + b2 - 1);
+      break;
+      
+    case 'linear-dodge':
+      r = Math.min(1, r1 + r2);
+      g = Math.min(1, g1 + g2);
+      b = Math.min(1, b1 + b2);
+      break;
+      
+    case 'vivid-light':
+      r = r2 < 0.5 ? (r2 === 0 ? 0 : Math.max(0, 1 - (1 - r1) / (2 * r2))) : (r2 === 1 ? 1 : Math.min(1, r1 / (2 * (1 - r2))));
+      g = g2 < 0.5 ? (g2 === 0 ? 0 : Math.max(0, 1 - (1 - g1) / (2 * g2))) : (g2 === 1 ? 1 : Math.min(1, g1 / (2 * (1 - g2))));
+      b = b2 < 0.5 ? (b2 === 0 ? 0 : Math.max(0, 1 - (1 - b1) / (2 * b2))) : (b2 === 1 ? 1 : Math.min(1, b1 / (2 * (1 - b2))));
+      break;
+      
+    case 'pin-light':
+      r = r2 < 0.5 ? Math.min(r1, 2 * r2) : Math.max(r1, 2 * (r2 - 0.5));
+      g = g2 < 0.5 ? Math.min(g1, 2 * g2) : Math.max(g1, 2 * (g2 - 0.5));
+      b = b2 < 0.5 ? Math.min(b1, 2 * b2) : Math.max(b1, 2 * (b2 - 0.5));
+      break;
+      
+    case 'hard-mix':
+      r = r1 + r2 < 1 ? 0 : 1;
+      g = g1 + g2 < 1 ? 0 : 1;
+      b = b1 + b2 < 1 ? 0 : 1;
+      break;
+      
     default:
       r = r2;
       g = g2;

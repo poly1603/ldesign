@@ -36,6 +36,7 @@ import { ErrorCode } from '../constants/errors'
 import { DEFAULT_BUILDER_CONFIG } from '../constants/defaults'
 import { getOutputDirs } from '../utils/glob'
 import path from 'path'
+import fs from 'fs-extra'
 import { getGlobalMemoryManager } from '../utils/memory-manager'
 import { PackageUpdater } from '../utils/package-updater'
 
@@ -397,7 +398,9 @@ export class LibraryBuilder extends EventEmitter implements ILibraryBuilder {
    * 设置库类型
    */
   setLibraryType(type: LibraryType): void {
-    this.config?.libraryType = type
+    if (this.config) {
+      this.config.libraryType = type
+    }
     this.logger.info(`已设置库类型为: ${type}`)
   }
 

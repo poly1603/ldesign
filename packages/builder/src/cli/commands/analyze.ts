@@ -4,6 +4,7 @@
 
 import { Command } from 'commander'
 import path from 'path'
+import fs from 'fs-extra'
 import { existsSync } from 'fs'
 import { logger } from '../../utils/logger'
 import { formatFileSize } from '../../utils/format-utils'

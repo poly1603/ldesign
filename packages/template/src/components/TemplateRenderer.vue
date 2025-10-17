@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import type { TemplatePlugin } from '../plugin/createPlugin'
 import type { DeviceType, TemplateLoadOptions, TemplateSlots } from '../types'
-import { type Component, computed, onMounted, onUnmounted, ref, type Slot, toRefs, useSlots, watch } from 'vue'
+import { type Component, computed, onMounted, onUnmounted, ref, type Ref, type Slot, toRefs, useSlots, watch, inject, nextTick, provide } from 'vue'
 import { useTemplate } from '../composables/useTemplate'
+import { useTemplateTheme } from '../composables/useTemplateTheme'
+import { useTemplateModel } from '../composables/useTemplateForm'
 import { getManager } from '../core'
 import TemplateSelector from './TemplateSelector.vue'
+import TemplateSkeleton from './TemplateSkeleton.vue'
+import { useTemplatePlugin } from '../plugin/useTemplatePlugin'
+import { getLocale } from '../locales'
 
 /**
  * 组件属性
@@ -29,6 +34,24 @@ const props = withDefaults(
     showSelector?: boolean
     /** 插槽内容配置 */
     slots?: TemplateSlots
+    /** v-model 双向绑定数据 */
+    modelValue?: any
+    /** 是否显示骨架屏 */
+    skeleton?: boolean | 'auto'
+    /** 骨架屏类型 */
+    skeletonType?: 'default' | 'card' | 'list' | 'article' | 'form'
+    /** 自动保存 */
+    autoSave?: boolean
+    /** 自动保存延迟（毫秒） */
+    autoSaveDelay?: number
+    /** 重试次数 */
+    retryTimes?: number
+    /** 重试延迟（毫秒） */
+    retryDelay?: number
+    /** 降级组件 */
+    fallback?: Component
+    /** 主题 */
+    theme?: string
   }>(),
   {
     device: undefined,
@@ -39,6 +62,15 @@ const props = withDefaults(
     loadOptions: undefined,
     showSelector: true,
     slots: undefined,
+    modelValue: undefined,
+    skeleton: 'auto',
+    skeletonType: 'default',
+    autoSave: false,
+    autoSaveDelay: 1000,
+    retryTimes: 3,
+    retryDelay: 1000,
+    fallback: undefined,
+    theme: undefined,
   }
 )
 
@@ -51,11 +83,59 @@ const emit = defineEmits<{
   reload: []
   templateChange: [templateName: string]
   deviceChange: [device: string]
+  'update:modelValue': [value: any]
+  save: [value: any]
+  mounted: [component: Component]
   // 转发模板组件的所有事件
   [key: string]: unknown[]
 }>()
 
 const manager = getManager()
+
+// 获取语言配置
+const plugin = useTemplatePlugin()
+const locale = plugin?.currentLocale || inject<Ref<string>>('locale', ref('zh-CN'))
+const messages = computed(() => {
+  const localeValue = typeof locale.value === 'string' ? locale.value : 'zh-CN'
+  return getLocale(localeValue)
+})
+
+// v-model 支持
+const modelData = ref(props.modelValue)
+watch(() => props.modelValue, (newVal) => {
+  modelData.value = newVal
+})
+watch(modelData, (newVal) => {
+  emit('update:modelValue', newVal)
+  if (props.autoSave) {
+    scheduleAutoSave()
+  }
+}, { deep: true })
+
+// 自动保存
+let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
+const scheduleAutoSave = () => {
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  autoSaveTimer = setTimeout(() => {
+    emit('save', modelData.value)
+  }, props.autoSaveDelay)
+}
+
+// 主题支持
+const { setTheme, currentTheme } = props.theme ? useTemplateTheme() : { setTheme: () => {}, currentTheme: ref(null) }
+if (props.theme) {
+  watch(() => props.theme, (newTheme) => {
+    if (newTheme) setTheme(newTheme)
+  }, { immediate: true })
+}
+
+// 重试机制
+const retryCount = ref(0)
+const shouldShowSkeleton = computed(() => {
+  if (props.skeleton === true) return true
+  if (props.skeleton === 'auto') return loading.value
+  return false
+})
 
 // 决定是否自动检测和自动加载
 const shouldAutoDetect = computed(() => props.autoDetect ?? !props.device)
@@ -80,12 +160,15 @@ const loadDefaultTemplate = async (dev: DeviceType | string) => {
   if (!shouldAutoLoadDefault.value) return
   
   try {
-    // 尝试从插件获取用户偏好
-    const templatePlugin = (window as unknown as { __TEMPLATE_PLUGIN__?: TemplatePlugin }).__TEMPLATE_PLUGIN__
+    // 优先使用注入的插件，如果没有则从 window 获取
+    let templatePlugin = plugin
+    if (!templatePlugin && typeof window !== 'undefined') {
+      templatePlugin = (window as unknown as { __TEMPLATE_PLUGIN__?: TemplatePlugin }).__TEMPLATE_PLUGIN__ || null
+    }
     
     if (templatePlugin?.getPreferredTemplate) {
       // 使用插件的偏好管理
-      const preferred = await templatePlugin.getPreferredTemplate(props.category, dev)
+      const preferred = await templatePlugin.getPreferredTemplate(props.category, dev as string)
       if (preferred?.name) {
         currentName.value = preferred.name
         emit('templateChange', preferred.name)
@@ -100,7 +183,7 @@ const loadDefaultTemplate = async (dev: DeviceType | string) => {
       emit('templateChange', defaultTemplate.name)
     }
   } catch (e) {
-    console.error('加载模板失败:', e)
+    console.error(messages.value.messages.loadError, e)
   }
 }
 
@@ -175,12 +258,31 @@ onUnmounted(() => {
  * 使用模板
  */
 const { category } = toRefs(props)
-const { component, loading, error, reload } = useTemplate(
+const { component, loading, error, reload: originalReload } = useTemplate(
   category,
   currentDevice,
   currentName,
   props.loadOptions
 )
+
+// 增强的重载函数（带重试机制）
+const reload = async () => {
+  if (retryCount.value >= props.retryTimes) {
+    retryCount.value = 0
+  }
+  
+  try {
+    await originalReload()
+    retryCount.value = 0
+  } catch (err) {
+    if (retryCount.value < props.retryTimes) {
+      retryCount.value++
+      setTimeout(() => reload(), props.retryDelay * Math.pow(2, retryCount.value - 1))
+    } else {
+      throw err
+    }
+  }
+}
 
 /**
  * 处理重新加载
@@ -189,6 +291,32 @@ const handleReload = async () => {
   emit('reload')
   await reload()
 }
+
+// 组件挂载事件
+watch(component, (newComponent) => {
+  if (newComponent) {
+    nextTick(() => {
+      emit('mounted', newComponent)
+    })
+  }
+})
+
+// 为子组件提供数据模型
+if (props.modelValue !== undefined) {
+  provide('templateModel', modelData)
+}
+
+// 组合 componentProps 和 v-model
+const combinedProps = computed(() => {
+  const baseProps = { ...props.componentProps }
+  if (props.modelValue !== undefined) {
+    baseProps.modelValue = modelData.value
+    baseProps['onUpdate:modelValue'] = (val: any) => {
+      modelData.value = val
+    }
+  }
+  return baseProps
+})
 
 /**
  * 处理模板选择
@@ -199,7 +327,11 @@ const handleTemplateSelect = (templateName: string) => {
   emit('templateChange', templateName)
   
   // 保存用户偏好
-  const templatePlugin = (window as unknown as { __TEMPLATE_PLUGIN__?: TemplatePlugin }).__TEMPLATE_PLUGIN__
+  let templatePlugin = plugin
+  if (!templatePlugin && typeof window !== 'undefined') {
+    templatePlugin = (window as unknown as { __TEMPLATE_PLUGIN__?: TemplatePlugin }).__TEMPLATE_PLUGIN__ || null
+  }
+  
   if (templatePlugin?.savePreference) {
     templatePlugin.savePreference(props.category, currentDevice.value, templateName)
   }
@@ -230,36 +362,57 @@ const availableSlots = computed(() => {
 </script>
 
 <template>
-  <div class="ldesign-template-renderer">
-    <!-- 加载中 -->
-    <div v-if="loading" class="template-loading">
+  <div class="ldesign-template-renderer" :data-theme="currentTheme?.value">
+    <!-- 骨架屏 -->
+    <div v-if="shouldShowSkeleton && !component" class="template-skeleton-wrapper">
+      <slot name="skeleton">
+        <TemplateSkeleton 
+          :type="skeletonType"
+          animation="wave"
+        />
+      </slot>
+    </div>
+    
+    <!-- 加载中（不使用骨架屏时） -->
+    <div v-else-if="loading && !shouldShowSkeleton" class="template-loading">
       <slot name="loading">
         <div class="loading-spinner">
-          加载中...
+          {{ messages.messages.loading }}
         </div>
       </slot>
     </div>
 
     <!-- 错误 -->
-    <div v-else-if="error" class="template-error">
-      <slot name="error" :error="error">
+    <div v-else-if="error && !fallback" class="template-error">
+      <slot name="error" :error="error" :retry="handleReload" :retryCount="retryCount">
         <div class="error-message">
-          <p>模板加载失败</p>
+          <p>{{ messages.messages.loadError }}</p>
           <p class="error-detail">
             {{ error.message }}
           </p>
-          <button @click="handleReload">
-            重新加载
+          <p v-if="retryCount > 0" class="retry-info">
+            重试次数: {{ retryCount }}/{{ retryTimes }}
+          </p>
+          <button @click="handleReload" :disabled="retryCount >= retryTimes">
+            {{ retryCount >= retryTimes ? '不能重试' : messages.actions.loadMore }}
           </button>
         </div>
       </slot>
     </div>
+    
+    <!-- 降级组件 -->
+    <component
+      :is="fallback"
+      v-else-if="error && fallback"
+      :error="error"
+      @retry="handleReload"
+    />
 
     <!-- 模板组件 -->
     <component
       :is="component"
       v-else-if="component"
-      v-bind="componentProps"
+      v-bind="combinedProps"
       v-on="$attrs"
     >
       <!-- 传递所有插槽（除了保留插槽） -->
@@ -271,7 +424,7 @@ const availableSlots = computed(() => {
     <!-- 空状态 -->
     <div v-else class="template-empty">
       <slot name="empty">
-        <p>暂无模板</p>
+        <p>{{ messages.messages.noTemplates }}</p>
       </slot>
     </div>
 

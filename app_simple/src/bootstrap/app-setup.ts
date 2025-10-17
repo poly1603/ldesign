@@ -21,9 +21,10 @@ interface SetupOptions {
 export function setupVueApp(app: App, options: SetupOptions) {
   const { localeRef, i18nPlugin, colorPlugin, sizePlugin, templatePlugin } = options
 
-  // 提供全局响应式 locale（使用标准的 key）
-  app.provide('locale', localeRef)
-  
+  // 提供全局响应式 locale（使用两个 key 以兼容不同的使用方式）
+  app.provide('locale', localeRef)      // 标准 key
+  app.provide('app-locale', localeRef)  // 备用 key，用于智能检测
+
   // 安装插件
   app.use(templatePlugin)
   app.use(colorPlugin)
@@ -33,7 +34,7 @@ export function setupVueApp(app: App, options: SetupOptions) {
   if (i18nPlugin.setupVueApp) {
     i18nPlugin.setupVueApp(app)
   }
-  
+
   // 设置全局语言切换方法
   app.config.globalProperties.$getLocale = () => localeRef.value
   app.config.globalProperties.$setLocale = (locale: string) => {
@@ -41,22 +42,17 @@ export function setupVueApp(app: App, options: SetupOptions) {
       i18nPlugin.api.changeLocale(locale)
     }
   }
-  
-  console.log('✅ 应用设置完成')
 }
 
 /**
  * 设置引擎就绪后的钩子
  */
 export function setupEngineReady(engine: any, localeRef: Ref<string>, i18nPlugin: any, colorPlugin: any, sizePlugin: any) {
-  console.log('✅ 引擎已就绪')
-  console.log('Engine type:', typeof engine)
-  console.log('Engine value:', engine)
-  
+
   // 同步到 engine.state (兼容旧代码)
   if (engine?.state) {
     engine.state.set('locale', localeRef.value)
-    
+
     watch(localeRef, (newLocale) => {
       engine.state.set('locale', newLocale)
     })
@@ -90,11 +86,12 @@ export function setupEngineReady(engine: any, localeRef: Ref<string>, i18nPlugin
   // 开发环境暴露调试工具（简化版）
   if (import.meta.env.DEV) {
     try {
-      (window as any).__ENGINE__ = engine
-      (window as any).__LOCALE__ = localeRef
-      console.log('Debug tools ready: window.__ENGINE__ and window.__LOCALE__')
+      if (typeof window !== 'undefined') {
+        (window as any).__ENGINE__ = engine
+          (window as any).__LOCALE__ = localeRef
+      }
     } catch (error) {
-      console.debug('Failed to set debug tools:', error)
+      // 静默忽略
     }
   }
 }

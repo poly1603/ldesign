@@ -21,9 +21,16 @@ export class Color {
   private static cache = new ColorCache(1000);
 
   constructor(input: ColorInput = '#000000') {
-    const parsed = parseColorInput(input);
-    this._rgb = parsed.rgb;
-    this._alpha = parsed.alpha ?? 1;
+    try {
+      const parsed = parseColorInput(input);
+      this._rgb = parsed.rgb;
+      this._alpha = parsed.alpha ?? 1;
+    } catch (error) {
+      // 错误处理：使用默认黑色
+      console.warn(`Invalid color input: ${input}. Defaulting to black.`, error);
+      this._rgb = { r: 0, g: 0, b: 0 };
+      this._alpha = 1;
+    }
   }
 
   // ============================================
@@ -34,8 +41,17 @@ export class Color {
    * Create a Color from RGB values
    */
   static fromRGB(r: number, g: number, b: number, a?: number): Color {
+    // 输入验证和范围修正
+    if (!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) {
+      throw new TypeError('RGB values must be finite numbers');
+    }
+    
     const color = new Color();
-    color._rgb = { r: clamp(r, 0, 255), g: clamp(g, 0, 255), b: clamp(b, 0, 255) };
+    color._rgb = { 
+      r: clamp(Math.round(r), 0, 255), 
+      g: clamp(Math.round(g), 0, 255), 
+      b: clamp(Math.round(b), 0, 255) 
+    };
     color._alpha = a !== undefined ? clamp(a, 0, 1) : 1;
     return color;
   }

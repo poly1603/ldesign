@@ -9,41 +9,38 @@
 
 ## ✨ Features
 
-### Core Features (`Color` class)
-- **Multiple Color Formats**: RGB, HSL, HSV, HEX, Named Colors
-- **Color Manipulation**: lighten, darken, saturate, desaturate, rotate, mix
-- **Color Analysis**: luminance, contrast, WCAG compliance
-- **Color Generation**: palettes, themes, harmonies, gradients
+### Core Features
+- **Multiple Color Formats**: RGB, HSL, HSV, HEX, HWB, Named Colors
+- **Color Manipulation**: lighten, darken, saturate, desaturate, rotate, mix, blend
+- **Color Analysis**: luminance, contrast, WCAG compliance, color temperature
+- **Smart Palette Generation**: Tailwind-style, Material Design, semantic colors
+- **Accessibility Tools**: Color blindness simulation, WCAG auto-adjustment
+- **Color Schemes**: Monochromatic, complementary, triadic, and more
+- **Theme Management**: Import/export, system theme detection, persistence
 - **Smart Caching**: High-performance LRU cache for conversions
 - **Immutable Operations**: All methods return new instances
 - **Chain Operations**: Fluent API for complex transformations
 
-### Advanced Features (`ColorAdvanced` class)
-- **Professional Color Spaces**: LAB, LCH, XYZ, OKLAB, OKLCH, HWB
-- **Color Difference**: Delta E 2000 calculations
-- **Color Temperature**: Analysis and conversion
-- **Psychology Analysis**: Emotional and psychological color properties
-- **Design Systems**: Material Design, Ant Design, Tailwind integration
-- **AI-Powered Suggestions**: Smart color recommendations
+### Theme & Accessibility Features
+- **Theme Manager**: Apply, save, restore, import/export themes
+- **System Theme Detection**: Auto-detect light/dark mode preference
+- **Color Accessibility**: WCAG compliance checking and auto-adjustment
+- **Color Blindness Support**: Simulate 8 types of color vision deficiencies
+- **Accessible Pairs**: Generate accessible color combinations
+- **Smart Schemes**: Generate harmonious color schemes automatically
 
-### Animation System (`ColorAnimation` class)
-- **Smooth Transitions**: Frame-based color interpolation
-- **Easing Functions**: 30+ built-in easing functions
-- **Bezier Curves**: Custom timing functions
-- **Keyframe Animations**: Complex multi-step animations
-- **Performance Optimized**: RequestAnimationFrame integration
+### Advanced Utilities
+- **Natural Palette**: Generate natural-looking color scales
+- **CSS Variables**: Generate and inject CSS custom properties
+- **Dark Mode**: Automatic dark theme generation
+- **Semantic Colors**: Generate UI semantic color sets
+- **Plugin System**: Extensible architecture for custom features
 
-### Plugin System (`PluginManager`)
-- **Extensible Architecture**: Add custom color spaces and blend modes
-- **Built-in Plugins**: CMYK, Glow effects, Color blindness simulation
-- **Hook System**: Event-driven plugin lifecycle
-- **Dependency Management**: Automatic plugin dependency resolution
-
-### Visualization (`ColorVisualization`)
-- **Color Wheels**: SVG-based interactive wheels
-- **3D Spaces**: RGB cubes, HSL cylinders, LAB spheres
-- **Gradients**: Linear, radial, and conic gradients
-- **Palettes**: Grid-based palette visualization
+### Framework Support
+- **React Components**: ThemePicker, useTheme hook
+- **Vue 3 Components**: ThemePicker, useTheme composable
+- **Framework Agnostic**: Works with any JavaScript framework
+- **TypeScript First**: Full type safety and IntelliSense support
 
 ## 📦 Installation
 

@@ -1468,7 +1468,6 @@ export class RollupAdapter implements IBundlerAdapter {
       return terser({
         compress: {
           drop_console: false,
-          drop_: true,
           pure_funcs: ['console.log']
         },
         mangle: {

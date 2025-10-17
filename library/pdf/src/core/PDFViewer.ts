@@ -176,7 +176,7 @@ export class PDFViewer extends EventEmitter {
     
     // 创建Canvas (单页模式)
     if (this.pageMode === 'single') {
-      // 创建包装容器用于动画
+      // 创建包装容器用于动画和文本层
       const canvasWrapper = document.createElement('div');
       canvasWrapper.className = 'pdf-canvas-wrapper';
       canvasWrapper.style.cssText = `
@@ -189,7 +189,6 @@ export class PDFViewer extends EventEmitter {
       this.canvas.className = 'pdf-canvas';
       this.canvas.style.cssText = `
         display: block;
-        background: white;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         margin: 0 auto;
       `;
@@ -203,7 +202,6 @@ export class PDFViewer extends EventEmitter {
         left: 0;
         z-index: 2;
         opacity: 0;
-        background: white;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       `;
       
@@ -240,10 +238,58 @@ export class PDFViewer extends EventEmitter {
       }
       
       .pdf-canvas {
-        background: white;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         max-width: 100%;
         height: auto;
+      }
+      
+      /* 文本层样式 - 关键部分 */
+      .textLayer {
+        position: absolute;
+        text-align: initial;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+        opacity: 0.2;
+        line-height: 1;
+        -webkit-text-size-adjust: none;
+        -moz-text-size-adjust: none;
+        text-size-adjust: none;
+        forced-color-adjust: none;
+        transform-origin: 0% 0%;
+        z-index: 2;
+        user-select: text;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+      }
+      
+      .textLayer span,
+      .textLayer br {
+        color: transparent;
+        position: absolute;
+        white-space: pre;
+        cursor: text;
+        transform-origin: 0% 0%;
+      }
+      
+      /* 文本选中样式 */
+      .textLayer ::selection {
+        background: rgba(0, 100, 255, 0.3);
+      }
+      
+      .textLayer ::-moz-selection {
+        background: rgba(0, 100, 255, 0.3);
+      }
+      
+      /* 高亮效果 */
+      .textLayer .highlight {
+        margin: -1px;
+        padding: 1px;
+        background-color: rgba(255, 255, 0, 0.3);
+        border-radius: 4px;
       }
       
       .pdf-loading {
@@ -363,7 +409,7 @@ export class PDFViewer extends EventEmitter {
       this.canvas.height = viewport.height;
       this.canvas.width = viewport.width;
       
-      // 渲染页面
+      // 渲染页面到Canvas
       const renderContext = {
         canvasContext: this.ctx,
         viewport: viewport
@@ -371,6 +417,16 @@ export class PDFViewer extends EventEmitter {
       
       const renderTask = page.render(renderContext);
       await renderTask.promise;
+      
+      // 标记canvas已渲染完成
+      this.canvas.classList.add('rendered');
+      const wrapper = this.canvas.parentElement;
+      if (wrapper && wrapper.classList.contains('pdf-page-wrapper')) {
+        wrapper.classList.add('loaded');
+      }
+      
+      // 添加文本层以支持文本选择和复制
+      await this.renderTextLayer(page, viewport, this.canvas.parentElement as HTMLElement);
       
       this.pageRendering = false;
       this.currentPageNum = pageNum;
@@ -456,6 +512,13 @@ export class PDFViewer extends EventEmitter {
       this.canvas.height = viewport.height;
       this.canvas.width = viewport.width;
       this.ctx!.drawImage(this.transitionCanvas, 0, 0);
+      
+      // 标记canvas已渲染完成
+      this.canvas.classList.add('rendered');
+      const canvasWrapper = this.canvas.parentElement;
+      if (canvasWrapper && canvasWrapper.classList.contains('pdf-page-wrapper')) {
+        canvasWrapper.classList.add('loaded');
+      }
       
       // 重置样式
       this.resetTransitionStyles();
@@ -941,7 +1004,6 @@ export class PDFViewer extends EventEmitter {
       pageWrapper.style.cssText = `
         position: relative;
         margin: 0 auto 20px auto;
-        background: white;
         border-radius: 4px;
         box-shadow: 0 4px 16px rgba(0,0,0,0.1);
         display: block;
@@ -996,6 +1058,66 @@ export class PDFViewer extends EventEmitter {
   }
 
   /**
+   * 渲染文本层（支持文本选择和复制）
+   */
+  private async renderTextLayer(page: PDFPageProxy, viewport: any, container: HTMLElement): Promise<void> {
+    try {
+      // 移除现有的文本层
+      const existingTextLayer = container.querySelector('.textLayer');
+      if (existingTextLayer) {
+        existingTextLayer.remove();
+      }
+
+      // 获取文本内容
+      const textContent = await page.getTextContent();
+      
+      // 创建文本层容器
+      const textLayerDiv = document.createElement('div');
+      textLayerDiv.className = 'textLayer';
+      textLayerDiv.style.position = 'absolute';
+      textLayerDiv.style.left = '0';
+      textLayerDiv.style.top = '0';
+      textLayerDiv.style.right = '0';
+      textLayerDiv.style.bottom = '0';
+      textLayerDiv.style.overflow = 'hidden';
+      textLayerDiv.style.opacity = '0.2';
+      textLayerDiv.style.lineHeight = '1';
+      
+      // 添加到容器
+      container.appendChild(textLayerDiv);
+      
+      // 简单的文本层渲染 - 不使用 PDF.js 的 renderTextLayer
+      // 因为它在某些版本中有兼容性问题
+      textContent.items.forEach((item: any) => {
+        if (item.str && item.str.trim()) {
+          const textSpan = document.createElement('span');
+          textSpan.textContent = item.str;
+          textSpan.style.position = 'absolute';
+          textSpan.style.color = 'transparent';
+          textSpan.style.whiteSpace = 'pre';
+          textSpan.style.cursor = 'text';
+          textSpan.style.userSelect = 'text';
+          textSpan.style.webkitUserSelect = 'text';
+          
+          // 计算位置
+          const tx = item.transform;
+          if (tx) {
+            const x = tx[4];
+            const y = tx[5];
+            textSpan.style.left = `${x}px`;
+            textSpan.style.top = `${viewport.height - y}px`;
+            textSpan.style.fontSize = `${Math.abs(tx[0])}px`;
+          }
+          
+          textLayerDiv.appendChild(textSpan);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to render text layer:', error);
+    }
+  }
+
+  /**
    * 渲染指定页面到Canvas
    */
   private async renderPageToCanvas(pageNum: number, canvas: HTMLCanvasElement): Promise<void> {
@@ -1013,6 +1135,16 @@ export class PDFViewer extends EventEmitter {
           canvasContext: ctx,
           viewport: viewport
         }).promise;
+        
+        // 标记canvas已渲染完成
+        canvas.classList.add('rendered');
+        
+        // 为连续模式的页面也添加文本层
+        const pageWrapper = canvas.parentElement;
+        if (pageWrapper && pageWrapper.classList.contains('pdf-page-wrapper')) {
+          pageWrapper.classList.add('loaded');
+          await this.renderTextLayer(page, viewport, pageWrapper);
+        }
       }
     } catch (error) {
       console.error(`Failed to render page ${pageNum}:`, error);
@@ -1148,10 +1280,13 @@ export class PDFViewer extends EventEmitter {
    * 显示加载中
    */
   private showLoading(): void {
+    // 先检查是否已经存在loading元素
+    if (document.getElementById('pdf-loading')) return;
+    
     const loading = document.createElement('div');
     loading.className = 'pdf-loading';
     loading.id = 'pdf-loading';
-    loading.innerHTML = 'Loading PDF...';
+    loading.innerHTML = '<div class="pdf-spinner"></div>';
     this.container.appendChild(loading);
   }
 
@@ -1159,8 +1294,15 @@ export class PDFViewer extends EventEmitter {
    * 隐藏加载中
    */
   private hideLoading(): void {
-    const loading = document.getElementById('pdf-loading');
-    loading?.remove();
+    const loading = this.container.querySelector('.pdf-loading');
+    if (loading) {
+      loading.remove();
+    }
+    // 也尝试通过ID删除
+    const loadingById = document.getElementById('pdf-loading');
+    if (loadingById) {
+      loadingById.remove();
+    }
   }
 
   /**

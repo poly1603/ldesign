@@ -5,11 +5,10 @@
  */
 
 import type { 
-  DeviceType, 
   DeviceOrientation, 
-  Viewport, 
-  Breakpoint,
-  ResponsiveBreakpoints 
+  DeviceType, 
+  ResponsiveBreakpoints,
+  Viewport 
 } from '../types';
 
 /**
@@ -60,7 +59,7 @@ export class DeviceDetector {
       width,
       height,
       device: this.getDeviceType(width),
-      orientation: this.getOrientation(width, height),
+      orientation: this.getDeviceOrientation(width, height),
       pixelRatio: window.devicePixelRatio || 1,
       touch: this.isTouchDevice()
     };
@@ -81,7 +80,7 @@ export class DeviceDetector {
   /**
    * Get device orientation
    */
-  private getOrientation(width: number, height: number): DeviceOrientation {
+  private getDeviceOrientation(width: number, height: number): DeviceOrientation {
     return width > height ? 'landscape' : 'portrait';
   }
 
@@ -94,7 +93,7 @@ export class DeviceDetector {
     return (
       'ontouchstart' in window ||
       navigator.maxTouchPoints > 0 ||
-      // @ts-ignore
+    // @ts-expect-error Safari-specific
       navigator.msMaxTouchPoints > 0 ||
       window.matchMedia('(pointer: coarse)').matches
     );

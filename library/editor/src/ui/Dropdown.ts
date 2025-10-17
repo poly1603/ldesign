@@ -2,6 +2,8 @@
  * 下拉选择器
  */
 
+import { createIcon } from './icons'
+
 export interface DropdownOption {
   label: string
   value: string
@@ -18,13 +20,14 @@ export interface DropdownOptions {
   width?: number | string // 自定义宽度
   maxHeight?: number | string // 最大高度
   selectedValue?: string // 当前选中的值
+  renderOption?: (option: DropdownOption) => HTMLElement | null // 自定义渲染选项
 }
 
 /**
  * 创建下拉选择器
  */
 export function createDropdown(options: DropdownOptions): HTMLElement {
-  const { options: items, onSelect, customContent, width, maxHeight, selectedValue } = options
+  const { options: items, onSelect, customContent, width, maxHeight, selectedValue, renderOption } = options
 
   const dropdown = document.createElement('div')
   dropdown.className = 'editor-dropdown'
@@ -51,6 +54,24 @@ export function createDropdown(options: DropdownOptions): HTMLElement {
 
   if (items && items.length > 0) {
     items.forEach(item => {
+      // 如果有自定义渲染函数
+      if (renderOption) {
+        const customElement = renderOption(item)
+        if (customElement) {
+          list.appendChild(customElement)
+          return
+        }
+      }
+      
+      // 处理分隔线
+      if (item.value === 'separator' || item.label === '---') {
+        const separator = document.createElement('div')
+        separator.className = 'editor-dropdown-separator'
+        separator.style.cssText = 'height: 1px; background: #e0e0e0; margin: 4px 8px;'
+        list.appendChild(separator)
+        return
+      }
+      
       const optionElement = document.createElement('div')
       optionElement.className = 'editor-dropdown-option'
       optionElement.dataset.value = item.value
@@ -58,6 +79,19 @@ export function createDropdown(options: DropdownOptions): HTMLElement {
       // 如果是当前选中项，添加活动类
       if (selectedValue && item.value === selectedValue) {
         optionElement.classList.add('active')
+      }
+      
+      // 如果有图标，添加lucide图标
+      if (item.icon) {
+        const iconElement = createIcon(item.icon)
+        if (iconElement) {
+          iconElement.style.width = '16px'
+          iconElement.style.height = '16px'
+          iconElement.style.marginRight = '8px'
+          iconElement.style.verticalAlign = 'middle'
+          iconElement.style.opacity = '0.7'
+          optionElement.appendChild(iconElement)
+        }
       }
 
       // 如果有颜色，创建颜色预览

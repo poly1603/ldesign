@@ -1529,25 +1529,25 @@ describe('Runtime Validation', () => {
    * 输出到控制台
    */
   private outputToConsole(result: ValidationResult): void {
-    
-    
-    
+    console.log('\n===== 增强验证报告 =====')
+    console.log(`状态: ${result.success ? '✅ 通过' : '❌ 失败'}`)
+    console.log(`耗时: ${result.duration}ms\n`)
 
-    
-    
-    
+    console.log('测试结果:')
+    console.log(`  通过: ${result.testResult.passedTests}`)
+    console.log(`  失败: ${result.testResult.failedTests}\n`)
 
     if (result.errors.length > 0) {
-      
-      result.errors.forEach(e => )
+      console.log('❌ 错误:')
+      result.errors.forEach(e => console.log(`  - ${e}`))
     }
 
     if (result.warnings.length > 0) {
-      
-      result.warnings.forEach(w => )
+      console.log('⚠️ 警告:')
+      result.warnings.forEach(w => console.log(`  - ${w}`))
     }
 
-    
+    console.log('=======================\n')
   }
 
   /**

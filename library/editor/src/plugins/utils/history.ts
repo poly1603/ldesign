@@ -1,67 +1,51 @@
 /**
  * History plugin
  * Provides undo and redo functionality
+ * 
+ * NOTE: The actual History implementation is in src/core/History.ts
+ * This plugin just registers the keyboard shortcuts and commands
  */
 
 import type { Plugin } from '../../types'
+import { createLogger } from '../../utils/logger'
+
+const logger = createLogger('HistoryPlugin')
 
 const HistoryPlugin: Plugin = {
   name: 'History',
   install(editor: any) {
-    const history: string[] = []
-    let currentIndex = -1
-    
-    // Register undo command
+    // Register undo command (uses CommandManager's undo method)
     editor.commands.register('undo', () => {
-      if (currentIndex > 0) {
-        currentIndex--
-        editor.setHTML(history[currentIndex])
-        return true
-      }
-      return false
+      return editor.commands.undo()
     })
     
-    // Register redo command
+    // Register redo command (uses CommandManager's redo method)
     editor.commands.register('redo', () => {
-      if (currentIndex < history.length - 1) {
-        currentIndex++
-        editor.setHTML(history[currentIndex])
-        return true
-      }
-      return false
-    })
-    
-    // Listen for content changes
-    editor.on('input', () => {
-      const content = editor.getHTML()
-      if (currentIndex === -1 || content !== history[currentIndex]) {
-        // Remove history after current position
-        history.splice(currentIndex + 1)
-        // Add new history record
-        history.push(content)
-        currentIndex++
-        // Limit history size
-        if (history.length > 100) {
-          history.shift()
-          currentIndex--
-        }
-      }
+      return editor.commands.redo()
     })
     
     // Add keyboard shortcuts
-    editor.keymap?.register({
-      key: 'Ctrl+Z',
-      command: 'undo',
-      description: 'Undo'
-    })
+    if (editor.keymap) {
+      editor.keymap.register({
+        key: 'Ctrl+Z',
+        command: 'undo',
+        description: 'Undo'
+      })
+      
+      editor.keymap.register({
+        key: 'Ctrl+Shift+Z',
+        command: 'redo',
+        description: 'Redo'
+      })
+      
+      editor.keymap.register({
+        key: 'Ctrl+Y',
+        command: 'redo',
+        description: 'Redo'
+      })
+    }
     
-    editor.keymap?.register({
-      key: 'Ctrl+Y',
-      command: 'redo',
-      description: 'Redo'
-    })
-    
-    console.log('[HistoryPlugin] Installed')
+    logger.debug('Installed - using CommandManager History')
   }
 }
 

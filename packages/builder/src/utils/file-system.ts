@@ -5,6 +5,7 @@
  */
 
 import path from 'path'
+import fs from 'fs-extra'
 import fastGlob from 'fast-glob'
 import type { FileInfo } from '../types/common'
 

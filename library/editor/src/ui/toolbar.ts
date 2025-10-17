@@ -93,7 +93,7 @@ export class Toolbar {
     button.setAttribute('data-name', item.name)
 
     // 判断是否是下拉按钮（需要箭头指示器）
-    const isDropdown = ['heading', 'align', 'fontSize', 'fontFamily', 'lineHeight', 'textTransform'].includes(item.name)
+    const isDropdown = ['heading', 'align', 'fontSize', 'fontFamily', 'lineHeight', 'textTransform', 'ai'].includes(item.name)
     
     // 如果是下拉按钮，需要更宽的按钮容纳图标和箭头
     if (isDropdown) {
@@ -343,6 +343,46 @@ export class Toolbar {
           ],
           onSelect: (command) => {
             this.editor.commands.execute(command)
+          }
+        })
+        return
+      }
+      
+      // 特殊处理：AI 功能下拉菜单
+      if (item.name === 'ai') {
+        showDropdown(button, {
+          options: [
+            { label: 'AI 纠错', value: 'ai-correct', icon: 'sparkles' },
+            { label: 'AI 补全', value: 'ai-complete', icon: 'lightbulb' },
+            { label: 'AI 续写', value: 'ai-continue', icon: 'pen-tool' },
+            { label: 'AI 重写', value: 'ai-rewrite', icon: 'refresh-cw' },
+            { label: '---', value: 'separator' }, // 分隔线
+            { label: 'AI 设置', value: 'ai-config', icon: 'settings' }
+          ],
+          onSelect: (command) => {
+            if (command === 'separator') return
+            
+            console.log('[Toolbar] AI dropdown selected:', command)
+            console.log('[Toolbar] Available commands:', this.editor.commands.getCommands())
+            console.log('[Toolbar] Has command?', this.editor.commands.has(command))
+            
+            // 直接执行 AI 命令
+            if (this.editor.commands.has(command)) {
+              console.log('[Toolbar] Executing AI command:', command)
+              this.editor.commands.execute(command)
+            } else {
+              console.warn(`[Toolbar] AI command '${command}' not found. Make sure AI plugin is loaded.`)
+              console.warn('[Toolbar] Available commands:', this.editor.commands.getCommands())
+            }
+          },
+          renderOption: (option) => {
+            // 自定义渲染分隔线
+            if (option.value === 'separator') {
+              const separator = document.createElement('div')
+              separator.style.cssText = 'height: 1px; background: #e0e0e0; margin: 4px 0;'
+              return separator
+            }
+            return null // 使用默认渲染
           }
         })
         return

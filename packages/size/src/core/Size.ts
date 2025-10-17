@@ -5,21 +5,21 @@
  */
 
 import type { 
+  ScaleFactor, 
+  SizeCalculationOptions, 
   SizeInput, 
-  SizeValue, 
-  SizeUnit, 
-  ScaleFactor,
-  SizeCalculationOptions 
+  SizeUnit,
+  SizeValue 
 } from '../types';
 import {
-  parseSizeInput,
-  formatSize,
-  convertSize,
-  scaleSize,
   addSizes,
-  subtractSizes,
   clampSize,
-  roundSize
+  convertSize,
+  formatSize,
+  parseSizeInput,
+  roundSize,
+  scaleSize,
+  subtractSizes
 } from '../utils';
 
 /**
@@ -421,8 +421,8 @@ export class Size {
    */
   isValid(): boolean {
     return (
-      !isNaN(this._value.value) &&
-      isFinite(this._value.value)
+      !Number.isNaN(this._value.value) &&
+      Number.isFinite(this._value.value)
     );
   }
 

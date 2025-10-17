@@ -25,7 +25,11 @@ export * from './emoji'
 export { CodeBlockPlugin } from './codeblock'
 
 // AI 插件
-export { AIPlugin } from './ai'
+export { default as AIPlugin } from './ai'
+
+// 模板插件
+export { default as TemplatePlugin } from './template'
+export { getTemplateManager } from './template'
 
 // 聚合导出所有插件集合
 import { formattingPlugins } from './formatting'
@@ -42,11 +46,13 @@ export const allPlugins = [
   ...utilPlugins,
   // 单独插件
   'EmojiPlugin',
-  'AIPlugin'
+  'AIPlugin',
+  'TemplatePlugin'
 ]
 
 // 默认插件集合（保持向后兼容）
 export const defaultPlugins = [
+  'AIPlugin',  // AI功能默认启用
   'FormattingPlugin',
   'HeadingPlugin',
   'ListPlugin',

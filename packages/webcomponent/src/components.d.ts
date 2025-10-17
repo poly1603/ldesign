@@ -1710,6 +1710,11 @@ export namespace Components {
         "allowDoubleTap": boolean;
         "alt"?: string;
         /**
+          * 边界弹性系数
+          * @default 0.15
+         */
+        "boundsElasticity": number;
+        /**
           * @default 'top-right'
          */
         "controlsPosition": 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
@@ -1724,6 +1729,16 @@ export namespace Components {
          */
         "doubleTapZoom": number;
         /**
+          * 是否启用网格吸附
+          * @default false
+         */
+        "enableGrid": boolean;
+        /**
+          * 是否启用撤销/重做
+          * @default false
+         */
+        "enableHistory": boolean;
+        /**
           * 是否启用动量滚动
           * @default true
          */
@@ -1737,6 +1752,12 @@ export namespace Components {
         "fitCover": () => Promise<void>;
         "getState": () => Promise<{ scale: number; rotate: number; offsetX: number; offsetY: number; }>;
         "getTransformString": () => Promise<string>;
+        "goToPresetView": (index: number) => Promise<void>;
+        /**
+          * 网格大小（像素）
+          * @default 20
+         */
+        "gridSize": number;
         /**
           * @default 0
          */
@@ -1770,6 +1791,11 @@ export namespace Components {
          */
         "keyboard": boolean;
         /**
+          * 历史记录最大数量
+          * @default 20
+         */
+        "maxHistory": number;
+        /**
           * @default 4
          */
         "maxScale": number;
@@ -1778,8 +1804,18 @@ export namespace Components {
           * @default 0.25
          */
         "minScale": number;
+        /**
+          * 缩略图导航位置
+          * @default 'bottom-right'
+         */
+        "minimapPosition": 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
         "panBy": (dx: number, dy: number, clamp?: boolean) => Promise<void>;
         "panTo": (x: number, y: number, clamp?: boolean) => Promise<void>;
+        /**
+          * 预设视角
+         */
+        "presetViews"?: Array<{ name: string; scale: number; rotate: number; offsetX: number; offsetY: number }>;
+        "redo": () => Promise<void>;
         "reset": () => Promise<void>;
         "rotateBy": (deltaDeg: number) => Promise<void>;
         /**
@@ -1799,9 +1835,33 @@ export namespace Components {
          */
         "showControls": boolean;
         /**
+          * 是否显示缩放/旋转指示器
+          * @default false
+         */
+        "showIndicators": boolean;
+        /**
+          * 是否启用缩略图导航
+          * @default false
+         */
+        "showMinimap": boolean;
+        /**
+          * 是否显示性能监控
+          * @default false
+         */
+        "showPerformance": boolean;
+        /**
+          * 是否启用平滑边界
+          * @default true
+         */
+        "smoothBounds": boolean;
+        /**
           * 若提供则内部渲染 img；否则使用默认插槽
          */
         "src"?: string;
+        "toggleGrid": () => Promise<void>;
+        "toggleIndicators": () => Promise<void>;
+        "toggleMinimap": () => Promise<void>;
+        "undo": () => Promise<void>;
         /**
           * 允许使用滚轮进行平移（当未触发缩放时）
           * @default true
@@ -6841,6 +6901,7 @@ declare global {
         "ldesignTransformChange": { scale: number; rotate: number; offsetX: number; offsetY: number };
         "ldesignGestureStart": void;
         "ldesignGestureEnd": void;
+        "ldesignHistoryChange": { canUndo: boolean; canRedo: boolean };
     }
     /**
      * ldesign-draggable
@@ -9607,6 +9668,11 @@ declare namespace LocalJSX {
         "allowDoubleTap"?: boolean;
         "alt"?: string;
         /**
+          * 边界弹性系数
+          * @default 0.15
+         */
+        "boundsElasticity"?: number;
+        /**
           * @default 'top-right'
          */
         "controlsPosition"?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
@@ -9621,6 +9687,16 @@ declare namespace LocalJSX {
          */
         "doubleTapZoom"?: number;
         /**
+          * 是否启用网格吸附
+          * @default false
+         */
+        "enableGrid"?: boolean;
+        /**
+          * 是否启用撤销/重做
+          * @default false
+         */
+        "enableHistory"?: boolean;
+        /**
           * 是否启用动量滚动
           * @default true
          */
@@ -9630,6 +9706,11 @@ declare namespace LocalJSX {
           * @default true
          */
         "enableRotate"?: boolean;
+        /**
+          * 网格大小（像素）
+          * @default 20
+         */
+        "gridSize"?: number;
         /**
           * @default 0
          */
@@ -9663,6 +9744,11 @@ declare namespace LocalJSX {
          */
         "keyboard"?: boolean;
         /**
+          * 历史记录最大数量
+          * @default 20
+         */
+        "maxHistory"?: number;
+        /**
           * @default 4
          */
         "maxScale"?: number;
@@ -9671,9 +9757,19 @@ declare namespace LocalJSX {
           * @default 0.25
          */
         "minScale"?: number;
+        /**
+          * 缩略图导航位置
+          * @default 'bottom-right'
+         */
+        "minimapPosition"?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
         "onLdesignGestureEnd"?: (event: LdesignDraggableCustomEvent<void>) => void;
         "onLdesignGestureStart"?: (event: LdesignDraggableCustomEvent<void>) => void;
+        "onLdesignHistoryChange"?: (event: LdesignDraggableCustomEvent<{ canUndo: boolean; canRedo: boolean }>) => void;
         "onLdesignTransformChange"?: (event: LdesignDraggableCustomEvent<{ scale: number; rotate: number; offsetX: number; offsetY: number }>) => void;
+        /**
+          * 预设视角
+         */
+        "presetViews"?: Array<{ name: string; scale: number; rotate: number; offsetX: number; offsetY: number }>;
         /**
           * 旋转吸附角度（度）。大于 0 时在捏合旋转接近该步进的倍数会吸附
           * @default 0
@@ -9688,6 +9784,26 @@ declare namespace LocalJSX {
           * @default false
          */
         "showControls"?: boolean;
+        /**
+          * 是否显示缩放/旋转指示器
+          * @default false
+         */
+        "showIndicators"?: boolean;
+        /**
+          * 是否启用缩略图导航
+          * @default false
+         */
+        "showMinimap"?: boolean;
+        /**
+          * 是否显示性能监控
+          * @default false
+         */
+        "showPerformance"?: boolean;
+        /**
+          * 是否启用平滑边界
+          * @default true
+         */
+        "smoothBounds"?: boolean;
         /**
           * 若提供则内部渲染 img；否则使用默认插槽
          */

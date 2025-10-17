@@ -40,22 +40,22 @@ export interface UseI18nComposable {
  */
 export function createVueI18n(config?: I18nConfig): Plugin & { i18n: I18nInstance } {
   const i18n = createI18n(config);
-  
+
   return {
     i18n,
     install(app: App) {
       // Provide i18n instance globally
       app.provide(I18N_INJECTION_KEY, i18n);
-      
+
       // Add global properties
       app.config.globalProperties.$i18n = i18n;
       app.config.globalProperties.$t = i18n.t.bind(i18n);
-      
+
       // Add global methods
       app.config.globalProperties.$setLocale = async (locale: Locale) => {
         await i18n.setLocale(locale);
       };
-      
+
       // Initialize i18n
       i18n.init().catch(err => {
         console.error('Failed to initialize i18n:', err);
@@ -70,21 +70,21 @@ export function createVueI18n(config?: I18nConfig): Plugin & { i18n: I18nInstanc
 export function useI18n(config?: I18nConfig): UseI18nComposable {
   // Try to inject existing instance
   const injected = inject(I18N_INJECTION_KEY, null);
-  
+
   // Use injected or create new instance
   const i18n = injected || createI18n(config);
-  
+
   // Reactive locale
   const locale = ref(i18n.locale);
   const isReady = ref(false);
-  
+
   // Watch for locale changes
   const unsubscribe = i18n.on('localeChanged', ({ locale: newLocale }) => {
     if (newLocale) {
       locale.value = newLocale;
     }
   });
-  
+
   // Initialize if not already done
   if (!injected && config?.messages) {
     i18n.init().then(() => {
@@ -93,18 +93,18 @@ export function useI18n(config?: I18nConfig): UseI18nComposable {
   } else {
     isReady.value = true;
   }
-  
+
   // Computed properties
   const availableLocales = computed(() => i18n.getAvailableLocales());
   const currentLocale = computed(() => locale.value);
   const fallbackLocale = computed(() => i18n.fallbackLocale);
-  
+
   // Methods
   const setLocale = async (newLocale: Locale) => {
     await i18n.setLocale(newLocale);
     locale.value = newLocale;
   };
-  
+
   // 让 t 对 locale 产生响应式依赖，切换语言时可触发组件重渲染
   const reactiveT: I18nInstance['t'] = ((key: any, params?: any) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -134,9 +134,9 @@ export const vI18n = {
       console.warn('i18n instance not found. Make sure to install the i18n plugin.');
       return;
     }
-    
+
     const { value, modifiers } = binding;
-    
+
     if (typeof value === 'string') {
       // Simple translation
       el.textContent = i18n.t(value);
@@ -153,9 +153,9 @@ export const vI18n = {
   updated(el: HTMLElement, binding: any) {
     const i18n = inject(I18N_INJECTION_KEY);
     if (!i18n) return;
-    
+
     const { value, modifiers } = binding;
-    
+
     if (typeof value === 'string') {
       el.textContent = i18n.t(value);
     } else if (typeof value === 'object') {
@@ -190,11 +190,11 @@ export const I18nT = {
   },
   setup(props: any) {
     const { t } = useI18n();
-    
+
     const translation = computed(() => {
       return t(props.keypath, props.params);
     });
-    
+
     return () => {
       const { tag } = props;
       return h(tag, translation.value);
@@ -205,7 +205,7 @@ export const I18nT = {
 // Vue-specific helper to create reactive translations
 export function useTranslation(key: string, params?: Ref<Record<string, any>>) {
   const { t, locale } = useI18n();
-  
+
   return computed(() => {
     // Trigger reactivity on locale change
     const _ = locale.value;
@@ -216,7 +216,7 @@ export function useTranslation(key: string, params?: Ref<Record<string, any>>) {
 // Helper for plural translations
 export function usePlural(key: string, count: Ref<number>, params?: Ref<Record<string, any>>) {
   const { i18n, locale } = useI18n();
-  
+
   return computed(() => {
     // Trigger reactivity on locale change
     const _ = locale.value;
@@ -229,7 +229,7 @@ export function usePlural(key: string, count: Ref<number>, params?: Ref<Record<s
 // Helper for formatted numbers
 export function useNumber(value: Ref<number>, options?: Intl.NumberFormatOptions) {
   const { i18n, locale } = useI18n();
-  
+
   return computed(() => {
     // Trigger reactivity on locale change
     const _ = locale.value;
@@ -240,7 +240,7 @@ export function useNumber(value: Ref<number>, options?: Intl.NumberFormatOptions
 // Helper for formatted dates
 export function useDate(value: Ref<Date | string | number>, options?: Intl.DateTimeFormatOptions) {
   const { i18n, locale } = useI18n();
-  
+
   return computed(() => {
     // Trigger reactivity on locale change
     const _ = locale.value;
@@ -251,7 +251,7 @@ export function useDate(value: Ref<Date | string | number>, options?: Intl.DateT
 // Helper for formatted currency
 export function useCurrency(value: Ref<number>, currency: string, options?: Intl.NumberFormatOptions) {
   const { i18n, locale } = useI18n();
-  
+
   return computed(() => {
     // Trigger reactivity on locale change
     const _ = locale.value;
@@ -262,7 +262,7 @@ export function useCurrency(value: Ref<number>, currency: string, options?: Intl
 // Helper for relative time
 export function useRelativeTime(value: Ref<Date | string | number>, options?: Intl.RelativeTimeFormatOptions) {
   const { i18n, locale } = useI18n();
-  
+
   return computed(() => {
     // Trigger reactivity on locale change
     const _ = locale.value;

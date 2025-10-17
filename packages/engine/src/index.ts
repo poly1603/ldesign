@@ -24,6 +24,17 @@
  * ```
  */
 
+// 插件状态管理
+export {
+  createSharedState,
+  useDark,
+  useLocale,
+  usePluginState,
+  usePluginStates,
+  useSize,
+  useTheme
+} from './composables/use-plugin-state'
+
 // ==================== 核心导出 ====================
 // 统一的应用创建函数
 export {
@@ -31,6 +42,22 @@ export {
   createEngineApp,
   type EngineAppOptions
 } from './core/create-engine-app'
+
+// ==================== Locale 模块导出 ====================
+export {
+  createLocaleAwarePlugin,
+  type CreateLocaleAwarePluginOptions,
+  createLocaleManager,
+  createSimpleLocaleAwarePlugin,
+  type LocaleAwarePlugin,
+  LocaleManager,
+  type LocaleManagerOptions
+} from './locale'
+
+// ==================== 插件导出 ====================
+export { createI18nEnginePlugin } from './plugins/i18n'
+
+export type { I18nEnginePluginOptions } from './plugins/i18n'
 
 // 配置类型
 export type {
@@ -66,7 +93,6 @@ export type {
   PluginMetadata,
   PluginStatus
 } from './types/plugin'
-
 // 常用工具函数
 export {
   debounce,
@@ -88,32 +114,6 @@ export {
   usePerformance,
   usePlugins
 } from './vue/composables'
-
-// 插件状态管理
-export {
-  usePluginState,
-  usePluginStates,
-  useLocale,
-  useTheme,
-  useSize,
-  useDark,
-  createSharedState
-} from './composables/use-plugin-state'
-
-// ==================== 插件导出 ====================
-export { createI18nEnginePlugin } from './plugins/i18n'
-export type { I18nEnginePluginOptions } from './plugins/i18n'
-
-// ==================== Locale 模块导出 ====================
-export {
-  LocaleManager,
-  createLocaleManager,
-  createLocaleAwarePlugin,
-  createSimpleLocaleAwarePlugin,
-  type LocaleAwarePlugin,
-  type LocaleManagerOptions,
-  type CreateLocaleAwarePluginOptions
-} from './locale'
 
 // ==================== 版本信息 ====================
 export const version = '1.0.0'

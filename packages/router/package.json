@@ -30,6 +30,16 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
+    "./ab-testing": {
+      "types": "./es/ab-testing/index.d.ts",
+      "import": "./es/ab-testing/index.js",
+      "require": "./lib/ab-testing/index.cjs"
+    },
+    "./ab-testing/*": {
+      "types": "./es/ab-testing/*.d.ts",
+      "import": "./es/ab-testing/*.js",
+      "require": "./lib/ab-testing/*.cjs"
+    },
     "./analytics/*": {
       "types": "./es/analytics/*.d.ts",
       "import": "./es/analytics/*.js",
@@ -69,6 +79,16 @@
       "types": "./es/core/*.d.ts",
       "import": "./es/core/*.js",
       "require": "./lib/core/*.cjs"
+    },
+    "./data-fetching": {
+      "types": "./es/data-fetching/index.d.ts",
+      "import": "./es/data-fetching/index.js",
+      "require": "./lib/data-fetching/index.cjs"
+    },
+    "./data-fetching/*": {
+      "types": "./es/data-fetching/*.d.ts",
+      "import": "./es/data-fetching/*.js",
+      "require": "./lib/data-fetching/*.cjs"
     },
     "./debug/*": {
       "types": "./es/debug/*.d.ts",
@@ -110,6 +130,21 @@
       "import": "./es/guards/*.js",
       "require": "./lib/guards/*.cjs"
     },
+    "./managers/*": {
+      "types": "./es/managers/*.d.ts",
+      "import": "./es/managers/*.js",
+      "require": "./lib/managers/*.cjs"
+    },
+    "./micro-frontend": {
+      "types": "./es/micro-frontend/index.d.ts",
+      "import": "./es/micro-frontend/index.js",
+      "require": "./lib/micro-frontend/index.cjs"
+    },
+    "./micro-frontend/*": {
+      "types": "./es/micro-frontend/*.d.ts",
+      "import": "./es/micro-frontend/*.js",
+      "require": "./lib/micro-frontend/*.cjs"
+    },
     "./middleware": {
       "types": "./es/middleware/index.d.ts",
       "import": "./es/middleware/index.js",
@@ -135,6 +170,16 @@
       "import": "./es/state/*.js",
       "require": "./lib/state/*.cjs"
     },
+    "./type-generator": {
+      "types": "./es/type-generator/index.d.ts",
+      "import": "./es/type-generator/index.js",
+      "require": "./lib/type-generator/index.cjs"
+    },
+    "./type-generator/*": {
+      "types": "./es/type-generator/*.d.ts",
+      "import": "./es/type-generator/*.js",
+      "require": "./lib/type-generator/*.cjs"
+    },
     "./types": {
       "types": "./es/types/index.d.ts",
       "import": "./es/types/index.js",
@@ -154,7 +199,9 @@
       "types": "./es/utils/*.d.ts",
       "import": "./es/utils/*.js",
       "require": "./lib/utils/*.cjs"
-    }
+    },
+    "./es/examples/MultiStepForm.vue.css": "./es/examples/MultiStepForm.vue.css",
+    "./lib/examples/MultiStepForm.vue.css": "./lib/examples/MultiStepForm.vue.css"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
@@ -194,7 +241,9 @@
     "build:dev": "node scripts/build.js --dev"
   },
   "dependencies": {
-    "@ldesign/device": "workspace:*"
+    "@ldesign/device": "workspace:*",
+    "nanoid": "^5.0.9",
+    "mitt": "^3.0.1"
   },
   "peerDependencies": {
     "@ldesign/device": "^1.0.0",

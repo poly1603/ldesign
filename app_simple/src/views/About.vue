@@ -117,7 +117,7 @@ const features = computed(() => [
 const techStack = ['Vue 3', 'TypeScript', 'Vite', 'Rollup', 'ESBuild', 'i18n']
 
 onMounted(() => {
-  console.log('About page mounted')
+  // About page mounted
 })
 </script>
 

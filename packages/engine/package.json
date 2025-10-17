@@ -20,10 +20,20 @@
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
+    "./ai/*": {
+      "types": "./es/ai/*.d.ts",
+      "import": "./es/ai/*.js",
+      "require": "./lib/ai/*.cjs"
+    },
     "./cache/*": {
       "types": "./es/cache/*.d.ts",
       "import": "./es/cache/*.js",
       "require": "./lib/cache/*.cjs"
+    },
+    "./composables/*": {
+      "types": "./es/composables/*.d.ts",
+      "import": "./es/composables/*.js",
+      "require": "./lib/composables/*.cjs"
     },
     "./config": {
       "types": "./es/config/index.d.ts",
@@ -54,11 +64,6 @@
       "types": "./es/devtools/*.d.ts",
       "import": "./es/devtools/*.js",
       "require": "./lib/devtools/*.cjs"
-    },
-    "./dialog/*": {
-      "types": "./es/dialog/*.d.ts",
-      "import": "./es/dialog/*.js",
-      "require": "./lib/dialog/*.cjs"
     },
     "./directives": {
       "types": "./es/directives/index.d.ts",
@@ -95,6 +100,16 @@
       "import": "./es/lifecycle/*.js",
       "require": "./lib/lifecycle/*.cjs"
     },
+    "./locale": {
+      "types": "./es/locale/index.d.ts",
+      "import": "./es/locale/index.js",
+      "require": "./lib/locale/index.cjs"
+    },
+    "./locale/*": {
+      "types": "./es/locale/*.d.ts",
+      "import": "./es/locale/*.js",
+      "require": "./lib/locale/*.cjs"
+    },
     "./logger": {
       "types": "./es/logger/index.d.ts",
       "import": "./es/logger/index.js",
@@ -105,10 +120,10 @@
       "import": "./es/logger/*.js",
       "require": "./lib/logger/*.cjs"
     },
-    "./message/*": {
-      "types": "./es/message/*.d.ts",
-      "import": "./es/message/*.js",
-      "require": "./lib/message/*.cjs"
+    "./micro-frontend/*": {
+      "types": "./es/micro-frontend/*.d.ts",
+      "import": "./es/micro-frontend/*.js",
+      "require": "./lib/micro-frontend/*.cjs"
     },
     "./middleware/*": {
       "types": "./es/middleware/*.d.ts",
@@ -174,6 +189,11 @@
       "types": "./es/vue/*.d.ts",
       "import": "./es/vue/*.js",
       "require": "./lib/vue/*.cjs"
+    },
+    "./workers/*": {
+      "types": "./es/workers/*.d.ts",
+      "import": "./es/workers/*.js",
+      "require": "./lib/workers/*.cjs"
     }
   },
   "main": "./lib/index.cjs",

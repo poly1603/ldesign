@@ -4,8 +4,12 @@ import { PDFViewer, SimpleToolbar } from '@pdf-plugin';
 // ✅ 导入优化后的样式
 import '@pdf-plugin/styles/pdf-viewer.css';
 
-// Sample PDF URL
-const SAMPLE_PDF = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
+// Sample PDF URLs - 提供多个备用源
+const SAMPLE_PDFS = [
+  'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf',
+  'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+  '/sample.pdf' // 本地文件作为最后备用
+];
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {
@@ -78,22 +82,27 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       
       // Listen to events
-      viewer.on('document-loaded', (data) => {
+      viewer.on('document-loaded', async (data) => {
         console.log(`📄 Document loaded: ${data.numPages} pages`);
         hideWelcomeScreen();
-        hideLoading();
+        await hideLoading();
       });
       
       viewer.on('error', (error) => {
         console.error('❌ Error:', error);
         hideLoading();
-        alert(`Error loading PDF`);
+        // 更友好的错误提示
+        if (error?.message?.includes('CORS') || error?.message?.includes('fetch')) {
+          alert('Unable to load PDF due to CORS policy. Please upload a local PDF file instead.');
+        } else {
+          alert(`Error loading PDF: ${error?.message || 'Unknown error'}`);
+        }
       });
       
       console.log('✨ PDF Viewer initialized!');
     } catch (error) {
       console.error('Failed to initialize viewer:', error);
-      hideLoading();
+      await hideLoading();
     }
   }
   
@@ -111,29 +120,60 @@ document.addEventListener('DOMContentLoaded', async () => {
       await initViewerWithURL(url);
     } catch (error) {
       console.error('Failed to load PDF:', error);
-      hideLoading();
+      await hideLoading();
     }
   }
   
-  // Load sample PDF
+  // Load sample PDF with fallback URLs
   async function loadSamplePDF() {
     showLoading();
     
-    try {
-      await initViewerWithURL(SAMPLE_PDF);
-    } catch (error) {
-      console.error('Failed to load sample:', error);
+    let loaded = false;
+    let lastError = null;
+    
+    // 尝试按顺序加载每个备用URL
+    for (const url of SAMPLE_PDFS) {
+      try {
+        console.log(`Trying to load PDF from: ${url}`);
+        await initViewerWithURL(url);
+        loaded = true;
+        break;
+      } catch (error) {
+        console.error(`Failed to load from ${url}:`, error);
+        lastError = error;
+      }
+    }
+    
+    if (!loaded) {
+      console.error('Failed to load sample PDF from all sources:', lastError);
       hideLoading();
+      alert('Unable to load sample PDF. Please try uploading your own PDF file.');
     }
   }
   
   // UI helpers
+  let loadingStartTime = 0;
+  const MIN_LOADING_TIME = 500; // 最小显示时间（毫秒）
+  
   function showLoading() {
-    if (loadingOverlay) loadingOverlay.classList.add('active');
+    if (loadingOverlay) {
+      loadingOverlay.classList.add('active');
+      loadingStartTime = Date.now();
+    }
   }
   
-  function hideLoading() {
-    if (loadingOverlay) loadingOverlay.classList.remove('active');
+  async function hideLoading() {
+    if (loadingOverlay) {
+      const elapsed = Date.now() - loadingStartTime;
+      const remaining = MIN_LOADING_TIME - elapsed;
+      
+      // 如果加载时间太短，等待一下再隐藏
+      if (remaining > 0) {
+        await new Promise(resolve => setTimeout(resolve, remaining));
+      }
+      
+      loadingOverlay.classList.remove('active');
+    }
   }
   
   function hideWelcomeScreen() {

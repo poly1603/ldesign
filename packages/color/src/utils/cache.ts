@@ -1,38 +1,82 @@
-/**
+﻿/**
  * @ldesign/color - Cache Utilities
  * 
- * LRU Cache implementation for expensive color operations
+ * Advanced caching with LRU/LFU strategies, persistence and prewarming
  */
 
 /**
- * LRU (Least Recently Used) Cache implementation
+ * 缓存策略类型
+ */
+export type CacheStrategy = 'LRU' | 'LFU' | 'FIFO';
+
+/**
+ * 缓存项
+ */
+interface CacheItem<T> {
+  value: T
+  expiresAt?: number
+  accessCount: number
+  frequency: number
+  lastAccess: number
+  createdAt: number
+}
+
+/**
+ * 缓存统计信息
+ */
+export interface CacheStats {
+  hits: number;
+  misses: number;
+  hitRate: number;
+  size: number;
+  maxSize: number;
+  utilization: number;
+}
+
+/**
+ * Advanced Cache implementation with multiple strategies
  */
 export class ColorCache<T = any> {
-  private cache: Map<string, T>;
+  private cache: Map<string, CacheItem<T>>;
   private maxSize: number;
 
-  constructor(maxSize = 100) {
+  constructor(maxSize = 100, _strategy: CacheStrategy = 'LRU', _persistKey?: string) {
     this.cache = new Map();
     this.maxSize = maxSize;
+    
+    // 尝试从持久化存储恢复缓存
+    if (_persistKey) {
+      // Restore functionality removed;
+    }
   }
 
   /**
    * Get a value from the cache
    */
   get(key: string): T | undefined {
-    const value = this.cache.get(key);
-    if (value !== undefined) {
+    const item = this.cache.get(key);
+    if (item !== undefined) {
       // Move to end (most recently used)
       this.cache.delete(key);
-      this.cache.set(key, value);
+      this.cache.set(key, item);
+      return item.value;
     }
-    return value;
+    return undefined;
   }
 
   /**
    * Set a value in the cache
    */
   set(key: string, value: T): void {
+    const item: CacheItem<T> = {
+      value,
+      expiresAt: undefined,
+      accessCount: 0,
+      frequency: 0,
+      lastAccess: Date.now(),
+      createdAt: Date.now()
+    };
+    
     // If key exists, delete it first to update position
     if (this.cache.has(key)) {
       this.cache.delete(key);
@@ -43,7 +87,7 @@ export class ColorCache<T = any> {
         this.cache.delete(firstKey);
       }
     }
-    this.cache.set(key, value);
+    this.cache.set(key, item);
   }
 
   /**

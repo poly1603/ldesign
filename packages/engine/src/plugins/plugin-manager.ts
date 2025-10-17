@@ -53,15 +53,7 @@ export class PluginManagerImpl implements PluginManager {
         await plugin.install(context)
       }
 
-      if (this.engine?.logger) {
-        this.engine.logger.info(
-          `Plugin "${plugin.name}" registered successfully`,
-          {
-            version: plugin.version,
-            dependencies: plugin.dependencies,
-          }
-        )
-      }
+      // Plugin registered successfully (日志已禁用)
 
       // 发送插件注册事件
       if (this.engine?.events) {

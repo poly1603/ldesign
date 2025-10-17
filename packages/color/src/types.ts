@@ -132,7 +132,8 @@ export type ColorInput =
   | OKLAB
   | OKLCH
   | CMYK
-  | number[];
+  | number[]
+  | { toHex(): string; toRGB(): RGB };  // Support Color instances
 
 /**
  * Color format types
@@ -173,6 +174,11 @@ export type BlendMode =
   | 'soft-light'
   | 'difference'
   | 'exclusion'
+  | 'linear-burn'
+  | 'linear-dodge'
+  | 'vivid-light'
+  | 'pin-light'
+  | 'hard-mix'
   | 'hue'
   | 'saturation'
   | 'color'

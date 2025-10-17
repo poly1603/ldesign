@@ -15,13 +15,13 @@ import { setupTitleGuard } from './title.guard'
 export function setupGuards(router: RouterEnginePlugin) {
   // 进度条守卫
   setupProgressGuard(router)
-  
+
   // 认证守卫
   setupAuthGuard(router)
-  
+
   // 权限守卫
   setupPermissionGuard(router)
-  
-  // 页面标题守卫
-  setupTitleGuard(router)
+
+  // 页面标题守卫（已移至 app-setup.ts 中处理以避免 inject 警告）
+  // setupTitleGuard(router)
 }

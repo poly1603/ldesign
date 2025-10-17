@@ -1227,7 +1227,9 @@ describe('Library Validation', () => {
    * 设置库类型
    */
   setLibraryType(type: LibraryType): void {
-    this.config?.libraryType = type
+    if (this.config) {
+      this.config.libraryType = type
+    }
     this.logger.info(`已设置库类型为: ${type}`)
   }
 

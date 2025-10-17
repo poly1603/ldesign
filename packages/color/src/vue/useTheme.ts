@@ -2,7 +2,7 @@
  * Vue 3 Composable for theme management
  */
 
-import { ref, onMounted, onUnmounted, Ref, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { ThemeManager, ThemeState, ThemeOptions } from '../themes/themeManager'
 import { presetThemes, PresetTheme } from '../themes/presets'
 

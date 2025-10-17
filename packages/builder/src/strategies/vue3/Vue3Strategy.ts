@@ -144,7 +144,6 @@ export class Vue3Strategy implements ILibraryStrategy {
         options: {
           compress: {
             drop_console: true,
-            drop_: true
           },
           format: {
             comments: false

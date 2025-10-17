@@ -18,8 +18,8 @@
  * 保留此文件仅用于向后兼容
  */
 
-import { ref, type Ref } from 'vue'
 import type { Engine } from '../types/engine'
+import { ref, type Ref } from 'vue'
 
 /**
  * 支持多语言的插件必须实现此接口
@@ -29,7 +29,7 @@ export interface LocaleAwarePlugin {
    * 设置语言
    * @param locale 语言代码，如 'zh-CN', 'en-US'
    */
-  setLocale(locale: string): void
+  setLocale: (locale: string) => void
 
   /**
    * 当前语言（可选，响应式）

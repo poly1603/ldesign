@@ -169,14 +169,20 @@
       right: 0;
       bottom: 0;
       background: rgba(0, 0, 0, 0.7);
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
       z-index: 3000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      pointer-events: none;
     }
     
     .loading-overlay.active {
-      display: flex;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
     }
     
     .spinner {

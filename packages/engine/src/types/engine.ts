@@ -22,7 +22,7 @@ import type { ErrorManager } from './error'
 import type { EventManager } from './event'
 import type { Logger } from './logger'
 import type { MiddlewareManager } from './middleware'
-import type { NotificationManager } from './notification'
+import type { UnifiedNotificationSystem } from '../notifications/unified-notification-system'
 import type { Plugin, PluginManager } from './plugin'
 import type { StateManager } from './state'
 
@@ -41,7 +41,7 @@ export interface Engine {
   readonly directives: DirectiveManager
   readonly errors: ErrorManager
   readonly logger: Logger
-  readonly notifications: NotificationManager
+  readonly notifications: UnifiedNotificationSystem
 
   // 扩展接口
   router?: RouterAdapter

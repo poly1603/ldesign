@@ -393,6 +393,14 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
     },
   },
   
+  // AI 功能下拉菜单
+  {
+    name: 'ai',
+    title: 'AI 助手',
+    icon: 'sparkles',
+    command: () => true, // 由 Toolbar.ts 以下拉方式处理
+  },
+  
   // 字数统计
   {
     name: 'wordCount',
@@ -495,6 +503,7 @@ export const TOOLBAR_GROUPS = {
   insert: ['emoji', 'link', 'unlink', 'image', 'video', 'audio', 'file', 'table', 'horizontalRule'],
   font: ['fontSize', 'fontFamily'],
   color: ['textColor', 'backgroundColor'],
+  ai: ['ai'], // AI功能下拉菜单
   tools: ['removeFormat', 'fullscreen', 'search', 'wordCount'],
 }
 

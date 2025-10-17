@@ -433,10 +433,12 @@ export class NotificationManagerImpl implements NotificationManager {
     const messageElement = document.createElement('div')
     messageElement.className = 'engine-notification-message'
 
-    if (notification.allowHTML) {
+    if (notification.allowHTML && notification.message) {
       messageElement.innerHTML = notification.message
-    } else {
+    } else if (notification.message) {
       messageElement.textContent = notification.message
+    } else {
+      messageElement.textContent = ''
     }
 
     this.styleManager.applyStyles(messageElement, contentStyles.message)

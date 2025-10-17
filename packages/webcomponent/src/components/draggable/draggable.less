@@ -79,7 +79,170 @@
   background: rgba(255,255,255,.08);
   border-radius: 6px;
   cursor: pointer;
+  transition: all 0.2s;
 }
 .ldesign-draggable__btn:hover { background: rgba(255,255,255,.18); }
 .ldesign-draggable__btn:active { background: rgba(255,255,255,.22); }
 .ldesign-draggable__btn:focus-visible { outline: 2px solid var(--ldesign-focus, #4c9ffe); outline-offset: 2px; }
+.ldesign-draggable__btn.is-disabled { 
+  opacity: 0.4; 
+  cursor: not-allowed;
+}
+.ldesign-draggable__btn.is-active {
+  background: rgba(76, 159, 254, 0.3);
+  color: #4c9ffe;
+}
+
+/* 网格背景 */
+.ldesign-draggable__grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  color: var(--ldesign-grid-color, #999);
+}
+
+/* 缩放/旋转指示器 */
+.ldesign-draggable__indicators {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.ldesign-draggable__indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: @panel-dark;
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  color: #fff;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+
+.ldesign-draggable__indicator-label {
+  opacity: 0.7;
+}
+
+.ldesign-draggable__indicator-value {
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* 性能监控 */
+.ldesign-draggable__performance {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  padding: 4px 8px;
+  background: @bg-dark;
+  color: #0f0;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* 缩略图导航 */
+.ldesign-draggable__minimap {
+  position: absolute;
+  width: 150px;
+  height: 100px;
+  background: @panel-dark;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 10;
+  cursor: crosshair;
+  pointer-events: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+}
+
+.ldesign-draggable__minimap--top-right { top: 16px; right: 16px; }
+.ldesign-draggable__minimap--top-left { top: 16px; left: 16px; }
+.ldesign-draggable__minimap--bottom-right { bottom: 16px; right: 16px; }
+.ldesign-draggable__minimap--bottom-left { bottom: 16px; left: 16px; }
+
+.ldesign-draggable__minimap-content {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ldesign-draggable__minimap-content img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.6;
+  filter: brightness(0.7);
+}
+
+.ldesign-draggable__minimap-placeholder {
+  color: rgba(255,255,255,0.3);
+  font-size: 12px;
+}
+
+.ldesign-draggable__minimap-viewport {
+  position: absolute;
+  border: 2px solid #4c9ffe;
+  background: rgba(76, 159, 254, 0.2);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+  pointer-events: none;
+  min-width: 20px;
+  min-height: 20px;
+  transition: all 0.2s;
+}
+
+.ldesign-draggable__minimap:hover .ldesign-draggable__minimap-viewport {
+  background: rgba(76, 159, 254, 0.3);
+  border-color: #6cafff;
+}
+
+/* 预设视角 */
+.ldesign-draggable__presets {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+
+.ldesign-draggable__preset-btn {
+  padding: 6px 12px;
+  background: @panel-dark;
+  backdrop-filter: blur(8px);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ldesign-draggable__preset-btn:hover {
+  background: rgba(255,255,255,.2);
+  transform: translateY(-1px);
+}
+
+.ldesign-draggable__preset-btn:active {
+  transform: translateY(0);
+}
+
+/* 动画优化 */
+.ldesign-draggable__content.is-zooming {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}

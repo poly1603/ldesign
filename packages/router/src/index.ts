@@ -580,6 +580,126 @@ export type {
   UnifiedMemoryConfig,
 } from './utils/unified-memory-manager'
 
+// ==================== 国际化功能导出 ====================
+
+export {
+  getI18nManager,
+  I18nRouteManager,
+  I18nRouterPlugin,
+  setupI18nRouter,
+  useI18nRoute,
+} from './features/i18n'
+
+export type {
+  I18nRouteConfig,
+} from './features/i18n'
+
+export {
+  LocaleSwitcher,
+} from './components/LocaleSwitcher'
+
+// ==================== 数据预取功能导出 ====================
+
+export {
+  DataFetchingManager,
+  DataFetchingPlugin,
+  defineAsyncComponent,
+  defineLoader,
+  setupDataFetching,
+  useRouteData,
+} from './features/data-fetching'
+
+export type {
+  DataFetchingOptions,
+  DataFetchingState,
+  DataLoader,
+  DataResolver,
+} from './features/data-fetching'
+
+// ==================== 滚动行为功能导出 ====================
+
+export {
+  createScrollBehavior,
+  getScrollManager,
+  ScrollBehaviorManager,
+  ScrollBehaviorPlugin,
+} from './features/ScrollBehavior'
+
+export type {
+  ScrollBehaviorOptions,
+} from './features/ScrollBehavior'
+
+// ==================== 路由类型生成器导出 ====================
+// 注意：类型生成器是构建时工具，不应该在浏览器代码中使用
+// 如需使用，请直接导入：import { RouteTypeGenerator } from '@ldesign/router/features/type-generator'
+// export {
+//   generateRouteTypes,
+//   RouteTypeGenerator,
+//   RouteTypeGenerator as RouteTypesGenerator, // 别名兼容
+//   RouteTypeGenerator as RouteTypesGeneratorPlugin, // 别名兼容
+//   vitePluginRouteTypes as ViteRouteTypesPlugin,
+//   WebpackPluginRouteTypes as WebpackRouteTypesPlugin
+// } from './features/type-generator'
+
+// export type {
+//   TypeGeneratorOptions as RouteTypesGeneratorOptions,
+//   RouteTypeInfo as RouteInfo
+// } from './features/type-generator'
+
+// ==================== 表单路由管理导出 ====================
+
+export {
+  FormRouteManager
+} from './managers/FormRouteManager'
+
+export {
+  FormRoutePlugin,
+  useFormRoute,
+  useMultiStepForm
+} from './composables/useFormRoute'
+
+export type {
+  FormRouteConfig,
+  FormField,
+  FormStep
+} from './managers/FormRouteManager'
+
+// ==================== 微前端路由集成导出 ====================
+
+export {
+  MicroFrontendRouter,
+  MicroFrontendPlugin,
+  useMicroFrontend
+} from './micro-frontend'
+
+export type {
+  MicroApp,
+  MicroFrontendConfig,
+  MicroAppState,
+  GlobalLifeCycles,
+  SandboxConfig
+} from './micro-frontend'
+
+// ==================== A/B测试功能导出 ====================
+
+export {
+  ABTestManager,
+  ABTestPlugin,
+  GoogleAnalyticsAdapter,
+  useABTest
+} from './ab-testing'
+
+export type {
+  ABTestExperiment,
+  ABTestVariant,
+  ABTestResult,
+  AnalyticsAdapter,
+  ExperimentGoal,
+  TargetingRule,
+  UserSegment,
+  VariantStats
+} from './ab-testing'
+
 // ==================== 默认导出 ====================
 
 // 注意：由于 ES 模块的限制，我们不提供默认导出

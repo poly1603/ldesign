@@ -3,7 +3,7 @@
  * 提供统一的状态共享机制
  */
 
-import { inject, provide, ref, type Ref, type InjectionKey } from 'vue'
+import { inject, type InjectionKey, provide, ref, type Ref } from 'vue'
 
 /**
  * 通用的插件状态钩子
@@ -18,7 +18,7 @@ export function usePluginState<T>(
   defaultValue: T
 ): Ref<T> {
   // 尝试注入已存在的共享状态
-  const injected = inject<Ref<T>>(key, null)
+  const injected = inject<Ref<T> | undefined>(key)
   
   if (injected) {
     // 使用已存在的共享状态

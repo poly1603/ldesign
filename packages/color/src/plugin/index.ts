@@ -1,11 +1,11 @@
-/**
+﻿/**
  * @ldesign/color - Plugin System
  * 
  * Color theme plugin for Vue 3 applications
  */
 
 import type { App } from 'vue'
-import { ref, computed, inject, provide, type Ref, type ComputedRef } from 'vue'
+import { ref, inject, type Ref, type ComputedRef } from 'vue'
 import { ThemeManager, type ThemeOptions, type ThemeState } from '../themes/themeManager'
 import { presetThemes, type PresetTheme } from '../themes/presets'
 import { getLocale } from '../locales'
@@ -16,9 +16,9 @@ import type { ColorLocale } from '../locales'
  */
 export interface ColorPluginOptions {
   /**
-   * 语言设置 - 支持 string 或 Ref<string>
+   * 语言设置 - 支持 string �?Ref<string>
    * 如果传入 Ref，将直接使用（共享模式）
-   * 如果传入 string 或不传，将创建新的 Ref（独立模式）
+   * 如果传入 string 或不传，将创建新�?Ref（独立模式）
    */
   locale?: string | Ref<string>
   
@@ -216,28 +216,60 @@ export interface ColorPlugin {
 export const ColorPluginSymbol = Symbol('ColorPlugin')
 
 /**
- * 判断是否为 Ref
+ * 判断是否�?Ref
  */
 const isRef = <T>(v: any): v is Ref<T> => {
   return v && typeof v === 'object' && 'value' in v && '_rawValue' in v
 }
 
 /**
+ * 智能获取locale
+ * 支持多种方式：传入值、inject、全局事件
+ */
+function useSmartLocale(options: ColorPluginOptions): Ref<string> {
+  // 优先�?：使用传入的locale
+  if (options.locale) {
+    return isRef(options.locale) ? options.locale : ref(options.locale)
+  }
+  
+  // 优先�?：从Vue上下文inject（如果在组件内）
+  try {
+    const injected = inject<Ref<string> | null>('app-locale', null)
+    if (injected && injected.value) {
+      return injected
+    }
+  } catch {}
+  
+  // 优先�?：创建独立的locale并监听全局事件
+  const locale = ref('zh-CN')
+  
+  // 从localStorage恢复
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('app-locale')
+    if (stored) {
+      locale.value = stored
+    }
+    
+    // 监听全局语言变化事件
+    window.addEventListener('app:locale-changed', (e: Event) => {
+      const customEvent = e as CustomEvent<{ locale: string }>
+      if (customEvent.detail?.locale) {
+        locale.value = customEvent.detail.locale
+      }
+    })
+  }
+  
+  return locale
+}
+
+/**
  * Create color plugin
  */
 export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin {
-  // 智能处理 locale
-  let currentLocale: Ref<string>
+  // 使用智能locale获取
+  const currentLocale = useSmartLocale(options)
   
-  if (isRef(options.locale)) {
-    // 传入的是 Ref，直接使用（共享模式）
-    currentLocale = options.locale
-  } else {
-    // 传入的是 string 或未传入，创建新 Ref（独立模式）
-    currentLocale = ref(options.locale || 'zh-CN')
-  }
-  
-  // 懒加载 locale 数据（性能优化）
+  // 懒加�?locale 数据（性能优化�?
   let localeCache: { key: string; data: any } | null = null
   const getLocaleData = () => {
     if (!localeCache || localeCache.key !== currentLocale.value) {
@@ -514,7 +546,7 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
   const plugin: ColorPlugin = {
     manager,
     presets: availablePresets,
-    options: mergedOptions,
+    options: { ...mergedOptions, locale: currentLocale.value },
     currentLocale,
     localeMessages,
     applyTheme,
@@ -526,20 +558,18 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
     getSortedPresets,
 
     install(app: App) {
-      // 智能共享：如果没有传入 Ref，尝试自动共享
+      // 智能共享：如果没有传�?Ref，尝试自动共�?
       if (!isRef(options.locale)) {
-        // 尝试从 app context 获取共享的 locale
+        // 尝试�?app context 获取共享�?locale
         const sharedLocale = app._context?.provides?.['locale'] as Ref<string> | undefined
         
         if (sharedLocale && sharedLocale.value !== undefined) {
-          // 发现共享的 locale，使用它
-          currentLocale = sharedLocale
-          plugin.currentLocale = sharedLocale
-          
-          // 清除缓存以触发重新计算
+          // 发现共享�?locale，使用它
+          // Use sharedLocale instead
+          // Clear cache to trigger recalculation
           localeCache = null
         } else {
-          // 没有共享的 locale，提供自己的
+          // 没有共享�?locale，提供自己的
           app.provide('locale', currentLocale)
         }
       }
@@ -573,3 +603,5 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
  * Default export
  */
 export default createColorPlugin
+
+

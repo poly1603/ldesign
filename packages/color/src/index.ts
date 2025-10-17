@@ -49,15 +49,105 @@ export * from './core/tailwindPalette';
 // Theme management
 export * from './themes/presets';
 export { ThemeManager, defaultThemeManager } from './themes/themeManager';
+export type { ThemeState, ThemeOptions } from './themes/themeManager';
+
+// Accessibility tools
+export { 
+  ColorAccessibility,
+  simulateColorBlindness,
+  autoAdjustForWCAG,
+  suggestAccessiblePairs,
+  getAccessibilityReport
+} from './accessibility';
+export type { ColorBlindnessType } from './accessibility';
+
+// Gradient generator
+export {
+  GradientGenerator,
+  linearGradient,
+  radialGradient,
+  conicGradient,
+  meshGradient,
+  smoothGradient,
+  animatedGradient
+} from './gradient';
+export type { GradientStop, LinearGradientOptions, RadialGradientOptions } from './gradient';
+
+// Color analyzer
+export {
+  ColorAnalyzer,
+  extractPalette,
+  findDominantColors,
+  analyzeColorDistribution,
+  generateColorReport
+} from './analyzer';
+export type { ColorStatistics, ColorDistribution, AnalyzerOptions } from './analyzer';
+
+// Brand manager
+export {
+  BrandColorManager,
+  createBrandManager
+} from './brand';
+export type { BrandColors, BrandPalette, BrandConfig } from './brand';
+
+// AI color assistant
+export {
+  ColorAI,
+  colorAI,
+  createColorAI
+} from './ai/colorAI';
+export type { AIColorOptions, AIColorSuggestion, ColorContext } from './ai/colorAI';
+
+// Error handling
+export {
+  ColorError,
+  InputValidationError,
+  ColorConversionError,
+  ColorManipulationError,
+  ThemeOperationError,
+  ErrorLogger,
+  ErrorRecovery,
+  logError,
+  safeExecute,
+  retryExecute
+} from './utils/errors';
+export type { ErrorSeverity, ErrorCategory, RecoverySuggestion } from './utils/errors';
+
+// Advanced cache
+export {
+  AdvancedColorCache,
+  globalColorCache as advancedGlobalCache
+} from './utils/advancedCache';
+export type { CacheStrategy, CacheStats } from './utils/advancedCache';
+
+// Performance optimization
+export {
+  BatchColorProcessor,
+  LazyColorLoader,
+  ColorPerformance,
+  batchProcess,
+  batchConvert,
+  batchManipulate,
+  batchAnalyze,
+  lazyLoad,
+  preloadModules
+} from './performance';
+export type { BatchOptions, PerformanceMetrics } from './performance';
+
+// Color schemes generator
+export {
+  ColorSchemeGenerator,
+  generateColorScheme,
+  generateAdaptiveScheme,
+  generateAllSchemes,
+  evaluateHarmony
+} from './schemes';
+export type { ColorSchemeType, ColorSchemeOptions, ColorScheme } from './schemes';
 
 // Plugin system
 export { createColorPlugin, ColorPluginSymbol } from './plugin';
 export type { ColorPlugin, ColorPluginOptions } from './plugin';
 export { useColorPlugin } from './plugin/useColorPlugin';
-
-// Engine plugin integration
-export { createColorEnginePlugin, useColorFromEngine } from './plugin/engine'
-export type { ColorEnginePluginOptions } from './plugin/engine'
 
 // Locales
 export { 

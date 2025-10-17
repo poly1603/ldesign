@@ -17,18 +17,17 @@ export function setGlobalMessage(messageApi: MessageApi) {
 export function useMessage(): MessageApi {
   // 优先使用注入的消息服务
   const injectedMessage = inject<MessageApi>('message', null)
-  
+
   if (injectedMessage) {
     return injectedMessage
   }
-  
+
   // 使用全局消息服务
   if (globalMessage) {
     return globalMessage
   }
-  
-  // 降级到 console
-  console.warn('Message service not found, falling back to console')
+
+  // 降级到 console (静默处理，无警告)
   return {
     success: (content: string) => console.log('✓', content),
     error: (content: string) => console.error('✕', content),

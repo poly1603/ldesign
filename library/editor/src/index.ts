@@ -33,6 +33,7 @@ export { createFindReplaceDialog, showFindReplaceDialog } from './ui/FindReplace
 export { showTableGridSelector, showEnhancedTableGridSelector } from './ui/TableGridSelector'
 export { showAISuggestionsOverlay } from './ui/AISuggestionsOverlay'
 export { showAIConfigDialog } from './ui/AIConfigDialog'
+export { showAIDialog, AIMockUtils, type AIDialogType } from './ui/AIDialog'
 
 // 类型
 export type * from './types'

@@ -9,6 +9,7 @@
 
 import { createHash } from 'crypto'
 import path from 'path'
+import fs from 'fs-extra'
 import { Logger } from './logger'
 
 /**

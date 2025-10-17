@@ -186,12 +186,7 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     // 监听环境变化
     this.setupEnvironmentListeners()
 
-    this.logger?.info('Environment manager initialized', {
-      environment: this.environmentInfo.environment,
-      platform: this.environmentInfo.platform,
-      browser: this.environmentInfo.browser.name,
-      device: this.environmentInfo.device.type,
-    })
+    // Environment manager initialized (日志已禁用)
   }
 
   detect(): EnvironmentInfo {

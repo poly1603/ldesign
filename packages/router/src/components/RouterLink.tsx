@@ -1,7 +1,7 @@
 /**
  * @ldesign/router RouterLink 组件
  *
- * 增强版本 - 核心功能 + 适度增强
+ * 增强版本 - 完整功能优化
  */
 
 import type { RouteLocationRaw } from '../types'
@@ -33,8 +33,12 @@ export const RouterLink = defineComponent({
     },
     // 预加载支持
     preload: {
-      type: [Boolean, String] as PropType<boolean | 'hover' | 'visible'>,
+      type: [Boolean, String] as PropType<boolean | 'hover' | 'visible' | 'immediate'>,
       default: false,
+    },
+    preloadDelay: {
+      type: Number,
+      default: 50, // 延迟预加载，避免误触
     },
     // 权限控制
     permission: {
@@ -49,6 +53,46 @@ export const RouterLink = defineComponent({
     target: {
       type: String,
       default: undefined,
+    },
+    // 新增：禁用状态
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+    // 新增：加载状态
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+    // 新增：点击事件拦截
+    beforeNavigate: {
+      type: Function as PropType<(to: RouteLocationRaw) => boolean | Promise<boolean>>,
+      default: undefined,
+    },
+    // 新增：自定义激活匹配逻辑
+    isActiveMatch: {
+      type: Function as PropType<(route: RouteLocationRaw) => boolean>,
+      default: undefined,
+    },
+    // 新增：预取优先级
+    prefetchPriority: {
+      type: String as PropType<'high' | 'low' | 'auto'>,
+      default: 'auto',
+    },
+    // 新增：无障碍属性
+    ariaCurrentValue: {
+      type: String as PropType<'page' | 'step' | 'location' | 'date' | 'time' | 'true' | 'false'>,
+      default: 'page',
+    },
+    // 新增：自动滚动
+    scrollToTop: {
+      type: Boolean,
+      default: false,
+    },
+    // 新增：动画配置
+    transition: {
+      type: [Boolean, String, Object] as PropType<boolean | string | object>,
+      default: false,
     },
   },
   setup(props, { slots, attrs }) {

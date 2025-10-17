@@ -1,8 +1,10 @@
 // 与 Engine 接口保持一致：从实现处引入这些管理器的类型
 import type { EnvironmentManager } from '../environment/environment-manager'
 import type { LifecycleManager } from '../lifecycle/lifecycle-manager'
+import type { UnifiedNotificationSystem } from '../notifications/unified-notification-system';
 import type { PerformanceManager } from '../performance/performance-manager'
 import type { SecurityManager } from '../security/security-manager'
+
 import type {
   ConfigManager,
   DirectiveManager,
@@ -13,14 +15,12 @@ import type {
   Logger,
   LogLevel,
   MiddlewareManager,
-  NotificationManager,
   Plugin,
   PluginManager,
   RouterAdapter,
   StateAdapter,
   StateManager, ThemeAdapter
 } from '../types'
-
 import type { Engine } from '../types/engine'
 import { type App, type Component, createApp, type Directive } from 'vue'
 import { type CacheConfig, type CacheManager, createCacheManager } from '../cache/unified-cache-manager'
@@ -36,7 +36,7 @@ import { createEventManager } from '../events/event-manager'
 import { createLifecycleManager } from '../lifecycle/lifecycle-manager'
 import { createLogger } from '../logger/logger'
 import { createMiddlewareManager } from '../middleware/middleware-manager'
-import { createNotificationManager } from '../notifications/notification-manager'
+import { createUnifiedNotificationSystem } from '../notifications/unified-notification-system'
 import { createPerformanceManager } from '../performance/performance-manager'
 import { createPluginManager } from '../plugins/plugin-manager'
 import { createSecurityManager } from '../security/security-manager'
@@ -106,7 +106,7 @@ export class EngineImpl implements Engine {
   readonly logger: Logger
 
   /** 通知管理器 - 管理用户通知和提示 */
-  notifications!: NotificationManager
+  notifications!: UnifiedNotificationSystem
 
   /** 缓存管理器实例 - 懒加载，提供多级缓存策略 */
   private _cache?: CacheManager
@@ -262,10 +262,7 @@ export class EngineImpl implements Engine {
     // 设置配置变化监听器，实现响应式配置
     this.setupConfigWatchers()
 
-    this.logger.info('Engine initialized', {
-      environment: this.config?.getEnvironment(),
-      features: this.config?.get('features', {}),
-    })
+    // Engine initialized (日志已禁用)
 
     // 执行初始化后的生命周期钩子
     this.lifecycle.execute('afterInit', this).catch(error => {
@@ -298,7 +295,7 @@ export class EngineImpl implements Engine {
         this.notifications.show({
           type: 'error',
           title: 'Error Captured',
-          message: errorInfo.message,
+          content: errorInfo.message,
           duration: 5000, // 5秒后自动消失
         })
       }
@@ -391,7 +388,7 @@ export class EngineImpl implements Engine {
     // 触发应用创建事件，让扩展系统知道 Vue 应用已创建
     this.events.emit('app:created', this._app)
 
-    this.logger.info('Vue app created with engine')
+    // Vue app created with engine (日志已禁用)
     return this._app
   }
 
@@ -438,7 +435,7 @@ export class EngineImpl implements Engine {
       this.theme.install(this)
     }
 
-    this.logger.info('Engine installed to Vue app')
+    // Engine installed to Vue app (日志已禁用)
     this.events.emit('engine:installed', { app })
   }
 
@@ -465,7 +462,7 @@ export class EngineImpl implements Engine {
     this._app.mount(selector)
     this._mounted = true
 
-    this.logger.info('Engine mounted', { target: selector })
+    // Engine mounted (日志已禁用)
     this.events.emit('engine:mounted', { target: selector })
 
     // 执行挂载后的生命周期钩子
@@ -552,7 +549,7 @@ export class EngineImpl implements Engine {
     this.events.emit('engine:destroy')
     this.errors.clearErrors()
     this.logger.clearLogs()
-    this.notifications.hideAll()
+    this.notifications.closeAll()
     this.state.clear()
 
     // 清理懒加载的管理器（如果已初始化）
@@ -656,7 +653,7 @@ export class EngineImpl implements Engine {
     state: () => createStateManager(this.logger),
     errors: () => createErrorManager(),
     directives: () => createDirectiveManager(),
-    notifications: () => createNotificationManager(this.logger),
+    notifications: () => createUnifiedNotificationSystem(this),
     middleware: () => createMiddlewareManager(this.logger),
     plugins: () => createPluginManager(this),
   }
@@ -723,7 +720,7 @@ export class EngineImpl implements Engine {
         this.directives = manager as DirectiveManager
         break
       case 'notifications':
-        this.notifications = manager as NotificationManager
+        this.notifications = manager as UnifiedNotificationSystem
         break
       case 'middleware':
         this.middleware = manager as MiddlewareManager

@@ -16,57 +16,57 @@ export function useNotification() {
   const engine = useEngine()
 
   const show = (options: NotificationOptions) => {
-    return engine.notifications.show(options)
+    return engine.notifications.show(options as any)
   }
 
   const success = (message: string, title?: string, duration?: number) => {
     return engine.notifications.show({
       type: 'success',
       title: title || 'Success',
-      message,
+      content: message,
       duration: duration || 3000,
-    })
+    } as any)
   }
 
   const error = (message: string, title?: string, duration?: number) => {
     return engine.notifications.show({
       type: 'error',
       title: title || 'Error',
-      message,
+      content: message,
       duration: duration || 5000,
-    })
+    } as any)
   }
 
   const warning = (message: string, title?: string, duration?: number) => {
     return engine.notifications.show({
       type: 'warning',
       title: title || 'Warning',
-      message,
+      content: message,
       duration: duration || 4000,
-    })
+    } as any)
   }
 
   const info = (message: string, title?: string, duration?: number) => {
     return engine.notifications.show({
       type: 'info',
       title: title || 'Info',
-      message,
+      content: message,
       duration: duration || 3000,
-    })
+    } as any)
   }
 
   const loading = (message: string, title?: string) => {
     return engine.notifications.show({
       type: 'info',
       title: title || 'Loading',
-      message,
+      content: message,
       duration: 0, // 不自动关闭
-      showClose: false,
-    })
+      closable: false,
+    } as any)
   }
 
   const clear = () => {
-    engine.notifications.clear()
+    ;(engine.notifications as any).hideAll?.()
   }
 
   return {

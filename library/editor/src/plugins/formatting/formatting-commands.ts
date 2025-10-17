@@ -94,6 +94,73 @@ const FormattingCommandsPlugin: Plugin = {
       }
       return true
     })
+    
+    // 替换选中文本命令
+    editor.commands.register('replaceSelection', (state: any, dispatch: any, options: { text: string }) => {
+      const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) return false
+      
+      const range = selection.getRangeAt(0)
+      if (!editor.contentElement?.contains(range.commonAncestorContainer)) {
+        return false
+      }
+      
+      // 删除选中内容
+      range.deleteContents()
+      
+      // 插入新文本
+      const textNode = document.createTextNode(options.text)
+      range.insertNode(textNode)
+      
+      // 将光标移到插入文本之后
+      range.setStartAfter(textNode)
+      range.setEndAfter(textNode)
+      selection.removeAllRanges()
+      selection.addRange(range)
+      
+      // 触发内容更新
+      editor.handleInput?.()
+      
+      return true
+    })
+    
+    // 插入文本命令
+    editor.commands.register('insertText', (state: any, dispatch: any, options: { text: string }) => {
+      const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) {
+        // 如果没有选区，在编辑器末尾插入
+        if (editor.contentElement) {
+          editor.contentElement.focus()
+          const range = document.createRange()
+          range.selectNodeContents(editor.contentElement)
+          range.collapse(false)
+          selection?.removeAllRanges()
+          selection?.addRange(range)
+        } else {
+          return false
+        }
+      }
+      
+      const range = selection.getRangeAt(0)
+      if (!editor.contentElement?.contains(range.commonAncestorContainer)) {
+        return false
+      }
+      
+      // 插入文本
+      const textNode = document.createTextNode(options.text)
+      range.insertNode(textNode)
+      
+      // 将光标移到插入文本之后
+      range.setStartAfter(textNode)
+      range.setEndAfter(textNode) 
+      selection.removeAllRanges()
+      selection.addRange(range)
+      
+      // 触发内容更新
+      editor.handleInput?.()
+      
+      return true
+    })
 
     console.log('[FormattingCommandsPlugin] All formatting commands registered')
   }

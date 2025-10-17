@@ -61,10 +61,35 @@ export class LdesignDraggable {
   /** 是否禁用右键菜单（避免干扰拖拽） */
   @Prop() disableContextMenu: boolean = true;
 
+  // 新增功能属性
+  /** 是否启用网格吸附 */
+  @Prop() enableGrid: boolean = false;
+  /** 网格大小（像素） */
+  @Prop() gridSize: number = 20;
+  /** 是否显示缩放/旋转指示器 */
+  @Prop() showIndicators: boolean = false;
+  /** 是否启用撤销/重做 */
+  @Prop() enableHistory: boolean = false;
+  /** 历史记录最大数量 */
+  @Prop() maxHistory: number = 20;
+  /** 是否显示性能监控 */
+  @Prop() showPerformance: boolean = false;
+  /** 是否启用缩略图导航 */
+  @Prop() showMinimap: boolean = false;
+  /** 缩略图导航位置 */
+  @Prop() minimapPosition: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' = 'bottom-right';
+  /** 是否启用平滑边界 */
+  @Prop() smoothBounds: boolean = true;
+  /** 边界弹性系数 */
+  @Prop() boundsElasticity: number = 0.15;
+  /** 预设视角 */
+  @Prop() presetViews?: Array<{ name: string; scale: number; rotate: number; offsetX: number; offsetY: number }>;
+
   // ── Events ────────────────────────────────────────────
   @Event() ldesignTransformChange!: EventEmitter<{ scale: number; rotate: number; offsetX: number; offsetY: number }>;
   @Event() ldesignGestureStart!: EventEmitter<void>;
   @Event() ldesignGestureEnd!: EventEmitter<void>;
+  @Event() ldesignHistoryChange!: EventEmitter<{ canUndo: boolean; canRedo: boolean }>;
 
   // ── State ─────────────────────────────────────────────
   @State() scale: number = 1;
@@ -73,6 +98,9 @@ export class LdesignDraggable {
   @State() offsetY: number = 0;
   @State() dragging: boolean = false;
   @State() gesturing: boolean = false;
+  @State() fps: number = 60;
+  @State() canUndo: boolean = false;
+  @State() canRedo: boolean = false;
 
   // 控件栏相关
   @Prop() showControls: boolean = false;
@@ -125,8 +153,27 @@ export class LdesignDraggable {
   // 旋转抖动阈值
   private rotateThresholdDeg = 5;
 
+  // 历史记录管理
+  private history: Array<{ scale: number; rotate: number; offsetX: number; offsetY: number }> = [];
+  private historyIndex: number = -1;
+  private isApplyingHistory: boolean = false;
+
+  // 性能监控
+  private frameCount = 0;
+  private lastFpsTime = 0;
+  private fpsRaf?: number;
+
+  // 触摸板手势优化
+  private lastWheelTime = 0;
+  private wheelVelocityX = 0;
+  private wheelVelocityY = 0;
+  private wheelMomentumRaf?: number;
+
   componentWillLoad() {
     this.resetInternal(this.initialScale, this.initialRotate, this.initialOffsetX, this.initialOffsetY);
+    if (this.enableHistory) {
+      this.saveHistory();
+    }
   }
 
   componentDidLoad() {
@@ -140,10 +187,15 @@ export class LdesignDraggable {
       });
       try { this.resizeObserver.observe(this.canvasEl); } catch {}
     }
+    if (this.showPerformance) {
+      this.startPerformanceMonitoring();
+    }
   }
   disconnectedCallback() {
     window.removeEventListener('resize', this.onWindowResize as any);
     try { this.resizeObserver?.disconnect(); } catch {}
+    this.stopPerformanceMonitoring();
+    this.cleanup();
   }
 
   // ── Public Methods ────────────────────────────────────
@@ -160,6 +212,19 @@ export class LdesignDraggable {
   @Method() async panTo(x: number, y: number, clamp: boolean = true) { this.panInternal(x, y, clamp); }
   @Method() async fitContain() { const s = this.computeContainScaleForCurrentRotate(); if (s) { this.scale = s; this.offsetX = 0; this.offsetY = 0; this.visualOffsetX = 0; this.visualOffsetY = 0; this.applyTransform(); this.emitChange(); } }
   @Method() async fitCover() { const s = this.computeCoverScaleForCurrentRotate(); if (s) { this.scale = s; this.offsetX = 0; this.offsetY = 0; this.visualOffsetX = 0; this.visualOffsetY = 0; this.applyTransform(); this.emitChange(); } }
+  
+  // 新增公共方法
+  @Method() async undo() { if (this.canUndo) { this.applyHistoryState(this.historyIndex - 1); } }
+  @Method() async redo() { if (this.canRedo) { this.applyHistoryState(this.historyIndex + 1); } }
+  @Method() async goToPresetView(index: number) { 
+    if (this.presetViews && this.presetViews[index]) {
+      const view = this.presetViews[index];
+      this.animateToState(view.scale, view.rotate, view.offsetX, view.offsetY);
+    }
+  }
+  @Method() async toggleGrid() { this.enableGrid = !this.enableGrid; }
+  @Method() async toggleIndicators() { this.showIndicators = !this.showIndicators; }
+  @Method() async toggleMinimap() { this.showMinimap = !this.showMinimap; }
 
   // ── Core ──────────────────────────────────────────────
   private resetInternal(s: number, r: number, x: number, y: number) {
@@ -186,7 +251,12 @@ export class LdesignDraggable {
     this.contentEl.style.transform = this.getTransformStringInternal();
   }
 
-  private emitChange() { this.ldesignTransformChange.emit({ scale: this.scale, rotate: this.rotate, offsetX: this.offsetX, offsetY: this.offsetY }); }
+  private emitChange() { 
+    this.ldesignTransformChange.emit({ scale: this.scale, rotate: this.rotate, offsetX: this.offsetX, offsetY: this.offsetY }); 
+    if (this.enableHistory && !this.isApplyingHistory) {
+      this.saveHistory();
+    }
+  }
 
   private onWheel = (e: WheelEvent) => {
     e.preventDefault();
@@ -480,8 +550,25 @@ export class LdesignDraggable {
 
   private panInternal(x: number, y: number, clamp: boolean) {
     let nx = x; let ny = y;
-    if (clamp) { const b = this.getPanBounds(); nx = Math.min(b.maxX, Math.max(b.minX, nx)); ny = Math.min(b.maxY, Math.max(b.minY, ny)); }
-    this.offsetX = nx; this.offsetY = ny; this.visualOffsetX = nx; this.visualOffsetY = ny; this.applyTransform(); this.emitChange();
+    
+    // 应用网格吸附
+    if (this.enableGrid) {
+      nx = this.snapToGrid(nx);
+      ny = this.snapToGrid(ny);
+    }
+    
+    if (clamp) { 
+      const b = this.getPanBounds(); 
+      if (this.smoothBounds) {
+        nx = this.applySmoothBounds(nx, b.minX, b.maxX);
+        ny = this.applySmoothBounds(ny, b.minY, b.maxY);
+      } else {
+        nx = Math.min(b.maxX, Math.max(b.minX, nx)); 
+        ny = Math.min(b.maxY, Math.max(b.minY, ny));
+      }
+    }
+    this.offsetX = nx; this.offsetY = ny; this.visualOffsetX = nx; this.visualOffsetY = ny; 
+    this.applyTransform(); this.emitChange();
   }
 
   private normalizeOffsetsAfterMeasure() {
@@ -584,6 +671,151 @@ export class LdesignDraggable {
 
   private stopMomentum() { this.momentumRunning = false; if (this.momentumRaf) { cancelAnimationFrame(this.momentumRaf); this.momentumRaf = undefined; } try { this.contentEl?.classList.remove('is-kinetic'); } catch {} }
 
+  // ── 新增功能方法 ────────────────────────────────────────
+  // 历史记录管理
+  private saveHistory() {
+    if (!this.enableHistory) return;
+    const state = { scale: this.scale, rotate: this.rotate, offsetX: this.offsetX, offsetY: this.offsetY };
+    
+    // 如果不是最新的历史记录，则删除后续记录
+    if (this.historyIndex < this.history.length - 1) {
+      this.history = this.history.slice(0, this.historyIndex + 1);
+    }
+    
+    // 添加新记录
+    this.history.push(state);
+    
+    // 限制历史记录数量
+    if (this.history.length > this.maxHistory) {
+      this.history = this.history.slice(-this.maxHistory);
+    }
+    
+    this.historyIndex = this.history.length - 1;
+    this.updateHistoryState();
+  }
+
+  private applyHistoryState(index: number) {
+    if (index < 0 || index >= this.history.length) return;
+    
+    const state = this.history[index];
+    this.isApplyingHistory = true;
+    this.historyIndex = index;
+    
+    this.animateToState(state.scale, state.rotate, state.offsetX, state.offsetY);
+    
+    setTimeout(() => {
+      this.isApplyingHistory = false;
+    }, 350);
+    
+    this.updateHistoryState();
+  }
+
+  private updateHistoryState() {
+    this.canUndo = this.historyIndex > 0;
+    this.canRedo = this.historyIndex < this.history.length - 1;
+    this.ldesignHistoryChange.emit({ canUndo: this.canUndo, canRedo: this.canRedo });
+  }
+
+  // 动画过渡到指定状态
+  private animateToState(targetScale: number, targetRotate: number, targetX: number, targetY: number) {
+    const duration = 300;
+    const startTime = performance.now();
+    const startScale = this.scale;
+    const startRotate = this.rotate;
+    const startX = this.offsetX;
+    const startY = this.offsetY;
+    
+    const animate = () => {
+      const elapsed = performance.now() - startTime;
+      const t = Math.min(1, elapsed / duration);
+      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      
+      this.scale = startScale + (targetScale - startScale) * eased;
+      this.rotate = startRotate + (targetRotate - startRotate) * eased;
+      this.offsetX = startX + (targetX - startX) * eased;
+      this.offsetY = startY + (targetY - startY) * eased;
+      this.visualOffsetX = this.offsetX;
+      this.visualOffsetY = this.offsetY;
+      
+      this.applyTransform();
+      
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        this.emitChange();
+      }
+    };
+    
+    animate();
+  }
+
+  // 网格吸附
+  private snapToGrid(value: number): number {
+    if (!this.enableGrid || this.gridSize <= 0) return value;
+    return Math.round(value / this.gridSize) * this.gridSize;
+  }
+
+  // 性能监控
+  private startPerformanceMonitoring() {
+    if (!this.showPerformance) return;
+    
+    const measureFPS = () => {
+      const now = performance.now();
+      this.frameCount++;
+      
+      if (now - this.lastFpsTime >= 1000) {
+        this.fps = Math.round(this.frameCount * 1000 / (now - this.lastFpsTime));
+        this.frameCount = 0;
+        this.lastFpsTime = now;
+      }
+      
+      this.fpsRaf = requestAnimationFrame(measureFPS);
+    };
+    
+    this.lastFpsTime = performance.now();
+    this.frameCount = 0;
+    measureFPS();
+  }
+
+  private stopPerformanceMonitoring() {
+    if (this.fpsRaf) {
+      cancelAnimationFrame(this.fpsRaf);
+      this.fpsRaf = undefined;
+    }
+  }
+
+  // 平滑边界处理
+  private applySmoothBounds(value: number, min: number, max: number): number {
+    if (!this.smoothBounds) return Math.min(max, Math.max(min, value));
+    
+    if (value < min) {
+      const diff = min - value;
+      return min - diff * this.boundsElasticity;
+    }
+    if (value > max) {
+      const diff = value - max;
+      return max + diff * this.boundsElasticity;
+    }
+    return value;
+  }
+
+  // 清理资源
+  private cleanup() {
+    // 清理所有动画帧
+    if (this.moveRaf) cancelAnimationFrame(this.moveRaf);
+    if (this.bounceRaf) cancelAnimationFrame(this.bounceRaf);
+    if (this.zoomRaf) cancelAnimationFrame(this.zoomRaf);
+    if (this.momentumRaf) cancelAnimationFrame(this.momentumRaf);
+    if (this.fpsRaf) cancelAnimationFrame(this.fpsRaf);
+    if (this.wheelMomentumRaf) cancelAnimationFrame(this.wheelMomentumRaf);
+    
+    // 清理定时器
+    if (this.singleTapTimer) clearTimeout(this.singleTapTimer);
+    
+    // 清理指针
+    this.activePointers.clear();
+  }
+
   // ── Render ────────────────────────────────────────────
   private onImageLoad = () => { this.updateStageMetrics(); this.measureBaseSize(); this.normalizeOffsetsAfterMeasure(); this.applyTransform(); };
 
@@ -595,6 +827,18 @@ export class LdesignDraggable {
           onDblClick={this.onDblClick} onDragStart={this.onDragStart}
           onContextMenu={this.onContextMenu} onKeyDown={this.onKeyDown} tabindex={0} role="application" aria-label={this.alt || 'draggable canvas'}
         >
+          {/* 网格背景 */}
+          {this.enableGrid && (
+            <svg class="ldesign-draggable__grid" width="100%" height="100%" aria-hidden="true">
+              <defs>
+                <pattern id="grid-pattern" width={this.gridSize} height={this.gridSize} patternUnits="userSpaceOnUse">
+                  <circle cx={this.gridSize/2} cy={this.gridSize/2} r="1" fill="currentColor" opacity="0.3" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+            </svg>
+          )}
+
           {this.src ? (
             <img ref={el => (this.imgEl = el as HTMLImageElement)} class={{ 'ldesign-draggable__content': true, 'is-dragging': this.dragging, 'is-gesturing': this.gesturing } as any}
               src={this.src} alt={this.alt || ''} draggable={false} onLoad={this.onImageLoad}
@@ -603,6 +847,62 @@ export class LdesignDraggable {
             <div class={{ 'ldesign-draggable__content': true, 'is-dragging': this.dragging, 'is-gesturing': this.gesturing } as any}
               ref={el => (this.contentEl = el as HTMLElement)} style={{ transform: this.getTransformStringInternal() }}>
               <slot />
+            </div>
+          )}
+
+          {/* 缩放/旋转指示器 */}
+          {this.showIndicators && (
+            <div class="ldesign-draggable__indicators">
+              <div class="ldesign-draggable__indicator">
+                <span class="ldesign-draggable__indicator-label">缩放</span>
+                <span class="ldesign-draggable__indicator-value">{(this.scale * 100).toFixed(0)}%</span>
+              </div>
+              {this.enableRotate && this.rotate !== 0 && (
+                <div class="ldesign-draggable__indicator">
+                  <span class="ldesign-draggable__indicator-label">旋转</span>
+                  <span class="ldesign-draggable__indicator-value">{this.rotate.toFixed(0)}°</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 性能监控 */}
+          {this.showPerformance && (
+            <div class="ldesign-draggable__performance">
+              <span>FPS: {this.fps}</span>
+            </div>
+          )}
+
+          {/* 缩略图导航 */}
+          {this.showMinimap && (
+            <div class={`ldesign-draggable__minimap ldesign-draggable__minimap--${this.minimapPosition}`}
+              onClick={this.onMinimapClick}
+            >
+              <div class="ldesign-draggable__minimap-content">
+                {this.src ? (
+                  <img src={this.src} alt="minimap" />
+                ) : (
+                  <div class="ldesign-draggable__minimap-placeholder">预览</div>
+                )}
+              </div>
+              <div class="ldesign-draggable__minimap-viewport" 
+                style={this.getMinimapViewportStyle()}
+              />
+            </div>
+          )}
+
+          {/* 预设视角 */}
+          {this.presetViews && this.presetViews.length > 0 && (
+            <div class="ldesign-draggable__presets">
+              {this.presetViews.map((view, index) => (
+                <button 
+                  class="ldesign-draggable__preset-btn" 
+                  onClick={() => this.goToPresetView(index)}
+                  title={view.name}
+                >
+                  {view.name}
+                </button>
+              ))}
             </div>
           )}
 
@@ -617,6 +917,27 @@ export class LdesignDraggable {
                   <button class="ldesign-draggable__btn" aria-label="Rotate Left" onClick={() => this.rotateBy(-90)}>⟲</button>
                   <button class="ldesign-draggable__btn" aria-label="Rotate Right" onClick={() => this.rotateBy(90)}>⟳</button>
                   <button class="ldesign-draggable__btn" aria-label="Reset" onClick={() => this.reset()}>↺</button>
+                  {this.enableHistory && [
+                    <button 
+                      class={`ldesign-draggable__btn ${!this.canUndo ? 'is-disabled' : ''}`}
+                      aria-label="Undo" 
+                      onClick={() => this.canUndo && this.undo()}
+                      aria-disabled={!this.canUndo}
+                    >↶</button>,
+                    <button 
+                      class={`ldesign-draggable__btn ${!this.canRedo ? 'is-disabled' : ''}`}
+                      aria-label="Redo" 
+                      onClick={() => this.canRedo && this.redo()}
+                      aria-disabled={!this.canRedo}
+                    >↷</button>
+                  ]}
+                  {this.enableGrid !== undefined && (
+                    <button 
+                      class={`ldesign-draggable__btn ${this.enableGrid ? 'is-active' : ''}`}
+                      aria-label="Toggle Grid" 
+                      onClick={() => this.toggleGrid()}
+                    >⊞</button>
+                  )}
                 </div>
               ) : null}
             </slot>
@@ -633,6 +954,106 @@ export class LdesignDraggable {
   }
 
   private stopEvent = (e: Event) => { e.stopPropagation(); };
+
+  private onMinimapClick = (e: MouseEvent) => {
+    if (!this.canvasEl || !this.showMinimap) return;
+    e.stopPropagation();
+    
+    const minimap = e.currentTarget as HTMLElement;
+    const rect = minimap.getBoundingClientRect();
+    const clickX = (e.clientX - rect.left) / rect.width;
+    const clickY = (e.clientY - rect.top) / rect.height;
+    
+    // 获取舞台和内容尺寸
+    const stageW = this.stageWidth || (this.canvasEl?.getBoundingClientRect().width || 0);
+    const stageH = this.stageHeight || (this.canvasEl?.getBoundingClientRect().height || 0);
+    const contentW = this.baseWidth * this.scale;
+    const contentH = this.baseHeight * this.scale;
+    
+    // 计算目标偏移
+    // 将点击位置从 0-1 映射到实际偏移范围
+    let targetX = 0;
+    let targetY = 0;
+    
+    if (contentW > stageW) {
+      const maxOffsetX = (contentW - stageW) / 2;
+      // 点击位置 0.5 对应偏移 0
+      // 点击位置 0 对应最大负偏移（显示左边）
+      // 点击位置 1 对应最大正偏移（显示右边）
+      targetX = -(clickX - 0.5) * 2 * maxOffsetX;
+    }
+    
+    if (contentH > stageH) {
+      const maxOffsetY = (contentH - stageH) / 2;
+      targetY = -(clickY - 0.5) * 2 * maxOffsetY;
+    }
+    
+    // 应用边界限制
+    const b = this.getPanBounds();
+    const finalX = Math.min(b.maxX, Math.max(b.minX, targetX));
+    const finalY = Math.min(b.maxY, Math.max(b.minY, targetY));
+    
+    // 动画过渡到目标位置
+    this.animateToState(this.scale, this.rotate, finalX, finalY);
+  };
+
+  private getViewportWidth(): number {
+    const sw = this.stageWidth || (this.canvasEl?.getBoundingClientRect().width || 0);
+    return Math.max(sw, this.baseWidth * this.scale);
+  }
+
+  private getViewportHeight(): number {
+    const sh = this.stageHeight || (this.canvasEl?.getBoundingClientRect().height || 0);
+    return Math.max(sh, this.baseWidth * this.scale);
+  }
+
+  private getMinimapViewportStyle(): any {
+    // 获取舞台和内容尺寸
+    const stageW = this.stageWidth || (this.canvasEl?.getBoundingClientRect().width || 0);
+    const stageH = this.stageHeight || (this.canvasEl?.getBoundingClientRect().height || 0);
+    
+    if (!stageW || !stageH || !this.baseWidth || !this.baseHeight) {
+      return {
+        display: 'none'
+      };
+    }
+
+    // 计算缩放后的内容尺寸
+    const contentW = this.baseWidth * this.scale;
+    const contentH = this.baseHeight * this.scale;
+    
+    // 计算视口框的尺寸（相对于缩略图的百分比）
+    const viewportW = Math.min(100, (stageW / contentW) * 100);
+    const viewportH = Math.min(100, (stageH / contentH) * 100);
+    
+    // 计算视口框的位置
+    // 当内容小于舞台时，居中显示
+    // 当内容大于舞台时，根据偏移计算位置
+    let left = 50;
+    let top = 50;
+    
+    if (contentW > stageW) {
+      // 计算可拖动范围
+      const maxOffsetX = (contentW - stageW) / 2;
+      // 将偏移映射到百分比（-50% 到 50%）
+      const offsetPercentX = (this.offsetX / maxOffsetX) * ((100 - viewportW) / 2);
+      left = 50 - offsetPercentX;
+    }
+    
+    if (contentH > stageH) {
+      const maxOffsetY = (contentH - stageH) / 2;
+      const offsetPercentY = (this.offsetY / maxOffsetY) * ((100 - viewportH) / 2);
+      top = 50 - offsetPercentY;
+    }
+    
+    return {
+      left: `${left}%`,
+      top: `${top}%`,
+      width: `${viewportW}%`,
+      height: `${viewportH}%`,
+      transform: `translate(-50%, -50%) rotate(${-this.rotate}deg)`
+    };
+  }
 
   componentDidRender() {
     // 首次渲染时，若使用 src，contentEl 指向 img；否则使用 div 容器

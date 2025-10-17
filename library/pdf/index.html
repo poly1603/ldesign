@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Viewer - Examples</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 3rem;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #718096;
+            text-align: center;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .demo-card {
+            background: linear-gradient(135deg, #f6f8fb 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .demo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .demo-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .demo-title {
+            font-size: 1.25rem;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .demo-desc {
+            color: #718096;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .features {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .features h2 {
+            color: #2d3748;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4a5568;
+        }
+
+        .feature-icon {
+            color: #48bb78;
+            font-size: 1.25rem;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+            color: #718096;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 2rem 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📄 Modern PDF Viewer</h1>
+        <p class="subtitle">功能强大、性能卓越的PDF查看器解决方案</p>
+
+        <div class="demo-grid">
+            <a href="dist/pdf-viewer-standalone.html" class="demo-card">
+                <div class="demo-icon">🚀</div>
+                <div class="demo-title">独立版本</div>
+                <div class="demo-desc">完整功能的独立PDF查看器，无需任何依赖</div>
+            </a>
+
+            <a href="pdf-viewer-optimized.html" class="demo-card">
+                <div class="demo-icon">⚡</div>
+                <div class="demo-title">优化版</div>
+                <div class="demo-desc">性能优化版本，加载快速，体验流畅</div>
+            </a>
+
+            <a href="pdf-text-copy-fixed.html" class="demo-card">
+                <div class="demo-icon">📝</div>
+                <div class="demo-title">文本选择版</div>
+                <div class="demo-desc">支持文本选择和复制的增强版本</div>
+            </a>
+        </div>
+
+        <div class="features">
+            <h2>✨ 核心功能</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <span class="feature-icon">✅</span>
+                    <span>页面导航与跳转</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✅</span>
+                    <span>缩放控制</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✅</span>
+                    <span>页面旋转</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✅</span>
+                    <span>文本选择与复制</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✅</span>
+                    <span>缩略图预览</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✅</span>
+                    <span>拖放上传</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✅</span>
+                    <span>键盘快捷键</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✅</span>
+                    <span>响应式设计</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✅</span>
+                    <span>打印与下载</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✅</span>
+                    <span>暗色主题</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✅</span>
+                    <span>进度指示</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✅</span>
+                    <span>无闪烁加载</span>
+                </div>
+            </div>
+        </div>
+
+        <h2 style="color: #2d3748; margin-bottom: 1rem;">快速集成</h2>
+        
+        <div class="code-block">
+            <pre>&lt;!-- 方式1: 使用CDN --&gt;
+&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"&gt;&lt;/script&gt;
+
+&lt;!-- 方式2: 直接嵌入iframe --&gt;
+&lt;iframe src="dist/pdf-viewer-standalone.html" width="100%" height="600"&gt;&lt;/iframe&gt;
+
+&lt;!-- 方式3: 下载独立版本 --&gt;
+&lt;a href="dist/pdf-viewer-standalone.html" download&gt;下载独立版本&lt;/a&gt;</pre>
+        </div>
+
+        <div class="btn-group">
+            <a href="dist/pdf-viewer-standalone.html" class="btn">
+                <span>🚀</span>
+                <span>立即体验</span>
+            </a>
+            <a href="https://github.com/yourusername/pdf-viewer" class="btn btn-secondary">
+                <span>📦</span>
+                <span>查看源码</span>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>基于 PDF.js | MIT License | 2024</p>
+        </div>
+    </div>
+</body>
+</html>

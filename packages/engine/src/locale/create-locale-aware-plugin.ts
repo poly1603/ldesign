@@ -7,7 +7,7 @@
 
 import type { App } from 'vue'
 import type { Engine } from '../types/engine'
-import type { Plugin } from '../types/plugin'
+import type { Plugin, PluginContext } from '../types/plugin'
 import type { LocaleAwarePlugin } from './locale-manager'
 
 /**
@@ -81,29 +81,33 @@ export function createLocaleAwarePlugin<T extends LocaleAwarePlugin>(
     name: `${name}-locale-aware`,
     version,
 
-    async install(engine: Engine, app: App) {
-      // 1. 安装原始插件
+    async install(context: PluginContext<Engine>) {
+      const { engine } = context
+      // 1. 安装原始插件  
+      const app = (engine as any).app as App
       if (typeof (plugin as any).install === 'function') {
         (plugin as any).install(app)
-        engine.logger.debug(`Plugin "${name}" installed`, { syncLocale })
+        (engine as any).logger?.debug(`Plugin "${name}" installed`, { syncLocale })
       }
 
       // 2. 注册到 LocaleManager（如果启用同步且 LocaleManager 存在）
       // @deprecated - 保留用于兼容旧代码
-      if (syncLocale && engine.localeManager) {
-        engine.localeManager.register(name, plugin)
-        engine.logger.debug(`Plugin "${name}" registered to LocaleManager`)
+      if (syncLocale && (engine as any).localeManager) {
+        (engine as any).localeManager.register(name, plugin);
+        (engine as any).logger?.debug(`Plugin "${name}" registered to LocaleManager`)
       }
 
       // 3. 存储插件实例到 engine.state（方便其他地方访问）
-      engine.state.set(`plugins.${name}`, plugin)
+      if ((engine as any).state) {
+        (engine as any).state.set(`plugins.${name}`, plugin)
+      }
 
       // 4. 调用自定义安装后钩子
       if (afterInstall) {
         await afterInstall(engine, app)
       }
 
-      engine.logger.info(`Locale-aware plugin "${name}" installed successfully`)
+      (engine as any).logger?.info(`Locale-aware plugin "${name}" installed successfully`)
     }
   }
 }

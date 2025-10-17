@@ -131,12 +131,7 @@ function getVersion(): string {
  */
 function showWelcome(): void {
   const version = getVersion()
-  
-  )
-  )
-  
-  )
-  
+  console.log(`\n@ldesign/builder v${version}\n`)
 }
 
 /**

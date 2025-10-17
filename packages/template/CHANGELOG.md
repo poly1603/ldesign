@@ -47,7 +47,89 @@
 - **控制台输出**: 优化控制台输出，只在调试模式下显示
 - **Vue 模板语法**: 修复 Vue 模板中的 Less 注释语法问题
 
-## [0.2.0] - 2024-01-XX
+## [0.3.0] - 2025-10-17
+
+### 🆕 新增功能
+
+#### Vue 指令系统
+
+- **v-template 指令**: 新增 Vue 指令快速渲染模板
+  - 基本语法: `v-template="{ category, device, name }"`
+  - 简洁语法: `v-template:login.desktop.default`
+  - 动态配置: `v-template:login="{ device, name }"`
+  - 自定义加载、错误处理和过渡动画
+  - 自动样式注入
+
+#### 高级 Hooks 系统
+
+- **useTemplateLifecycle**: 完整的模板生命周期管理
+  - onBeforeLoad - 加载前钩子
+  - onLoaded - 加载完成钩子
+  - onBeforeUnload - 卸载前钩子
+  - onError - 错误处理钩子
+  - onRetry - 重试钩子
+  - onTransition - 切换过渡钩子
+
+- **useTemplatePrefetch**: 智能预加载系统
+  - 多种预加载策略: eager, lazy, smart, idle
+  - 批量预加载支持
+  - 并发控制和延迟配置
+  - 相关模板预加载
+
+- **useTemplateNavigation**: 模板导航历史管理
+  - 前进/后退导航
+  - 历史记录管理
+  - 导航状态跟踪
+
+- **useTemplatePerformance**: 性能监控
+  - 加载时间测量
+  - 平均加载时间统计
+  - 性能指标收集
+
+#### 增强的错误处理
+
+- **TemplateError 类**: 详细的错误信息
+  - 错误类型分类
+  - 用户友好的错误消息
+  - 恢复建议
+  - 错误上下文信息
+
+- **ErrorRecoveryManager**: 自动错误恢复
+  - 可配置的恢复策略
+  - 重试机制（带指数退避）
+  - 网络错误自动重试
+  - 降级到默认模板
+
+- **Error Boundaries**: 错误边界组件
+  - 自动错误捕获
+  - 自定义错误 UI
+  - 恢复操作支持
+
+### 🔧 改进
+
+- **代码清理**: 
+  - 移除冗余的文档文件
+  - 清理调试用的 console.log 语句
+  - 优化导入语句
+  - 改进 TypeScript 类型定义
+
+- **构建优化**:
+  - 减小打包体积
+  - 优化树摇（Tree-shaking）
+  - 改进代码分割
+
+- **开发体验**:
+  - 更好的类型推导
+  - 更清晰的错误提示
+  - 更完善的文档
+
+### 🐛 修复
+
+- 修复了设备检测在 SSR 环境下的问题
+- 修复了模板缓存清理不完全的问题
+- 修复了并发加载时的竞态条件
+
+## [0.2.0] - 2024-09-30
 
 ### 🆕 新增功能
 

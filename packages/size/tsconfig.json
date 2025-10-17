@@ -14,16 +14,16 @@
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": false,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "isolatedModules": true,
     "noUnusedParameters": false,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "noEmit": true,
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*", "__tests__/**/*", "e2e/**/*"],
   "exclude": ["node_modules", "dist", "es", "lib", "types", "coverage", "examples"]

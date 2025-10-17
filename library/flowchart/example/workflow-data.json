@@ -1,0 +1,211 @@
+{
+  "processDefinitionId": "expense_reimbursement_v1",
+  "processDefinitionKey": "expense_reimbursement",
+  "processDefinitionName": "费用报销审批流程",
+  "version": 1,
+  "category": "财务管理",
+  "formKey": "expense_reimbursement_form",
+  "properties": {
+    "maxAmount": 50000,
+    "currency": "CNY",
+    "department": "all"
+  },
+  "startNodeId": "start_event",
+  "nodes": [
+    {
+      "nodeId": "start_event",
+      "nodeName": "流程开始",
+      "nodeType": "start",
+      "next": "task_submit"
+    },
+    {
+      "nodeId": "task_submit",
+      "nodeName": "提交申请",
+      "nodeType": "process",
+      "assignee": "${applicant}",
+      "formFields": [
+        {
+          "fieldId": "amount",
+          "fieldName": "报销金额",
+          "fieldType": "number",
+          "required": true,
+          "validation": "min:0,max:50000"
+        },
+        {
+          "fieldId": "expenseType",
+          "fieldName": "费用类型",
+          "fieldType": "select",
+          "options": ["差旅费", "招待费", "办公费", "其他"],
+          "required": true
+        },
+        {
+          "fieldId": "description",
+          "fieldName": "费用说明",
+          "fieldType": "textarea",
+          "required": true
+        },
+        {
+          "fieldId": "invoices",
+          "fieldName": "发票附件",
+          "fieldType": "file",
+          "required": true,
+          "accept": ".pdf,.jpg,.png"
+        }
+      ],
+      "next": "task_dept_approval"
+    },
+    {
+      "nodeId": "task_dept_approval",
+      "nodeName": "部门主管审批",
+      "nodeType": "approval",
+      "assignee": "${directLeader}",
+      "candidateGroups": ["dept_manager"],
+      "dueDate": "P2D",
+      "actions": [
+        {
+          "action": "approve",
+          "actionName": "同意",
+          "next": "gateway_amount"
+        },
+        {
+          "action": "reject",
+          "actionName": "拒绝",
+          "next": "end_rejected"
+        },
+        {
+          "action": "return",
+          "actionName": "退回修改",
+          "next": "task_submit"
+        }
+      ],
+      "listeners": [
+        {
+          "event": "create",
+          "type": "notification",
+          "to": ["${assignee}"]
+        },
+        {
+          "event": "complete",
+          "type": "notification",
+          "to": ["${applicant}"]
+        }
+      ]
+    },
+    {
+      "nodeId": "gateway_amount",
+      "nodeName": "金额判断",
+      "nodeType": "condition",
+      "conditions": [
+        {
+          "conditionName": "小额报销",
+          "expression": "${amount <= 5000}",
+          "next": "task_finance_review"
+        },
+        {
+          "conditionName": "大额报销",
+          "expression": "${amount > 5000}",
+          "next": "task_gm_approval"
+        }
+      ]
+    },
+    {
+      "nodeId": "task_finance_review",
+      "nodeName": "财务审核",
+      "nodeType": "approval",
+      "candidateGroups": ["finance_dept"],
+      "dueDate": "P3D",
+      "checkList": [
+        "发票真实性核验",
+        "金额计算准确性",
+        "预算额度检查",
+        "报销政策合规性"
+      ],
+      "actions": [
+        {
+          "action": "approve",
+          "actionName": "审核通过",
+          "next": "task_payment"
+        },
+        {
+          "action": "reject",
+          "actionName": "审核不通过",
+          "next": "end_rejected"
+        }
+      ]
+    },
+    {
+      "nodeId": "task_gm_approval",
+      "nodeName": "总经理审批",
+      "nodeType": "approval",
+      "candidateGroups": ["general_manager"],
+      "assignee": "${generalManager}",
+      "dueDate": "P5D",
+      "priority": "high",
+      "actions": [
+        {
+          "action": "approve",
+          "actionName": "批准",
+          "next": "task_finance_review"
+        },
+        {
+          "action": "reject",
+          "actionName": "不批准",
+          "next": "end_rejected"
+        }
+      ]
+    },
+    {
+      "nodeId": "task_payment",
+      "nodeName": "财务付款",
+      "nodeType": "process",
+      "candidateGroups": ["finance_cashier"],
+      "dueDate": "P5D",
+      "paymentConfig": {
+        "methods": ["bank_transfer", "cash"],
+        "requireConfirmation": true
+      },
+      "next": "task_notify"
+    },
+    {
+      "nodeId": "task_notify",
+      "nodeName": "完成通知",
+      "nodeType": "process",
+      "async": true,
+      "serviceTask": "notificationService",
+      "parameters": {
+        "recipients": ["${applicant}", "${allApprovers}"],
+        "template": "reimbursement_completed",
+        "channels": ["email", "system_message"]
+      },
+      "next": "end_success"
+    },
+    {
+      "nodeId": "end_success",
+      "nodeName": "流程完成",
+      "nodeType": "end",
+      "endType": "success"
+    },
+    {
+      "nodeId": "end_rejected",
+      "nodeName": "审批拒绝",
+      "nodeType": "end",
+      "endType": "rejected",
+      "listeners": [
+        {
+          "event": "end",
+          "type": "notification",
+          "to": ["${applicant}"],
+          "template": "reimbursement_rejected"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "createdAt": "2024-01-15T08:00:00Z",
+    "createdBy": "system_admin",
+    "modifiedAt": "2024-01-20T15:30:00Z",
+    "modifiedBy": "finance_manager",
+    "status": "active",
+    "deploymentId": "deployment_20240115_001"
+  }
+}

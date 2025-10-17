@@ -49,13 +49,7 @@ const systemPreference = ref<'light' | 'dark'>('light')
 // 使用标准的 'locale' key
 const appLocale = inject<any>('locale', null)
 
-// 调试日志
-if (import.meta.env.DEV) {
-  console.log('[VueThemeModeSwitcher] locale injected:', appLocale)
-  if (appLocale) {
-    console.log('[VueThemeModeSwitcher] locale.value:', appLocale.value)
-  }
-}
+// 调试日志已禁用以保持控制台干净
 
 const currentLocale = computed(() => {
   if (appLocale && appLocale.value) {
@@ -68,9 +62,7 @@ const locale = computed(() => getLocale(currentLocale.value))
 
 // 监听语言变化
 watch(currentLocale, (newLocale) => {
-  if (import.meta.env.DEV) {
-    console.log('[VueThemeModeSwitcher] locale changed to:', newLocale)
-  }
+  // 响应式更新，无需日志
 })
 
 const modes = computed(() => [

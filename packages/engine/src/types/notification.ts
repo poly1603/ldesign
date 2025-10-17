@@ -44,10 +44,10 @@ export interface NotificationProgress {
 
 // 通知选项
 export interface NotificationOptions {
-  id?: string
-  title?: string
-  message: string
   type?: NotificationType
+  title?: string
+  content?: string
+  message?: string
   position?: NotificationPosition
   duration?: number
   animation?: NotificationAnimation

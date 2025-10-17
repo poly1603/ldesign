@@ -1,180 +1,178 @@
-import  type  {  Graph,  Node,  Edge  }  from  '@antv/x6'
-
 /**
-  *  节点类型
-  */
-export  enum  NodeType  {
-    /**  开始节点  */
-    Start  =  'start',
-    /**  审批节点  */
-    Approval  =  'approval',
-    /**  条件节点  */
-    Condition  =  'condition',
-    /**  抄送节点  */
-    CC  =  'cc',
-    /**  并行节点  */
-    Parallel  =  'parallel',
-    /**  结束节点  */
-    End  =  'end'
+ * 节点类型枚举
+ */
+export enum NodeType {
+  START = 'start',           // 开始节点
+  END = 'end',               // 结束节点
+  APPROVAL = 'approval',     // 审批节点
+  CONDITION = 'condition',   // 条件节点
+  PROCESS = 'process',       // 处理节点
+  PARALLEL = 'parallel',     // 并行节点
+  MERGE = 'merge'            // 合并节点
 }
 
 /**
-  *  节点数据接口
-  */
-export  interface  FlowNode  {
-    /**  节点ID  */
-    id:  string
-    /**  节点类型  */
-    type:  NodeType  |  string
-    /**  X坐标  */
-    x:  number
-    /**  Y坐标  */
-    y:  number
-    /**  节点标签  */
-    label:  string
-    /**  节点宽度  */
-    width?:  number
-    /**  节点高度  */
-    height?:  number
-    /**  扩展数据  */
-    data?:  Record<string,  any>
+ * 节点状态
+ */
+export enum NodeStatus {
+  PENDING = 'pending',       // 待处理
+  PROCESSING = 'processing', // 处理中
+  APPROVED = 'approved',     // 已通过
+  REJECTED = 'rejected',     // 已拒绝
+  COMPLETED = 'completed'    // 已完成
 }
 
 /**
-  *  边数据接口
-  */
-export  interface  FlowEdge  {
-    /**  边ID  */
-    id?:  string
-    /**  源节点ID  */
-    source:  string
-    /**  目标节点ID  */
-    target:  string
-    /**  边标签  */
-    label?:  string
-    /**  扩展数据  */
-    data?:  Record<string,  any>
+ * 节点位置
+ */
+export interface Position {
+  x: number;
+  y: number;
 }
 
 /**
-  *  流程图数据
-  */
-export  interface  FlowData  {
-    /**  节点列表  */
-    nodes:  FlowNode[]
-    /**  边列表  */
-    edges:  FlowEdge[]
+ * 节点尺寸
+ */
+export interface Size {
+  width: number;
+  height: number;
 }
 
 /**
-  *  编辑器配置
-  */
-export  interface  EditorOptions  {
-    /**  容器元素  */
-    container:  HTMLElement  |  string
-    /**  是否只读模式  */
-    readonly?:  boolean
-    /**  是否显示网格  */
-    grid?:  boolean
-    /**  网格大小  */
-    gridSize?:  number
-    /**  是否启用小地图  */
-    minimap?:  boolean
-    /**  小地图配置  */
-    minimapOptions?:  MinimapOptions
-    /**  是否启用工具栏  */
-    toolbar?:  boolean  |  ToolbarOptions
-    /**  是否启用对齐线  */
-    snapline?:  boolean
-    /**  是否启用键盘快捷键  */
-    keyboard?:  boolean
-    /**  是否启用撤销重做  */
-    history?:  boolean
-    /**  是否启用剪贴板  */
-    clipboard?:  boolean
-    /**  是否启用选择  */
-    selecting?:  boolean
-    /**  初始数据  */
-    data?:  FlowData
-    /**  画布宽度  */
-    width?:  number
-    /**  画布高度  */
-    height?:  number
+ * 节点数据接口
+ */
+export interface NodeData {
+  id: string;
+  type: NodeType;
+  label: string;
+  position: Position;
+  status?: NodeStatus;
+  data?: Record<string, any>;
+  style?: NodeStyle;
+  manualPosition?: boolean;  // 是否手动设置位置（跳过自动布局）
 }
 
 /**
-  *  小地图配置
-  */
-export  interface  MinimapOptions  {
-    enabled?:  boolean
-    container?:  HTMLElement
-    width?:  number
-    height?:  number
-    padding?:  number
+ * 边数据接口
+ */
+export interface EdgeData {
+  id: string;
+  source: string;
+  target: string;
+  label?: string;
+  condition?: string;
+  style?: EdgeStyle;
 }
 
 /**
-  *  事件回调类型
-  */
-export  interface  EditorEvents  {
-    /**  数据变化  */
-    change:  (data:  FlowData)  =>  void
-    /**  节点点击  */
-    'node:click':  (node:  Node)  =>  void
-    /**  节点双击  */
-    'node:dblclick':  (node:  Node)  =>  void
-    /**  节点选中  */
-    'node:selected':  (node:  Node)  =>  void
-    /**  边点击  */
-    'edge:click':  (edge:  Edge)  =>  void
-    /**  边双击  */
-    'edge:dblclick':  (edge:  Edge)  =>  void
-    /**  画布点击  */
-    'blank:click':  ()  =>  void
-    /**  历史变化  */
-    'history:change':  ()  =>  void
-    /**  缩放变化  */
-    'scale:change':  ()  =>  void
+ * 节点样式
+ */
+export interface NodeStyle {
+  backgroundColor?: string;
+  borderColor?: string;
+  borderWidth?: number;
+  textColor?: string;
+  fontSize?: number;
+  padding?: number;
+  borderRadius?: number;
 }
 
 /**
-  *  节点配置
-  */
-export  interface  NodeConfig  {
-    type:  string
-    width:  number
-    height:  number
-    label:  string
-    icon?:  string
-    color?:  string
+ * 连线类型
+ */
+export enum EdgeType {
+  STRAIGHT = 'straight',       // 直线
+  BEZIER = 'bezier',           // 贝塞尔曲线
+  SMOOTH = 'smooth',           // 平滑曲线
+  POLYLINE = 'polyline',       // 折线
+  STEP = 'step',               // 阶梯线
+  ORTHOGONAL = 'orthogonal'    // 正交线（直角折线）
 }
 
 /**
-  *  工具栏配置
-  */
-export  interface  ToolbarOptions  {
-    /**  工具栏容器  */
-    container?:  HTMLElement  |  string
-    /**  工具栏位置  */
-    position?:  'top'  |  'bottom'  |  'left'  |  'right'
-    /**  自定义工具  */
-    tools?:  ToolbarTool[]
+ * 连线动画类型
+ */
+export enum EdgeAnimationType {
+  NONE = 'none',               // 无动画
+  FLOW = 'flow',               // 流动效果
+  DASH = 'dash',               // 虚线流动
+  PULSE = 'pulse',             // 脉冲效果
+  GLOW = 'glow'                // 发光效果
 }
 
 /**
-  *  工具栏工具配置
-  */
-export  interface  ToolbarTool  {
-    /**  工具名称  */
-    name:  string
-    /**  工具图标  */
-    icon:  string
-    /**  工具提示  */
-    title:  string
-    /**  点击动作  */
-    action:  (editor:  any)  =>  void
-    /**  是否为分隔符  */
-    separator?:  boolean
-    /**  是否可见  */
-    visible?:  boolean  |  ((editor:  any)  =>  boolean)
+ * 边样式
+ */
+export interface EdgeStyle {
+  strokeColor?: string;
+  strokeWidth?: number;
+  strokeDasharray?: string;
+  arrowSize?: number;
+  type?: EdgeType;                      // 连线类型
+  animated?: boolean;                   // 是否启用动画
+  animationType?: EdgeAnimationType;    // 动画类型
+  animationDuration?: number;           // 动画持续时间（秒）
+  radius?: number;                      // 折线圆角半径
+  offset?: number;                      // 连线偏移量
 }
+
+/**
+ * 编辑器模式
+ */
+export enum EditorMode {
+  READONLY = 'readonly',   // 只读模式
+  EDIT = 'edit'           // 编辑模式
+}
+
+/**
+ * 流程图配置
+ */
+export interface FlowChartConfig {
+  container: HTMLElement | string;
+  width?: number;
+  height?: number;
+  nodeGap?: number;
+  levelGap?: number;
+  enableDrag?: boolean;          // 已废弃，使用 enablePan
+  enableZoom?: boolean;           // 滚轮缩放
+  enablePan?: boolean;            // 拖拽画布
+  enableNodeDrag?: boolean;       // 拖动节点
+  autoLayout?: boolean;
+  mode?: EditorMode;              // 编辑器模式
+  onNodeClick?: (node: NodeData) => void;
+  onEdgeClick?: (edge: EdgeData) => void;
+  onNodeAdd?: (node: NodeData) => void;
+  onNodeDelete?: (nodeId: string) => void;
+  onEdgeAdd?: (edge: EdgeData) => void;
+  onEdgeDelete?: (edgeId: string) => void;
+  onModeChange?: (mode: EditorMode) => void;
+}
+
+/**
+ * 物料项配置
+ */
+export interface MaterialItem {
+  type: NodeType;
+  label: string;
+  icon?: string;
+  description?: string;
+}
+
+/**
+ * 布局配置
+ */
+export interface LayoutConfig {
+  direction: 'TB' | 'LR'; // TB: 从上到下, LR: 从左到右
+  nodeGap: number;        // 同级节点间距
+  levelGap: number;       // 层级间距
+}
+
+/**
+ * 渲染配置
+ */
+export interface RenderConfig {
+  nodeDefaultSize: Size;
+  nodeStyles: Record<NodeType, NodeStyle>;
+  edgeDefaultStyle: EdgeStyle;
+}
+

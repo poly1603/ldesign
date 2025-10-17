@@ -220,7 +220,6 @@ export function getDefaultMinifyConfig(): MinifyOptions {
       mangle: false,
       compress: {
         drop_console: false,
-        drop_: true,
         dead_code: true,
         inline: false
       },

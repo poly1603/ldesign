@@ -29,7 +29,7 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({})
 
   const {
-    currentTheme,
+    // currentTheme,
     presets,
     primaryColor,
     themeName,

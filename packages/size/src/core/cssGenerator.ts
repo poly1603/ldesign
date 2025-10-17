@@ -4,7 +4,7 @@
  * Generates CSS custom properties from size schemes
  */
 
-import type { SizeScheme, CSSVariableOptions, GeneratedCSS } from '../types';
+import type { CSSVariableOptions, GeneratedCSS, SizeScheme } from '../types';
 import { getCSSVarName } from '../utils';
 
 /**

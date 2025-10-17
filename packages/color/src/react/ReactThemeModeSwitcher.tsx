@@ -92,6 +92,7 @@ export const ReactThemeModeSwitcher: React.FC<ReactThemeModeSwitcherProps> = ({
         document.removeEventListener('click', handleClickOutside)
       }
     }
+    return undefined
   }, [isOpen])
 
   // 监听系统主题变化
@@ -159,7 +160,7 @@ export const ReactThemeModeSwitcher: React.FC<ReactThemeModeSwitcherProps> = ({
         </div>
       )}
       
-      <style jsx>{`
+      <style>{`
         .theme-mode-switcher {
           position: relative;
         }

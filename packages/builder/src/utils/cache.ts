@@ -4,6 +4,7 @@
 
 import { createHash } from 'crypto'
 import path from 'path'
+import fs from 'fs-extra'
 
 interface CacheEntry {
   key: string
@@ -198,7 +199,7 @@ export class BuildCache {
     try {
       const files = await fs.readdir(this.cacheDir)
       await Promise.all(
-        files.map(file => fs.unlink(path.join(this.cacheDir, file)))
+        files.map((file: string) => fs.unlink(path.join(this.cacheDir, file)))
       )
     } catch {
       // 目录可能不存在
@@ -254,7 +255,7 @@ export class TypeScriptCache extends BuildCache {
     if (!content) {
       content = await fs.readFile(filePath, 'utf-8')
     }
-    const hash = createHash('sha256').update(content).digest('hex')
+    const hash = createHash('sha256').update(content || '').digest('hex')
     return `${filePath}:${hash}`
   }
 

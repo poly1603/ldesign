@@ -1,45 +1,44 @@
 /**
- * Dialog弹窗系统类型定义
- * 从Dialog模块导出的类型定义
+ * Dialog弹窗类型定义
  */
 
-// 导出Dialog管理器配置类型
-export type { DialogManagerConfig } from '../dialog/dialog-manager'
+export interface DialogOptions {
+  title?: string
+  content?: string
+  width?: string | number
+  height?: string | number
+  modal?: boolean
+  closable?: boolean
+  maskClosable?: boolean
+  confirmText?: string
+  cancelText?: string
+  onConfirm?: () => void | Promise<void>
+  onCancel?: () => void
+  footer?: boolean
+  className?: string
+  zIndex?: number
+}
 
-// 重新导出Dialog系统的所有类型
-export type {
-  DialogAccessibility,
-  DialogAnimation,
-  DialogAnimationController,
-  DialogAPI,
-  DialogButtonConfig,
-  DialogButtonType,
-  DialogConfig,
-  DialogConfigBuilder,
-  DialogDragController,
-  DialogErrorHandler,
-  DialogEvents,
-  DialogFactory,
-  DialogFilter,
-  DialogFocusManager,
-  DialogGlobalConfig,
-  DialogInstance,
-  DialogKeyboardController,
-  DialogLifecycleHooks,
-  DialogMiddleware,
-  DialogPerformance,
-  DialogPlugin,
-  DialogPosition,
-  DialogPositionManager,
-  DialogQueue,
-  DialogRenderer,
-  DialogResizeController,
-  DialogService,
-  DialogSize,
-  DialogStats,
-  DialogTheme,
-  DialogTransformer,
-  DialogType,
-  DialogValidator,
-  DialogZIndexManager,
-} from '../dialog/types'
+export interface DialogInstance {
+  open(): void
+  close(): void
+  update(options: Partial<DialogOptions>): void
+  destroy(): void
+}
+
+export interface DialogManager {
+  open(options: DialogOptions): DialogInstance
+  confirm(message: string, title?: string): Promise<boolean>
+  alert(message: string, title?: string): Promise<void>
+  prompt(message: string, title?: string, defaultValue?: string): Promise<string | null>
+  closeAll(): void
+}
+
+export type DialogType = 'info' | 'success' | 'warning' | 'error' | 'confirm'
+
+export interface DialogConfig {
+  type?: DialogType
+  icon?: string
+  duration?: number
+  position?: 'center' | 'top' | 'bottom'
+}

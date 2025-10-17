@@ -33,9 +33,18 @@ import {
 // ==================== 核心组合式 API ====================
 
 /**
- * 获取路由器实例
+ * 获取路由器实例（增强版）
  */
-export function useRouter(): UseRouterReturn {
+export function useRouter(): UseRouterReturn & {
+  // 新增的便捷方法
+  isNavigating: ComputedRef<boolean>
+  canGoBack: ComputedRef<boolean>
+  canGoForward: ComputedRef<boolean>
+  routeHistory: ComputedRef<RouteLocationNormalized[]>
+  goHome: () => Promise<void>
+  reload: () => Promise<void>
+  prefetch: (to: RouteLocationRaw) => Promise<void>
+} {
   const router = inject<Router>(ROUTER_INJECTION_SYMBOL)
 
   if (!router) {
@@ -44,13 +53,118 @@ export function useRouter(): UseRouterReturn {
     )
   }
 
-  return router as UseRouterReturn
+  // 导航状态跟踪
+  const isNavigating = ref(false)
+  const routeHistory = ref<RouteLocationNormalized[]>([])
+
+  // 增强的路由器对象 - 使用 Object.create 保留原型链
+  const enhancedRouter = Object.create(router) as any
+
+  // 添加增强属性
+  Object.assign(enhancedRouter, {
+    // 导航状态
+    isNavigating: computed(() => isNavigating.value),
+
+    // 历史导航能力
+    canGoBack: computed(() => window.history.length > 1),
+    canGoForward: computed(() => {
+      // 浏览器没有直接的 API 判断是否可以前进
+      // 这里简单返回 false，实际项目中可能需要自己维护历史栈
+      return false
+    }),
+
+    // 路由历史
+    routeHistory: computed(() => routeHistory.value),
+
+    // 便捷方法：回到首页
+    goHome: async () => {
+      isNavigating.value = true
+      try {
+        await router.push('/')
+      } finally {
+        isNavigating.value = false
+      }
+    },
+
+    // 便捷方法：刷新当前路由
+    reload: async () => {
+      const currentRoute = router.currentRoute.value
+      isNavigating.value = true
+      try {
+        await router.replace({ path: '/redirect', query: { to: currentRoute.fullPath } })
+        await router.replace(currentRoute.fullPath)
+      } finally {
+        isNavigating.value = false
+      }
+    },
+
+    // 预取路由
+    prefetch: async (to: RouteLocationRaw) => {
+      try {
+        const route = router.resolve(to)
+        const matched = route.matched[route.matched.length - 1]
+        const component = matched?.components?.default
+
+        if (component && typeof component === 'function') {
+          await (component as () => Promise<any>)()
+        }
+      } catch (error) {
+        console.warn('路由预取失败:', error)
+      }
+    },
+  })
+
+  // 包装原始的 push 和 replace 方法以跟踪导航状态
+  const originalPush = router.push.bind(router)
+  const originalReplace = router.replace.bind(router)
+
+  enhancedRouter.push = async (...args: Parameters<typeof router.push>) => {
+    isNavigating.value = true
+    try {
+      const result = await originalPush(...args)
+      // 添加到历史记录
+      routeHistory.value.push(router.currentRoute.value)
+      // 限制历史记录长度
+      if (routeHistory.value.length > 50) {
+        routeHistory.value.shift()
+      }
+      return result
+    } finally {
+      isNavigating.value = false
+    }
+  }
+
+  enhancedRouter.replace = async (...args: Parameters<typeof router.replace>) => {
+    isNavigating.value = true
+    try {
+      return await originalReplace(...args)
+    } finally {
+      isNavigating.value = false
+    }
+  }
+
+  return enhancedRouter as any
 }
 
 /**
- * 获取当前路由信息
+ * 获取当前路由信息（增强版）
  */
-export function useRoute(): UseRouteReturn {
+export function useRoute(): UseRouteReturn & {
+  // 新增的便捷属性和方法
+  isHome: ComputedRef<boolean>
+  isNotFound: ComputedRef<boolean>
+  breadcrumbs: ComputedRef<Array<{ name: string; path: string; meta: any }>>
+  parent: ComputedRef<RouteRecordNormalized | undefined>
+  hasParams: ComputedRef<boolean>
+  hasQuery: ComputedRef<boolean>
+  paramKeys: ComputedRef<string[]>
+  queryKeys: ComputedRef<string[]>
+  matchedNames: ComputedRef<string[]>
+  depth: ComputedRef<number>
+  is: (name: string | string[]) => boolean
+  getParam: (key: string, defaultValue?: any) => any
+  getQuery: (key: string, defaultValue?: any) => any
+} {
   const route = inject<Ref<RouteLocationNormalized>>(ROUTE_INJECTION_SYMBOL)
 
   if (!route) {
@@ -59,10 +173,10 @@ export function useRoute(): UseRouteReturn {
     )
   }
 
-  return computed(() => {
+  const currentRoute = computed(() => {
     // 确保路由对象始终有效，防止初始化时的 undefined 访问
-    const currentRoute = route.value
-    if (!currentRoute) {
+    const r = route.value
+    if (!r) {
       // 返回一个安全的默认路由对象
       return {
         path: '/',
@@ -75,8 +189,77 @@ export function useRoute(): UseRouteReturn {
         meta: {},
       } as RouteLocationNormalized
     }
-    return currentRoute
-  }) as UseRouteReturn
+    return r
+  })
+
+  // 创建增强的路由对象
+  const enhancedRoute = computed(() => ({
+    ...currentRoute.value,
+
+    // 判断是否是首页
+    isHome: computed(() => currentRoute.value.path === '/'),
+
+    // 判断是否是 404 页面
+    isNotFound: computed(() =>
+      currentRoute.value.name === 'NotFound' ||
+      currentRoute.value.matched.length === 0
+    ),
+
+    // 生成面包屑
+    breadcrumbs: computed(() => {
+      return currentRoute.value.matched.map(record => ({
+        name: record.name as string || '',
+        path: record.path,
+        meta: record.meta || {},
+      }))
+    }),
+
+    // 获取父路由
+    parent: computed(() => {
+      const matched = currentRoute.value.matched
+      return matched.length > 1 ? matched[matched.length - 2] : undefined
+    }),
+
+    // 判断是否有参数
+    hasParams: computed(() => Object.keys(currentRoute.value.params).length > 0),
+
+    // 判断是否有查询参数
+    hasQuery: computed(() => Object.keys(currentRoute.value.query).length > 0),
+
+    // 获取所有参数键
+    paramKeys: computed(() => Object.keys(currentRoute.value.params)),
+
+    // 获取所有查询参数键
+    queryKeys: computed(() => Object.keys(currentRoute.value.query)),
+
+    // 获取匹配的路由名称
+    matchedNames: computed(() =>
+      currentRoute.value.matched
+        .map(r => r.name)
+        .filter(Boolean) as string[]
+    ),
+
+    // 获取路由深度
+    depth: computed(() => currentRoute.value.matched.length),
+
+    // 检查是否是指定路由
+    is: (name: string | string[]): boolean => {
+      const names = Array.isArray(name) ? name : [name]
+      return names.includes(currentRoute.value.name as string)
+    },
+
+    // 获取单个参数
+    getParam: (key: string, defaultValue?: any) => {
+      return currentRoute.value.params[key] ?? defaultValue
+    },
+
+    // 获取单个查询参数
+    getQuery: (key: string, defaultValue?: any) => {
+      return currentRoute.value.query[key] ?? defaultValue
+    },
+  }))
+
+  return enhancedRoute.value as any
 }
 
 // ==================== 路由参数相关 API ====================
@@ -311,14 +494,16 @@ export function useLink(options: UseLinkOptions): UseLinkReturn {
   })
 
   const href = computed(() => {
-    return route.value.fullPath
+    return route.value?.fullPath || '#'
   })
 
   const isActive = computed(() => {
+    if (!route.value || !currentRoute.value) return false
     return currentRoute.value.path.startsWith(route.value.path)
   })
 
   const isExactActive = computed(() => {
+    if (!route.value || !currentRoute.value) return false
     return (
       currentRoute.value.path === route.value.path
       && JSON.stringify(currentRoute.value.query)

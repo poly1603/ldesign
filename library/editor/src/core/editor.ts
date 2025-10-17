@@ -13,6 +13,9 @@ import { PluginManager } from './Plugin'
 import { Toolbar } from '../ui/Toolbar'
 import { DEFAULT_TOOLBAR_ITEMS } from '../ui/defaultToolbar'
 import * as AllPlugins from '../plugins'
+import { createLogger } from '../utils/logger'
+
+const logger = createLogger('Editor')
 
 export class Editor {
   // 核心组件
@@ -64,41 +67,41 @@ export class Editor {
     }
 
     // 注册插件 - 如果没有指定插件，默认加载所有插件
-    console.log('[Editor] options.plugins provided?', !!options.plugins)
+    logger.debug('options.plugins provided?', !!options.plugins)
     if (options.plugins) {
-      console.log('[Editor] Using provided plugins:', options.plugins.length)
+      logger.debug('Using provided plugins:', options.plugins.length)
     } else {
-      console.log('[Editor] Using default plugins from getAllDefaultPlugins()')
+      logger.debug('Using default plugins from getAllDefaultPlugins()')
     }
     
     const pluginsToLoad = options.plugins || this.getAllDefaultPlugins()
     
-    console.log('[Editor] Loading plugins, total:', pluginsToLoad.length)
-    console.log('[Editor] Plugin list:', pluginsToLoad.map(p => typeof p === 'string' ? p : p?.name || 'unnamed'))
-    console.log('[Editor] HeadingPlugin exists in AllPlugins:', !!AllPlugins.HeadingPlugin)
+    logger.debug('Loading plugins, total:', pluginsToLoad.length)
+    logger.debug('Plugin list:', pluginsToLoad.map(p => typeof p === 'string' ? p : p?.name || 'unnamed'))
+    logger.debug('HeadingPlugin exists in AllPlugins:', !!AllPlugins.HeadingPlugin)
     if (AllPlugins.HeadingPlugin) {
-      console.log('[Editor] HeadingPlugin name:', AllPlugins.HeadingPlugin.name)
-      console.log('[Editor] HeadingPlugin config:', AllPlugins.HeadingPlugin.config)
-      console.log('[Editor] Is HeadingPlugin in pluginsToLoad?', pluginsToLoad.includes(AllPlugins.HeadingPlugin))
+      logger.debug('HeadingPlugin name:', AllPlugins.HeadingPlugin.name)
+      logger.debug('HeadingPlugin config:', AllPlugins.HeadingPlugin.config)
+      logger.debug('Is HeadingPlugin in pluginsToLoad?', pluginsToLoad.includes(AllPlugins.HeadingPlugin))
     }
     
     pluginsToLoad.forEach((plugin, index) => {
       if (typeof plugin === 'string') {
-        console.log(`[Editor] Loading builtin plugin [${index}]: "${plugin}"`)
+        logger.debug(`Loading builtin plugin [${index}]: "${plugin}"`)
         // 从内置插件加载
         this.loadBuiltinPlugin(plugin)
       } else {
-        console.log(`[Editor] Loading plugin [${index}]: "${plugin.name || 'unnamed'}"`)
+        logger.debug(`Loading plugin [${index}]: "${plugin.name || 'unnamed'}"`)
         if (plugin.name === 'heading') {
-          console.log('[Editor] HeadingPlugin found in plugins list!')
-          console.log('[Editor] HeadingPlugin config:', plugin.config)
+          logger.debug('HeadingPlugin found in plugins list!')
+          logger.debug('HeadingPlugin config:', plugin.config)
         }
         this.plugins.register(plugin)
       }
     })
     
-    console.log('[Editor] All plugins loaded')
-    console.log('[Editor] Registered commands:', this.commands.getCommands())
+    logger.debug('All plugins loaded')
+    logger.debug('Registered commands:', this.commands.getCommands())
 
     // 初始化事件监听
     this.setupEventListeners()
@@ -113,11 +116,11 @@ export class Editor {
    * 获取所有默认插件
    */
   private getAllDefaultPlugins(): PluginType[] {
-    console.log('[Editor] Getting default plugins...')
-    console.log('[Editor] AllPlugins keys:', Object.keys(AllPlugins))
+    logger.debug('Getting default plugins...')
+    logger.debug('AllPlugins keys:', Object.keys(AllPlugins))
     
     // 检查 HeadingPlugin 是否存在
-    console.log('[Editor] HeadingPlugin check:', {
+    logger.debug('HeadingPlugin check:', {
       exists: !!AllPlugins.HeadingPlugin,
       type: typeof AllPlugins.HeadingPlugin,
       value: AllPlugins.HeadingPlugin
@@ -127,20 +130,26 @@ export class Editor {
     
     // 最重要！首先加载 HeadingPlugin
     if (AllPlugins.HeadingPlugin) {
-      console.log('[Editor] ✅ Adding HeadingPlugin to default plugins')
+      logger.debug('✅ Adding HeadingPlugin to default plugins')
       plugins.push(AllPlugins.HeadingPlugin)
     } else {
-      console.error('[Editor] ❌ HeadingPlugin is undefined! This is critical!')
+      logger.error('❌ HeadingPlugin is undefined! This is critical!')
     }
     
     // 首先加入基础插件（命令插件）
     if (AllPlugins.MediaCommandsPlugin) {
-      console.log('[Editor] Adding MediaCommandsPlugin')
+      logger.debug('Adding MediaCommandsPlugin')
       plugins.push(AllPlugins.MediaCommandsPlugin)
     }
     if (AllPlugins.FormattingCommandsPlugin) {
-      console.log('[Editor] Adding FormattingCommandsPlugin')
+      logger.debug('Adding FormattingCommandsPlugin')
       plugins.push(AllPlugins.FormattingCommandsPlugin)
+    }
+    
+    // AI 功能 - 最重要，默认启用
+    if (AllPlugins.AIPlugin) {
+      logger.debug('Adding AIPlugin to default plugins')
+      plugins.push(AllPlugins.AIPlugin)
     }
     
     // 基础格式化
@@ -206,16 +215,16 @@ export class Editor {
       }))
     }
     
-    console.log(`[Editor] Total plugins to load: ${plugins.length}`)
-    console.log('[Editor] Plugin names:', plugins.map(p => p.name).join(', '))
+    logger.debug(`Total plugins to load: ${plugins.length}`)
+    logger.debug('Plugin names:', plugins.map(p => p.name).join(', '))
     
     // 添加 EmojiPlugin（确保它被加载）
     if (AllPlugins.EmojiPlugin) {
-      console.log('[Editor] ✅ EmojiPlugin found, adding to plugins list')
+      logger.debug('✅ EmojiPlugin found, adding to plugins list')
       plugins.push(AllPlugins.EmojiPlugin)
     } else {
-      console.warn('[Editor] ⚠️ EmojiPlugin not found in AllPlugins!')
-      console.log('[Editor] Available plugins:', Object.keys(AllPlugins).filter(k => k.includes('Plugin')))
+      logger.warn('⚠️ EmojiPlugin not found in AllPlugins!')
+      logger.debug('Available plugins:', Object.keys(AllPlugins).filter(k => k.includes('Plugin')))
     }
     
     return plugins
@@ -379,7 +388,7 @@ export class Editor {
         break
       // 其他插件可以在这里添加
       default:
-        console.warn(`未知插件: ${name}`)
+        logger.warn(`未知插件: ${name}`)
     }
   }
   
@@ -439,9 +448,9 @@ export class Editor {
     if (this.contentElement.contains(range.commonAncestorContainer)) {
       try {
         this.savedRange = range.cloneRange()
-        console.log('[Editor] DOM selection saved')
+        logger.debug('DOM selection saved')
       } catch (e) {
-        console.warn('[Editor] Failed to save selection:', e)
+        logger.warn('Failed to save selection:', e)
       }
     }
   }
@@ -459,10 +468,10 @@ export class Editor {
       const sel = window.getSelection()
       sel?.removeAllRanges()
       sel?.addRange(this.savedRange)
-      console.log('[Editor] DOM selection restored')
+      logger.debug('DOM selection restored')
       return true
     } catch (e) {
-      console.warn('[Editor] Failed to restore selection:', e)
+      logger.warn('Failed to restore selection:', e)
       return false
     }
   }
@@ -472,6 +481,24 @@ export class Editor {
    */
   getHTML(): string {
     return this.document.toHTML()
+  }
+  
+  /**
+   * 获取选中的纯文本
+   */
+  getSelectedText(): string {
+    if (!this.contentElement) return ''
+    
+    const selection = window.getSelection()
+    if (!selection || selection.rangeCount === 0) return ''
+    
+    const range = selection.getRangeAt(0)
+    if (!this.contentElement.contains(range.commonAncestorContainer)) {
+      return ''
+    }
+    
+    // 获取选中的纯文本
+    return selection.toString()
   }
 
   /**
@@ -504,19 +531,19 @@ export class Editor {
     if (!this.contentElement) return
 
     const beforeLen = this.contentElement.innerHTML.length
-    console.log('[Editor.insertHTML] Called. Before length:', beforeLen)
-    console.log('[Editor.insertHTML] html length:', html?.length)
+    logger.debug('insertHTML called. Before length:', beforeLen)
+    logger.debug('html length:', html?.length)
     
     // 获取当前选区
     let selection = window.getSelection()
-    console.log('[Editor.insertHTML] Initial selection:', selection)
+    logger.debug('Initial selection:', selection)
     if (!selection || selection.rangeCount === 0) {
       // 尝试恢复之前保存的选区
       const restored = this.restoreSelection()
       selection = window.getSelection()
       if (!restored || !selection || selection.rangeCount === 0) {
         // 如果没有选区，退化到在编辑器末尾插入
-        console.warn('[Editor.insertHTML] No selection, creating range at end of editor')
+        logger.warn('No selection, creating range at end of editor')
         this.contentElement.focus()
         const range = document.createRange()
         range.selectNodeContents(this.contentElement)
@@ -528,17 +555,17 @@ export class Editor {
     }
     
     let range = selection!.getRangeAt(0)
-    console.log('[Editor.insertHTML] Range obtained. Collapsed:', range.collapsed)
+    logger.debug('Range obtained. Collapsed:', range.collapsed)
     
     // 确保选区在编辑器内
     if (!this.contentElement.contains(range.commonAncestorContainer)) {
-      console.warn('[Editor.insertHTML] Selection is not in editor; attempting to restore saved selection')
+      logger.warn('Selection is not in editor; attempting to restore saved selection')
       const restored = this.restoreSelection()
       selection = window.getSelection()
       if (restored && selection && selection.rangeCount > 0 && this.contentElement.contains(selection.getRangeAt(0).commonAncestorContainer)) {
         range = selection.getRangeAt(0)
       } else {
-        console.warn('[Editor.insertHTML] Saved selection unavailable; moving caret to end')
+        logger.warn('Saved selection unavailable; moving caret to end')
         this.contentElement.focus()
         const newRange = document.createRange()
         newRange.selectNodeContents(this.contentElement)
@@ -556,9 +583,9 @@ export class Editor {
     let success = false
     try {
       success = document.execCommand('insertHTML', false, html)
-      console.log('[Editor.insertHTML] execCommand("insertHTML") returned:', success)
+      logger.debug('execCommand("insertHTML") returned:', success)
     } catch (err) {
-      console.warn('[Editor.insertHTML] execCommand threw error, will use manual insertion:', err)
+      logger.warn('execCommand threw error, will use manual insertion:', err)
       success = false
     }
 
@@ -567,9 +594,9 @@ export class Editor {
     const noChange = afterLenCandidate === beforeLen
     if (!success || noChange) {
       if (success && noChange) {
-        console.warn('[Editor.insertHTML] execCommand reported success but content did not change, falling back to manual insertion')
+        logger.warn('execCommand reported success but content did not change, falling back to manual insertion')
       } else {
-        console.log('[Editor.insertHTML] Falling back to manual insertion')
+        logger.debug('Falling back to manual insertion')
       }
 
       // 手动插入 HTML
@@ -580,7 +607,7 @@ export class Editor {
       try {
         range.deleteContents()
       } catch (err) {
-        console.warn('[Editor.insertHTML] deleteContents error:', err)
+        logger.warn('deleteContents error:', err)
       }
 
       // 插入新内容
@@ -591,7 +618,7 @@ export class Editor {
       try {
         range.insertNode(fragment)
       } catch (err) {
-        console.error('[Editor.insertHTML] insertNode error:', err)
+        logger.error('insertNode error:', err)
       }
 
       // 移动光标到插入内容之后
@@ -600,12 +627,12 @@ export class Editor {
         selection!.removeAllRanges()
         selection!.addRange(range)
       } catch (err) {
-        console.warn('[Editor.insertHTML] Reselection error:', err)
+        logger.warn('Reselection error:', err)
       }
     }
 
     const afterLen = this.contentElement.innerHTML.length
-    console.log('[Editor.insertHTML] After length:', afterLen, 'Delta:', afterLen - beforeLen)
+    logger.debug('After length:', afterLen, 'Delta:', afterLen - beforeLen)
 
     // 简要诊断：统计媒体标签数量
     try {
@@ -613,7 +640,7 @@ export class Editor {
       const imgCount = (snapshot.match(/<img\b/gi) || []).length
       const videoCount = (snapshot.match(/<video\b/gi) || []).length
       const audioCount = (snapshot.match(/<audio\b/gi) || []).length
-      console.log('[Editor.insertHTML] Media counts -> img:', imgCount, 'video:', videoCount, 'audio:', audioCount)
+      logger.debug('Media counts -> img:', imgCount, 'video:', videoCount, 'audio:', audioCount)
     } catch {}
 
     // 将插入位置滚动到可见区域
@@ -637,7 +664,7 @@ export class Editor {
         this.contentElement.scrollTop = this.contentElement.scrollHeight
       }
     } catch (err) {
-      console.warn('[Editor.insertHTML] scrollIntoView failed:', err)
+      logger.warn('scrollIntoView failed:', err)
     }
 
     // 触发更新事件
