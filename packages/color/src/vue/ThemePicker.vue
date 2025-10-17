@@ -173,7 +173,7 @@ const emit = defineEmits<{
 const pluginInstance = inject<ColorPlugin | undefined>(ColorPluginSymbol, undefined)
 
 // 响应式国际化支持
-const appLocale = inject<any>('app-locale', null)
+const appLocale = inject<any>('locale', null)
 
 // 使用响应式 locale - 优先使用插件的 locale
 const currentLocale = computed(() => {

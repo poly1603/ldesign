@@ -413,6 +413,304 @@ export class Toolbar {
         return
       }
       
+      // 特殊处理：查找替换
+      if (item.name === 'search') {
+        console.log('[Toolbar] Opening find-replace dialog')
+        
+        // 获取当前选中的文本
+        const selection = window.getSelection()
+        const selectedText = selection && selection.toString().trim() || ''
+        
+        // 保存当前高亮状态
+        let currentHighlights: NodeListOf<Element> | null = null
+        let totalMatches = 0
+        
+        showUnifiedDialog({
+          title: '查找和替换',
+          width: 520,
+          icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>`,
+          fields: [
+            {
+              id: 'findText',
+              type: 'text',
+              label: '查找内容',
+              placeholder: '输入要查找的文本',
+              required: true,
+              defaultValue: selectedText
+            },
+            {
+              id: 'replaceText',
+              type: 'text',
+              label: '替换为',
+              placeholder: '输入替换文本',
+              required: false
+            },
+            {
+              id: 'actionType',
+              type: 'select',
+              label: '操作',
+              defaultValue: 'find',
+              options: [
+                { label: '仅查找', value: 'find' },
+                { label: '查找并替换全部', value: 'replaceAll' }
+              ]
+            },
+            {
+              id: 'caseSensitive',
+              type: 'checkbox',
+              label: '区分大小写',
+              defaultValue: false
+            },
+            {
+              id: 'wholeWord',
+              type: 'checkbox',
+              label: '全字匹配',
+              defaultValue: false
+            }
+          ],
+          onSubmit: (data) => {
+            console.log('[Toolbar] Find/Replace data:', data)
+            const content = this.editor.contentElement
+            if (!content) return
+            
+            const findText = data.findText
+            const replaceText = data.replaceText || ''
+            const actionType = data.actionType || 'find'
+            const caseSensitive = data.caseSensitive
+            const wholeWord = data.wholeWord
+            
+            // 创建正则表达式
+            const escaped = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            const wordBoundary = wholeWord ? '\\b' : ''
+            const pattern = new RegExp(
+              `${wordBoundary}${escaped}${wordBoundary}`,
+              caseSensitive ? 'g' : 'gi'
+            )
+            
+            // 默认执行查找操作
+            console.log('[Find] Starting search for:', findText)
+            console.log('[Find] Options:', { caseSensitive, wholeWord })
+            
+            // 清除之前的高亮
+            content.querySelectorAll('.editor-highlight').forEach(el => {
+              const text = el.textContent || ''
+              const textNode = document.createTextNode(text)
+              const parent = el.parentNode
+              if (parent) {
+                parent.replaceChild(textNode, el)
+              }
+            })
+            
+            // 高亮所有匹配项
+            let count = 0
+            
+            // 递归处理所有文本节点
+            const processNode = (node: Node) => {
+              if (node.nodeType === Node.TEXT_NODE) {
+                const text = node.textContent || ''
+                if (!text.trim()) return // 跳过空文本节点
+                
+                // 重置正则表达式
+                pattern.lastIndex = 0
+                const matches: RegExpExecArray[] = []
+                let match: RegExpExecArray | null
+                
+                while ((match = pattern.exec(text)) !== null) {
+                  matches.push([...match] as RegExpExecArray)
+                  count++
+                  // 防止无限循环
+                  if (!pattern.global) break
+                }
+                
+                if (matches.length > 0) {
+                  const parent = node.parentNode
+                  if (!parent) return
+                  
+                  const fragment = document.createDocumentFragment()
+                  let lastIndex = 0
+                  
+                  matches.forEach(m => {
+                    const matchIndex = m.index || 0
+                    const matchText = m[0]
+                    
+                    // 添加匹配前的文本
+                    if (matchIndex > lastIndex) {
+                      fragment.appendChild(
+                        document.createTextNode(text.substring(lastIndex, matchIndex))
+                      )
+                    }
+                    
+                    // 添加高亮的匹配文本
+                    const highlight = document.createElement('span')
+                    highlight.className = 'editor-highlight'
+                    highlight.style.background = '#fef08a'
+                    highlight.style.padding = '1px 2px'
+                    highlight.style.borderRadius = '2px'
+                    highlight.textContent = matchText
+                    fragment.appendChild(highlight)
+                    
+                    lastIndex = matchIndex + matchText.length
+                  })
+                  
+                  // 添加剩余文本
+                  if (lastIndex < text.length) {
+                    fragment.appendChild(
+                      document.createTextNode(text.substring(lastIndex))
+                    )
+                  }
+                  
+                  // 替换原节点
+                  parent.replaceChild(fragment, node)
+                }
+              } else if (node.nodeType === Node.ELEMENT_NODE) {
+                // 跳过某些元素
+                const tagName = (node as HTMLElement).tagName?.toLowerCase()
+                if (tagName === 'script' || tagName === 'style' || tagName === 'noscript') {
+                  return
+                }
+                // 递归处理子节点
+                const children = Array.from(node.childNodes)
+                children.forEach(child => processNode(child))
+              }
+            }
+            
+            // 开始处理
+            processNode(content)
+            
+            console.log('[Find] Found matches:', count)
+            
+            if (count > 0) {
+              // 滚动到第一个匹配项
+              const firstMatch = content.querySelector('.editor-highlight')
+              if (firstMatch) {
+                firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                // 添加当前高亮
+                firstMatch.style.background = '#facc15'
+              }
+            }
+              
+              // 保存匹配数量
+              totalMatches = count
+              currentHighlights = content.querySelectorAll('.editor-highlight')
+              
+              // 根据操作类型执行不同操作
+              if (actionType === 'replaceAll' && count > 0) {
+                // 执行全部替换
+                if (!replaceText && replaceText !== '') {
+                  alert('请输入替换文本')
+                  return
+                }
+                
+                if (confirm(`确定要将 ${count} 处 "${findText}" 替换为 "${replaceText || '(空)'}" 吗？`)) {
+                  // 收集所有需要替换的节点组（处理连续的高亮节点）
+                  const nodeGroups: Array<{elements: HTMLElement[], parent: Node}> = []
+                  const processedNodes = new Set<HTMLElement>()
+                  
+                  currentHighlights.forEach(el => {
+                    if (!(el instanceof HTMLElement) || !el.parentNode || processedNodes.has(el)) {
+                      return
+                    }
+                    
+                    // 收集连续的高亮节点
+                    const group: HTMLElement[] = [el]
+                    processedNodes.add(el)
+                    
+                    // 检查后续兄弟节点是否也是高亮节点
+                    let nextSibling = el.nextSibling
+                    while (nextSibling) {
+                      if (nextSibling instanceof HTMLElement && 
+                          nextSibling.classList.contains('editor-highlight') &&
+                          !processedNodes.has(nextSibling)) {
+                        group.push(nextSibling)
+                        processedNodes.add(nextSibling)
+                        nextSibling = nextSibling.nextSibling
+                      } else if (nextSibling.nodeType === Node.TEXT_NODE && 
+                                !nextSibling.textContent?.trim()) {
+                        // 跳过空白文本节点
+                        nextSibling = nextSibling.nextSibling
+                      } else {
+                        break
+                      }
+                    }
+                    
+                    nodeGroups.push({elements: group, parent: el.parentNode})
+                  })
+                  
+                  // 执行替换
+                  let replacedCount = 0
+                  nodeGroups.forEach(({elements, parent}) => {
+                    try {
+                      // 获取组中所有文本
+                      const fullText = elements.map(el => el.textContent || '').join('')
+                      console.log(`[Replace] Replacing "${fullText}" with "${replaceText}"`)
+                      
+                      // 创建替换文本节点
+                      const newTextNode = document.createTextNode(replaceText)
+                      
+                      // 替换第一个节点
+                      parent.replaceChild(newTextNode, elements[0])
+                      
+                      // 删除其余节点
+                      for (let i = 1; i < elements.length; i++) {
+                        if (elements[i].parentNode) {
+                          elements[i].remove()
+                        }
+                      }
+                      
+                      replacedCount++
+                    } catch (e) {
+                      console.error('替换失败:', e)
+                    }
+                  })
+                  
+                  // 显示成功消息
+                  const successMessage = document.createElement('div')
+                  successMessage.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: #10b981;
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 10001;
+                  `
+                  successMessage.textContent = `成功替换 ${replacedCount} 处`
+                  document.body.appendChild(successMessage)
+                  setTimeout(() => successMessage.remove(), 3000)
+                  
+                  console.log(`替换完成: 总计${count}处, 实际替换${replacedCount}处`)
+                }
+              } else if (count > 0) {
+                // 仅查找 - 显示结果
+                const resultMessage = document.createElement('div')
+                resultMessage.style.cssText = `
+                  position: fixed;
+                  bottom: 20px;
+                  right: 20px;
+                  background: #3b82f6;
+                  color: white;
+                  padding: 12px 20px;
+                  border-radius: 8px;
+                  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                  z-index: 10001;
+                `
+                resultMessage.textContent = `找到 ${count} 个匹配项`
+                document.body.appendChild(resultMessage)
+                setTimeout(() => resultMessage.remove(), 3000)
+              } else {
+                // 没有找到匹配项
+                alert(`未找到 "${findText}"`)
+              }
+          }
+        })
+        return
+      }
+      
       // 特殊处理：链接插入
       if (item.name === 'link') {
         console.log('[Toolbar] Opening link dialog')
@@ -534,7 +832,8 @@ export class Toolbar {
       if (typeof item.command === 'function') {
         console.log(`[Toolbar] Executing function command for: ${item.name}`)
         const state = this.editor.getState()
-        item.command(state, this.editor.dispatch.bind(this.editor))
+        // 传递 editor 作为第三个参数
+        item.command(state, this.editor.dispatch.bind(this.editor), this.editor)
       }
     })
 

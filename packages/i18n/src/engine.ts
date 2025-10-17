@@ -1,6 +1,10 @@
 /**
- * @ldesign/i18n - Simplified Engine Plugin Integration
- * Provides basic integration with @ldesign/engine
+ * @ldesign/i18n - Engine Plugin Integration
+ * 
+ * 提供与 @ldesign/engine 的集成
+ * 
+ * 注意：此文件用于兼容旧的 Engine 插件系统
+ * 新项目建议使用 plugin.ts 中的 createI18nPlugin
  */
 
 import { ref, type Ref } from 'vue';

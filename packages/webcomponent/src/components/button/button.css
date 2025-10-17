@@ -1,0 +1,14 @@
+/**
+ * Button host styling for Web Components
+ * This file handles :host pseudo-class styles
+ */
+
+:host {
+  display: inline-block;
+}
+
+/* Block button host styling */
+:host([block]) {
+  display: block !important;
+  width: 100% !important;
+}

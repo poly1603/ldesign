@@ -20,7 +20,20 @@ export { createSizeEnginePlugin, useSizeFromEngine } from './plugin/engine'
 export type { SizeEnginePluginOptions } from './plugin/engine'
 
 // Locale exports
-export { zhCN, enUS, getLocale } from './locales'
+export { 
+  zhCN, 
+  enUS, 
+  jaJP, 
+  koKR, 
+  deDE, 
+  frFR, 
+  esES, 
+  itIT, 
+  ptBR, 
+  ruRU, 
+  getLocale,
+  locales
+} from './locales'
 export type { SizeLocale, LocaleKey } from './locales'
 
 // Version

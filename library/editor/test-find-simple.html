@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试查找替换对话框</title>
+  <style>
+    body {
+      padding: 20px;
+      font-family: sans-serif;
+    }
+    #editor {
+      border: 1px solid #ddd;
+      min-height: 300px;
+      padding: 20px;
+      margin: 20px 0;
+      background: #f9f9f9;
+    }
+    button {
+      padding: 10px 20px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <h1>测试查找替换对话框</h1>
+  
+  <div id="editor" contenteditable="true">
+    <p>这是一个测试文本。</p>
+    <p>编辑器中有多个"编辑器"这个词。</p>
+    <p>编辑器功能强大，编辑器使用方便。</p>
+    <p>你可以在编辑器中查找和替换文本。</p>
+    <p>测试文本123，测试数字456。</p>
+  </div>
+  
+  <button onclick="openFindDialog()">打开查找替换对话框</button>
+  
+  <script>
+    // 创建增强版查找替换对话框
+    function createFindReplaceDialog(options) {
+      const { onFind, onReplace, onReplaceAll, onClose, initialText } = options;
+      
+      // 创建遮罩层
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.2s ease-out;
+      `;
+      
+      // 创建对话框
+      const dialog = document.createElement('div');
+      dialog.style.cssText = `
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        min-width: 500px;
+        max-width: 600px;
+        animation: slideIn 0.3s ease-out;
+      `;
+      
+      dialog.innerHTML = `
+        <div style="padding: 20px; border-bottom: 1px solid #e5e7eb;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h2 style="margin: 0; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+              🔍 查找和替换
+            </h2>
+            <button onclick="this.closest('[style*=\\"z-index: 10000\\"]').remove()" style="
+              border: none;
+              background: transparent;
+              cursor: pointer;
+              padding: 4px;
+              font-size: 20px;
+            ">✕</button>
+          </div>
+        </div>
+        
+        <div style="padding: 24px;">
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">查找</label>
+            <input type="text" id="find-input" value="${initialText || ''}" placeholder="输入要查找的文本" style="
+              width: 100%;
+              padding: 10px 12px;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              font-size: 14px;
+              box-sizing: border-box;
+            ">
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">替换为</label>
+            <input type="text" id="replace-input" placeholder="输入替换文本" style="
+              width: 100%;
+              padding: 10px 12px;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              font-size: 14px;
+              box-sizing: border-box;
+            ">
+          </div>
+          
+          <div style="margin-bottom: 20px; display: flex; gap: 16px; padding: 16px; background: #f9fafb; border-radius: 8px;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="case-sensitive">
+              <span>区分大小写</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="whole-word">
+              <span>全字匹配</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="use-regex">
+              <span>正则表达式</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="fuzzy-search">
+              <span>模糊搜索</span>
+            </label>
+          </div>
+          
+          <div id="result-message" style="
+            display: none;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 14px;
+          "></div>
+        </div>
+        
+        <div style="padding: 20px; border-top: 1px solid #e5e7eb; display: flex; gap: 12px; justify-content: flex-end;">
+          <button onclick="handleFind()" style="
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+          ">查找全部</button>
+          <button onclick="handleReplace()" style="
+            padding: 10px 20px;
+            background: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+          ">替换</button>
+          <button onclick="handleReplaceAll()" style="
+            padding: 10px 20px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+          ">全部替换</button>
+          <button onclick="this.closest('[style*=\\"z-index: 10000\\"]').remove()" style="
+            padding: 10px 20px;
+            background: #6b7280;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+          ">取消</button>
+        </div>
+      `;
+      
+      // 添加动画样式
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .highlight {
+          background: #fef08a !important;
+          padding: 2px;
+          border-radius: 2px;
+        }
+        .highlight-active {
+          background: #facc15 !important;
+          font-weight: bold;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      overlay.appendChild(dialog);
+      
+      // 保存回调函数到全局
+      window.findReplaceCallbacks = { onFind, onReplace, onReplaceAll, onClose };
+      
+      return overlay;
+    }
+    
+    // 获取搜索选项
+    function getSearchOptions() {
+      return {
+        caseSensitive: document.getElementById('case-sensitive')?.checked || false,
+        wholeWord: document.getElementById('whole-word')?.checked || false,
+        useRegex: document.getElementById('use-regex')?.checked || false,
+        fuzzySearch: document.getElementById('fuzzy-search')?.checked || false
+      };
+    }
+    
+    // 显示消息
+    function showMessage(msg, type = 'info') {
+      const resultDiv = document.getElementById('result-message');
+      if (resultDiv) {
+        resultDiv.textContent = msg;
+        resultDiv.style.display = 'block';
+        resultDiv.style.background = type === 'success' ? '#f0fdf4' : 
+                                     type === 'error' ? '#fee2e2' : '#eff6ff';
+        resultDiv.style.color = type === 'success' ? '#16a34a' : 
+                                type === 'error' ? '#dc2626' : '#2563eb';
+        setTimeout(() => {
+          resultDiv.style.display = 'none';
+        }, 3000);
+      }
+    }
+    
+    // 处理查找
+    window.handleFind = function() {
+      const searchText = document.getElementById('find-input').value;
+      const options = getSearchOptions();
+      
+      if (!searchText) {
+        showMessage('请输入要查找的文本', 'error');
+        return;
+      }
+      
+      // 清除之前的高亮
+      document.querySelectorAll('.highlight').forEach(el => {
+        el.outerHTML = el.textContent;
+      });
+      
+      const editor = document.getElementById('editor');
+      const content = editor.innerHTML;
+      let pattern;
+      
+      try {
+        if (options.fuzzySearch) {
+          // 模糊搜索
+          const fuzzyPattern = searchText.split('').map(c => 
+            c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+          ).join('.*?');
+          pattern = new RegExp(fuzzyPattern, options.caseSensitive ? 'g' : 'gi');
+        } else if (options.useRegex) {
+          pattern = new RegExp(searchText, options.caseSensitive ? 'g' : 'gi');
+        } else {
+          const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const wordBoundary = options.wholeWord ? '\\b' : '';
+          pattern = new RegExp(
+            `${wordBoundary}${escaped}${wordBoundary}`,
+            options.caseSensitive ? 'g' : 'gi'
+          );
+        }
+        
+        const matches = content.match(pattern);
+        const count = matches ? matches.length : 0;
+        
+        if (count > 0) {
+          // 高亮匹配项
+          editor.innerHTML = content.replace(pattern, '<span class="highlight">$&</span>');
+          showMessage(`找到 ${count} 个匹配项`, 'success');
+        } else {
+          showMessage('未找到匹配项', 'error');
+        }
+      } catch (e) {
+        showMessage('搜索模式错误: ' + e.message, 'error');
+      }
+      
+      if (window.findReplaceCallbacks?.onFind) {
+        window.findReplaceCallbacks.onFind(searchText, options);
+      }
+    };
+    
+    // 处理替换
+    window.handleReplace = function() {
+      const searchText = document.getElementById('find-input').value;
+      const replaceText = document.getElementById('replace-input').value;
+      const options = getSearchOptions();
+      
+      if (!searchText) {
+        showMessage('请输入要查找的文本', 'error');
+        return;
+      }
+      
+      if (window.findReplaceCallbacks?.onReplace) {
+        window.findReplaceCallbacks.onReplace(searchText, replaceText, options);
+      }
+      
+      showMessage('替换成功', 'success');
+    };
+    
+    // 处理全部替换
+    window.handleReplaceAll = function() {
+      const searchText = document.getElementById('find-input').value;
+      const replaceText = document.getElementById('replace-input').value;
+      const options = getSearchOptions();
+      
+      if (!searchText) {
+        showMessage('请输入要查找的文本', 'error');
+        return;
+      }
+      
+      if (confirm(`确定要将所有 "${searchText}" 替换为 "${replaceText || '(空)'}" 吗？`)) {
+        const editor = document.getElementById('editor');
+        const content = editor.textContent;
+        let pattern;
+        
+        try {
+          if (options.useRegex) {
+            pattern = new RegExp(searchText, options.caseSensitive ? 'g' : 'gi');
+          } else {
+            const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const wordBoundary = options.wholeWord ? '\\b' : '';
+            pattern = new RegExp(
+              `${wordBoundary}${escaped}${wordBoundary}`,
+              options.caseSensitive ? 'g' : 'gi'
+            );
+          }
+          
+          const matches = content.match(pattern);
+          const count = matches ? matches.length : 0;
+          
+          if (count > 0) {
+            editor.textContent = content.replace(pattern, replaceText);
+            showMessage(`成功替换 ${count} 处`, 'success');
+          } else {
+            showMessage('未找到匹配项', 'error');
+          }
+        } catch (e) {
+          showMessage('替换失败: ' + e.message, 'error');
+        }
+        
+        if (window.findReplaceCallbacks?.onReplaceAll) {
+          window.findReplaceCallbacks.onReplaceAll(searchText, replaceText, options);
+        }
+      }
+    };
+    
+    // 打开查找对话框
+    function openFindDialog() {
+      // 获取选中的文本
+      const selection = window.getSelection();
+      const initialText = selection.toString();
+      
+      const dialog = createFindReplaceDialog({
+        initialText,
+        onFind: (text, options) => {
+          console.log('查找:', text, options);
+        },
+        onReplace: (find, replace, options) => {
+          console.log('替换:', find, '->', replace, options);
+        },
+        onReplaceAll: (find, replace, options) => {
+          console.log('全部替换:', find, '->', replace, options);
+        },
+        onClose: () => {
+          console.log('对话框关闭');
+        }
+      });
+      
+      document.body.appendChild(dialog);
+      
+      // 聚焦到查找输入框
+      setTimeout(() => {
+        document.getElementById('find-input')?.focus();
+      }, 100);
+    }
+    
+    // 键盘快捷键
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        openFindDialog();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -5,7 +5,7 @@
  */
 
 import type { App, Ref, ComputedRef } from 'vue'
-import { ref, computed } from 'vue'
+import { ref, computed, inject, provide } from 'vue'
 import { SizeManager, type SizePreset, type SizeConfig } from '../core/SizeManager'
 import { getLocale, type SizeLocale } from '../locales'
 
@@ -14,10 +14,11 @@ import { getLocale, type SizeLocale } from '../locales'
  */
 export interface SizePluginOptions {
   /**
-   * 响应式的 locale 参数 (可选)
-   * 如果提供，插件会自动监听并响应语言变化
+   * 语言设置 - 支持 string 或 Ref<string>
+   * 如果传入 Ref，将直接使用（共享模式）
+   * 如果传入 string 或不传，将创建新的 Ref（独立模式）
    */
-  locale?: Ref<string>
+  locale?: string | Ref<string>
   
   /**
    * Initial size preset
@@ -127,14 +128,40 @@ export interface SizePlugin {
 export const SizePluginSymbol = Symbol('SizePlugin')
 
 /**
+ * 判断是否为 Ref
+ */
+const isRef = <T>(v: any): v is Ref<T> => {
+  return v && typeof v === 'object' && 'value' in v && '_rawValue' in v
+}
+
+/**
  * Create size plugin
  */
 export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
-  // 响应式 locale 支持
-  // 如果传入了 locale ref，直接使用（单向数据流）
-  // 否则创建一个新的 ref
-  const currentLocale = options.locale || ref(options.defaultLocale || 'zh-CN')
-  const localeMessages = computed(() => getLocale(currentLocale.value))
+  // 智能处理 locale
+  let currentLocale: Ref<string>
+  
+  if (isRef(options.locale)) {
+    // 传入的是 Ref，直接使用（共享模式）
+    currentLocale = options.locale
+  } else {
+    // 传入的是 string 或未传入，创建新 Ref（独立模式）
+    currentLocale = ref(options.locale || options.defaultLocale || 'zh-CN')
+  }
+  
+  // 懒加载 locale 数据（性能优化）
+  let localeCache: { key: string; data: any } | null = null
+  const getLocaleData = () => {
+    if (!localeCache || localeCache.key !== currentLocale.value) {
+      localeCache = { key: currentLocale.value, data: getLocale(currentLocale.value) }
+    }
+    return localeCache.data
+  }
+  
+  // 兼容旧的 computed 接口
+  const localeMessages = {
+    get value() { return getLocaleData() }
+  } as ComputedRef<SizeLocale>
 
   // Merge options with defaults
   const mergedOptions = {
@@ -270,20 +297,31 @@ export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
     onChange,
 
     install(app: App) {
+      // 智能共享：如果没有传入 Ref，尝试自动共享
+      if (!isRef(options.locale)) {
+        // 尝试从 app context 获取共享的 locale
+        const sharedLocale = app._context?.provides?.['locale'] as Ref<string> | undefined
+        
+        if (sharedLocale && sharedLocale.value !== undefined) {
+          // 发现共享的 locale，使用它
+          currentLocale = sharedLocale
+          plugin.currentLocale = sharedLocale
+          
+          // 清除缓存以触发重新计算
+          localeCache = null
+        } else {
+          // 没有共享的 locale，提供自己的
+          app.provide('locale', currentLocale)
+        }
+      }
+      
       // Provide plugin instance
       app.provide(SizePluginSymbol, plugin)
+      app.provide('size', plugin)
       
       // 同时提供 Vue 插件所需的 SIZE_MANAGER_KEY，让 useSize 能正常工作
       const SIZE_MANAGER_KEY = Symbol.for('size-manager')
       app.provide(SIZE_MANAGER_KEY, manager)
-
-      // 如果没有传入 locale，尝试使用应用级的 locale
-      if (!options.locale) {
-        const existingLocale = app._context?.provides?.['app-locale']
-        if (existingLocale && typeof existingLocale.value !== 'undefined') {
-          plugin.currentLocale = existingLocale
-        }
-      }
 
       // Provide size locale
       app.provide('size-locale', localeMessages)

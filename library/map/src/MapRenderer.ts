@@ -1,5 +1,6 @@
 import { Deck } from '@deck.gl/core';
 import { GeoJsonLayer, ScatterplotLayer, TextLayer } from '@deck.gl/layers';
+import { RippleMarker, createRippleMarker } from './RippleMarker';
 import type {
   ViewMode,
   ViewState,
@@ -52,6 +53,7 @@ export class MapRenderer {
   private markerRenderer: MarkerRenderer;
   private animationFrameId: number | null = null;
   private isAnimating: boolean = false;
+  private rippleMarkers: Map<string, RippleMarker> = new Map();
 
   constructor(container: HTMLElement | string, options: MapRendererOptions = {}) {
     this.container = typeof container === 'string' 
@@ -903,15 +905,21 @@ export class MapRenderer {
    */
   private updateLayers(): void {
     if (this.deck) {
+      // 获取水波纹图层
+      const rippleLayers: any[] = [];
+      this.rippleMarkers.forEach(marker => {
+        rippleLayers.push(...marker.update());
+      });
+      
       // 合并地图层和标记层
       const markerLayers = this.markerRenderer.getLayers();
-      const allLayers = [...this.layers, ...markerLayers];
+      const allLayers = [...this.layers, ...markerLayers, ...rippleLayers];
       
-      // 使用新数组确保 deck.gl 检测到变化
+      // 每次都创建新的层数组确保重绘
       this.deck.setProps({ 
-        layers: allLayers
+        layers: [...allLayers]
       });
-      // 强制重绘
+      // 强制立即重绘
       this.deck.redraw();
     } else {
       console.error('Deck not initialized!');
@@ -1199,15 +1207,28 @@ export class MapRenderer {
   private startAnimationLoop(): void {
     if (this.animationFrameId !== null) return;
     
+    console.log('MapRenderer: Starting animation loop');
+    let frameCount = 0;
+    
     const animate = () => {
+      frameCount++;
+      // 每秒打印一次（假设60fps）
+      if (frameCount % 60 === 0) {
+        console.log(`MapRenderer: Animation frame ${frameCount}, updating layers...`);
+        console.log(`RippleMarkers count: ${this.rippleMarkers.size}`);
+      }
+      
       this.updateLayers();
       
+      // 检查是否有水波纹标记或动画标记
+      const hasRippleMarkers = this.rippleMarkers.size > 0;
       const hasAnimatedMarkers = this.markerRenderer.getAllMarkers()
         .some(m => m.animation && m.animation !== 'none');
       
-      if (hasAnimatedMarkers) {
+      if (hasRippleMarkers || hasAnimatedMarkers) {
         this.animationFrameId = requestAnimationFrame(animate);
       } else {
+        console.log('MapRenderer: Stopping animation loop - no animated markers');
         this.stopAnimationLoop();
       }
     };
@@ -1324,6 +1345,104 @@ export class MapRenderer {
   unhighlightMarker(markerId: string): void {
     this.markerRenderer.unhighlightMarker(markerId);
     this.updateLayers();
+  }
+  
+  /**
+   * 添加水波纹标记点
+   * @param id 标记ID
+   * @param longitude 经度
+   * @param latitude 纬度
+   * @param color 颜色 [R, G, B]
+   * @param options 其他选项
+   */
+  addRippleMarker(
+    id: string,
+    longitude: number,
+    latitude: number,
+    color?: [number, number, number],
+    options?: {
+      baseRadius?: number;
+      rippleCount?: number;
+      animationSpeed?: number;
+    }
+  ): void {
+    // 创建水波纹标记
+    const rippleMarker = createRippleMarker(id, longitude, latitude, color, options);
+    
+    // 保存到集合中
+    this.rippleMarkers.set(id, rippleMarker);
+    
+    // 启动动画循环
+    if (this.animationFrameId === null) {
+      this.startAnimationLoop();
+    }
+    
+    // 立即更新层
+    this.updateLayers();
+  }
+  
+  /**
+   * 批量添加水波纹标记
+   */
+  addRippleMarkers(
+    markers: Array<{
+      id: string;
+      longitude: number;
+      latitude: number;
+      color?: [number, number, number];
+      options?: {
+        baseRadius?: number;
+        rippleCount?: number;
+        animationSpeed?: number;
+      };
+    }>
+  ): void {
+    markers.forEach(({ id, longitude, latitude, color, options }) => {
+      const rippleMarker = createRippleMarker(id, longitude, latitude, color, options);
+      this.rippleMarkers.set(id, rippleMarker);
+    });
+    
+    // 启动动画循环
+    if (this.animationFrameId === null) {
+      this.startAnimationLoop();
+    }
+    
+    // 更新层
+    this.updateLayers();
+  }
+  
+  /**
+   * 移除水波纹标记
+   */
+  removeRippleMarker(id: string): void {
+    this.rippleMarkers.delete(id);
+    this.updateLayers();
+    
+    // 如果没有水波纹标记了，停止动画循环
+    if (this.rippleMarkers.size === 0) {
+      const hasAnimatedMarkers = this.markerRenderer.getAllMarkers()
+        .some(m => m.animation && m.animation !== 'none');
+      
+      if (!hasAnimatedMarkers) {
+        this.stopAnimationLoop();
+      }
+    }
+  }
+  
+  /**
+   * 清除所有水波纹标记
+   */
+  clearRippleMarkers(): void {
+    this.rippleMarkers.clear();
+    this.updateLayers();
+    
+    // 检查是否还有其他动画标记
+    const hasAnimatedMarkers = this.markerRenderer.getAllMarkers()
+      .some(m => m.animation && m.animation !== 'none');
+    
+    if (!hasAnimatedMarkers) {
+      this.stopAnimationLoop();
+    }
   }
 
   /**
@@ -1477,7 +1596,7 @@ export class MapRenderer {
         });
         
         // 触发重绘
-        this.deck.redraw(true);
+        this.deck.redraw();
         
         // 如果启用自动适配，重新计算最佳视口
         if (this.autoFit) {
@@ -1685,36 +1804,6 @@ export class MapRenderer {
     }
   }
   
-  /**
-   * Start animation loop for ripple effects
-   */
-  private startAnimationLoop(): void {
-    if (this.isAnimating) return;
-    this.isAnimating = true;
-    
-    const animate = () => {
-      if (!this.isAnimating) return;
-      
-      // Update layers which will trigger ripple animation updates
-      this.updateLayers();
-      
-      // Continue animation loop
-      this.animationFrameId = requestAnimationFrame(animate);
-    };
-    
-    animate();
-  }
-  
-  /**
-   * Stop animation loop
-   */
-  private stopAnimationLoop(): void {
-    this.isAnimating = false;
-    if (this.animationFrameId !== null) {
-      cancelAnimationFrame(this.animationFrameId);
-      this.animationFrameId = null;
-    }
-  }
   
   /**
    * Update color scheme for a specific layer

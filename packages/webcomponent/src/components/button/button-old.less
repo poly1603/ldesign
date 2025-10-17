@@ -1,0 +1,888 @@
+/**
+ * Button 按钮组件样式
+ * 完全对标 Ant Design v5 设计规范
+ * 采用 variant + color 系统
+ */
+
+// 导入统一的按钮样式系统
+@import './button-unified.less';
+
+// ==================== 基础样式 ====================
+.ldesign-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border: 1px solid #d9d9d9; // 默认显示灰色边框，避免 hover 抖动且不被 reset 覆盖
+  border-radius: 6px;
+  box-sizing: border-box; // 确保边框不影响整体尺寸
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.5714;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  background-image: none;
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+  outline: none;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.015);
+
+  // 默认颜色（对齐 AntD default）
+  color: var(--ld-color-text);
+  background-color: var(--ld-color-bg);
+  border-color: var(--ld-color-border);
+
+  &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: var(--ld-color-primary);
+    border-color: var(--ld-color-primary);
+    background-color: var(--ld-color-bg);
+  }
+
+  &:focus-visible {
+    outline: 0;
+    box-shadow: var(--ld-focus-ring);
+  }
+
+  &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: var(--ld-color-primary-active);
+    border-color: var(--ld-color-primary-active);
+  }
+
+// ==================== 尺寸变体 ====================
+  &--sm {
+    min-height: 24px;
+    padding: 0 8px;
+    font-size: 14px;
+    border-radius: 4px;
+
+    .ldesign-button__icon {
+      font-size: 14px;
+    }
+  }
+
+  &--md {
+    min-height: 32px;
+    padding: 4px 16px;
+    font-size: 14px;
+
+    .ldesign-button__icon {
+      font-size: 16px;
+    }
+  }
+
+  &--lg {
+    min-height: 40px;
+    padding: 6px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+
+    .ldesign-button__icon {
+      font-size: 18px;
+    }
+  }
+
+// ==================== 形状变体 ====================
+  &--circle {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    padding: 0;
+    text-align: center;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &.ldesign-button--sm {
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+    }
+
+    &.ldesign-button--md {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+    }
+
+    &.ldesign-button--lg {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+    }
+    
+    // 圆形按钮中的图标居中
+    .ldesign-button__content {
+      gap: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .ldesign-button__icon {
+      margin: 0;
+    }
+  }
+
+  &--round {
+    border-radius: 32px;
+
+    &.ldesign-button--sm {
+      border-radius: 24px;
+    }
+
+    &.ldesign-button--lg {
+      border-radius: 40px;
+    }
+  }
+
+// ==================== 类型变体 ====================
+  &--primary {
+    color: #ffffff !important;  // 确保文字始终是白色
+    background-color: var(--ld-color-primary); // 纯色主按钮
+    border-color: var(--ld-color-primary);
+    box-shadow: 0 2px 4px rgba(22, 119, 255, 0.2);
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff !important;
+      background-color: var(--ld-color-primary-hover);
+      border-color: var(--ld-color-primary-hover);
+      box-shadow: 0 3px 6px rgba(22, 119, 255, 0.28);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff !important;
+      background-color: var(--ld-color-primary-active);
+      border-color: var(--ld-color-primary-active);
+      transform: translateY(0);
+    }
+    
+    // 加载和禁用状态也保持白色文字
+    &.ldesign-button--loading,
+    &.ldesign-button--disabled,
+    &:disabled {
+      color: #ffffff !important;
+    }
+  }
+
+
+  &--text {
+    color: var(--ld-color-text);
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: rgba(0, 0, 0, 0.88);
+      background-color: rgba(0, 0, 0, 0.06);
+      border-color: transparent;
+    }
+
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: rgba(0, 0, 0, 0.88);
+      background-color: rgba(0, 0, 0, 0.1);
+      border-color: transparent;
+    }
+  }
+
+
+  // 新增：成功类型（独立实底按钮）
+  &--success {
+    color: #ffffff !important; // 确保白色文字
+    background-color: #52c41a;
+    border-color: #52c41a;
+    box-shadow: 0 2px 4px rgba(82, 196, 26, 0.15);
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff !important;
+      background-color: #73d13d;
+      border-color: #73d13d;
+      box-shadow: 0 3px 6px rgba(82, 196, 26, 0.25);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff !important;
+      background-color: #389e0d;
+      border-color: #389e0d;
+      transform: translateY(0);
+    }
+    
+    // 加载和禁用状态保持白色文字
+    &.ldesign-button--loading,
+    &.ldesign-button--disabled,
+    &:disabled {
+      color: #ffffff !important;
+    }
+  }
+
+  // 新增：警告类型（独立实底按钮）
+  &--warning {
+    color: #ffffff !important; // 确保白色文字
+    background-color: #faad14;
+    border-color: #faad14;
+    box-shadow: 0 2px 4px rgba(250, 173, 20, 0.15);
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff !important;
+      background-color: #ffc53d;
+      border-color: #ffc53d;
+      box-shadow: 0 3px 6px rgba(250, 173, 20, 0.25);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff !important;
+      background-color: #d48806;
+      border-color: #d48806;
+      transform: translateY(0);
+    }
+    
+    // 加载和禁用状态保持白色文字
+    &.ldesign-button--loading,
+    &.ldesign-button--disabled,
+    &:disabled {
+      color: #ffffff !important;
+    }
+  }
+
+  // 新增：链接样式（支持 color 修饰）
+  &--link {
+    color: var(--ld-color-primary);
+    background-color: transparent;
+    border-color: transparent;
+    text-decoration: none;
+    box-shadow: none;
+    padding: 0;
+    height: auto;
+
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-btn-hover, #4096ff);
+      text-decoration: none;
+      background-color: transparent;
+      border-color: transparent;
+    }
+
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-btn-active, #0958d9);
+      text-decoration: none;
+      background-color: transparent;
+      border-color: transparent;
+    }
+
+    &.ldesign-button--color-default {
+      color: var(--ldesign-text-color-primary, rgba(0, 0, 0, 0.88));
+      &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: var(--ldesign-text-color-primary, rgba(0, 0, 0, 0.88));
+      }
+    }
+  }
+
+  /* 对齐 AntD：危险态组合样式（统一使用 --danger 修饰符） */
+  &--danger.ldesign-button--primary {
+    color: #ffffff;
+    background-color: var(--ld-color-error);
+    border-color: var(--ld-color-error);
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ld-color-error-hover);
+      border-color: var(--ld-color-error-hover);
+    }
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ld-color-error-active);
+      border-color: var(--ld-color-error-active);
+    }
+  }
+  &--danger.ldesign-button--default,
+  &--danger.ldesign-button--secondary {
+    color: var(--ld-color-error);
+    background-color: var(--ld-color-bg);
+    border-color: var(--ld-color-error);
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-color-error-hover);
+      border-color: var(--ld-color-error-hover);
+      background-color: rgba(255, 77, 79, 0.06);
+    }
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-color-error-active);
+      border-color: var(--ld-color-error-active);
+      background-color: rgba(255, 77, 79, 0.1);
+    }
+  }
+  &--danger.ldesign-button--dashed {
+    color: var(--ld-color-error);
+    border-color: var(--ld-color-error);
+    border-style: dashed;
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-hover, #ff7875);
+      border-color: var(--ldesign-error-color-hover, #ff7875);
+      background-color: var(--ldesign-error-color-focus, rgba(255, 77, 79, 0.06));
+    }
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-active, #d9363e);
+      border-color: var(--ldesign-error-color-active, #d9363e);
+      background-color: var(--ldesign-error-color-1, rgba(255, 77, 79, 0.1));
+    }
+  }
+  &--danger.ldesign-button--text {
+    color: var(--ld-color-error);
+    background-color: transparent;
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-color-error-hover);
+      background-color: rgba(255, 77, 79, 0.06);
+    }
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-color-error-active);
+      background-color: rgba(255, 77, 79, 0.1);
+    }
+  }
+  &--danger.ldesign-button--link {
+    color: var(--ld-color-error);
+    text-decoration-color: var(--ld-color-error);
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-color-error-hover);
+      text-decoration-color: var(--ld-color-error-hover);
+    }
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-color-error-active);
+      text-decoration-color: var(--ld-color-error-active);
+    }
+  }
+  &--danger.ldesign-button--ghost {
+    color: var(--ldesign-error-color, #ff4d4f);
+    border-color: var(--ldesign-error-color, #ff4d4f);
+    background-color: transparent;
+    &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-hover, #ff7875);
+      border-color: var(--ldesign-error-color-hover, #ff7875);
+      background-color: var(--ldesign-error-color-focus, rgba(255, 77, 79, 0.06));
+    }
+    &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ldesign-error-color-active, #d9363e);
+      border-color: var(--ldesign-error-color-active, #d9363e);
+      background-color: var(--ldesign-error-color-1, rgba(255, 77, 79, 0.1));
+    }
+  }
+
+  // 新增：虚线边框样式（支持 color 修饰）
+  &--dashed {
+    color: var(--ld-color-text);
+    background-color: var(--ld-color-bg);
+    border-color: var(--ld-color-border);
+    border-style: dashed;
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-color-primary);
+      background-color: var(--ld-color-bg);
+      border-color: var(--ld-color-primary);
+      border-style: dashed;
+    }
+
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-color-primary-active);
+      background-color: var(--ld-color-bg);
+      border-color: var(--ld-color-primary-active);
+      border-style: dashed;
+    }
+
+    &.ldesign-button--color-default {
+      color: var(--ldesign-text-color-primary, rgba(0, 0, 0, 0.88));
+      border-color: var(--ldesign-border-color, #d9d9d9);
+      &:hover:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: var(--ldesign-bg-color-component-hover, rgba(0, 0, 0, 0.06));
+        border-color: var(--ldesign-border-color-hover, #1677ff);
+        color: var(--ldesign-text-color-primary, rgba(0, 0, 0, 0.88));
+      }
+      &:active:not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        background-color: var(--ldesign-bg-color-component-active, rgba(0, 0, 0, 0.1));
+        border-color: var(--ldesign-border-color-hover, #1677ff);
+        color: var(--ldesign-text-color-primary, rgba(0, 0, 0, 0.88));
+      }
+    }
+  }
+
+  // 渐变填充按钮
+  &--gradient {
+    color: #ffffff !important;  // 确保渐变按钮文字为白色
+    background: linear-gradient(135deg, #1677ff, #722ed1);
+    border: none;
+    box-shadow: 0 2px 4px rgba(114, 46, 209, 0.2);
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff !important;
+      background: linear-gradient(135deg, #4096ff, #9254de);
+      box-shadow: 0 4px 8px rgba(114, 46, 209, 0.3);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff !important;
+      background: linear-gradient(135deg, #0958d9, #531dab);
+      transform: translateY(0);
+    }
+  }
+
+// ==================== 状态变体 ====================
+  // 危险状态与不同类型的组合
+  // Success 按钮样式
+  &--primary.ldesign-button--success {
+    color: #ffffff;
+    background: linear-gradient(135deg, #52c41a, #73d13d);
+    border: none;
+    box-shadow: 0 2px 4px rgba(82, 196, 26, 0.2);
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background: linear-gradient(135deg, #73d13d, #95de64);
+      box-shadow: 0 4px 8px rgba(82, 196, 26, 0.3);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background: linear-gradient(135deg, #389e0d, #52c41a);
+      transform: translateY(0);
+    }
+  }
+  
+  // Warning 按钮样式
+  &--primary.ldesign-button--warning {
+    color: #ffffff;
+    background: linear-gradient(135deg, #faad14, #ffc53d);
+    border: none;
+    box-shadow: 0 2px 4px rgba(250, 173, 20, 0.2);
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background: linear-gradient(135deg, #ffc53d, #ffd666);
+      box-shadow: 0 4px 8px rgba(250, 173, 20, 0.3);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background: linear-gradient(135deg, #d48806, #faad14);
+      transform: translateY(0);
+    }
+  }
+  
+  // Danger 按钮样式
+  &--primary.ldesign-button--danger {
+    color: #ffffff;
+    background: linear-gradient(135deg, #ff4d4f, #ff7875);
+    border: none;
+    box-shadow: 0 2px 4px rgba(255, 77, 79, 0.2);
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background: linear-gradient(135deg, #ff7875, #ffa39e);
+      box-shadow: 0 4px 8px rgba(255, 77, 79, 0.3);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background: linear-gradient(135deg, #cf1322, #ff4d4f);
+      transform: translateY(0);
+    }
+  }
+  
+  // 默认按钮的 Success 状态（default + success）
+  &--success:not(.ldesign-button--primary):not(.ldesign-button--text):not(.ldesign-button--link):not(.ldesign-button--dashed) {
+    color: var(--ld-color-success-active);
+    background-color: var(--ld-color-bg);
+    border-color: var(--ld-color-success-hover);
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;
+      background-color: var(--ld-color-success-hover);
+      border-color: var(--ld-color-success-hover);
+    }
+
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;
+      background-color: var(--ld-color-success-active);
+      border-color: var(--ld-color-success-active);
+    }
+  }
+
+  // 默认按钮的 Warning 状态（default + warning）
+  &--warning:not(.ldesign-button--primary):not(.ldesign-button--text):not(.ldesign-button--link):not(.ldesign-button--dashed) {
+    color: var(--ld-color-warning-active);
+    background-color: var(--ld-color-bg);
+    border-color: var(--ld-color-warning);
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;
+      background-color: var(--ld-color-warning);
+      border-color: var(--ld-color-warning);
+    }
+
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;
+      background-color: var(--ld-color-warning-active);
+      border-color: var(--ld-color-warning-active);
+    }
+  }
+
+  // 默认按钮的危险状态（当没有指定type或type为default时）
+  &--danger:not(.ldesign-button--primary):not(.ldesign-button--text):not(.ldesign-button--link):not(.ldesign-button--dashed) {
+    color: var(--ld-color-error);
+    background-color: var(--ld-color-bg);
+    border-color: var(--ld-color-error);
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;
+      background-color: var(--ld-color-error);
+      border-color: var(--ld-color-error);
+    }
+
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;
+      background-color: var(--ld-color-error-active);
+      border-color: var(--ld-color-error-active);
+    }
+  }
+
+  // Success 与 Dashed 组合
+  &--dashed.ldesign-button--success {
+    color: #52c41a;
+    background-color: #ffffff;
+    border-color: #52c41a;
+    border-style: dashed;
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #73d13d;
+      border-color: #73d13d;
+      background-color: #f6ffed;
+      border-style: dashed;
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #389e0d;
+      border-color: #389e0d;
+      background-color: #f0f9e8;
+      border-style: dashed;
+    }
+  }
+
+  // Warning 与 Dashed 组合
+  &--dashed.ldesign-button--warning {
+    color: #faad14;
+    background-color: #ffffff;
+    border-color: #faad14;
+    border-style: dashed;
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffc53d;
+      border-color: #ffc53d;
+      background-color: #fffbe6;
+      border-style: dashed;
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #d48806;
+      border-color: #d48806;
+      background-color: #fff7d1;
+      border-style: dashed;
+    }
+  }
+
+  &--dashed.ldesign-button--danger {
+    color: #ff4d4f;
+    background-color: #ffffff;
+    border-color: #ff4d4f;
+    border-style: dashed;
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ff7875;
+      border-color: #ff7875;
+      background-color: #fff2f0;
+    }
+  }
+
+  &--text.ldesign-button--success {
+    color: #52c41a;
+    background-color: transparent;
+    border-color: transparent;
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #73d13d;
+      background-color: rgba(82, 196, 26, 0.08);
+    }
+  }
+
+  &--text.ldesign-button--warning {
+    color: #faad14;
+    background-color: transparent;
+    border-color: transparent;
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffc53d;
+      background-color: rgba(250, 173, 20, 0.08);
+    }
+  }
+
+  &--text.ldesign-button--danger {
+    color: #ff4d4f;
+    background-color: transparent;
+    border-color: transparent;
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ff7875;
+      background-color: rgba(255, 77, 79, 0.08);
+    }
+  }
+  
+  &--link.ldesign-button--success {
+    color: #52c41a;
+    background-color: transparent;
+    border-color: transparent;
+    padding: 0;
+    height: auto;
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #73d13d;
+      background-color: transparent;
+    }
+  }
+
+  &--link.ldesign-button--warning {
+    color: #faad14;
+    background-color: transparent;
+    border-color: transparent;
+    padding: 0;
+    height: auto;
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffc53d;
+      background-color: transparent;
+    }
+  }
+
+  &--link.ldesign-button--danger {
+    color: #ff4d4f;
+    background-color: transparent;
+    border-color: transparent;
+    padding: 0;
+    height: auto;
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ff7875;
+      background-color: transparent;
+    }
+  }
+
+  // 幽灵按钮（适用于深色背景）
+  &--ghost {
+    background-color: transparent !important;
+    color: rgba(255, 255, 255, 0.85);
+    border-color: rgba(255, 255, 255, 0.85);
+
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: rgba(255, 255, 255, 1);
+      background-color: rgba(255, 255, 255, 0.1) !important;
+      border-color: rgba(255, 255, 255, 1);
+    }
+
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: rgba(255, 255, 255, 0.85);
+      background-color: rgba(255, 255, 255, 0.15) !important;
+      border-color: rgba(255, 255, 255, 0.85);
+    }
+
+    // Primary ghost
+    &.ldesign-button--primary {
+      color: #1677ff;
+      border-color: #1677ff;
+      background: transparent !important;
+      box-shadow: none;
+
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: #4096ff;
+        border-color: #4096ff;
+        background-color: rgba(22, 119, 255, 0.1) !important;
+        transform: none;
+      }
+
+      &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: #0958d9;
+        border-color: #0958d9;
+      }
+    }
+
+    // Dashed ghost
+    &.ldesign-button--dashed {
+      border-style: dashed;
+    }
+
+    // Danger ghost
+    &.ldesign-button--danger {
+      color: #ff4d4f;
+      border-color: #ff4d4f;
+      background: transparent !important;
+
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: #ff7875;
+        border-color: #ff7875;
+        background-color: rgba(255, 77, 79, 0.1) !important;
+      }
+
+      &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: #cf1322;
+        border-color: #cf1322;
+      }
+    }
+    
+    // Success ghost
+    &.ldesign-button--success {
+      color: #52c41a;
+      border-color: #52c41a;
+      background: transparent !important;
+
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: #73d13d;
+        border-color: #73d13d;
+        background-color: rgba(82, 196, 26, 0.1) !important;
+      }
+
+      &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: #389e0d;
+        border-color: #389e0d;
+      }
+    }
+    
+    // Warning ghost
+    &.ldesign-button--warning {
+      color: #faad14;
+      border-color: #faad14;
+      background: transparent !important;
+
+      &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: #ffc53d;
+        border-color: #ffc53d;
+        background-color: rgba(250, 173, 20, 0.1) !important;
+      }
+
+      &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+        color: #d48806;
+        border-color: #d48806;
+      }
+    }
+  }
+
+  &--disabled,
+  &:disabled {
+    cursor: not-allowed;
+    text-shadow: none;
+    box-shadow: none;
+    transform: none !important;
+    opacity: 1; // 与 AntD 保持：不使用整体透明度，直接降级颜色
+    color: var(--ld-color-text-disabled);
+    background-color: var(--ld-btn-disabled-bg);
+    border-color: var(--ld-btn-disabled-border);
+
+    &:hover {
+      transform: none !important;
+    }
+
+    // primary 禁用：保留主色基底但降级文字对比度
+    &.ldesign-button--primary {
+      color: rgba(255, 255, 255, 0.65) !important;
+      background-color: var(--ld-color-primary);
+      border-color: var(--ld-color-primary);
+    }
+
+    // text/link 禁用
+    &.ldesign-button--text,
+    &.ldesign-button--link {
+      background-color: transparent;
+      border-color: transparent;
+      color: var(--ld-color-text-disabled) !important;
+    }
+
+    // dashed 禁用保持虚线
+    &.ldesign-button--dashed {
+      border-style: dashed;
+    }
+
+    // 渐变按钮禁用文字仍为白色
+    &.ldesign-button--gradient {
+      color: #ffffff !important;
+    }
+  }
+
+  &--loading {
+    cursor: default;
+    opacity: 0.65;
+    
+    // 保持primary按钮加载时的白色文字
+    &.ldesign-button--primary {
+      color: #ffffff !important;
+    }
+    
+    // 保持渐变按钮加载时的白色文字
+    &.ldesign-button--gradient {
+      color: #ffffff !important;
+    }
+  }
+
+  &--block {
+    display: flex;
+    width: 100%;
+  }
+
+// ==================== 其他状态 ====================
+  &--icon-only {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  &--icon-end {
+    .ldesign-button__content {
+      flex-direction: row-reverse;
+    }
+  }
+
+  &--two-chinese-chars {
+    &:first-letter {
+      letter-spacing: 0.34em;
+    }
+  }
+
+// ==================== 内部元素 ====================
+  &__content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    line-height: 0;
+
+    &--loading {
+      animation: ldesign-button-loading 1s linear infinite;
+    }
+  }
+
+  &__text {
+    display: inline-block;
+  }
+
+}
+
+// ==================== 动画 ====================
+@keyframes ldesign-button-loading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

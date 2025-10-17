@@ -59,7 +59,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           defaultPanel: 'thumbnails',
           width: 280
         },
-        pageMode: 'single'
+        pageMode: 'single',
+        pageTransition: {      // ✅ 页面切换动画配置
+          enabled: true,       // 启用动画
+          type: 'fade',        // 动画类型: fade, slide, flip, zoom, none
+          duration: 400,       // 动画时长 (毫秒)
+          easing: 'ease-in-out' // 动画缓动函数
+        }
       });
       
       // Create toolbar

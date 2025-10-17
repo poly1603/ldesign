@@ -15,6 +15,12 @@ export interface PDFViewerOptions {
   enableThumbnails?: boolean;
   enableSidebar?: boolean;
   sidebarConfig?: SidebarConfig | boolean;
+  pageTransition?: {
+    enabled?: boolean;
+    type?: 'fade' | 'slide' | 'flip' | 'zoom' | 'none';
+    duration?: number; // 毫秒
+    easing?: 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear';
+  };
 }
 
 export interface ViewerState {
@@ -47,6 +53,8 @@ export class PDFViewer extends EventEmitter {
   public sidebarManager: SidebarManager | null = null;
   private scrollTimeout: any = null;
   private allCanvases: HTMLCanvasElement[] = [];
+  private transitionCanvas: HTMLCanvasElement | null = null;
+  private isTransitioning: boolean = false;
 
   constructor(options: PDFViewerOptions) {
     super();
@@ -60,8 +68,23 @@ export class PDFViewer extends EventEmitter {
       enableThumbnails: true,
       enableSidebar: true,
       sidebarConfig: true,
+      pageTransition: {
+        enabled: true,
+        type: 'fade',
+        duration: 300,
+        easing: 'ease-in-out'
+      },
       ...options
     };
+    
+    // 合并页面过渡配置
+    if (options.pageTransition) {
+      this.options.pageTransition = {
+        ...this.options.pageTransition,
+        ...options.pageTransition
+      };
+    }
+    
     this.container = options.container;
     this.scale = this.options.initialScale!;
     this.fitMode = this.options.fitMode!;
@@ -126,16 +149,68 @@ export class PDFViewer extends EventEmitter {
     this.canvasContainer.className = 'pdf-canvas-container';
     
     if (this.pageMode === 'continuous') {
-      this.canvasContainer.style.cssText = 'flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px; background: #f5f5f5;';
+      this.canvasContainer.style.cssText = `
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 20px 20px 40px 20px;
+        background: #f5f5f5;
+        scroll-behavior: smooth;
+      `;
     } else {
-      this.canvasContainer.style.cssText = 'flex: 1; overflow: auto; display: flex; justify-content: center; align-items: flex-start; padding: 20px; background: #f5f5f5;';
+      // 单页模式 - 确保内容居中
+      this.canvasContainer.style.cssText = `
+        flex: 1;
+        overflow: auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background: #f5f5f5;
+      `;
     }
     
     // 创建Canvas (单页模式)
     if (this.pageMode === 'single') {
+      // 创建包装容器用于动画
+      const canvasWrapper = document.createElement('div');
+      canvasWrapper.className = 'pdf-canvas-wrapper';
+      canvasWrapper.style.cssText = `
+        position: relative;
+        display: inline-block;
+        margin: 0 auto;
+      `;
+      
       this.canvas = document.createElement('canvas');
       this.canvas.className = 'pdf-canvas';
-      this.canvasContainer.appendChild(this.canvas);
+      this.canvas.style.cssText = `
+        display: block;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        margin: 0 auto;
+      `;
+      
+      // 创建过渡用的canvas
+      this.transitionCanvas = document.createElement('canvas');
+      this.transitionCanvas.className = 'pdf-canvas-transition';
+      this.transitionCanvas.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+        opacity: 0;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      `;
+      
+      canvasWrapper.appendChild(this.canvas);
+      canvasWrapper.appendChild(this.transitionCanvas);
+      this.canvasContainer.appendChild(canvasWrapper);
+      
       this.ctx = this.canvas.getContext('2d');
     }
     
@@ -156,14 +231,12 @@ export class PDFViewer extends EventEmitter {
     style.id = styleId;
     style.textContent = `
       .pdf-canvas-wrapper {
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background: #f5f5f5;
+        position: relative;
         display: flex;
         justify-content: center;
-        align-items: flex-start;
-        padding: 20px;
+        align-items: center;
+        width: 100%;
+        height: 100%;
       }
       
       .pdf-canvas {
@@ -232,19 +305,50 @@ export class PDFViewer extends EventEmitter {
   /**
    * 渲染指定页
    */
-  private async renderPage(pageNum: number): Promise<void> {
+  private async renderPage(pageNum: number, withTransition: boolean = false): Promise<void> {
     if (!this.pdfDoc) return;
     
     // 如果是连续模式，渲染所有页面
     if (this.pageMode === 'continuous') {
       await this.renderAllPages();
-      this.scrollToPage(pageNum);
+      // 所有页面渲染完成后，滚动到指定页面
+      // 使用 requestAnimationFrame 确保 DOM 更新
+      requestAnimationFrame(() => {
+        if (this.canvasContainer) {
+          // 如果是第一页，直接滚动到顶部
+          if (pageNum === 1) {
+            this.canvasContainer.scrollTop = 0;
+            this.currentPageNum = 1;
+            this.emit('page-change', 1);
+            this.emit('page-changed', 1);
+            if (this.sidebarManager) {
+              this.sidebarManager.highlightThumbnail(1);
+            }
+          } else {
+            // 其他页面，使用 scrollToPage
+            this.scrollToPage(pageNum);
+          }
+        }
+      });
       return;
     }
     
     // 单页模式
     if (!this.canvas || !this.ctx) return;
     
+    // 如果需要动画且配置了动画
+    const shouldAnimate = withTransition && 
+      this.options.pageTransition?.enabled && 
+      this.options.pageTransition?.type !== 'none' &&
+      !this.isTransitioning &&
+      this.currentPageNum !== pageNum;
+    
+    if (shouldAnimate) {
+      await this.renderPageWithTransition(pageNum);
+      return;
+    }
+    
+    // 无动画直接渲染
     this.pageRendering = true;
     
     try {
@@ -282,11 +386,198 @@ export class PDFViewer extends EventEmitter {
       if (this.pageNumPending !== null) {
         const pending = this.pageNumPending;
         this.pageNumPending = null;
-        await this.renderPage(pending);
+        await this.renderPage(pending, withTransition);
       }
     } catch (error) {
       this.emit('render-error', error);
       this.pageRendering = false;
+    }
+  }
+  
+  /**
+   * 带动画的页面渲染
+   */
+  private async renderPageWithTransition(pageNum: number): Promise<void> {
+    if (!this.pdfDoc || !this.canvas || !this.transitionCanvas) return;
+    
+    this.isTransitioning = true;
+    this.pageRendering = true;
+    
+    try {
+      const page = await this.pdfDoc.getPage(pageNum);
+      const scale = this.calculateScale(page);
+      const viewport = page.getViewport({ scale, rotation: this.rotation });
+      
+      // 设置过渡canvas尺寸
+      this.transitionCanvas.height = viewport.height;
+      this.transitionCanvas.width = viewport.width;
+      
+      // 确保过渡canvas居中
+      const wrapper = this.canvas.parentElement;
+      if (wrapper) {
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvasLeft = (wrapperRect.width - viewport.width) / 2;
+        const canvasTop = (wrapperRect.height - viewport.height) / 2;
+        this.transitionCanvas.style.left = `${Math.max(0, canvasLeft)}px`;
+        this.transitionCanvas.style.top = `${Math.max(0, canvasTop)}px`;
+      }
+      
+      const transitionCtx = this.transitionCanvas.getContext('2d');
+      if (!transitionCtx) return;
+      
+      // 先在过渡canvas上渲染新页面
+      await page.render({
+        canvasContext: transitionCtx,
+        viewport: viewport
+      }).promise;
+      
+      // 应用动画
+      const transition = this.options.pageTransition!;
+      const duration = transition.duration || 300;
+      const easing = transition.easing || 'ease-in-out';
+      const type = transition.type || 'fade';
+      
+      // 设置动画样式
+      this.transitionCanvas.style.transition = `all ${duration}ms ${easing}`;
+      this.canvas.style.transition = `all ${duration}ms ${easing}`;
+      
+      // 根据动画类型设置初始状态
+      this.setupTransitionStart(type, pageNum > this.currentPageNum);
+      
+      // 触发动画
+      requestAnimationFrame(() => {
+        this.applyTransitionEffect(type, pageNum > this.currentPageNum);
+      });
+      
+      // 等待动画完成
+      await new Promise(resolve => setTimeout(resolve, duration));
+      
+      // 将过渡canvas的内容复制到主canvas
+      this.canvas.height = viewport.height;
+      this.canvas.width = viewport.width;
+      this.ctx!.drawImage(this.transitionCanvas, 0, 0);
+      
+      // 重置样式
+      this.resetTransitionStyles();
+      
+      this.currentPageNum = pageNum;
+      this.isTransitioning = false;
+      this.pageRendering = false;
+      
+      this.emit('page-rendered', {
+        pageNumber: pageNum,
+        totalPages: this.pdfDoc.numPages,
+        scale: scale
+      });
+      
+      // 处理待渲染页面
+      if (this.pageNumPending !== null) {
+        const pending = this.pageNumPending;
+        this.pageNumPending = null;
+        await this.renderPage(pending, true);
+      }
+    } catch (error) {
+      this.isTransitioning = false;
+      this.pageRendering = false;
+      this.emit('render-error', error);
+    }
+  }
+  
+  /**
+   * 设置过渡动画初始状态
+   */
+  private setupTransitionStart(type: string, isForward: boolean): void {
+    if (!this.canvas || !this.transitionCanvas) return;
+    
+    // 确保动画时保持居中
+    const wrapper = this.canvas.parentElement;
+    if (wrapper) {
+      wrapper.style.transformStyle = 'preserve-3d';
+      wrapper.style.perspective = '1000px';
+      wrapper.style.position = 'relative';
+    }
+    
+    switch (type) {
+      case 'fade':
+        this.transitionCanvas.style.opacity = '0';
+        this.transitionCanvas.style.transform = '';
+        break;
+      case 'slide':
+        const offset = isForward ? '100%' : '-100%';
+        this.transitionCanvas.style.transform = `translateX(${offset})`;
+        this.transitionCanvas.style.opacity = '1';
+        break;
+      case 'flip':
+        this.transitionCanvas.style.transform = 'rotateY(180deg)';
+        this.transitionCanvas.style.opacity = '1';
+        this.transitionCanvas.style.transformOrigin = 'center center';
+        this.canvas.style.transformOrigin = 'center center';
+        break;
+      case 'zoom':
+        this.transitionCanvas.style.transform = 'scale(0.5)';
+        this.transitionCanvas.style.opacity = '0';
+        this.transitionCanvas.style.transformOrigin = 'center center';
+        break;
+    }
+  }
+  
+  /**
+   * 应用过渡效果
+   */
+  private applyTransitionEffect(type: string, isForward: boolean): void {
+    if (!this.canvas || !this.transitionCanvas) return;
+    
+    switch (type) {
+      case 'fade':
+        this.transitionCanvas.style.opacity = '1';
+        this.transitionCanvas.style.transform = '';
+        this.canvas.style.opacity = '0';
+        break;
+      case 'slide':
+        this.transitionCanvas.style.transform = 'translateX(0)';
+        const canvasOffset = isForward ? '-100%' : '100%';
+        this.canvas.style.transform = `translateX(${canvasOffset})`;
+        this.canvas.style.opacity = '0';
+        break;
+      case 'flip':
+        this.transitionCanvas.style.transform = 'rotateY(0deg)';
+        this.canvas.style.transform = 'rotateY(-180deg)';
+        this.canvas.style.opacity = '0';
+        break;
+      case 'zoom':
+        this.transitionCanvas.style.transform = 'scale(1)';
+        this.transitionCanvas.style.transformOrigin = 'center center';
+        this.transitionCanvas.style.opacity = '1';
+        this.canvas.style.transform = 'scale(1.5)';
+        this.canvas.style.transformOrigin = 'center center';
+        this.canvas.style.opacity = '0';
+        break;
+    }
+  }
+  
+  /**
+   * 重置过渡样式
+   */
+  private resetTransitionStyles(): void {
+    if (!this.canvas || !this.transitionCanvas) return;
+    
+    // 移除过渡
+    this.transitionCanvas.style.transition = '';
+    this.canvas.style.transition = '';
+    
+    // 重置样式
+    this.transitionCanvas.style.opacity = '0';
+    this.transitionCanvas.style.transform = '';
+    this.transitionCanvas.style.transformOrigin = '';
+    this.canvas.style.opacity = '1';
+    this.canvas.style.transform = '';
+    this.canvas.style.transformOrigin = '';
+    
+    // 重置wrapper的3D样式
+    const wrapper = this.canvas.parentElement;
+    if (wrapper) {
+      wrapper.style.transformStyle = '';
+      wrapper.style.perspective = '';
     }
   }
 
@@ -331,7 +622,14 @@ export class PDFViewer extends EventEmitter {
   previousPage(): void {
     if (this.currentPageNum <= 1) return;
     this.currentPageNum--;
-    this.queueRenderPage(this.currentPageNum);
+    
+    if (this.pageMode === 'continuous') {
+      this.scrollToPage(this.currentPageNum);
+    } else {
+      this.queueRenderPage(this.currentPageNum);
+    }
+    
+    this.emit('page-change', this.currentPageNum);
     this.emit('page-changed', this.currentPageNum);
   }
 
@@ -341,7 +639,14 @@ export class PDFViewer extends EventEmitter {
   nextPage(): void {
     if (!this.pdfDoc || this.currentPageNum >= this.pdfDoc.numPages) return;
     this.currentPageNum++;
-    this.queueRenderPage(this.currentPageNum);
+    
+    if (this.pageMode === 'continuous') {
+      this.scrollToPage(this.currentPageNum);
+    } else {
+      this.queueRenderPage(this.currentPageNum);
+    }
+    
+    this.emit('page-change', this.currentPageNum);
     this.emit('page-changed', this.currentPageNum);
   }
 
@@ -357,11 +662,18 @@ export class PDFViewer extends EventEmitter {
       // 连续模式：滚动到指定页面
       this.scrollToPage(pageNum);
     } else {
-      // 单页模式：重新渲染指定页
+      // 单页模式：重新渲染指定页，带动画
       if (pageNum === this.currentPageNum) return;
-      this.currentPageNum = pageNum;
-      this.queueRenderPage(this.currentPageNum);
-      this.emit('page-change', this.currentPageNum);
+      
+      // 使用动画渲染
+      if (this.pageRendering) {
+        this.pageNumPending = pageNum;
+      } else {
+        this.renderPage(pageNum, true); // 启用动画
+      }
+      
+      this.emit('page-change', pageNum);
+      this.emit('page-changed', pageNum);
 
       // 通知缩略图更新
       if (this.sidebarManager) {
@@ -527,15 +839,22 @@ export class PDFViewer extends EventEmitter {
 
     const targetWrapper = pageWrappers[pageNumber - 1] as HTMLElement;
     if (targetWrapper) {
-      targetWrapper.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'nearest'
+      // 计算目标位置
+      const containerRect = this.canvasContainer.getBoundingClientRect();
+      const wrapperRect = targetWrapper.getBoundingClientRect();
+      const currentScroll = this.canvasContainer.scrollTop;
+      const targetScroll = currentScroll + (wrapperRect.top - containerRect.top) - 20;
+      
+      // 平滑滚动到目标位置
+      this.canvasContainer.scrollTo({
+        top: Math.max(0, targetScroll),
+        behavior: 'smooth'
       });
 
       // 更新当前页码
       this.currentPageNum = pageNumber;
       this.emit('page-change', pageNumber);
+      this.emit('page-changed', pageNumber);
 
       // 通知缩略图更新
       if (this.sidebarManager) {
@@ -550,14 +869,39 @@ export class PDFViewer extends EventEmitter {
   setPageMode(mode: 'single' | 'continuous'): void {
     if (this.pageMode === mode) return;
     
+    const savedPage = this.currentPageNum; // 保存当前页码
     this.pageMode = mode;
     this.rebuildCanvas();
     
     if (this.pdfDoc) {
       if (mode === 'single') {
-        this.renderPage(this.currentPageNum);
+        this.renderPage(savedPage);
       } else {
-        this.renderAllPages();
+        // 渲染所有页面，renderAllPages 现在会等待所有页面完成
+        this.renderAllPages().then(() => {
+          // 使用 requestAnimationFrame 确保 DOM 更新
+          requestAnimationFrame(() => {
+            if (this.canvasContainer) {
+              // 如果是第一页或者要滚动到第一页，直接设置 scrollTop = 0
+              if (savedPage === 1) {
+                this.canvasContainer.scrollTop = 0;
+                this.currentPageNum = 1;
+                this.emit('page-change', 1);
+                this.emit('page-changed', 1);
+                if (this.sidebarManager) {
+                  this.sidebarManager.highlightThumbnail(1);
+                }
+              } else {
+                // 对于其他页面，先重置到顶部，然后滚动到目标页
+                this.canvasContainer.scrollTop = 0;
+                // 使用 setTimeout 给浏览器时间更新滚动位置
+                setTimeout(() => {
+                  this.scrollToPage(savedPage);
+                }, 50);
+              }
+            }
+          });
+        });
       }
     }
     
@@ -582,25 +926,72 @@ export class PDFViewer extends EventEmitter {
   async renderAllPages(): Promise<void> {
     if (!this.pdfDoc || !this.canvasContainer) return;
     
+    // 先保存当前滚动位置
+    const shouldResetScroll = this.canvasContainer.children.length === 0;
+    
     this.canvasContainer.innerHTML = '';
     this.allCanvases = [];
+    
+    // 收集所有渲染任务
+    const renderPromises: Promise<void>[] = [];
     
     for (let i = 1; i <= this.pdfDoc.numPages; i++) {
       const pageWrapper = document.createElement('div');
       pageWrapper.className = 'pdf-page-wrapper';
-      pageWrapper.style.cssText = 'position: relative; margin: 0 auto; background: white; border-radius: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);';
+      pageWrapper.style.cssText = `
+        position: relative;
+        margin: 0 auto 20px auto;
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        display: block;
+        width: fit-content;
+        max-width: 100%;
+      `;
       pageWrapper.dataset.pageNumber = i.toString();
       
       const canvas = document.createElement('canvas');
       canvas.className = 'pdf-canvas';
-      canvas.style.cssText = 'display: block; max-width: 100%;';
+      canvas.style.cssText = `
+        display: block;
+        max-width: 100%;
+        height: auto;
+      `;
+      
+      // 添加页码标签
+      const pageLabel = document.createElement('div');
+      pageLabel.className = 'pdf-page-number';
+      pageLabel.style.cssText = `
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        z-index: 10;
+        user-select: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      `;
+      pageLabel.textContent = `${i} / ${this.pdfDoc.numPages}`;
       
       pageWrapper.appendChild(canvas);
+      pageWrapper.appendChild(pageLabel);
       this.canvasContainer.appendChild(pageWrapper);
       this.allCanvases.push(canvas);
       
-      // 异步渲染页面
-      this.renderPageToCanvas(i, canvas);
+      // 收集渲染promise
+      renderPromises.push(this.renderPageToCanvas(i, canvas));
+    }
+    
+    // 等待所有页面渲染完成
+    await Promise.all(renderPromises);
+    
+    // 如果是初次渲染，重置滚动位置
+    if (shouldResetScroll) {
+      this.canvasContainer.scrollTop = 0;
     }
   }
 
@@ -752,19 +1143,6 @@ export class PDFViewer extends EventEmitter {
     };
   }
 
-  /**
-   * 获取当前页码
-   */
-  getCurrentPage(): number {
-    return this.currentPageNum;
-  }
-
-  /**
-   * 获取总页数
-   */
-  getTotalPages(): number {
-    return this.pdfDoc?.numPages || 0;
-  }
 
   /**
    * 显示加载中
@@ -794,6 +1172,13 @@ export class PDFViewer extends EventEmitter {
     error.className = 'pdf-error';
     error.innerHTML = `⚠ ${message}`;
     this.container.appendChild(error);
+  }
+
+  /**
+   * 获取当前页面模式
+   */
+  getPageMode(): 'single' | 'continuous' {
+    return this.pageMode;
   }
 
   /**

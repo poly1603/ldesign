@@ -560,10 +560,19 @@ export class MarkerRenderer {
    * 启动动画循环
    */
   private startAnimationLoop(): void {
-    if (this.animationTimer !== null) return;
+    if (this.animationTimer) return;
+    
+    console.log('MarkerRenderer: Starting animation loop');
+    let frameCount = 0;
     
     const animate = () => {
-      // 触发图层更新以刷新动画
+      frameCount++;
+      // 每秒打印一次（假设60fps）
+      if (frameCount % 60 === 0) {
+        console.log(`MarkerRenderer: Animation frame ${frameCount}, updating layers...`);
+      }
+      
+      // 更新标记图层
       this.updateMarkerLayers();
       
       // 检查是否还有需要动画的标记
@@ -573,6 +582,7 @@ export class MarkerRenderer {
       if (hasAnimatedMarkers) {
         this.animationTimer = requestAnimationFrame(animate);
       } else {
+        console.log('MarkerRenderer: Stopping animation loop - no animated markers');
         this.stopAnimationLoop();
       }
     };

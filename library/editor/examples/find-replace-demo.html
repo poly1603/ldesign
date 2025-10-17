@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>查找替换增强版 - LDesign Editor</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .header p {
+      font-size: 18px;
+      opacity: 0.95;
+    }
+    
+    .editor-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    
+    /* 编辑器样式 */
+    .ldesign-editor {
+      border: none;
+      min-height: 500px;
+    }
+    
+    .ldesign-editor-toolbar {
+      background: #f8f9fa;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .ldesign-editor-content {
+      padding: 20px;
+      min-height: 400px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    
+    /* 功能说明 */
+    .features {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      margin-top: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .features h2 {
+      color: #1f2937;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    
+    .feature-card {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 20px;
+      border-left: 4px solid #667eea;
+    }
+    
+    .feature-card h3 {
+      color: #374151;
+      margin-bottom: 10px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .feature-card .icon {
+      width: 24px;
+      height: 24px;
+      background: #667eea;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+    
+    .feature-card p {
+      color: #6b7280;
+      line-height: 1.6;
+    }
+    
+    .feature-card ul {
+      margin-top: 10px;
+      padding-left: 20px;
+    }
+    
+    .feature-card li {
+      color: #6b7280;
+      margin: 5px 0;
+    }
+    
+    .shortcut {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      margin: 0 2px;
+    }
+    
+    .demo-content {
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .demo-content h3 {
+      color: #1f2937;
+      margin-bottom: 15px;
+    }
+    
+    .demo-content p {
+      color: #4b5563;
+      line-height: 1.8;
+      margin-bottom: 10px;
+    }
+  </style>
+  <!-- 加载编辑器CSS -->
+  <link rel="stylesheet" href="../dist/editor.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔍 查找替换增强版</h1>
+      <p>支持模糊搜索、实时预览、批量替换等强大功能</p>
+    </div>
+    
+    <div class="editor-container">
+      <div id="editor"></div>
+    </div>
+    
+    <div class="features">
+      <h2>✨ 功能特性</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>
+            <span class="icon">🔎</span>
+            模糊搜索
+          </h3>
+          <p>支持模糊匹配模式，让搜索更加灵活智能</p>
+          <ul>
+            <li>自动匹配相似文本</li>
+            <li>忽略中间字符</li>
+            <li>智能排序结果</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <h3>
+            <span class="icon">⚡</span>
+            实时预览
+          </h3>
+          <p>输入即搜索，实时显示匹配结果</p>
+          <ul>
+            <li>300ms 防抖优化</li>
+            <li>高亮显示所有匹配</li>
+            <li>显示匹配计数</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <h3>
+            <span class="icon">🔄</span>
+            批量替换
+          </h3>
+          <p>一键替换所有匹配项，支持确认预览</p>
+          <ul>
+            <li>替换前确认</li>
+            <li>显示影响范围</li>
+            <li>支持撤销操作</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <h3>
+            <span class="icon">🎯</span>
+            精确控制
+          </h3>
+          <p>多种搜索选项，满足不同需求</p>
+          <ul>
+            <li>区分大小写</li>
+            <li>全字匹配</li>
+            <li>正则表达式</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <h3>
+            <span class="icon">📝</span>
+            搜索历史
+          </h3>
+          <p>自动保存搜索历史，方便快速重用</p>
+          <ul>
+            <li>保存最近10条</li>
+            <li>本地存储持久化</li>
+            <li>快速选择历史项</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <h3>
+            <span class="icon">⌨️</span>
+            快捷键
+          </h3>
+          <p>丰富的键盘快捷键，提升操作效率</p>
+          <ul>
+            <li><span class="shortcut">Ctrl+F</span> 打开查找</li>
+            <li><span class="shortcut">Enter</span> 查找下一个</li>
+            <li><span class="shortcut">Shift+Enter</span> 查找上一个</li>
+            <li><span class="shortcut">Ctrl+H</span> 切换到替换</li>
+            <li><span class="shortcut">Ctrl+Shift+Enter</span> 全部替换</li>
+            <li><span class="shortcut">ESC</span> 关闭对话框</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="demo-content">
+        <h3>📖 示例文本</h3>
+        <p>编辑器中已预加载了一些示例文本，您可以尝试以下操作：</p>
+        <ul>
+          <li>按 <span class="shortcut">Ctrl+F</span> 打开查找对话框</li>
+          <li>尝试搜索 "编辑器" 或 "文本"</li>
+          <li>启用模糊搜索，输入 "bjq" 可以找到 "编辑器"</li>
+          <li>使用正则表达式搜索 "\d+" 查找所有数字</li>
+          <li>选中文本后按 <span class="shortcut">Ctrl+F</span>，自动填充搜索框</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 加载编辑器JS -->
+  <script type="module">
+    import { Editor } from '../dist/editor.esm.js';
+    
+    // 示例内容
+    const sampleContent = `
+      <h1>欢迎使用 LDesign 富文本编辑器</h1>
+      
+      <p>这是一个功能强大的<strong>富文本编辑器</strong>，具有众多实用功能。您可以使用查找和替换功能来快速定位和修改文本内容。</p>
+      
+      <h2>1. 基本功能介绍</h2>
+      
+      <p>LDesign 编辑器提供了丰富的文本编辑功能，包括：</p>
+      <ul>
+        <li>基础格式化：加粗、斜体、下划线、删除线等</li>
+        <li>段落样式：标题、引用、代码块等</li>
+        <li>列表处理：有序列表、无序列表、任务列表</li>
+        <li>表格插入：支持复杂表格操作</li>
+        <li>媒体嵌入：图片、视频、音频等</li>
+        <li>查找替换：强大的文本搜索和替换功能</li>
+      </ul>
+      
+      <h2>2. 查找替换使用技巧</h2>
+      
+      <p>查找替换功能支持多种搜索模式，可以满足不同的使用场景：</p>
+      
+      <h3>2.1 普通搜索</h3>
+      <p>直接输入要查找的文本，编辑器会高亮显示所有匹配项。支持实时搜索，输入即可看到结果。</p>
+      
+      <h3>2.2 模糊搜索</h3>
+      <p>启用模糊搜索后，可以使用缩写或部分字符来查找文本。例如，输入 "fzss" 可以找到 "模糊搜索"。</p>
+      
+      <h3>2.3 正则表达式</h3>
+      <p>对于高级用户，支持使用正则表达式进行复杂的模式匹配。例如，使用 "\\d{3,4}" 可以匹配 3 到 4 位数字。</p>
+      
+      <h2>3. 测试数据</h2>
+      
+      <p>以下是一些用于测试的数据：</p>
+      <table>
+        <tr>
+          <th>编号</th>
+          <th>名称</th>
+          <th>数值</th>
+        </tr>
+        <tr>
+          <td>001</td>
+          <td>编辑器A</td>
+          <td>1234</td>
+        </tr>
+        <tr>
+          <td>002</td>
+          <td>编辑器B</td>
+          <td>5678</td>
+        </tr>
+        <tr>
+          <td>003</td>
+          <td>编辑器C</td>
+          <td>9012</td>
+        </tr>
+      </table>
+      
+      <blockquote>
+        <p>提示：您可以尝试查找 "编辑器" 这个词，它在文档中出现了多次。使用替换功能可以一次性更改所有匹配项。</p>
+      </blockquote>
+      
+      <p>最后更新时间：2024年1月15日</p>
+    `;
+    
+    // 初始化编辑器
+    const editor = new Editor({
+      element: document.getElementById('editor'),
+      content: sampleContent,
+      toolbar: true,
+      editable: true
+    });
+    
+    // 监听编辑器事件
+    editor.on('ready', () => {
+      console.log('编辑器已就绪');
+    });
+    
+    editor.on('change', () => {
+      console.log('内容已更改');
+    });
+  </script>
+</body>
+</html>

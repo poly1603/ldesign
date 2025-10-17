@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Plugin System Test</title>
+</head>
+<body>
+  <h1>Plugin System Test</h1>
+  <p>Open browser console to see the test results</p>
+  
+  <script>
+    // 等待页面加载完成
+    setTimeout(() => {
+      console.log('=== Plugin System Test ===');
+      
+      // 检查全局对象
+      if (window.__ENGINE__) {
+        console.log('✅ __ENGINE__ is available');
+        console.log('   Type:', typeof window.__ENGINE__);
+        console.log('   Is function?', typeof window.__ENGINE__ === 'function');
+        console.log('   Has config?', !!window.__ENGINE__.config);
+      } else {
+        console.log('❌ __ENGINE__ is not available');
+      }
+      
+      if (window.__LOCALE__) {
+        console.log('✅ __LOCALE__ is available');
+        console.log('   Current value:', window.__LOCALE__.value);
+      } else {
+        console.log('❌ __LOCALE__ is not available');
+      }
+      
+      // 测试语言切换
+      if (window.__LOCALE__) {
+        console.log('\n=== Language Switch Test ===');
+        const originalLocale = window.__LOCALE__.value;
+        console.log('Original locale:', originalLocale);
+        
+        // 切换到中文
+        window.__LOCALE__.value = 'zh-CN';
+        console.log('Changed to zh-CN');
+        
+        // 切换回英文
+        setTimeout(() => {
+          window.__LOCALE__.value = 'en-US';
+          console.log('Changed back to en-US');
+        }, 1000);
+      }
+      
+      console.log('\n=== Test Complete ===');
+    }, 2000);
+  </script>
+</body>
+</html>

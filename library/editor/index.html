@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDesign Editor - 富文本编辑器</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .header {
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+    
+    #editor {
+      min-height: 500px;
+    }
+    
+    .tips {
+      padding: 20px;
+      background: #f0f9ff;
+      border-top: 1px solid #e5e7eb;
+    }
+    
+    .tips h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #1e40af;
+    }
+    
+    .tips ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    
+    .tips li {
+      padding: 5px 0;
+      color: #64748b;
+      font-size: 14px;
+    }
+    
+    .tips kbd {
+      display: inline-block;
+      padding: 2px 6px;
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎨 LDesign Editor</h1>
+      <p>功能强大的富文本编辑器，支持查找替换、表格、代码块等功能</p>
+    </div>
+    
+    <div id="editor"></div>
+    
+    <div class="tips">
+      <h3>💡 使用提示</h3>
+      <ul>
+        <li>• 按 <kbd>Ctrl</kbd>+<kbd>F</kbd> 打开查找替换对话框</li>
+        <li>• 按 <kbd>Ctrl</kbd>+<kbd>H</kbd> 直接进入替换模式</li>
+        <li>• 支持模糊搜索、正则表达式、批量替换</li>
+        <li>• 选中文本后按 <kbd>Ctrl</kbd>+<kbd>F</kbd> 自动填充搜索框</li>
+      </ul>
+    </div>
+  </div>
+
+  <script type="module">
+    // 动态导入编辑器模块
+    async function initEditor() {
+      try {
+        // 尝试从构建后的文件导入
+        const { Editor } = await import('./dist/editor.esm.js');
+        
+        const editor = new Editor({
+          element: document.getElementById('editor'),
+          toolbar: true,
+          editable: true,
+          content: `
+            <h1>欢迎使用 LDesign Editor!</h1>
+            <p>这是一个功能强大的富文本编辑器，支持：</p>
+            <ul>
+              <li><strong>文本格式化</strong>：加粗、斜体、下划线、删除线等</li>
+              <li><strong>标题级别</strong>：H1-H6 标题</li>
+              <li><strong>列表</strong>：有序列表、无序列表、任务列表</li>
+              <li><strong>表格</strong>：创建和编辑表格</li>
+              <li><strong>代码块</strong>：支持语法高亮</li>
+              <li><strong>查找替换</strong>：强大的文本搜索和替换功能</li>
+            </ul>
+            
+            <h2>测试查找替换功能</h2>
+            <p>试试按 <strong>Ctrl+F</strong> 打开查找对话框，搜索"编辑器"这个词。</p>
+            <p>编辑器支持多种搜索模式，编辑器功能强大，编辑器使用方便。</p>
+            
+            <h2>示例代码</h2>
+            <pre><code>function hello() {
+  console.log("Hello, LDesign Editor!");
+}</code></pre>
+            
+            <p>更多功能等你探索！</p>
+          `
+        });
+        
+        console.log('编辑器初始化成功');
+        
+      } catch (error) {
+        console.error('加载编辑器失败，尝试备用方案:', error);
+        
+        // 备用方案：创建简单的编辑器
+        createSimpleEditor();
+      }
+    }
+    
+    // 简单编辑器作为备用
+    function createSimpleEditor() {
+      const editorDiv = document.getElementById('editor');
+      
+      // 创建工具栏
+      const toolbar = document.createElement('div');
+      toolbar.style.cssText = `
+        padding: 10px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        gap: 8px;
+      `;
+      
+      // 查找按钮
+      const findBtn = document.createElement('button');
+      findBtn.innerHTML = '🔍 查找替换';
+      findBtn.style.cssText = `
+        padding: 8px 16px;
+        background: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      `;
+      findBtn.onclick = () => openFindDialog();
+      toolbar.appendChild(findBtn);
+      
+      // 编辑区域
+      const content = document.createElement('div');
+      content.contentEditable = true;
+      content.style.cssText = `
+        min-height: 400px;
+        padding: 20px;
+        outline: none;
+      `;
+      content.innerHTML = `
+        <h1>欢迎使用 LDesign Editor!</h1>
+        <p>这是一个功能强大的富文本编辑器。</p>
+        <p>编辑器支持查找和替换功能。试试按 Ctrl+F 或点击上方的查找按钮。</p>
+        <p>编辑器功能强大，编辑器使用方便，编辑器体验优秀。</p>
+      `;
+      
+      editorDiv.appendChild(toolbar);
+      editorDiv.appendChild(content);
+      
+      // 保存内容元素供查找使用
+      window.editorContent = content;
+    }
+    
+    // 查找替换对话框 - 设置为全局函数
+    window.openFindDialog = function openFindDialog() {
+      // 获取选中的文本
+      const selection = window.getSelection();
+      const initialText = selection.toString();
+      
+      // 移除已存在的对话框
+      const existing = document.querySelector('.find-dialog-overlay');
+      if (existing) {
+        existing.remove();
+      }
+      
+      // 创建对话框
+      const overlay = document.createElement('div');
+      overlay.className = 'find-dialog-overlay';
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+      
+      const dialog = document.createElement('div');
+      dialog.style.cssText = `
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        width: 90%;
+        max-width: 500px;
+        animation: slideIn 0.3s ease-out;
+      `;
+      
+      dialog.innerHTML = `
+        <div style="padding: 20px; border-bottom: 1px solid #e5e7eb;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h2 style="margin: 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+              🔍 查找和替换
+            </h2>
+            <button class="close-btn" style="
+              border: none;
+              background: transparent;
+              cursor: pointer;
+              font-size: 24px;
+              color: #6b7280;
+            ">×</button>
+          </div>
+        </div>
+        
+        <div style="padding: 24px;">
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500;">查找内容</label>
+            <input type="text" class="find-input" value="${initialText || ''}" placeholder="输入要查找的文本" style="
+              width: 100%;
+              padding: 10px;
+              border: 1px solid #d1d5db;
+              border-radius: 6px;
+              font-size: 14px;
+            ">
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500;">替换为</label>
+            <input type="text" class="replace-input" placeholder="输入替换文本" style="
+              width: 100%;
+              padding: 10px;
+              border: 1px solid #d1d5db;
+              border-radius: 6px;
+              font-size: 14px;
+            ">
+          </div>
+          
+          <div style="margin-bottom: 20px; padding: 12px; background: #f9fafb; border-radius: 6px;">
+            <label style="margin-right: 16px;">
+              <input type="checkbox" class="case-sensitive"> 区分大小写
+            </label>
+            <label style="margin-right: 16px;">
+              <input type="checkbox" class="whole-word"> 全字匹配
+            </label>
+            <label>
+              <input type="checkbox" class="fuzzy-search"> 模糊搜索
+            </label>
+          </div>
+          
+          <div class="result-msg" style="
+            display: none;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 14px;
+          "></div>
+        </div>
+        
+        <div style="padding: 20px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; justify-content: flex-end;">
+          <button class="find-btn" style="
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+          ">查找</button>
+          <button class="replace-btn" style="
+            padding: 10px 20px;
+            background: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+          ">替换</button>
+          <button class="replace-all-btn" style="
+            padding: 10px 20px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+          ">全部替换</button>
+        </div>
+      `;
+      
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+      
+      // 添加动画样式
+      if (!document.getElementById('find-dialog-styles')) {
+        const style = document.createElement('style');
+        style.id = 'find-dialog-styles';
+        style.textContent = `
+          @keyframes slideIn {
+            from {
+              opacity: 0;
+              transform: translateY(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          .text-highlight {
+            background: #fef08a;
+            padding: 2px;
+            border-radius: 2px;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      // 绑定事件
+      const closeBtn = dialog.querySelector('.close-btn');
+      const findInput = dialog.querySelector('.find-input');
+      const replaceInput = dialog.querySelector('.replace-input');
+      const findBtn = dialog.querySelector('.find-btn');
+      const replaceBtn = dialog.querySelector('.replace-btn');
+      const replaceAllBtn = dialog.querySelector('.replace-all-btn');
+      const resultMsg = dialog.querySelector('.result-msg');
+      
+      // 关闭对话框
+      const closeDialog = () => overlay.remove();
+      closeBtn.onclick = closeDialog;
+      overlay.onclick = (e) => {
+        if (e.target === overlay) closeDialog();
+      };
+      
+      // 显示消息
+      const showMsg = (msg, type = 'info') => {
+        resultMsg.textContent = msg;
+        resultMsg.style.display = 'block';
+        resultMsg.style.background = type === 'success' ? '#f0fdf4' : '#fee2e2';
+        resultMsg.style.color = type === 'success' ? '#16a34a' : '#dc2626';
+        setTimeout(() => {
+          resultMsg.style.display = 'none';
+        }, 3000);
+      };
+      
+      // 查找功能
+      findBtn.onclick = () => {
+        const searchText = findInput.value;
+        if (!searchText) {
+          showMsg('请输入查找内容', 'error');
+          return;
+        }
+        
+        const content = window.editorContent || document.querySelector('[contenteditable]');
+        if (!content) return;
+        
+        // 清除之前的高亮
+        content.querySelectorAll('.text-highlight').forEach(el => {
+          el.outerHTML = el.textContent;
+        });
+        
+        const text = content.textContent;
+        const regex = new RegExp(searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        const matches = text.match(regex);
+        
+        if (matches && matches.length > 0) {
+          // 高亮所有匹配
+          content.innerHTML = content.innerHTML.replace(regex, 
+            '<span class="text-highlight">$&</span>');
+          showMsg(`找到 ${matches.length} 个匹配项`, 'success');
+        } else {
+          showMsg('未找到匹配项', 'error');
+        }
+      };
+      
+      // 替换功能
+      replaceBtn.onclick = () => {
+        const searchText = findInput.value;
+        const replaceText = replaceInput.value;
+        
+        if (!searchText) {
+          showMsg('请输入查找内容', 'error');
+          return;
+        }
+        
+        const content = window.editorContent || document.querySelector('[contenteditable]');
+        if (!content) return;
+        
+        const text = content.textContent;
+        const regex = new RegExp(searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+        
+        if (regex.test(text)) {
+          content.textContent = text.replace(regex, replaceText);
+          showMsg('替换成功', 'success');
+        } else {
+          showMsg('未找到匹配项', 'error');
+        }
+      };
+      
+      // 全部替换
+      replaceAllBtn.onclick = () => {
+        const searchText = findInput.value;
+        const replaceText = replaceInput.value;
+        
+        if (!searchText) {
+          showMsg('请输入查找内容', 'error');
+          return;
+        }
+        
+        if (confirm(`确定要将所有"${searchText}"替换为"${replaceText || '(空)'}"吗？`)) {
+          const content = window.editorContent || document.querySelector('[contenteditable]');
+          if (!content) return;
+          
+          const text = content.textContent;
+          const regex = new RegExp(searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+          const matches = text.match(regex);
+          
+          if (matches && matches.length > 0) {
+            content.textContent = text.replace(regex, replaceText);
+            showMsg(`成功替换 ${matches.length} 处`, 'success');
+          } else {
+            showMsg('未找到匹配项', 'error');
+          }
+        }
+      };
+      
+      // 聚焦到查找输入框
+      setTimeout(() => findInput.focus(), 100);
+    }
+    
+    // 键盘快捷键
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+        e.preventDefault();
+        openFindDialog();
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'h' || e.key === 'H')) {
+        e.preventDefault();
+        openFindDialog();
+      }
+    });
+    
+    // 初始化编辑器
+    initEditor();
+    
+    // 加载查找替换对话框注入脚本
+    const script = document.createElement('script');
+    script.src = './inject-find-dialog.js';
+    document.body.appendChild(script);
+  </script>
+</body>
+</html>

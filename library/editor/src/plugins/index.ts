@@ -24,6 +24,9 @@ export * from './emoji'
 // 代码块插件
 export { CodeBlockPlugin } from './codeblock'
 
+// AI 插件
+export { AIPlugin } from './ai'
+
 // 聚合导出所有插件集合
 import { formattingPlugins } from './formatting'
 import { mediaPlugins } from './media'
@@ -38,7 +41,8 @@ export const allPlugins = [
   ...tablePlugins,
   ...utilPlugins,
   // 单独插件
-  'EmojiPlugin'
+  'EmojiPlugin',
+  'AIPlugin'
 ]
 
 // 默认插件集合（保持向后兼容）
@@ -74,5 +78,6 @@ export const extendedPlugins = [
   'ImageResizePlugin',
   'EmojiPlugin',
   'ContextMenuPlugin',
-  'EnhancedTablePlugin'
+  'EnhancedTablePlugin',
+  'AIPlugin'
 ]

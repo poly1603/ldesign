@@ -31,12 +31,29 @@ export {
 export { showTableDialog } from './ui/TableDialog'
 export { createFindReplaceDialog, showFindReplaceDialog } from './ui/FindReplaceDialog'
 export { showTableGridSelector, showEnhancedTableGridSelector } from './ui/TableGridSelector'
+export { showAISuggestionsOverlay } from './ui/AISuggestionsOverlay'
+export { showAIConfigDialog } from './ui/AIConfigDialog'
 
 // 类型
 export type * from './types'
 
+// AI 功能
+export { AIService, getAIService, resetAIService } from './ai/AIService'
+export { DeepSeekProvider } from './ai/providers/DeepSeekProvider'
+export type { 
+  AIConfig, 
+  AIProvider, 
+  AIModelConfig, 
+  AIRequest, 
+  AIResponse, 
+  AIRequestType,
+  AIProviderInterface 
+} from './ai/types'
+export { defaultAIConfig } from './ai/types'
+
 // 样式
 import './styles/editor.css'
+import './styles/ai.css'
 
 // 默认导出
 export { Editor as default } from './core/Editor'

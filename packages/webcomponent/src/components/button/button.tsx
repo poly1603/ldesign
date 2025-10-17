@@ -10,7 +10,7 @@ import { getLoadingConfig, isTwoCNChar, spaceChildren, isUnBorderedButtonType, g
  */
 @Component({
   tag: 'ldesign-button',
-  styleUrl: 'button.less',
+  styleUrls: ['button.less', 'button.css'],
   shadow: false,
 })
 export class LdesignButton {
@@ -56,7 +56,7 @@ export class LdesignButton {
    * 图标位置
    * @default 'start'
    */
-  @Prop() iconPosition: ButtonIconPosition = 'start';
+  @Prop({ attribute: 'icon-position' }) iconPosition: ButtonIconPosition = 'start';
 
   /**
    * 是否加载中
@@ -304,9 +304,13 @@ export class LdesignButton {
     
     return combineClasses(
       prefixCls,
+      // 保留 type 类名以保持向后兼容
+      this.type !== 'default' && `${prefixCls}--${this.type}`,
       // 变体和颜色（统一系统）
       `${prefixCls}--variant-${effectiveVariant}`,
       `${prefixCls}--color-${effectiveColor}`,
+      // danger 修饰
+      this.danger && `${prefixCls}--danger`,
       // 形状
       this.shape !== 'default' && `${prefixCls}--${this.shape}`,
       // 尺寸
@@ -364,12 +368,21 @@ export class LdesignButton {
     const processedChildren = this.hasTwoCNChar && this.autoInsertSpace
       ? spaceChildren(children, true)
       : children;
+    
+    // 圆形按钮只显示图标
+    if (this.shape === 'circle' && hasIcon) {
+      return (
+        <span class="ldesign-button__content">
+          {this.renderIcon()}
+        </span>
+      );
+    }
 
     return (
       <span class="ldesign-button__content">
         {hasIcon && this.iconPosition === 'start' && this.renderIcon()}
         {processedChildren && (
-          <span class={hasIcon ? 'ldesign-button__text' : ''}>
+          <span class="ldesign-button__text">
             {processedChildren}
           </span>
         )}

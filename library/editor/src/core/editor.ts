@@ -102,6 +102,11 @@ export class Editor {
 
     // 初始化事件监听
     this.setupEventListeners()
+    
+    // 将编辑器实例保存到全局，以便工具栏访问
+    if (typeof window !== 'undefined') {
+      (window as any).editor = this
+    }
   }
 
   /**

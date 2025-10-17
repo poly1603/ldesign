@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Component Test</title>
+    <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    <style>
+        body {
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-row {
+            margin-bottom: 15px;
+        }
+        .container {
+            width: 300px;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Button Component Test Cases</h1>
+    
+    <!-- Test 1: Block buttons -->
+    <div class="test-section">
+        <h2>1. Block Button Test (should fill container width)</h2>
+        <div class="label">Regular button (not block):</div>
+        <div class="container">
+            <ldesign-button theme="primary">Normal Button</ldesign-button>
+        </div>
+        
+        <div class="label">Block button (should fill 300px container):</div>
+        <div class="container">
+            <ldesign-button theme="primary" block>Block Button</ldesign-button>
+        </div>
+        
+        <div class="label">Block button with icon:</div>
+        <div class="container">
+            <ldesign-button theme="primary" block icon="add">Block with Icon</ldesign-button>
+        </div>
+    </div>
+    
+    <!-- Test 2: Icon position -->
+    <div class="test-section">
+        <h2>2. Icon Position Test</h2>
+        <div class="test-row">
+            <div class="label">Icon at start (default):</div>
+            <ldesign-button theme="primary" icon="add">Icon Start</ldesign-button>
+        </div>
+        
+        <div class="test-row">
+            <div class="label">Icon at end (icon should be on right):</div>
+            <ldesign-button theme="primary" icon="arrow-right" icon-position="end">Icon End</ldesign-button>
+        </div>
+        
+        <div class="test-row">
+            <div class="label">Icon only:</div>
+            <ldesign-button theme="primary" icon="add" shape="circle"></ldesign-button>
+            <ldesign-button theme="primary" icon="search" shape="round"></ldesign-button>
+        </div>
+    </div>
+    
+    <!-- Test 3: Text spacing -->
+    <div class="test-section">
+        <h2>3. Text Spacing Test (should be symmetric)</h2>
+        <div class="test-row">
+            <div class="label">Text only button (check left/right padding):</div>
+            <ldesign-button theme="primary">Text Only</ldesign-button>
+            <ldesign-button theme="default">Text Only</ldesign-button>
+            <ldesign-button theme="text">Text Only</ldesign-button>
+        </div>
+        
+        <div class="test-row">
+            <div class="label">Different sizes (all should have symmetric padding):</div>
+            <ldesign-button theme="primary" size="small">Small</ldesign-button>
+            <ldesign-button theme="primary" size="medium">Medium</ldesign-button>
+            <ldesign-button theme="primary" size="large">Large</ldesign-button>
+        </div>
+    </div>
+    
+    <!-- Test 4: Circle button icon centering -->
+    <div class="test-section">
+        <h2>4. Circle Button Icon Centering</h2>
+        <div class="test-row">
+            <div class="label">Circle buttons (icons should be centered):</div>
+            <ldesign-button theme="primary" icon="add" shape="circle"></ldesign-button>
+            <ldesign-button theme="default" icon="search" shape="circle"></ldesign-button>
+            <ldesign-button theme="text" icon="close" shape="circle"></ldesign-button>
+        </div>
+    </div>
+    
+    <!-- Test 5: Combined test -->
+    <div class="test-section">
+        <h2>5. Combined Features</h2>
+        <div class="label">Block button with icon at end:</div>
+        <div class="container">
+            <ldesign-button theme="primary" block icon="arrow-right" icon-position="end">Proceed to Next</ldesign-button>
+        </div>
+    </div>
+    
+</body>
+</html>

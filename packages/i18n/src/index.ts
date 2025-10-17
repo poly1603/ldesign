@@ -210,6 +210,13 @@ export {
   type I18nEnginePluginOptions
 } from './engine';
 
+// New optimized plugin
+export {
+  createI18nPlugin,
+  useI18n as useI18nPlugin,
+  type I18nPluginOptions
+} from './plugin';
+
 // Vue Adapter exports for convenience
 import { useI18n as vueUseI18n } from './adapters/vue';
 export {

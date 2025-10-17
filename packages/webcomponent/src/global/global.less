@@ -198,6 +198,36 @@ html {
 }
 
 /* Button 组件样式 */
+
+/* Temporary fix for missing button styles in compiled CSS */
+/* Icon End 图标在末尾 - These styles are not being compiled properly */
+.ldesign-button--icon-end {
+  .ldesign-button__content {
+    flex-direction: row-reverse !important;
+  }
+  
+  .ldesign-button__icon {
+    margin-left: 8px;
+    margin-right: 0;
+  }
+  
+  .ldesign-button__text {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+/* Enhanced Block button styles */
+.ldesign-button--block {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  
+  .ldesign-button__content {
+    width: 100%;
+    justify-content: center !important;
+  }
+}
 .ldesign-button {
   position: relative;
   display: inline-flex;

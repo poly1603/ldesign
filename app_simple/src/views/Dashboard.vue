@@ -240,14 +240,18 @@ onMounted(() => {
   username.value = localStorage.getItem('username') || t('common.guest')
   
   // 获取 Engine 信息
-  const engine = (window as any).__ENGINE__
-  if (engine?.config) {
-    engineInfo.value = {
-      name: engine.config.name || engineInfo.value.name,
-      version: engine.config.version || engineInfo.value.version,
-      environment: engine.config.environment || engineInfo.value.environment,
-      debug: engine.config.debug ?? engineInfo.value.debug
+  try {
+    const engine = (window as any).__ENGINE__
+    if (engine && typeof engine === 'object' && engine.config) {
+      engineInfo.value = {
+        name: engine.config.name || engineInfo.value.name,
+        version: engine.config.version || engineInfo.value.version,
+        environment: engine.config.environment || engineInfo.value.environment,
+        debug: engine.config.debug ?? engineInfo.value.debug
+      }
     }
+  } catch (e) {
+    console.debug('Engine info not available:', e)
   }
   
   // 加载路由历史

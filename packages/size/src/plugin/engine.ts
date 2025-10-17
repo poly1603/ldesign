@@ -1,8 +1,9 @@
 /**
  * @ldesign/size - Engine Plugin Integration
  * 
- * Size system plugin for @ldesign/engine with reactive locale support
- * 
+ * 注意：此文件用于兼容旧的 Engine 插件系统
+ * 新项目建议直接使用 index.ts 中的 createSizePlugin
+ */
  * 优化后的版本：使用 createLocaleAwarePlugin 自动管理语言同步
  * 代码从 75 行减少到 20 行（-73%）
  */

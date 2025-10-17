@@ -140,21 +140,24 @@ export class SidebarManager {
    */
   async generateThumbnails(): Promise<void> {
     if (!this.thumbnailsContainer || !this.viewer.document) {
+      console.warn('Cannot generate thumbnails: missing container or document');
       return;
     }
 
+    console.log('Starting thumbnail generation...');
     this.thumbnailsContainer.innerHTML = '';
     this.renderedThumbnails.clear();
 
-    // Setup intersection observer for lazy loading
-    this.setupIntersectionObserver();
-
     const totalPages = this.viewer.getTotalPages();
+    console.log(`Total pages to generate thumbnails: ${totalPages}`);
 
+    // Create all thumbnail items first
     for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
       const thumbnailItem = document.createElement('div');
       thumbnailItem.className = 'pdf-thumbnail-item';
       thumbnailItem.dataset.pageNumber = pageNum.toString();
+      // 添加底部间距，确保缩略图之间有间隔
+      thumbnailItem.style.marginBottom = '16px';
 
       // Add loading placeholder
       const placeholder = document.createElement('div');
@@ -171,7 +174,7 @@ export class SidebarManager {
         font-size: 14px;
         font-weight: 500;
       `;
-      placeholder.textContent = 'Loading...';
+      placeholder.textContent = `Page ${pageNum}`;
 
       const thumbnailCanvas = document.createElement('canvas');
       thumbnailCanvas.className = 'pdf-thumbnail-canvas';
@@ -191,6 +194,19 @@ export class SidebarManager {
       });
 
       this.thumbnailsContainer.appendChild(thumbnailItem);
+    }
+
+    // Setup intersection observer for lazy loading
+    this.setupIntersectionObserver();
+
+    // Immediately load first few thumbnails (visible ones)
+    const visibleCount = Math.min(5, totalPages); // Load first 5 thumbnails immediately
+    for (let i = 1; i <= visibleCount; i++) {
+      const item = this.thumbnailsContainer.querySelector(`[data-page-number="${i}"]`) as HTMLElement;
+      if (item && !this.renderedThumbnails.has(i)) {
+        this.renderedThumbnails.add(i);
+        this.loadThumbnail(item, i);
+      }
     }
 
     // Highlight current page
@@ -240,31 +256,52 @@ export class SidebarManager {
     const placeholder = thumbnailItem.querySelector('.pdf-thumbnail-placeholder') as HTMLElement;
     const canvas = thumbnailItem.querySelector('.pdf-thumbnail-canvas') as HTMLCanvasElement;
 
-    if (!canvas) return;
+    if (!canvas) {
+      console.error(`No canvas found for thumbnail ${pageNumber}`);
+      return;
+    }
 
     try {
+      console.log(`Loading thumbnail for page ${pageNumber}`);
+      
+      // Ensure canvas is initially hidden
+      canvas.style.display = 'none';
+      canvas.style.opacity = '0';
+      
       // Render the thumbnail
       await this.renderThumbnail(pageNumber, canvas);
 
-      // Hide placeholder and show canvas
+      // Hide placeholder and show canvas with animation
       if (placeholder) {
         placeholder.style.display = 'none';
+        placeholder.remove(); // Remove placeholder completely
       }
+      
+      // Show canvas with fade-in effect
       canvas.style.display = 'block';
-
-      // Add fade-in animation
-      canvas.style.opacity = '0';
       canvas.style.transition = 'opacity 0.3s ease';
-      setTimeout(() => {
+      
+      // Force browser to recalculate styles before animation
+      canvas.offsetHeight;
+      
+      // Trigger fade-in
+      requestAnimationFrame(() => {
         canvas.style.opacity = '1';
-      }, 10);
+      });
+      
     } catch (error) {
       console.error(`Failed to load thumbnail ${pageNumber}:`, error);
+      
+      // Show error state in placeholder
       if (placeholder) {
-        placeholder.textContent = 'Failed';
-        placeholder.style.background = '#fee';
+        placeholder.textContent = `Error: Page ${pageNumber}`;
+        placeholder.style.background = 'linear-gradient(135deg, #fee 0%, #fcc 100%)';
         placeholder.style.color = '#c33';
+        placeholder.style.fontWeight = '600';
       }
+      
+      // Hide canvas if rendering failed
+      canvas.style.display = 'none';
     }
   }
 
@@ -357,11 +394,11 @@ export class SidebarManager {
       const element = thumbnail as HTMLElement;
       if (element.dataset.pageNumber === pageNumber.toString()) {
         element.classList.add('active');
-        // Smooth scroll with better positioning
+        // Smooth scroll to top instead of center
         setTimeout(() => {
           element.scrollIntoView({
             behavior: 'smooth',
-            block: 'center',
+            block: 'start', // 改为滚动到顶部
             inline: 'nearest'
           });
         }, 100);

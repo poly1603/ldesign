@@ -44,9 +44,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   min-height: 32px;
-  padding: 4px 15px;
+  padding: 4px 16px;  // 调整为对称的左右内边距
   border: 1px solid transparent;
   border-radius: 6px;
   box-sizing: border-box;
@@ -66,9 +65,98 @@
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
   overflow: hidden; // 防止水波纹溢出
   
+  // 默认样式（当没有任何variant时）
+  color: var(--ld-text);
+  background-color: var(--ld-bg);
+  border-color: var(--ld-border);
+  
+  &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: var(--ld-primary-hover);
+    border-color: var(--ld-primary-hover);
+  }
+  
+  &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+    color: var(--ld-primary-active);
+    border-color: var(--ld-primary-active);
+  }
+  
   &:focus-visible {
     outline: 0;
     box-shadow: var(--ld-focus-ring);
+  }
+}
+
+// ==================== Type 类型兼容（语法糖） ====================
+// 为了保持向后兼容，保留 type 的样式支持
+.ldesign-button {
+  // Primary 主按钮
+  &--primary {
+    color: #ffffff;
+    background-color: var(--ld-primary);
+    border-color: var(--ld-primary);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ld-primary-hover);
+      border-color: var(--ld-primary-hover);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ld-primary-active);
+      border-color: var(--ld-primary-active);
+    }
+  }
+  
+  // Dashed 虚线按钮
+  &--dashed {
+    color: var(--ld-text);
+    background-color: transparent;
+    border-color: var(--ld-border);
+    border-style: dashed;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-primary-hover);
+      border-color: var(--ld-primary-hover);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-primary-active);
+      border-color: var(--ld-primary-active);
+    }
+  }
+  
+  // Text 文本按钮
+  &--text {
+    color: var(--ld-text);
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(0, 0, 0, 0.06);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  // Link 链接按钮
+  &--link {
+    color: var(--ld-primary);
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    height: auto;
+    line-height: inherit;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-primary-hover);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-primary-active);
+    }
   }
 }
 
@@ -97,60 +185,72 @@
   }
   
   &.ldesign-button--color-primary {
+    color: #ffffff;  // 确保文字始终是白色
     background-color: var(--ld-primary);
     border-color: var(--ld-primary);
     
     &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;  // 悬停时保持白色
       background-color: var(--ld-primary-hover);
       border-color: var(--ld-primary-hover);
     }
     
     &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;  // 激活时保持白色
       background-color: var(--ld-primary-active);
       border-color: var(--ld-primary-active);
     }
   }
   
   &.ldesign-button--color-danger {
+    color: #ffffff;
     background-color: var(--ld-error);
     border-color: var(--ld-error);
     
     &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;
       background-color: var(--ld-error-hover);
       border-color: var(--ld-error-hover);
     }
     
     &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;
       background-color: var(--ld-error-active);
       border-color: var(--ld-error-active);
     }
   }
   
   &.ldesign-button--color-success {
+    color: #ffffff;
     background-color: var(--ld-success);
     border-color: var(--ld-success);
     
     &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;
       background-color: var(--ld-success-hover);
       border-color: var(--ld-success-hover);
     }
     
     &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;
       background-color: var(--ld-success-active);
       border-color: var(--ld-success-active);
     }
   }
   
   &.ldesign-button--color-warning {
+    color: #ffffff;
     background-color: var(--ld-warning);
     border-color: var(--ld-warning);
     
     &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;
       background-color: var(--ld-warning-hover);
       border-color: var(--ld-warning-hover);
     }
     
     &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: #ffffff;
       background-color: var(--ld-warning-active);
       border-color: var(--ld-warning-active);
     }
@@ -282,7 +382,13 @@
     background-color: rgba(0, 0, 0, 0.04);
     
     &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-text);  // 保持原色
       background-color: rgba(0, 0, 0, 0.08);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-text);
+      background-color: rgba(0, 0, 0, 0.12);
     }
   }
   
@@ -291,7 +397,13 @@
     background-color: rgba(22, 119, 255, 0.1);
     
     &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-primary);  // 保持原色
       background-color: rgba(22, 119, 255, 0.15);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-primary);
+      background-color: rgba(22, 119, 255, 0.2);
     }
   }
   
@@ -300,7 +412,13 @@
     background-color: rgba(255, 77, 79, 0.1);
     
     &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-error);  // 保持原色
       background-color: rgba(255, 77, 79, 0.15);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-error);
+      background-color: rgba(255, 77, 79, 0.2);
     }
   }
   
@@ -309,7 +427,13 @@
     background-color: rgba(82, 196, 26, 0.1);
     
     &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-success);  // 保持原色
       background-color: rgba(82, 196, 26, 0.15);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-success);
+      background-color: rgba(82, 196, 26, 0.2);
     }
   }
   
@@ -318,7 +442,13 @@
     background-color: rgba(250, 173, 20, 0.1);
     
     &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-warning);  // 保持原色
       background-color: rgba(250, 173, 20, 0.15);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-warning);
+      background-color: rgba(250, 173, 20, 0.2);
     }
   }
 }
@@ -399,18 +529,20 @@
   // Small
   &--sm {
     min-height: 24px;
-    padding: 0 8px;
+    padding: 0px 8px;  // 调整为对称的内边距
     font-size: 14px;
     border-radius: 4px;
     
     &.ldesign-button--icon-only {
-      padding: 0 4px;
+      padding: 0px 6px;
       width: 24px;
     }
     
     &.ldesign-button--circle {
       width: 24px;
       height: 24px;
+      min-width: 24px;
+      min-height: 24px;
     }
     
     &.ldesign-button--round {
@@ -432,6 +564,8 @@
     &.ldesign-button--circle {
       width: 32px;
       height: 32px;
+      min-width: 32px;
+      min-height: 32px;
     }
     
     &.ldesign-button--round {
@@ -442,7 +576,7 @@
   // Large
   &--lg {
     min-height: 40px;
-    padding: 6px 20px;
+    padding: 6px 20px;  // 保持对称
     font-size: 16px;
     border-radius: 8px;
     
@@ -454,6 +588,8 @@
     &.ldesign-button--circle {
       width: 40px;
       height: 40px;
+      min-width: 40px;
+      min-height: 40px;
     }
     
     &.ldesign-button--round {
@@ -470,11 +606,31 @@
 .ldesign-button {
   // Circle 圆形
   &--circle {
-    padding: 0;
+    padding: 0 !important;
     border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     
     .ldesign-button__content {
       gap: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .ldesign-button__icon {
+      margin: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    // 圆形按钮不需要文字间距
+    .ldesign-button__text {
+      display: none;
     }
   }
   
@@ -485,6 +641,79 @@
 }
 
 // ==================== 状态 States ====================
+
+// Danger 危险按钮组合
+.ldesign-button--danger {
+  // Primary + danger
+  &.ldesign-button--primary {
+    background-color: var(--ld-error);
+    border-color: var(--ld-error);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ld-error-hover);
+      border-color: var(--ld-error-hover);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      background-color: var(--ld-error-active);
+      border-color: var(--ld-error-active);
+    }
+  }
+  
+  // Default + danger (只有边框)
+  &:not(.ldesign-button--primary):not(.ldesign-button--text):not(.ldesign-button--link):not(.ldesign-button--dashed) {
+    color: var(--ld-error);
+    background-color: var(--ld-bg);
+    border-color: var(--ld-error);
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-error-hover);
+      border-color: var(--ld-error-hover);
+    }
+    
+    &:active:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-error-active);
+      border-color: var(--ld-error-active);
+    }
+  }
+  
+  // Dashed + danger
+  &.ldesign-button--dashed {
+    color: var(--ld-error);
+    background-color: transparent;
+    border-color: var(--ld-error);
+    border-style: dashed;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-error-hover);
+      border-color: var(--ld-error-hover);
+    }
+  }
+  
+  // Text + danger
+  &.ldesign-button--text {
+    color: var(--ld-error);
+    background-color: transparent;
+    border: none;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-error-hover);
+      background-color: rgba(255, 77, 79, 0.06);
+    }
+  }
+  
+  // Link + danger
+  &.ldesign-button--link {
+    color: var(--ld-error);
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    
+    &:hover:not(:disabled):not(.ldesign-button--disabled):not(.ldesign-button--loading) {
+      color: var(--ld-error-hover);
+    }
+  }
+}
 
 // Ghost 幽灵按钮
 .ldesign-button--ghost {
@@ -539,19 +768,39 @@
 
 // Block 块级按钮
 .ldesign-button--block {
-  width: 100%;
-  display: flex;
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  
+  .ldesign-button__content {
+    width: 100%;
+    justify-content: center !important;
+  }
 }
 
 // Icon Only 仅图标
 .ldesign-button--icon-only {
-  // 在尺寸中定义
+  gap: 0;
+  
+  .ldesign-button__content {
+    gap: 0;
+  }
 }
 
 // Icon End 图标在末尾
 .ldesign-button--icon-end {
   .ldesign-button__content {
-    flex-direction: row-reverse;
+    flex-direction: row-reverse !important;
+  }
+  
+  .ldesign-button__icon {
+    margin-left: 8px;
+    margin-right: 0;
+  }
+  
+  .ldesign-button__text {
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 
@@ -568,18 +817,29 @@
   &__content {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
+    width: 100%;
+    height: 100%;
   }
   
   &__icon {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     line-height: 0;
     font-size: 14px;
+    flex-shrink: 0;
   }
   
   &__text {
     display: inline-block;
+    line-height: 1.5714;
+    
+    // 当没有图标时，移除文本的间隙
+    &:only-child {
+      margin: 0;
+    }
   }
 }
 

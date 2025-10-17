@@ -46,13 +46,14 @@ const currentMode = ref<ThemeMode>('system')
 const systemPreference = ref<'light' | 'dark'>('light')
 
 // 响应式国际化支持
-const appLocale = inject<any>('app-locale', null)
+// 使用标准的 'locale' key
+const appLocale = inject<any>('locale', null)
 
 // 调试日志
 if (import.meta.env.DEV) {
-  console.log('[VueThemeModeSwitcher] appLocale injected:', appLocale)
+  console.log('[VueThemeModeSwitcher] locale injected:', appLocale)
   if (appLocale) {
-    console.log('[VueThemeModeSwitcher] appLocale.value:', appLocale.value)
+    console.log('[VueThemeModeSwitcher] locale.value:', appLocale.value)
   }
 }
 

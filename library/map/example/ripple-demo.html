@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>水波纹标记示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f5f5f5;
+    }
+    
+    #map {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+    
+    .controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 1000;
+      min-width: 200px;
+    }
+    
+    .controls h3 {
+      margin: 0 0 15px 0;
+      font-size: 16px;
+      color: #333;
+    }
+    
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #1890ff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background: #40a9ff;
+    }
+    
+    button:last-child {
+      margin-bottom: 0;
+    }
+    
+    button.danger {
+      background: #ff4d4f;
+    }
+    
+    button.danger:hover {
+      background: #ff7875;
+    }
+    
+    .info {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  
+  <div class="controls">
+    <h3>水波纹标记控制</h3>
+    <button id="add-landmarks">添加地标点（带水波纹）</button>
+    <button id="add-random">添加随机点</button>
+    <button id="clear-all" class="danger">清除所有标记</button>
+  </div>
+  
+  <div class="info" id="info">
+    准备就绪
+  </div>
+
+  <script type="module">
+    import { MapRenderer } from '../dist/map-renderer.esm.js';
+    
+    // 初始化地图
+    const mapRenderer = new MapRenderer('map', {
+      mode: '2d',
+      longitude: 113.28,
+      latitude: 23.13,
+      zoom: 10,
+      smoothZoom: true,
+      showTooltip: false
+    });
+    
+    const info = document.getElementById('info');
+    let markerCount = 0;
+    
+    // 添加地标按钮事件
+    document.getElementById('add-landmarks').addEventListener('click', () => {
+      const landmarks = [
+        { name: '广州塔', longitude: 113.324, latitude: 23.106, color: [255, 0, 0] },
+        { name: '白云山', longitude: 113.299, latitude: 23.182, color: [0, 255, 0] },
+        { name: '珠江新城', longitude: 113.321, latitude: 23.120, color: [0, 0, 255] },
+        { name: '天河体育中心', longitude: 113.323, latitude: 23.140, color: [255, 255, 0] },
+        { name: '广州南站', longitude: 113.269, latitude: 22.989, color: [255, 0, 255] },
+        { name: '北京路', longitude: 113.267, latitude: 23.131, color: [0, 255, 255] },
+        { name: '上下九', longitude: 113.244, latitude: 23.115, color: [255, 128, 0] },
+        { name: '海心沙', longitude: 113.320, latitude: 23.113, color: [128, 0, 255] },
+        { name: '花城广场', longitude: 113.322, latitude: 23.117, color: [0, 128, 128] },
+        { name: '广州东站', longitude: 113.324, latitude: 23.152, color: [255, 64, 128] }
+      ];
+      
+      // 使用新的水波纹标记方法
+      const rippleMarkers = landmarks.map((landmark, index) => ({
+        id: `landmark-${Date.now()}-${index}`,
+        longitude: landmark.longitude,
+        latitude: landmark.latitude,
+        color: landmark.color,
+        options: {
+          baseRadius: 25,      // 基础半径
+          rippleCount: 3,      // 3个波纹圈
+          animationSpeed: 2500 // 2.5秒一个周期
+        }
+      }));
+      
+      mapRenderer.addRippleMarkers(rippleMarkers);
+      markerCount += landmarks.length;
+      info.textContent = `已添加 ${landmarks.length} 个水波纹标记，总计: ${markerCount} 个`;
+    });
+    
+    // 添加随机点按钮事件
+    document.getElementById('add-random').addEventListener('click', () => {
+      const colors = [
+        [255, 87, 34],   // 深橙色
+        [33, 150, 243],  // 蓝色
+        [76, 175, 80],   // 绿色
+        [255, 193, 7],   // 琥珀色
+        [156, 39, 176],  // 紫色
+        [0, 188, 212],   // 青色
+        [233, 30, 99],   // 粉红色
+        [63, 81, 181]    // 靛蓝色
+      ];
+      
+      const randomMarkers = [];
+      for (let i = 0; i < 5; i++) {
+        const lng = 113.1 + Math.random() * 0.4;
+        const lat = 22.9 + Math.random() * 0.5;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        randomMarkers.push({
+          id: `random-${Date.now()}-${i}`,
+          longitude: lng,
+          latitude: lat,
+          color: color,
+          options: {
+            baseRadius: 15 + Math.random() * 20,
+            rippleCount: 2 + Math.floor(Math.random() * 3),
+            animationSpeed: 2000 + Math.random() * 2000
+          }
+        });
+      }
+      
+      mapRenderer.addRippleMarkers(randomMarkers);
+      markerCount += 5;
+      info.textContent = `已添加 5 个随机水波纹标记，总计: ${markerCount} 个`;
+    });
+    
+    // 清除所有标记按钮事件
+    document.getElementById('clear-all').addEventListener('click', () => {
+      mapRenderer.clearRippleMarkers();
+      markerCount = 0;
+      info.textContent = '已清除所有水波纹标记';
+    });
+    
+    // 自动添加一些初始标记
+    setTimeout(() => {
+      document.getElementById('add-landmarks').click();
+    }, 500);
+  </script>
+</body>
+</html>

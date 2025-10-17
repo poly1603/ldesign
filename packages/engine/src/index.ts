@@ -89,6 +89,17 @@ export {
   usePlugins
 } from './vue/composables'
 
+// 插件状态管理
+export {
+  usePluginState,
+  usePluginStates,
+  useLocale,
+  useTheme,
+  useSize,
+  useDark,
+  createSharedState
+} from './composables/use-plugin-state'
+
 // ==================== 插件导出 ====================
 export { createI18nEnginePlugin } from './plugins/i18n'
 export type { I18nEnginePluginOptions } from './plugins/i18n'

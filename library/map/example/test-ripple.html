@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>水波纹测试</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    
+    #map {
+      width: 100vw;
+      height: 100vh;
+    }
+    
+    .controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+    
+    .controls h3 {
+      margin: 0 0 15px 0;
+      font-size: 18px;
+    }
+    
+    button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #1890ff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    button:hover {
+      background: #40a9ff;
+    }
+    
+    button.danger {
+      background: #ff4d4f;
+    }
+    
+    button.danger:hover {
+      background: #ff7875;
+    }
+    
+    .status {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 4px;
+      font-size: 14px;
+      z-index: 1000;
+    }
+    
+    .status span {
+      color: #52c41a;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  
+  <div class="controls">
+    <h3>水波纹测试控制</h3>
+    <button id="add-single">添加单个水波纹</button>
+    <button id="add-multiple">添加多个水波纹</button>
+    <button id="add-colored">添加彩色水波纹</button>
+    <button id="clear-all" class="danger">清除所有</button>
+  </div>
+  
+  <div class="status">
+    状态: <span id="status">准备就绪</span> | 
+    标记数: <span id="count">0</span>
+  </div>
+
+  <script type="module">
+    import { MapRenderer } from '../dist/map-renderer.esm.js';
+    
+    // 初始化地图
+    console.log('初始化地图...');
+    const mapRenderer = new MapRenderer('map', {
+      mode: '2d',
+      longitude: 113.324,
+      latitude: 23.106,
+      zoom: 11,
+      smoothZoom: true,
+      showTooltip: false
+    });
+    
+    let markerCount = 0;
+    const statusEl = document.getElementById('status');
+    const countEl = document.getElementById('count');
+    
+    function updateStatus(message) {
+      statusEl.textContent = message;
+      countEl.textContent = markerCount;
+      console.log(`[状态] ${message}, 标记数: ${markerCount}`);
+    }
+    
+    // 添加单个水波纹
+    document.getElementById('add-single').addEventListener('click', () => {
+      const id = `single-${Date.now()}`;
+      const lng = 113.324;
+      const lat = 23.106;
+      
+      console.log(`添加单个水波纹: ${id} at [${lng}, ${lat}]`);
+      
+      mapRenderer.addRippleMarker(id, lng, lat, [255, 0, 0], {
+        baseRadius: 50,
+        rippleCount: 3,
+        animationSpeed: 2000
+      });
+      
+      markerCount++;
+      updateStatus('已添加单个红色水波纹');
+    });
+    
+    // 添加多个水波纹
+    document.getElementById('add-multiple').addEventListener('click', () => {
+      const positions = [
+        { lng: 113.299, lat: 23.182, color: [0, 255, 0] },  // 绿色
+        { lng: 113.321, lat: 23.120, color: [0, 0, 255] },  // 蓝色
+        { lng: 113.323, lat: 23.140, color: [255, 255, 0] }, // 黄色
+        { lng: 113.269, lat: 22.989, color: [255, 0, 255] }, // 品红
+      ];
+      
+      const markers = positions.map((pos, i) => ({
+        id: `multiple-${Date.now()}-${i}`,
+        longitude: pos.lng,
+        latitude: pos.lat,
+        color: pos.color,
+        options: {
+          baseRadius: 30 + Math.random() * 20,
+          rippleCount: 3,
+          animationSpeed: 2500
+        }
+      }));
+      
+      console.log('添加多个水波纹:', markers);
+      mapRenderer.addRippleMarkers(markers);
+      
+      markerCount += markers.length;
+      updateStatus(`已添加 ${markers.length} 个彩色水波纹`);
+    });
+    
+    // 添加彩色水波纹组
+    document.getElementById('add-colored').addEventListener('click', () => {
+      const colors = [
+        [255, 87, 34],   // 深橙色
+        [33, 150, 243],  // 蓝色
+        [76, 175, 80],   // 绿色
+        [156, 39, 176],  // 紫色
+        [0, 188, 212],   // 青色
+      ];
+      
+      const markers = [];
+      for (let i = 0; i < 5; i++) {
+        const angle = (i / 5) * Math.PI * 2;
+        const radius = 0.05;
+        const centerLng = 113.324;
+        const centerLat = 23.106;
+        
+        markers.push({
+          id: `colored-${Date.now()}-${i}`,
+          longitude: centerLng + Math.cos(angle) * radius,
+          latitude: centerLat + Math.sin(angle) * radius,
+          color: colors[i],
+          options: {
+            baseRadius: 40,
+            rippleCount: 3,
+            animationSpeed: 2000 + i * 200  // 不同速度
+          }
+        });
+      }
+      
+      console.log('添加彩色水波纹组:', markers);
+      mapRenderer.addRippleMarkers(markers);
+      
+      markerCount += markers.length;
+      updateStatus(`已添加 ${markers.length} 个围绕中心的彩色水波纹`);
+    });
+    
+    // 清除所有
+    document.getElementById('clear-all').addEventListener('click', () => {
+      console.log('清除所有水波纹标记');
+      mapRenderer.clearRippleMarkers();
+      markerCount = 0;
+      updateStatus('已清除所有水波纹');
+    });
+    
+    // 自动添加一个初始标记
+    setTimeout(() => {
+      console.log('自动添加初始标记');
+      document.getElementById('add-single').click();
+    }, 1000);
+    
+    // 监听动画状态
+    let frameCount = 0;
+    function checkAnimation() {
+      frameCount++;
+      if (frameCount % 60 === 0) {
+        console.log(`动画帧: ${frameCount}`);
+      }
+      requestAnimationFrame(checkAnimation);
+    }
+    checkAnimation();
+  </script>
+</body>
+</html>

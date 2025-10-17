@@ -12,6 +12,7 @@ export interface SearchOptions {
   caseSensitive?: boolean
   wholeWord?: boolean
   useRegex?: boolean
+  fuzzySearch?: boolean
 }
 
 /**
@@ -27,7 +28,14 @@ function findText(editorElement: HTMLElement, searchText: string, options: Searc
   let pattern: RegExp
 
   try {
-    if (options.useRegex) {
+    if (options.fuzzySearch) {
+      // 模糊搜索：将搜索文本转换为允许字符间有其他字符的模式
+      const fuzzyPattern = searchText
+        .split('')
+        .map(char => char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('.*?')
+      pattern = new RegExp(fuzzyPattern, options.caseSensitive ? 'g' : 'gi')
+    } else if (options.useRegex) {
       pattern = new RegExp(searchText, options.caseSensitive ? 'g' : 'gi')
     } else {
       const escapedText = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -231,26 +239,100 @@ function clearHighlights(editorElement: HTMLElement): void {
 }
 
 /**
- * 显示查找替换对话框
+ * 显示查找替换对话框 - 无遮罩可拖拽版本
  */
 export function showFindReplaceDialog(editor: any): void {
-  // 创建对话框容器
+  // 如果对话框已存在，先移除
+  const existingDialog = document.querySelector('.find-replace-dialog')
+  if (existingDialog) {
+    document.body.removeChild(existingDialog)
+  }
+
+  // 获取编辑器元素
+  const editorElement = editor.contentElement || editor.getElement()
+  clearHighlights(editorElement)
+
+  // 创建对话框容器 - 无遮罩，可拖拽
   const dialog = document.createElement('div')
   dialog.className = 'find-replace-dialog'
   dialog.style.cssText = `
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 60px;
+    right: 20px;
     background: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
     padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 10000;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    z-index: 1000;
     min-width: 400px;
+    font-family: system-ui, -apple-system, sans-serif;
   `
 
+  // 拖拽功能变量
+  let isDragging = false
+  let dragStartX = 0
+  let dragStartY = 0
+  let dialogStartX = 0
+  let dialogStartY = 0
+
+  // 拖拽事件处理
+  const startDrag = (e: MouseEvent) => {
+    isDragging = true
+    dragStartX = e.clientX
+    dragStartY = e.clientY
+    const rect = dialog.getBoundingClientRect()
+    dialogStartX = rect.left
+    dialogStartY = rect.top
+    dialog.style.cursor = 'grabbing'
+    e.preventDefault()
+  }
+
+  const onDrag = (e: MouseEvent) => {
+    if (!isDragging) return
+    const deltaX = e.clientX - dragStartX
+    const deltaY = e.clientY - dragStartY
+    dialog.style.left = `${dialogStartX + deltaX}px`
+    dialog.style.top = `${dialogStartY + deltaY}px`
+    dialog.style.right = 'auto'
+  }
+
+  const stopDrag = () => {
+    if (isDragging) {
+      isDragging = false
+      dialog.style.cursor = 'move'
+    }
+  }
+
+  // 清理函数
+  const cleanup = () => {
+    document.body.removeChild(dialog)
+    document.removeEventListener('mousemove', onDrag)
+    document.removeEventListener('mouseup', stopDrag)
+    clearHighlights(editorElement)
+  }
+
+  // 标题栏（可拖拽区域）
+  const titleBar = document.createElement('div')
+  titleBar.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e5e7eb; cursor: move; user-select: none;">
+      <h3 style="margin: 0; font-size: 16px; font-weight: 600;">🔍 查找和替换</h3>
+      <button class="close-btn" style="border: none; background: none; font-size: 20px; cursor: pointer; padding: 0; width: 24px; height: 24px; color: #666;">&times;</button>
+    </div>
+  `
+  dialog.appendChild(titleBar)
+
+  // 绑定拖拽
+  const title = titleBar.querySelector('h3')!
+  title.addEventListener('mousedown', startDrag)
+  titleBar.addEventListener('mousedown', (e) => {
+    if (e.target === titleBar || e.target === title) startDrag(e)
+  })
+  document.addEventListener('mousemove', onDrag)
+  document.addEventListener('mouseup', stopDrag)
+
+  // 关闭按钮
+  titleBar.querySelector('.close-btn')!.addEventListener('click', cleanup)
+  
   // 创建查找输入框
   const findInput = document.createElement('input')
   findInput.type = 'text'
@@ -262,6 +344,19 @@ export function showFindReplaceDialog(editor: any): void {
     border: 1px solid #ddd;
     border-radius: 4px;
   `
+  
+  // 实时高亮 - 输入时自动查找
+  findInput.addEventListener('input', () => {
+    if (findInput.value) {
+      findText(editorElement, findInput.value, {
+        caseSensitive: caseSensitive.checkbox.checked,
+        wholeWord: wholeWord.checkbox.checked,
+        useRegex: useRegex.checkbox.checked
+      })
+    } else {
+      clearHighlights(editorElement)
+    }
+  })
 
   // 创建替换输入框
   const replaceInput = document.createElement('input')
@@ -322,10 +417,7 @@ export function showFindReplaceDialog(editor: any): void {
     alert(`替换了 ${count} 处`)
   })
 
-  const closeButton = createButton('关闭', () => {
-    document.body.removeChild(dialog)
-    clearHighlights(editor.getElement())
-  })
+  const closeButton = createButton('关闭', cleanup)
 
   buttons.appendChild(findButton)
   buttons.appendChild(replaceButton)
@@ -347,8 +439,7 @@ export function showFindReplaceDialog(editor: any): void {
   // ESC 键关闭
   dialog.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      document.body.removeChild(dialog)
-      clearHighlights(editor.getElement())
+      cleanup()
     }
   })
 }

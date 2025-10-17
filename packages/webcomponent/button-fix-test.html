@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Fix Test</title>
+    <link rel="stylesheet" href="./dist/ldesign-webcomponent/ldesign-webcomponent.css">
+    <script type="module" src="./dist/ldesign-webcomponent/ldesign-webcomponent.esm.js"></script>
+    <style>
+        /* Manually inject missing styles as a temporary fix */
+        .ldesign-button--icon-end .ldesign-button__content {
+            flex-direction: row-reverse !important;
+        }
+        
+        .ldesign-button--icon-end .ldesign-button__icon {
+            margin-left: 8px;
+            margin-right: 0;
+        }
+        
+        .ldesign-button--icon-end .ldesign-button__text {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        /* Enhance block button styles */
+        .ldesign-button--block {
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+        }
+        
+        .ldesign-button--block .ldesign-button__content {
+            width: 100%;
+            justify-content: center !important;
+        }
+
+        /* Test container */
+        body {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+        }
+        
+        .test-section h2 {
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        
+        .test-case {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .test-case h3 {
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .container {
+            width: 300px;
+            padding: 10px;
+            background: #fff;
+            border: 1px dashed #ccc;
+            margin-top: 10px;
+        }
+        
+        .test-row {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Button Component - Fix Verification</h1>
+    
+    <div class="test-section">
+        <h2>1. Block Button Test</h2>
+        <div class="test-case">
+            <h3>Block button should fill container width (300px):</h3>
+            <div class="container">
+                <ldesign-button block type="primary">Block Button</ldesign-button>
+            </div>
+        </div>
+        
+        <div class="test-case">
+            <h3>Block button with icon:</h3>
+            <div class="container">
+                <ldesign-button block type="primary" icon="arrow-right">Block with Icon</ldesign-button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Icon Position Test</h2>
+        <div class="test-case">
+            <h3>Icon at start (default):</h3>
+            <div class="test-row">
+                <ldesign-button type="primary" icon="arrow-left">Icon Start</ldesign-button>
+            </div>
+        </div>
+        
+        <div class="test-case">
+            <h3>Icon at end:</h3>
+            <div class="test-row">
+                <ldesign-button type="primary" icon="arrow-right" icon-position="end">Icon End</ldesign-button>
+            </div>
+        </div>
+        
+        <div class="test-case">
+            <h3>Block button with icon at end:</h3>
+            <div class="container">
+                <ldesign-button block type="primary" icon="arrow-right" icon-position="end">Submit Form</ldesign-button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Text Padding Symmetry Test</h2>
+        <div class="test-case">
+            <h3>All sizes should have equal left/right padding:</h3>
+            <div class="test-row">
+                <ldesign-button size="small" type="primary">Small Button</ldesign-button>
+            </div>
+            <div class="test-row">
+                <ldesign-button size="middle" type="primary">Middle Button</ldesign-button>
+            </div>
+            <div class="test-row">
+                <ldesign-button size="large" type="primary">Large Button</ldesign-button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Circular Button Icon Centering</h2>
+        <div class="test-case">
+            <h3>Icon should be perfectly centered in circular buttons:</h3>
+            <div class="test-row">
+                <ldesign-button shape="circle" icon="arrow-right" size="small"></ldesign-button>
+                <ldesign-button shape="circle" icon="arrow-right" size="middle"></ldesign-button>
+                <ldesign-button shape="circle" icon="arrow-right" size="large"></ldesign-button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Combined Test Cases</h2>
+        <div class="test-case">
+            <h3>Various button configurations:</h3>
+            <div class="container">
+                <div class="test-row">
+                    <ldesign-button block variant="solid" color="primary">Solid Block</ldesign-button>
+                </div>
+                <div class="test-row">
+                    <ldesign-button block variant="outlined" color="primary" icon="arrow-right" icon-position="end">Outlined with End Icon</ldesign-button>
+                </div>
+                <div class="test-row">
+                    <ldesign-button block variant="filled" color="danger" icon="warning">Danger Filled</ldesign-button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Log button dimensions for verification
+        document.addEventListener('DOMContentLoaded', () => {
+            const blockButtons = document.querySelectorAll('.ldesign-button--block');
+            blockButtons.forEach((btn, index) => {
+                console.log(`Block button ${index + 1} width:`, btn.offsetWidth, 'Container width:', btn.parentElement.offsetWidth);
+            });
+            
+            // Check if icon-end class is applied
+            const iconEndButtons = document.querySelectorAll('[icon-position="end"]');
+            iconEndButtons.forEach((btn, index) => {
+                console.log(`Icon-end button ${index + 1} classes:`, btn.classList.toString());
+            });
+        });
+    </script>
+</body>
+</html>

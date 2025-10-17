@@ -26,8 +26,9 @@ export const sizePlugin: Plugin = {
     // Provide manager
     app.provide(SIZE_MANAGER_KEY, manager)
     
-    // Use existing app-locale if available, otherwise provide our own
-    const existingLocale = app._context?.provides?.['app-locale']
+    // Use existing locale if available, otherwise provide our own
+    // 使用标准的 'locale' key
+    const existingLocale = app._context?.provides?.['locale']
     if (existingLocale && typeof existingLocale.value !== 'undefined') {
       // Use the existing reactive locale - this ensures all components share the same ref
       currentLocale = existingLocale
@@ -37,7 +38,7 @@ export const sizePlugin: Plugin = {
       }
     } else {
       // Provide our locale if none exists
-      app.provide('app-locale', currentLocale)
+      app.provide('locale', currentLocale)
       app.config.globalProperties.$setSizeLocale = (locale: string) => {
         currentLocale.value = locale
       }

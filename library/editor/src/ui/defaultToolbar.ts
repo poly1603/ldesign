@@ -368,9 +368,26 @@ export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
     title: '查找',
     icon: 'search',
     command: () => {
-      const text = prompt('查找内容:')
-      if (text && window.find) {
-        window.find(text)
+      console.log('[Search] Button clicked, showing find dialog')
+      // 使用全局函数打开查找对话框
+      if ((window as any).openFindDialog) {
+        (window as any).openFindDialog()
+      } else {
+        // 动态导入查找替换对话框
+        import('../plugins/utils/find-replace').then(module => {
+          if (module.showFindReplaceDialog) {
+            console.log('[Search] Calling showFindReplaceDialog')
+            // 传递 editor 对象到查找替换对话框
+            module.showFindReplaceDialog((window as any).editor)
+          }
+        }).catch(err => {
+          console.error('[Search] Failed to load find-replace module:', err)
+          // 备用方案：使用简单的 prompt
+          const text = prompt('查找内容:')
+          if (text && (window as any).find) {
+            (window as any).find(text)
+          }
+        })
       }
       return true
     },

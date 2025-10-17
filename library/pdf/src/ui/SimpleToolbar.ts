@@ -82,6 +82,18 @@ export class SimpleToolbar extends EventEmitter {
       
       <div class="toolbar-separator"></div>
       
+      <!-- 视图模式切换 -->
+      <div class="toolbar-group">
+        <button class="toolbar-btn" id="togglePageMode" title="切换视图模式">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" id="pageModeIcon">
+            <!-- 单页图标 -->
+            <rect x="7" y="4" width="10" height="16" stroke="currentColor" stroke-width="2" rx="1"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="toolbar-separator"></div>
+      
       ${this.options.showZoom ? `
       <div class="toolbar-group">
         <!-- 缩放控制 -->
@@ -527,6 +539,35 @@ export class SimpleToolbar extends EventEmitter {
         this.viewer.download();
       });
     }
+    
+    // 页面模式切换
+    const togglePageModeBtn = this.toolbar.querySelector('#togglePageMode');
+    const pageModeIcon = this.toolbar.querySelector('#pageModeIcon');
+    
+    if (togglePageModeBtn && pageModeIcon) {
+      togglePageModeBtn.addEventListener('click', () => {
+        const currentMode = this.viewer.getPageMode();
+        const newMode = currentMode === 'single' ? 'continuous' : 'single';
+        this.viewer.setPageMode(newMode);
+        
+        // 更新图标和提示
+        if (newMode === 'continuous') {
+          (togglePageModeBtn as HTMLButtonElement).title = '切换到单页视图';
+          pageModeIcon.innerHTML = `
+            <!-- 连续页面图标 -->
+            <rect x="7" y="2" width="10" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
+            <rect x="7" y="11" width="10" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
+            <rect x="7" y="20" width="10" height="2" stroke="currentColor" stroke-width="1.5" rx="1"/>
+          `;
+        } else {
+          (togglePageModeBtn as HTMLButtonElement).title = '切换到连续视图';
+          pageModeIcon.innerHTML = `
+            <!-- 单页图标 -->
+            <rect x="7" y="4" width="10" height="16" stroke="currentColor" stroke-width="2" rx="1"/>
+          `;
+        }
+      });
+    }
   }
 
   /**
@@ -543,10 +584,18 @@ export class SimpleToolbar extends EventEmitter {
       }
     });
 
-    // 页面改变
-    this.viewer.on('page-changed', (pageNum: number) => {
+    // 页面改变 - 同时监听两种事件名以确保兼容性
+    const updatePageNumber = (pageNum: number) => {
       if (this.pageInput) {
         this.pageInput.value = pageNum.toString();
+      }
+    };
+    
+    this.viewer.on('page-change', updatePageNumber);
+    this.viewer.on('page-changed', updatePageNumber);
+    this.viewer.on('page-rendered', (data: any) => {
+      if (this.pageInput && data.pageNumber) {
+        this.pageInput.value = data.pageNumber.toString();
       }
     });
 

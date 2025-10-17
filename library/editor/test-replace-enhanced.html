@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>增强查找替换功能测试</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    
+    .test-controls {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+    
+    .test-controls button {
+      margin-right: 10px;
+      padding: 8px 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .test-controls button:hover {
+      background: #0056b3;
+    }
+    
+    .editor-container {
+      border: 2px solid #e0e0e0;
+      border-radius: 4px;
+      min-height: 400px;
+      padding: 20px;
+      background: white;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    
+    .editor-highlight {
+      background: #ffeb3b !important;
+      color: #000 !important;
+      padding: 2px 0;
+      border-radius: 2px;
+    }
+    
+    #status {
+      margin-top: 10px;
+      padding: 10px;
+      background: #e8f5e9;
+      border-radius: 4px;
+      color: #2e7d32;
+      font-size: 14px;
+      min-height: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 增强查找替换功能测试</h1>
+    
+    <div class="test-controls">
+      <button onclick="testFindOnly()">测试仅查找</button>
+      <button onclick="testReplaceAll()">测试全部替换</button>
+      <button onclick="clearHighlights()">清除高亮</button>
+      <button onclick="resetContent()">重置内容</button>
+      <div id="status">准备就绪</div>
+    </div>
+    
+    <div id="editor" class="editor-container" contenteditable="true">
+      <p>这是一个测试文本，包含多个test单词。</p>
+      <p>Test在这里出现了，test也在这里。TEST是大写的。</p>
+      <p>我们需要测试查找和替换功能，确保test能被正确处理。</p>
+      <p>这一行有test，下一行也有test。</p>
+      <p>最后一个test在这里结束。</p>
+    </div>
+  </div>
+
+  <script>
+    // 模拟统一对话框
+    function showUnifiedDialog(config) {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      `;
+      
+      const dialog = document.createElement('div');
+      dialog.style.cssText = `
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        width: ${config.width || 500}px;
+        max-width: 90vw;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      `;
+      
+      // 标题
+      const title = document.createElement('h2');
+      title.style.cssText = 'margin: 0 0 20px 0; color: #333; display: flex; align-items: center; gap: 10px;';
+      title.innerHTML = (config.icon || '') + config.title;
+      dialog.appendChild(title);
+      
+      // 表单
+      const form = document.createElement('form');
+      const formData = {};
+      
+      config.fields.forEach(field => {
+        const fieldContainer = document.createElement('div');
+        fieldContainer.style.cssText = 'margin-bottom: 16px;';
+        
+        const label = document.createElement('label');
+        label.style.cssText = 'display: block; margin-bottom: 4px; color: #666; font-size: 14px;';
+        label.textContent = field.label;
+        fieldContainer.appendChild(label);
+        
+        if (field.type === 'text') {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.id = field.id;
+          input.placeholder = field.placeholder || '';
+          input.value = field.defaultValue || '';
+          input.required = field.required;
+          input.style.cssText = 'width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;';
+          fieldContainer.appendChild(input);
+          formData[field.id] = field.defaultValue || '';
+          
+          input.addEventListener('input', (e) => {
+            formData[field.id] = e.target.value;
+          });
+        } else if (field.type === 'checkbox') {
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.id = field.id;
+          checkbox.checked = field.defaultValue;
+          checkbox.style.cssText = 'margin-right: 8px;';
+          label.style.cssText = 'display: inline-flex; align-items: center; color: #666; font-size: 14px; cursor: pointer;';
+          label.innerHTML = '';
+          label.appendChild(checkbox);
+          label.appendChild(document.createTextNode(field.label));
+          fieldContainer.innerHTML = '';
+          fieldContainer.appendChild(label);
+          formData[field.id] = field.defaultValue;
+          
+          checkbox.addEventListener('change', (e) => {
+            formData[field.id] = e.target.checked;
+          });
+        } else if (field.type === 'select') {
+          const select = document.createElement('select');
+          select.id = field.id;
+          select.style.cssText = 'width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;';
+          
+          field.options.forEach(option => {
+            const opt = document.createElement('option');
+            opt.value = option.value;
+            opt.textContent = option.label;
+            if (option.value === field.defaultValue) {
+              opt.selected = true;
+            }
+            select.appendChild(opt);
+          });
+          
+          fieldContainer.appendChild(select);
+          formData[field.id] = field.defaultValue || field.options[0].value;
+          
+          select.addEventListener('change', (e) => {
+            formData[field.id] = e.target.value;
+          });
+        }
+        
+        form.appendChild(fieldContainer);
+      });
+      
+      // 按钮
+      const buttonContainer = document.createElement('div');
+      buttonContainer.style.cssText = 'display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;';
+      
+      const cancelBtn = document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.textContent = '取消';
+      cancelBtn.style.cssText = 'padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;';
+      cancelBtn.onclick = () => overlay.remove();
+      
+      const submitBtn = document.createElement('button');
+      submitBtn.type = 'submit';
+      submitBtn.textContent = '确定';
+      submitBtn.style.cssText = 'padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;';
+      
+      buttonContainer.appendChild(cancelBtn);
+      buttonContainer.appendChild(submitBtn);
+      form.appendChild(buttonContainer);
+      
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        overlay.remove();
+        if (config.onSubmit) {
+          config.onSubmit(formData);
+        }
+      };
+      
+      dialog.appendChild(form);
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+      
+      // 聚焦第一个输入框
+      const firstInput = form.querySelector('input[type="text"]');
+      if (firstInput) firstInput.focus();
+    }
+    
+    // 更新状态
+    function updateStatus(message, isSuccess = true) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.style.background = isSuccess ? '#e8f5e9' : '#ffebee';
+      status.style.color = isSuccess ? '#2e7d32' : '#c62828';
+    }
+    
+    // 清除高亮
+    function clearHighlights() {
+      const content = document.getElementById('editor');
+      const highlights = content.querySelectorAll('.editor-highlight');
+      highlights.forEach(el => {
+        const text = el.textContent;
+        const textNode = document.createTextNode(text);
+        el.parentNode.replaceChild(textNode, el);
+      });
+      updateStatus('已清除所有高亮');
+    }
+    
+    // 重置内容
+    function resetContent() {
+      const editor = document.getElementById('editor');
+      editor.innerHTML = `
+        <p>这是一个测试文本，包含多个test单词。</p>
+        <p>Test在这里出现了，test也在这里。TEST是大写的。</p>
+        <p>我们需要测试查找和替换功能，确保test能被正确处理。</p>
+        <p>这一行有test，下一行也有test。</p>
+        <p>最后一个test在这里结束。</p>
+      `;
+      updateStatus('内容已重置');
+    }
+    
+    // 执行查找和高亮
+    function performFind(findText, caseSensitive, wholeWord) {
+      const content = document.getElementById('editor');
+      
+      // 清除之前的高亮
+      const existingHighlights = content.querySelectorAll('.editor-highlight');
+      existingHighlights.forEach(el => {
+        const text = el.textContent;
+        const textNode = document.createTextNode(text);
+        el.parentNode.replaceChild(textNode, el);
+      });
+      
+      // 构建正则表达式
+      let pattern = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (wholeWord) {
+        pattern = '\\b' + pattern + '\\b';
+      }
+      const flags = caseSensitive ? 'g' : 'gi';
+      const regex = new RegExp(pattern, flags);
+      
+      // 查找并高亮
+      let count = 0;
+      
+      function processTextNode(node) {
+        const text = node.textContent;
+        const matches = [];
+        let match;
+        
+        while ((match = regex.exec(text)) !== null) {
+          matches.push({
+            index: match.index,
+            length: match[0].length,
+            text: match[0]
+          });
+        }
+        
+        if (matches.length > 0) {
+          const fragment = document.createDocumentFragment();
+          let lastIndex = 0;
+          
+          matches.forEach(match => {
+            if (match.index > lastIndex) {
+              fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+            }
+            
+            const span = document.createElement('span');
+            span.className = 'editor-highlight';
+            span.textContent = match.text;
+            fragment.appendChild(span);
+            count++;
+            
+            lastIndex = match.index + match.length;
+          });
+          
+          if (lastIndex < text.length) {
+            fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+          }
+          
+          node.parentNode.replaceChild(fragment, node);
+        }
+      }
+      
+      function walkTextNodes(node) {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+          processTextNode(node);
+        } else if (node.nodeType === Node.ELEMENT_NODE && !node.classList.contains('editor-highlight')) {
+          const children = Array.from(node.childNodes);
+          children.forEach(child => walkTextNodes(child));
+        }
+      }
+      
+      walkTextNodes(content);
+      return count;
+    }
+    
+    // 测试仅查找
+    function testFindOnly() {
+      showUnifiedDialog({
+        title: '查找和替换',
+        width: 520,
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>`,
+        fields: [
+          {
+            id: 'findText',
+            type: 'text',
+            label: '查找内容',
+            placeholder: '输入要查找的文本',
+            required: true,
+            defaultValue: 'test'
+          },
+          {
+            id: 'replaceText',
+            type: 'text',
+            label: '替换为',
+            placeholder: '输入替换文本',
+            required: false
+          },
+          {
+            id: 'actionType',
+            type: 'select',
+            label: '操作',
+            defaultValue: 'find',
+            options: [
+              { label: '仅查找', value: 'find' },
+              { label: '查找并替换全部', value: 'replaceAll' }
+            ]
+          },
+          {
+            id: 'caseSensitive',
+            type: 'checkbox',
+            label: '区分大小写',
+            defaultValue: false
+          },
+          {
+            id: 'wholeWord',
+            type: 'checkbox',
+            label: '全字匹配',
+            defaultValue: false
+          }
+        ],
+        onSubmit: (data) => {
+          const count = performFind(data.findText, data.caseSensitive, data.wholeWord);
+          
+          if (data.actionType === 'find') {
+            updateStatus(`找到 ${count} 个匹配项`);
+          } else if (data.actionType === 'replaceAll' && count > 0) {
+            if (!data.replaceText && data.replaceText !== '') {
+              alert('请输入替换文本');
+              return;
+            }
+            
+            if (confirm(`确定要将 ${count} 处 "${data.findText}" 替换为 "${data.replaceText || '(空)'}" 吗？`)) {
+              const highlights = document.getElementById('editor').querySelectorAll('.editor-highlight');
+              const nodesToReplace = [];
+              
+              highlights.forEach(el => {
+                if (el.parentNode) {
+                  nodesToReplace.push({element: el, parent: el.parentNode});
+                }
+              });
+              
+              let replacedCount = 0;
+              nodesToReplace.forEach(({element, parent}) => {
+                try {
+                  const newTextNode = document.createTextNode(data.replaceText);
+                  parent.replaceChild(newTextNode, element);
+                  replacedCount++;
+                } catch (e) {
+                  console.error('替换失败:', e);
+                }
+              });
+              
+              updateStatus(`成功替换 ${replacedCount} 处`);
+            }
+          } else if (count === 0) {
+            updateStatus(`未找到 "${data.findText}"`, false);
+          }
+        }
+      });
+    }
+    
+    // 测试全部替换
+    function testReplaceAll() {
+      showUnifiedDialog({
+        title: '查找和替换',
+        width: 520,
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>`,
+        fields: [
+          {
+            id: 'findText',
+            type: 'text',
+            label: '查找内容',
+            placeholder: '输入要查找的文本',
+            required: true,
+            defaultValue: 'test'
+          },
+          {
+            id: 'replaceText',
+            type: 'text',
+            label: '替换为',
+            placeholder: '输入替换文本',
+            required: false,
+            defaultValue: 'example'
+          },
+          {
+            id: 'actionType',
+            type: 'select',
+            label: '操作',
+            defaultValue: 'replaceAll',
+            options: [
+              { label: '仅查找', value: 'find' },
+              { label: '查找并替换全部', value: 'replaceAll' }
+            ]
+          },
+          {
+            id: 'caseSensitive',
+            type: 'checkbox',
+            label: '区分大小写',
+            defaultValue: false
+          },
+          {
+            id: 'wholeWord',
+            type: 'checkbox',
+            label: '全字匹配',
+            defaultValue: false
+          }
+        ],
+        onSubmit: (data) => {
+          const count = performFind(data.findText, data.caseSensitive, data.wholeWord);
+          
+          if (data.actionType === 'replaceAll' && count > 0) {
+            if (!data.replaceText && data.replaceText !== '') {
+              alert('请输入替换文本');
+              return;
+            }
+            
+            if (confirm(`确定要将 ${count} 处 "${data.findText}" 替换为 "${data.replaceText || '(空)'}" 吗？`)) {
+              const highlights = document.getElementById('editor').querySelectorAll('.editor-highlight');
+              const nodesToReplace = [];
+              
+              highlights.forEach(el => {
+                if (el.parentNode) {
+                  nodesToReplace.push({element: el, parent: el.parentNode});
+                }
+              });
+              
+              let replacedCount = 0;
+              nodesToReplace.forEach(({element, parent}) => {
+                try {
+                  const newTextNode = document.createTextNode(data.replaceText);
+                  parent.replaceChild(newTextNode, element);
+                  replacedCount++;
+                } catch (e) {
+                  console.error('替换失败:', e);
+                }
+              });
+              
+              updateStatus(`成功替换 ${replacedCount} 处`);
+            }
+          } else if (count === 0) {
+            updateStatus(`未找到 "${data.findText}"`, false);
+          }
+        }
+      });
+    }
+    
+    // 页面加载时的提示
+    window.addEventListener('load', () => {
+      updateStatus('页面已加载，可以开始测试查找替换功能');
+    });
+  </script>
+</body>
+</html>

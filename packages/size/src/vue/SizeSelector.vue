@@ -1,16 +1,14 @@
 <template>
   <div class="size-selector" ref="selectorRef">
     <!-- 触发按钮 -->
-    <button 
-      class="size-trigger"
-      @click="togglePanel"
-      :aria-expanded="isOpen"
-      :aria-label="t.ariaLabel"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect width="18" height="18" x="3" y="3" rx="2"/>
-        <path d="M3 9h18"/>
-        <path d="M9 21V9"/>
+    <button class="size-trigger" @click="togglePanel" :aria-expanded="isOpen" :aria-label="t.ariaLabel">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+        class="lucide lucide-alarge-small-icon lucide-a-large-small">
+        <path d="m15 16 2.536-7.328a1.02 1.02 1 0 1 1.928 0L22 16" />
+        <path d="M15.697 14h5.606" />
+        <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+        <path d="M3.304 13h6.392" />
       </svg>
     </button>
 
@@ -19,45 +17,27 @@
       <div v-if="isOpen" class="size-panel">
         <div class="size-panel-header">
           <h3 class="size-panel-title">{{ t.title }}</h3>
-          <button 
-            class="size-panel-close"
-            @click="closePanel"
-            :aria-label="t.close"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 6 6 18"/>
-              <path d="m6 6 12 12"/>
+          <button class="size-panel-close" @click="closePanel" :aria-label="t.close">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
             </svg>
           </button>
         </div>
-        
+
         <div class="size-panel-content">
-          <div 
-            v-for="preset in presets" 
-            :key="preset.name"
-            class="size-option"
-            :class="{ 'size-option-active': currentPreset === preset.name }"
-            @click="selectPreset(preset.name)"
-          >
+          <div v-for="preset in presets" :key="preset.name" class="size-option"
+            :class="{ 'size-option-active': currentPreset === preset.name }" @click="selectPreset(preset.name)">
             <div class="size-option-main">
               <div class="size-option-label">{{ getPresetLabel(preset.name) }}</div>
               <div class="size-option-desc">{{ getPresetDescription(preset.name) }}</div>
             </div>
             <div class="size-option-badge">{{ preset.baseSize }}px</div>
-            <svg 
-              v-if="currentPreset === preset.name" 
-              class="size-option-check"
-              xmlns="http://www.w3.org/2000/svg" 
-              width="18" 
-              height="18" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              stroke-width="2" 
-              stroke-linecap="round" 
-              stroke-linejoin="round"
-            >
-              <path d="M20 6 9 17l-5-5"/>
+            <svg v-if="currentPreset === preset.name" class="size-option-check" xmlns="http://www.w3.org/2000/svg"
+              width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5" />
             </svg>
           </div>
         </div>
@@ -73,10 +53,10 @@ import { SIZE_LOCALE_KEY, SIZE_CUSTOM_LOCALE_KEY } from './plugin'
 import { getLocale } from '../locales'
 import type { SizeLocale } from '../locales'
 
-const { 
-  currentPreset, 
-  applyPreset, 
-  getPresets 
+const {
+  currentPreset,
+  applyPreset,
+  getPresets
 } = useSize()
 
 const presets = getPresets()
@@ -84,15 +64,16 @@ const isOpen = ref(false)
 const selectorRef = ref<HTMLElement>()
 
 // 国际化 - 优先使用应用层的响应式 locale
-const appLocale = inject<any>('app-locale', null)
+// 使用标准的 'locale' key
+const appLocale = inject<any>('locale', null)
 const pluginLocale = inject(SIZE_LOCALE_KEY, 'zh-CN')
 const customLocale = inject<Partial<SizeLocale> | undefined>(SIZE_CUSTOM_LOCALE_KEY, undefined)
 
 // 调试日志
 if (import.meta.env.DEV) {
-  console.log('[SizeSelector] appLocale injected:', appLocale)
+  console.log('[SizeSelector] locale injected:', appLocale)
   if (appLocale) {
-    console.log('[SizeSelector] appLocale.value:', appLocale.value)
+    console.log('[SizeSelector] locale.value:', appLocale.value)
   }
   console.log('[SizeSelector] pluginLocale:', pluginLocale)
 }
@@ -110,7 +91,7 @@ const currentLocale = computed(() => {
 const t = computed(() => {
   const baseLocale = getLocale(currentLocale.value)
   if (!customLocale) return baseLocale
-  
+
   // 合并自定义翻译
   return {
     ...baseLocale,
