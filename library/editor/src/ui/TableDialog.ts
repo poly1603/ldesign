@@ -1,6 +1,9 @@
 /**
  * 表格插入对话框
+ * 使用统一对话框组件实现
  */
+
+import { showUnifiedDialog } from './UnifiedDialog'
 
 export interface TableDialogOptions {
   onConfirm: (rows: number, cols: number) => void
@@ -8,43 +11,34 @@ export interface TableDialogOptions {
 }
 
 /**
- * 创建表格选择器
+ * 创建表格选择器网格组件
  */
-export function createTableDialog(options: TableDialogOptions): HTMLElement {
-  const { onConfirm, onCancel } = options
-
-  const overlay = document.createElement('div')
-  overlay.className = 'editor-dialog-overlay'
-
-  const dialog = document.createElement('div')
-  dialog.className = 'editor-dialog editor-table-dialog'
-
-  // 标题
-  const title = document.createElement('div')
-  title.className = 'editor-dialog-title'
-  title.innerHTML = `
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-      <line x1="3" y1="9" x2="21" y2="9"/>
-      <line x1="3" y1="15" x2="21" y2="15"/>
-      <line x1="9" y1="3" x2="9" y2="21"/>
-      <line x1="15" y1="3" x2="15" y2="21"/>
-    </svg>
-    <span>插入表格</span>
+function createTableSelector(onChange: (rows: number, cols: number) => void): HTMLElement {
+  const container = document.createElement('div')
+  container.style.cssText = `
+    padding: 16px 0;
+    text-align: center;
   `
-  dialog.appendChild(title)
-
-  // 表格预览选择器
-  const selectorSection = document.createElement('div')
-  selectorSection.className = 'editor-table-selector-section'
 
   const selectorTitle = document.createElement('div')
-  selectorTitle.className = 'editor-table-selector-title'
-  selectorTitle.textContent = '选择表格大小（悬停预览）'
-  selectorSection.appendChild(selectorTitle)
+  selectorTitle.style.cssText = `
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 12px;
+  `
+  selectorTitle.textContent = '鼠标悬停选择表格大小'
+  container.appendChild(selectorTitle)
 
   const selector = document.createElement('div')
-  selector.className = 'editor-table-selector'
+  selector.style.cssText = `
+    display: inline-grid;
+    grid-template-columns: repeat(10, 20px);
+    grid-template-rows: repeat(10, 20px);
+    gap: 2px;
+    padding: 8px;
+    background: #f9fafb;
+    border-radius: 6px;
+  `
 
   const maxRows = 10
   const maxCols = 10
@@ -55,7 +49,12 @@ export function createTableDialog(options: TableDialogOptions): HTMLElement {
   for (let i = 0; i < maxRows; i++) {
     for (let j = 0; j < maxCols; j++) {
       const cell = document.createElement('div')
-      cell.className = 'editor-table-cell'
+      cell.style.cssText = `
+        background: white;
+        border: 1px solid #d1d5db;
+        cursor: pointer;
+        transition: all 0.15s;
+      `
       cell.dataset.row = String(i)
       cell.dataset.col = String(j)
 
@@ -64,12 +63,15 @@ export function createTableDialog(options: TableDialogOptions): HTMLElement {
         selectedCols = j + 1
         updatePreview()
         updateLabel()
+        onChange(selectedRows, selectedCols)
       })
 
-      cell.addEventListener('click', () => {
-        if (selectedRows > 0 && selectedCols > 0) {
-          onConfirm(selectedRows, selectedCols)
-          overlay.remove()
+      cell.addEventListener('mouseleave', () => {
+        if (!selector.matches(':hover')) {
+          selectedRows = 0
+          selectedCols = 0
+          updatePreview()
+          updateLabel()
         }
       })
 
@@ -78,149 +80,124 @@ export function createTableDialog(options: TableDialogOptions): HTMLElement {
   }
 
   function updatePreview() {
-    const cells = selector.querySelectorAll('.editor-table-cell')
+    const cells = selector.querySelectorAll('div')
     cells.forEach((cell) => {
-      const row = parseInt((cell as HTMLElement).dataset.row || '0')
-      const col = parseInt((cell as HTMLElement).dataset.col || '0')
+      const el = cell as HTMLElement
+      const row = parseInt(el.dataset.row || '0')
+      const col = parseInt(el.dataset.col || '0')
 
       if (row < selectedRows && col < selectedCols) {
-        cell.classList.add('selected')
+        el.style.background = '#3b82f6'
+        el.style.borderColor = '#3b82f6'
       } else {
-        cell.classList.remove('selected')
+        el.style.background = 'white'
+        el.style.borderColor = '#d1d5db'
       }
     })
   }
 
   const label = document.createElement('div')
-  label.className = 'editor-table-label'
+  label.style.cssText = `
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #111827;
+  `
   label.textContent = '0 × 0'
 
   function updateLabel() {
-    label.textContent = `${selectedRows} × ${selectedCols}`
+    label.textContent = selectedRows > 0 ? `${selectedRows} × ${selectedCols}` : '请选择表格大小'
   }
 
-  selectorSection.appendChild(selector)
-  selectorSection.appendChild(label)
-  dialog.appendChild(selectorSection)
+  container.appendChild(selector)
+  container.appendChild(label)
 
-  // 自定义输入
-  const customSection = document.createElement('div')
-  customSection.className = 'editor-table-custom-section'
-
-  const customTitle = document.createElement('div')
-  customTitle.className = 'editor-table-custom-title'
-  customTitle.textContent = '或自定义大小'
-  customSection.appendChild(customTitle)
-
-  const inputGroup = document.createElement('div')
-  inputGroup.className = 'editor-table-input-group'
-
-  const rowsInput = document.createElement('input')
-  rowsInput.type = 'number'
-  rowsInput.className = 'editor-table-input'
-  rowsInput.placeholder = '行数'
-  rowsInput.min = '1'
-  rowsInput.max = '50'
-  rowsInput.value = '3'
-
-  const separator = document.createElement('span')
-  separator.className = 'editor-table-input-separator'
-  separator.textContent = '×'
-
-  const colsInput = document.createElement('input')
-  colsInput.type = 'number'
-  colsInput.className = 'editor-table-input'
-  colsInput.placeholder = '列数'
-  colsInput.min = '1'
-  colsInput.max = '50'
-  colsInput.value = '3'
-
-  inputGroup.appendChild(rowsInput)
-  inputGroup.appendChild(separator)
-  inputGroup.appendChild(colsInput)
-  customSection.appendChild(inputGroup)
-  dialog.appendChild(customSection)
-
-  // 按钮组
-  const actions = document.createElement('div')
-  actions.className = 'editor-dialog-actions'
-
-  const cancelBtn = document.createElement('button')
-  cancelBtn.type = 'button'
-  cancelBtn.className = 'editor-dialog-button editor-dialog-button-cancel'
-  cancelBtn.textContent = '取消'
-  cancelBtn.addEventListener('click', () => {
-    onCancel?.()
-    overlay.remove()
-  })
-
-  const confirmBtn = document.createElement('button')
-  confirmBtn.type = 'button'
-  confirmBtn.className = 'editor-dialog-button editor-dialog-button-confirm'
-  confirmBtn.textContent = '插入'
-  confirmBtn.addEventListener('click', () => {
-    const rows = parseInt(rowsInput.value) || 3
-    const cols = parseInt(colsInput.value) || 3
-    if (rows >= 1 && cols >= 1 && rows <= 50 && cols <= 50) {
-      onConfirm(rows, cols)
-      overlay.remove()
-    } else {
-      alert('请输入有效的行数和列数（1-50）')
-    }
-  })
-
-  actions.appendChild(cancelBtn)
-  actions.appendChild(confirmBtn)
-  dialog.appendChild(actions)
-
-  overlay.appendChild(dialog)
-
-  // ESC键关闭
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      onCancel?.()
-      overlay.remove()
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }
-  document.addEventListener('keydown', handleKeyDown)
-
-  // 点击遮罩关闭
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      onCancel?.()
-      overlay.remove()
-    }
-  })
-
-  return overlay
+  return container
 }
 
 /**
  * 显示表格插入对话框
  */
 export function showTableDialog(options: TableDialogOptions): void {
-  console.log('🎯 [TableDialog] showTableDialog called')
-  console.log('🎯 [TableDialog] document.body exists:', !!document.body)
+  const { onConfirm, onCancel } = options
   
-  // 移除已存在的对话框
-  const existing = document.querySelector('.editor-dialog-overlay')
-  if (existing) {
-    console.log('🎯 [TableDialog] Removing existing dialog')
-    existing.remove()
-  }
-
-  console.log('🎯 [TableDialog] Creating new dialog')
-  const dialog = createTableDialog(options)
-  console.log('🎯 [TableDialog] Dialog created:', !!dialog)
+  let previewRows = 3
+  let previewCols = 3
   
-  console.log('🎯 [TableDialog] Appending to body')
-  document.body.appendChild(dialog)
-  console.log('🎯 [TableDialog] Dialog appended to body')
-
-  // 聚焦到第一个输入框
-  setTimeout(() => {
-    const firstInput = dialog.querySelector('.editor-table-input') as HTMLInputElement
-    firstInput?.focus()
-  }, 100)
+  // 创建表格选择器组件
+  const selectorComponent = createTableSelector((rows, cols) => {
+    previewRows = rows
+    previewCols = cols
+  })
+  
+  // 创建自定义内容容器
+  const content = document.createElement('div')
+  content.appendChild(selectorComponent)
+  
+  showUnifiedDialog({
+    title: '插入表格',
+    icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+      <line x1="3" y1="9" x2="21" y2="9"/>
+      <line x1="3" y1="15" x2="21" y2="15"/>
+      <line x1="9" y1="3" x2="9" y2="21"/>
+      <line x1="15" y1="3" x2="15" y2="21"/>
+    </svg>`,
+    content,
+    fields: [
+      {
+        id: 'rows',
+        type: 'number',
+        label: '行数',
+        placeholder: '请输入行数',
+        defaultValue: 3,
+        min: 1,
+        max: 50,
+        required: true
+      },
+      {
+        id: 'cols',
+        type: 'number',
+        label: '列数',
+        placeholder: '请输入列数',
+        defaultValue: 3,
+        min: 1,
+        max: 50,
+        required: true
+      }
+    ],
+    buttons: [
+      {
+        id: 'cancel',
+        label: '取消',
+        type: 'secondary',
+        onClick: () => onCancel?.(),
+        closeOnClick: true
+      },
+      {
+        id: 'confirm',
+        label: '插入',
+        type: 'primary',
+        onClick: (dialog) => {
+          const rows = dialog.getFieldValue('rows') || previewRows
+          const cols = dialog.getFieldValue('cols') || previewCols
+          
+          if (rows >= 1 && cols >= 1 && rows <= 50 && cols <= 50) {
+            onConfirm(rows, cols)
+            dialog.close()
+          } else {
+            dialog.showError('请输入有效的行数和列数（1-50）')
+          }
+        }
+      }
+    ],
+    onSubmit: (data) => {
+      const rows = data.rows || previewRows
+      const cols = data.cols || previewCols
+      
+      if (rows >= 1 && cols >= 1 && rows <= 50 && cols <= 50) {
+        onConfirm(rows, cols)
+      }
+    }
+  })
 }

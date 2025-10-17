@@ -4,14 +4,14 @@
  */
 
 import { showDropdown } from './Dropdown'
-import { showDialog } from './Dialog'
+import { showUnifiedDialog } from './UnifiedDialog'
 import { createIcon } from '../ui/icons'
 
 export type MediaType = 'image' | 'video' | 'audio'
 
 export interface MediaInsertOptions {
   type: MediaType
-  onInsert: (urls: string[]) => void
+  onInsert: (urls: string[], alt?: string) => void
   accept?: string // 文件类型限制
   multiple?: boolean // 是否支持多选
 }
@@ -272,35 +272,92 @@ function showNetworkDialog(
   config: any,
   onInsert: (urls: string[]) => void
 ): void {
-  showDialog({
+  // 保存当前的选区
+  const selection = window.getSelection()
+  let savedRange: Range | null = null
+  
+  if (selection && selection.rangeCount > 0) {
+    savedRange = selection.getRangeAt(0).cloneRange()
+  }
+  
+  const iconMap: Record<string, string> = {
+    '插入网络音频': `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+    </svg>`,
+    '插入网络视频': `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polygon points="23 7 16 12 23 17 23 7"></polygon>
+      <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+    </svg>`,
+    '插入网络图片': `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+      <polyline points="21 15 16 10 5 21"></polyline>
+    </svg>`
+  }
+  
+  showUnifiedDialog({
     title: config.dialogTitle,
+    icon: iconMap[config.dialogTitle] || iconMap['插入网络图片'],
+    width: 560,  // 设置更宽的宽度
     fields: [
       {
-        name: 'url',
-        label: '地址',
-        type: 'url',
-        placeholder: config.placeholder,
+        id: 'urls',
+        type: 'textarea',
+        label: '地址（每行一个，可插入多个）',
+        placeholder: config.placeholder + '\n' + config.placeholder + '\n...',
         required: true,
+        rows: 5,
+        helpText: '请输入' + config.placeholder.replace('请输入', '') + '，每行一个URL地址，支持批量插入',
         validator: (value) => {
-          // 简单的URL验证
-          try {
-            new URL(value)
-            return null
-          } catch {
-            return '请输入有效的网址'
+          if (!value || !value.trim()) {
+            return '请输入至少一个URL地址'
           }
+          const urls = value.split('\n').map(url => url.trim()).filter(url => url)
+          if (urls.length === 0) {
+            return '请输入至少一个URL地址'
+          }
+          // 验证每个URL
+          for (const url of urls) {
+            try {
+              new URL(url)
+            } catch {
+              return `无效的URL地址: ${url}`
+            }
+          }
+          return null
         }
       },
       {
-        name: 'alt',
-        label: '描述文字',
+        id: 'alt',
         type: 'text',
+        label: '描述文字（全部媒体共用）',
         placeholder: '可选，用于SEO和无障碍访问',
         required: false
       }
     ],
-    onConfirm: (values) => {
-      onInsert([values.url])
+    onSubmit: (data) => {
+      // 分割URL并过滤空行
+      const urls = data.urls.split('\n')
+        .map((url: string) => url.trim())
+        .filter((url: string) => url)
+      
+      // 延迟恢复选区和插入，等待对话框关闭动画完成
+      setTimeout(() => {
+        // 恢复选区
+        const editorContent = document.querySelector('.ldesign-editor-content') as HTMLElement
+        if (editorContent) {
+          editorContent.focus()
+          
+          if (savedRange && selection) {
+            selection.removeAllRanges()
+            selection.addRange(savedRange)
+          }
+        }
+        
+        // 调用插入函数，传递alt文本
+        onInsert(urls, data.alt)
+      }, 250) // 等待对话框关闭动画（200ms）后再执行
     }
   })
 }
@@ -320,7 +377,25 @@ export function insertMedia(
 ): void {
   const { alt = '', width, height, controls = true } = options || {}
   
-  urls.forEach(url => {
+  // 确保编辑器有焦点
+  const editorContent = document.querySelector('.ldesign-editor-content') as HTMLElement
+  if (!editorContent) {
+    console.error('[MediaInsert] Editor content element not found')
+    return
+  }
+  
+  // 检查选区
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) {
+    // 如果没有选区，创建一个在编辑器末尾的选区
+    const range = document.createRange()
+    range.selectNodeContents(editorContent)
+    range.collapse(false) // 折叠到末尾
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+  }
+  
+  urls.forEach((url, index) => {
     let html = ''
     
     switch (type) {
@@ -336,7 +411,29 @@ export function insertMedia(
     }
     
     if (html) {
-      document.execCommand('insertHTML', false, html)
+      // 在多个媒体之间添加空格或换行
+      if (index > 0) {
+        html = '<br>' + html
+      }
+      
+      const success = document.execCommand('insertHTML', false, html)
+      if (!success) {
+        console.error('[MediaInsert] Failed to insert HTML:', html)
+        // 作为备用方案，直接插入到当前位置
+        try {
+          const range = selection?.getRangeAt(0)
+          if (range) {
+            const fragment = document.createRange().createContextualFragment(html)
+            range.insertNode(fragment)
+            range.collapse(false)
+          }
+        } catch (e) {
+          console.error('[MediaInsert] Fallback insertion failed:', e)
+        }
+      }
     }
   })
+  
+  // 触发更新事件
+  editorContent.dispatchEvent(new Event('input', { bubbles: true }))
 }

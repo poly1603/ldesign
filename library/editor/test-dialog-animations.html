@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>对话框动画测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      padding: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .description {
+      text-align: center;
+      color: #6b7280;
+      margin-bottom: 40px;
+      font-size: 16px;
+    }
+
+    .test-section {
+      margin-bottom: 40px;
+      padding: 24px;
+      background: #f9fafb;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .test-section h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 16px;
+    }
+
+    .test-section p {
+      color: #6b7280;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-secondary {
+      background: #8b5cf6;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #7c3aed;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
+    }
+
+    .checklist {
+      margin-top: 24px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #10b981;
+    }
+
+    .checklist h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #10b981;
+      margin-bottom: 12px;
+    }
+
+    .checklist ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .checklist li {
+      padding: 8px 0;
+      color: #374151;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checklist li::before {
+      content: '✓';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background: #10b981;
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 20px;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .editor-mock {
+      margin-top: 24px;
+      padding: 20px;
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      min-height: 150px;
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.6;
+    }
+
+    .editor-mock:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 对话框动画测试</h1>
+    <p class="description">测试链接对话框和代码块对话框的动画效果一致性</p>
+
+    <div class="test-section">
+      <h2>📎 链接对话框测试</h2>
+      <p>
+        点击按钮打开链接对话框，观察打开和关闭动画效果。
+      </p>
+      <div class="button-group">
+        <button class="btn-primary" onclick="testLinkDialog()">
+          打开链接对话框
+        </button>
+        <button class="btn-primary" onclick="testLinkDialogWithText()">
+          打开链接对话框（带预选文本）
+        </button>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>💻 代码块对话框测试</h2>
+      <p>
+        点击按钮打开代码块对话框（需要 CodeMirror 支持），观察打开和关闭动画效果。
+      </p>
+      <div class="button-group">
+        <button class="btn-secondary" onclick="alert('代码块对话框需要在完整编辑器环境中测试')">
+          打开代码块对话框
+        </button>
+      </div>
+      <p style="margin-top: 12px; font-size: 13px; color: #9ca3af;">
+        ⚠️ 代码块对话框需要 CodeMirror 依赖，请在完整的编辑器环境中测试
+      </p>
+    </div>
+
+    <div class="checklist">
+      <h3>✅ 动画检查清单</h3>
+      <ul>
+        <li>遮罩层淡入效果流畅（0.2s fadeIn）</li>
+        <li>对话框上滑效果流畅（0.3s slideUp）</li>
+        <li>关闭时动画反向播放</li>
+        <li>背景模糊效果（backdrop-filter）</li>
+        <li>动画时间一致（fadeIn 0.2s, slideUp 0.3s）</li>
+        <li>点击遮罩层可关闭对话框</li>
+        <li>按 ESC 键可关闭对话框</li>
+        <li>动画结束后元素正确移除</li>
+      </ul>
+    </div>
+
+    <div class="editor-mock" contenteditable="true">
+      这是一个模拟的编辑器区域。你可以在这里选择文本，然后点击上面的按钮测试链接对话框。
+      选中一些文本后打开链接对话框，观察它如何处理预选的文本。
+    </div>
+  </div>
+
+  <script type="module">
+    // 导入 LinkDialog
+    import { showLinkDialog } from './src/ui/LinkDialog.js'
+
+    // 将函数暴露到全局作用域以便按钮调用
+    window.testLinkDialog = function() {
+      showLinkDialog({
+        onConfirm: (text, url) => {
+          console.log('插入链接:', { text, url })
+          alert(`链接已创建：\n文本: ${text}\nURL: ${url}`)
+        },
+        onCancel: () => {
+          console.log('取消插入链接')
+        }
+      })
+    }
+
+    window.testLinkDialogWithText = function() {
+      showLinkDialog({
+        selectedText: '这是预选的文本',
+        onConfirm: (text, url) => {
+          console.log('插入链接:', { text, url })
+          alert(`链接已创建：\n文本: ${text}\nURL: ${url}`)
+        },
+        onCancel: () => {
+          console.log('取消插入链接')
+        }
+      })
+    }
+
+    console.log('✅ 测试页面加载完成')
+    console.log('📌 动画参数:')
+    console.log('  - fadeIn: 0.2s ease-out')
+    console.log('  - slideUp: 0.3s ease-out')
+    console.log('  - backdrop-filter: blur(4px)')
+  </script>
+</body>
+</html>

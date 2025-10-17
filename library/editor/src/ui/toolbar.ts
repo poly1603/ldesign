@@ -8,7 +8,7 @@ import { createIcon } from './icons'
 import { showDropdown } from './Dropdown'
 import { showColorDropdown, showEmojiDropdown } from './UnifiedDropdown'
 import { showMediaInsert, insertMedia } from './MediaInsert'
-import { showLinkDialog } from './LinkDialog'
+import { showUnifiedDialog } from './UnifiedDialog'
 import { FONT_SIZES, FONT_FAMILIES } from '../plugins/formatting/font'
 import { LINE_HEIGHTS } from '../plugins/formatting/line-height'
 import { DEFAULT_TOOLBAR_ITEMS } from './defaultToolbar'
@@ -352,8 +352,12 @@ export class Toolbar {
       if (item.name === 'image') {
         showMediaInsert(button, {
           type: 'image',
-          onInsert: (urls) => {
-            insertMedia('image', urls)
+          onInsert: (urls, alt) => {
+            // 确保编辑器获得焦点
+            if (this.editor.contentElement) {
+              this.editor.contentElement.focus()
+            }
+            insertMedia('image', urls, { alt })
             if (this.editor.emit) {
               this.editor.emit('update')
             }
@@ -366,7 +370,11 @@ export class Toolbar {
       if (item.name === 'video') {
         showMediaInsert(button, {
           type: 'video',
-          onInsert: (urls) => {
+          onInsert: (urls, alt) => {
+            // 确保编辑器获得焦点
+            if (this.editor.contentElement) {
+              this.editor.contentElement.focus()
+            }
             insertMedia('video', urls)
             if (this.editor.emit) {
               this.editor.emit('update')
@@ -380,7 +388,11 @@ export class Toolbar {
       if (item.name === 'audio') {
         showMediaInsert(button, {
           type: 'audio',
-          onInsert: (urls) => {
+          onInsert: (urls, alt) => {
+            // 确保编辑器获得焦点
+            if (this.editor.contentElement) {
+              this.editor.contentElement.focus()
+            }
             insertMedia('audio', urls)
             if (this.editor.emit) {
               this.editor.emit('update')
@@ -415,9 +427,35 @@ export class Toolbar {
           savedRange = selection.getRangeAt(0).cloneRange()
         }
         
-        showLinkDialog({
-          selectedText,
-          onConfirm: (text, url) => {
+        showUnifiedDialog({
+          title: '插入链接',
+          width: 500,
+          icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>`,
+          fields: [
+            {
+              id: 'text',
+              type: 'text',
+              label: '链接文本',
+              placeholder: '请输入链接文本',
+              required: !selectedText,
+              defaultValue: selectedText,
+              disabled: !!selectedText
+            },
+            {
+              id: 'url',
+              type: 'url',
+              label: '链接地址',
+              placeholder: 'https://example.com',
+              required: true,
+              helpText: '请输入完整的URL地址，包括 http:// 或 https://'
+            }
+          ],
+          onSubmit: (data) => {
+            const text = selectedText || data.text
+            const url = data.url
             console.log('[Toolbar] Inserting link:', text, url)
             
             // 确保编辑器获得焦点

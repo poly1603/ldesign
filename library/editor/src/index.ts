@@ -21,8 +21,14 @@ export { createIcon, getIconHTML } from './ui/icons'
 export { createColorPicker, showColorPicker } from './ui/ColorPicker'
 export { createDropdown, showDropdown } from './ui/Dropdown'
 export { showEmojiPicker } from './ui/EmojiPicker'
-export { showLinkDialog } from './ui/LinkDialog'
-export { createTableDialog, showTableDialog } from './ui/TableDialog'
+export { 
+  UnifiedDialog, 
+  showUnifiedDialog, 
+  showConfirmDialog, 
+  showAlertDialog, 
+  showPromptDialog 
+} from './ui/UnifiedDialog'
+export { showTableDialog } from './ui/TableDialog'
 export { createFindReplaceDialog, showFindReplaceDialog } from './ui/FindReplaceDialog'
 
 // 类型
