@@ -279,3 +279,4 @@ export function hasClass(element: HTMLElement, className: string): boolean {
 
 
 
+
