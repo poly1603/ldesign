@@ -1,10 +1,13 @@
 /**
  * Crypto Worker - 在 Worker 线程中执行加密/解密操作
- * 支持 Web Worker (浏览器) 和 Worker Threads (Node.js)
+ * Web Worker 专用
  */
 
-import type { EncryptResult, DecryptResult } from '../types'
-import { getErrorMessage, createCryptoJSConfig } from '../utils/crypto-helpers'
+import type { DecryptResult, EncryptResult } from '../types'
+import type { CryptoJSCipherConfig } from '../types/cryptojs'
+import CryptoJS from 'crypto-js'
+import forge from 'node-forge'
+import { createCryptoJSConfig, getErrorMessage } from '../utils/crypto-helpers'
 
 /**
  * Worker 消息类型
@@ -15,7 +18,7 @@ export interface WorkerMessage {
   algorithm: string
   data: string
   key: string
-  options?: Record<string, any>
+  options?: Record<string, unknown>
 }
 
 /**
@@ -34,16 +37,14 @@ function performEncryption(
   data: string,
   key: string,
   algorithm: string,
-  options?: Record<string, any>,
+  options?: Record<string, unknown>,
 ): EncryptResult {
   try {
     switch (algorithm.toUpperCase()) {
       case 'AES': {
-        // 动态导入避免循环依赖
-        const CryptoJS = require('crypto-js')
 
-        const keySize = options?.keySize || 256
-        const mode = options?.mode || 'CBC'
+        const keySize = (options?.keySize as number) || 256
+        const mode = (options?.mode as string) || 'CBC'
 
         // 生成密钥：使用密钥的SHA-256哈希作为确定性盐值（更安全）
         const salt = CryptoJS.SHA256(key)
@@ -55,11 +56,11 @@ function performEncryption(
         // 加密配置（类型安全）
         const config = createCryptoJSConfig({
           mode,
-          padding: options?.padding || 'Pkcs7',
-          iv: options?.iv,
+          padding: (options?.padding as string) || 'Pkcs7',
+          iv: options?.iv as string | undefined,
         })
 
-        const encrypted = CryptoJS.AES.encrypt(data, derivedKey, config)
+        const encrypted = CryptoJS.AES.encrypt(data, derivedKey, config as CryptoJSCipherConfig)
 
         return {
           success: true,
@@ -71,15 +72,14 @@ function performEncryption(
       }
       
       case 'DES': {
-        const CryptoJS = require('crypto-js')
-        const mode = options?.mode || 'CBC'
+        const mode = (options?.mode as string) || 'CBC'
 
         const config = createCryptoJSConfig({
           mode,
-          iv: options?.iv,
+          iv: options?.iv as string | undefined,
         })
 
-        const encrypted = CryptoJS.DES.encrypt(data, key, config)
+        const encrypted = CryptoJS.DES.encrypt(data, key, config as CryptoJSCipherConfig)
 
         return {
           success: true,
@@ -91,15 +91,14 @@ function performEncryption(
 
       case '3DES':
       case 'TRIPLEDES': {
-        const CryptoJS = require('crypto-js')
-        const mode = options?.mode || 'CBC'
+        const mode = (options?.mode as string) || 'CBC'
 
         const config = createCryptoJSConfig({
           mode,
-          iv: options?.iv,
+          iv: options?.iv as string | undefined,
         })
 
-        const encrypted = CryptoJS.TripleDES.encrypt(data, key, config)
+        const encrypted = CryptoJS.TripleDES.encrypt(data, key, config as CryptoJSCipherConfig)
 
         return {
           success: true,
@@ -110,7 +109,6 @@ function performEncryption(
       }
       
       case 'RSA': {
-        const forge = require('node-forge')
         const publicKey = forge.pki.publicKeyFromPem(key)
         const encrypted = publicKey.encrypt(data, 'RSA-OAEP', {
           md: forge.md.sha256.create(),
@@ -149,15 +147,14 @@ function performDecryption(
   data: string,
   key: string,
   algorithm: string,
-  options?: Record<string, any>,
+  options?: Record<string, unknown>,
 ): DecryptResult {
   try {
     switch (algorithm.toUpperCase()) {
       case 'AES': {
-        const CryptoJS = require('crypto-js')
 
-        const keySize = options?.keySize || 256
-        const mode = options?.mode || 'CBC'
+        const keySize = (options?.keySize as number) || 256
+        const mode = (options?.mode as string) || 'CBC'
 
         // 生成密钥：使用密钥的SHA-256哈希作为确定性盐值（更安全）
         const salt = CryptoJS.SHA256(key)
@@ -169,11 +166,11 @@ function performDecryption(
         // 解密配置（类型安全）
         const config = createCryptoJSConfig({
           mode,
-          padding: options?.padding || 'Pkcs7',
-          iv: options?.iv,
+          padding: (options?.padding as string) || 'Pkcs7',
+          iv: options?.iv as string | undefined,
         })
 
-        const decrypted = CryptoJS.AES.decrypt(data, derivedKey, config)
+        const decrypted = CryptoJS.AES.decrypt(data, derivedKey, config as CryptoJSCipherConfig)
         const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8)
 
         if (!decryptedStr) {
@@ -195,15 +192,14 @@ function performDecryption(
       }
 
       case 'DES': {
-        const CryptoJS = require('crypto-js')
-        const mode = options?.mode || 'CBC'
+        const mode = (options?.mode as string) || 'CBC'
 
         const config = createCryptoJSConfig({
           mode,
-          iv: options?.iv,
+          iv: options?.iv as string | undefined,
         })
 
-        const decrypted = CryptoJS.DES.decrypt(data, key, config)
+        const decrypted = CryptoJS.DES.decrypt(data, key, config as CryptoJSCipherConfig)
         const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8)
 
         if (!decryptedStr) {
@@ -226,15 +222,14 @@ function performDecryption(
 
       case '3DES':
       case 'TRIPLEDES': {
-        const CryptoJS = require('crypto-js')
-        const mode = options?.mode || 'CBC'
+        const mode = (options?.mode as string) || 'CBC'
 
         const config = createCryptoJSConfig({
           mode,
-          iv: options?.iv,
+          iv: options?.iv as string | undefined,
         })
 
-        const decrypted = CryptoJS.TripleDES.decrypt(data, key, config)
+        const decrypted = CryptoJS.TripleDES.decrypt(data, key, config as CryptoJSCipherConfig)
         const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8)
 
         if (!decryptedStr) {
@@ -256,7 +251,6 @@ function performDecryption(
       }
       
       case 'RSA': {
-        const forge = require('node-forge')
         const privateKey = forge.pki.privateKeyFromPem(key)
         const encrypted = forge.util.decode64(data)
         const decrypted = privateKey.decrypt(encrypted, 'RSA-OAEP', {
@@ -329,25 +323,13 @@ function handleMessage(message: WorkerMessage): WorkerResponse {
   }
 }
 
-// 环境检测和消息监听
-if (typeof self !== 'undefined' && 'postMessage' in self) {
-  // Web Worker 环境
-  self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
+// Web Worker 消息监听
+if (typeof globalThis !== 'undefined' && 'postMessage' in globalThis) {
+  globalThis.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
     const response = handleMessage(event.data)
-    self.postMessage(response)
+    globalThis.postMessage(response)
   })
-}
-else if (typeof module !== 'undefined' && typeof require !== 'undefined') {
-  // Node.js Worker Threads 环境
-  const { parentPort } = require('worker_threads')
-  
-  if (parentPort) {
-    parentPort.on('message', (message: WorkerMessage) => {
-      const response = handleMessage(message)
-      parentPort.postMessage(response)
-    })
-  }
 }
 
 // 导出处理函数（用于测试）
-export { handleMessage, performEncryption, performDecryption }
+export { handleMessage, performDecryption, performEncryption }

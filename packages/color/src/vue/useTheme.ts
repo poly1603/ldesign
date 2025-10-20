@@ -2,9 +2,11 @@
  * Vue 3 Composable for theme management
  */
 
-import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { ThemeManager, ThemeState, ThemeOptions } from '../themes/themeManager'
-import { presetThemes, PresetTheme } from '../themes/presets'
+import type { PresetTheme } from '../themes/presets';
+import type { ThemeOptions, ThemeState } from '../themes/themeManager';
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { presetThemes } from '../themes/presets'
+import { ThemeManager } from '../themes/themeManager'
 
 export interface UseThemeOptions extends ThemeOptions {
   immediate?: boolean
@@ -86,8 +88,13 @@ export function useTheme(options: UseThemeOptions = {}) {
   })
 
   onUnmounted(() => {
+    // 清理订阅
     if (unsubscribe) {
       unsubscribe()
+    }
+    // 销毁主题管理器以防止内存泄漏
+    if (themeManager && typeof themeManager.destroy === 'function') {
+      themeManager.destroy()
     }
   })
 
@@ -112,13 +119,29 @@ export function useTheme(options: UseThemeOptions = {}) {
 /**
  * 创建一个全局的主题管理器实例
  */
+let globalThemeManager: ThemeManager | null = null
+
 export function createThemeProvider(options: UseThemeOptions = {}) {
-  const themeManager = new ThemeManager(options)
+  // 使用单例模式，避免重复创建
+  if (!globalThemeManager) {
+    globalThemeManager = new ThemeManager(options)
+  }
   
   return {
     install(app: any) {
-      app.provide('themeManager', themeManager)
-      app.config.globalProperties.$theme = themeManager
+      app.provide('themeManager', globalThemeManager)
+      app.config.globalProperties.$theme = globalThemeManager
+      
+      // 应用卸载时清理
+      app.unmount = new Proxy(app.unmount, {
+        apply(target, thisArg, args) {
+          if (globalThemeManager && typeof globalThemeManager.destroy === 'function') {
+            globalThemeManager.destroy()
+            globalThemeManager = null
+          }
+          return Reflect.apply(target, thisArg, args)
+        }
+      })
     }
   }
 }

@@ -20,8 +20,8 @@
  * ```
  */
 
-import CryptoJS from 'crypto-js'
 import type { EncryptionAlgorithm } from '../types'
+import CryptoJS from 'crypto-js'
 import { ErrorUtils, RandomUtils } from '../utils'
 
 /**
@@ -88,7 +88,6 @@ export class AuthenticatedEncryption {
       algorithm = 'AES',
       keySize = 256,
       aad,
-      useGCM = false,
     } = options
 
     try {
@@ -180,7 +179,7 @@ export class AuthenticatedEncryption {
       }
 
       const { ciphertext, authTag, iv, salt, aad } = result
-      const { keySize = 256, useGCM = false } = options
+      const { keySize = 256 } = options
 
       // 派生加密密钥和认证密钥
       const saltWordArray = CryptoJS.enc.Hex.parse(salt)
@@ -288,7 +287,7 @@ export function decryptWithAuth(
 /**
  * 快捷方法：加密 JSON 对象并认证
  */
-export function encryptJSONWithAuth<T = any>(
+export function encryptJSONWithAuth<T>(
   obj: T,
   key: string,
   options?: AuthenticatedEncryptionOptions
@@ -300,7 +299,7 @@ export function encryptJSONWithAuth<T = any>(
 /**
  * 快捷方法：解密并验证 JSON 对象
  */
-export function decryptJSONWithAuth<T = any>(
+export function decryptJSONWithAuth<T>(
   encryptedData: string,
   key: string,
   options?: AuthenticatedEncryptionOptions
@@ -320,7 +319,7 @@ export function decryptJSONWithAuth<T = any>(
       data: JSON.parse(result.data) as T,
       verified: true,
     }
-  } catch (error) {
+  } catch {
     return {
       data: null,
       verified: false,

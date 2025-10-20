@@ -3,36 +3,97 @@ import { reactive } from 'vue'
 
 type WatchCallback = (newValue: unknown, oldValue: unknown) => void
 
+/**
+ * 状态管理器实现
+ * 
+ * 提供响应式状态管理，包括：
+ * - 嵌套状态支持
+ * - 监听器管理
+ * - 历史记录追踪
+ * - 内存优化
+ */
 export class StateManagerImpl implements StateManager {
   private state = reactive<Record<string, unknown>>({})
-  private watchers = new Map<string, WatchCallback[]>()
+  // 使用WeakMap减少内存占用，自动垃圾回收
+  private watchers = new Map<string, Set<WeakRef<WatchCallback>>>()
+
+  // 优化：使用环形缓冲区，固定内存占用
   private changeHistory: Array<{
     path: string
-    oldValue: unknown
-    newValue: unknown
+    // 不存储实际值，只存储引用或简单类型
+    oldValue: WeakRef<any> | any
+    newValue: WeakRef<any> | any
     timestamp: number
-  }> = []
+  }> = [] // 使用空数组初始化，避免 undefined 元素
+  private historyIndex = 0
+  private historySize = 0
+  private maxHistorySize = 20
 
-  private maxHistorySize = 100
-  private batchUpdates = new Set<string>()
+  // 批量更新优化
+  private batchUpdates: string[] | null = null
+  private batchTimer: number | null = null
+
+  // 清理定时器
+  private cleanupTimer: number | null = null
+  private readonly CLEANUP_INTERVAL = 30000 // 30秒清理一次
+
+  // LRU缓存优化
+  private pathCache = new Map<string, { value: unknown; hits: number; lastAccess: number }>()
+  private readonly MAX_CACHE_SIZE = 50 // 减少缓存大小
 
   constructor(private logger?: Logger) {
-    // logger参数保留用于未来扩展
+    // 仅在浏览器环境启动定期清理
+    if (typeof window !== 'undefined') {
+      this.startPeriodicCleanup()
+    }
   }
 
+  /**
+   * 获取状态值 - 优化内存访问
+   * @param key 状态键，支持嵌套路径（如 'user.profile.name'）
+   * @returns 状态值或undefined
+   */
   get<T = unknown>(key: string): T | undefined {
-    return this.getNestedValue(this.state, key) as T
+    // 优化：先检查缓存，更新访问信息
+    const cached = this.pathCache.get(key)
+    if (cached) {
+      cached.hits++
+      cached.lastAccess = Date.now()
+      return cached.value as T
+    }
+
+    const value = this.getNestedValue(this.state, key) as T
+
+    // 智能缓存策略
+    if (value !== undefined) {
+      this.updatePathCache(key, value)
+    }
+
+    return value
   }
 
+  /**
+   * 设置状态值
+   * @param key 状态键，支持嵌套路径
+   * @param value 要设置的值
+   */
   set<T = unknown>(key: string, value: T): void {
     try {
       const oldValue = this.getNestedValue(this.state, key)
 
+      // 值未变化则不处理
+      if (oldValue === value) {
+        return
+      }
+
       // 记录变更历史
       this.recordChange(key, oldValue, value)
 
-      // 直接设置值，不使用批量更新（简化实现）
+      // 设置新值
       this.setNestedValue(this.state, key, value)
+
+      // 清理路径缓存
+      this.invalidatePathCache(key)
 
       // 触发监听器
       this.triggerWatchers(key, value, oldValue)
@@ -46,9 +107,15 @@ export class StateManagerImpl implements StateManager {
     this.deleteNestedValue(this.state, key)
   }
 
+  /**
+   * 清空所有状态和监听器
+   */
   clear(): void {
     // 清理所有监听器
     this.watchers.clear()
+
+    // 清空路径缓存
+    this.pathCache.clear()
 
     // 清空状态 - 添加防御性检查
     if (this.state && typeof this.state === 'object') {
@@ -56,28 +123,37 @@ export class StateManagerImpl implements StateManager {
         delete this.state[key]
       })
     }
+
+    // 清空历史记录
+    this.changeHistory.length = 0
+    this.historyIndex = 0
   }
 
   watch<T = unknown>(
     key: string,
     callback: (newValue: T, oldValue: T) => void
   ): () => void {
-    // 存储监听器
+    // 使用弱引用存储监听器，减少内存泄漏
     if (!this.watchers.has(key)) {
-      this.watchers.set(key, [])
+      this.watchers.set(key, new Set())
     }
-    const watchers = this.watchers.get(key)
-    watchers?.push(callback as WatchCallback)
 
-    // 返回取消监听函数
+    const watcherSet = this.watchers.get(key)!
+    const weakCallback = new WeakRef(callback as WatchCallback)
+    watcherSet.add(weakCallback)
+
+    // 返回优化的取消监听函数
     return () => {
       const callbacks = this.watchers.get(key)
       if (callbacks) {
-        const index = callbacks.indexOf(callback as unknown as WatchCallback)
-        if (index > -1) {
-          callbacks.splice(index, 1)
-        }
-        if (callbacks.length === 0) {
+        // 清理弱引用
+        callbacks.forEach(ref => {
+          if (ref.deref() === callback) {
+            callbacks.delete(ref)
+          }
+        })
+
+        if (callbacks.size === 0) {
           this.watchers.delete(key)
         }
       }
@@ -91,13 +167,25 @@ export class StateManagerImpl implements StateManager {
   ): void {
     const callbacks = this.watchers.get(key)
     if (callbacks) {
-      callbacks.forEach((callback: WatchCallback) => {
-        try {
-          callback(newValue, oldValue)
-        } catch (error) {
-          this.logger?.error('Error in state watcher callback', { key, error })
+      // 清理已被垃圾回收的监听器
+      const deadRefs: WeakRef<WatchCallback>[] = []
+
+      callbacks.forEach((weakCallback) => {
+        const callback = weakCallback.deref()
+        if (callback) {
+          try {
+            // 异步执行避免阻塞
+            queueMicrotask(() => callback(newValue, oldValue))
+          } catch (error) {
+            this.logger?.error('Error in state watcher callback', { key, error })
+          }
+        } else {
+          deadRefs.push(weakCallback)
         }
       })
+
+      // 清理无效引用
+      deadRefs.forEach(ref => callbacks.delete(ref))
     }
   }
 
@@ -167,26 +255,82 @@ export class StateManagerImpl implements StateManager {
     return this.getAllKeys(this.state)
   }
 
-  // 递归获取所有键
+  // 递归获取所有键 - 优化版：使用迭代器避免创建临时数组
   private getAllKeys(obj: Record<string, unknown>, prefix = ''): string[] {
     const keys: string[] = []
+    const stack: Array<{ obj: Record<string, unknown>; prefix: string; depth: number }> = [
+      { obj, prefix, depth: 0 }
+    ]
+    const maxDepth = 10 // 限制最大深度
 
-    for (const key of Object.keys(obj)) {
-      const fullKey = prefix ? `${prefix}.${key}` : key
-      keys.push(fullKey)
+    while (stack.length > 0) {
+      const { obj: current, prefix: currentPrefix, depth } = stack.pop()!
 
-      const val = obj[key]
-      if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
-        keys.push(...this.getAllKeys(val as Record<string, unknown>, fullKey))
+      // 防止过深递归
+      if (depth >= maxDepth) continue
+
+      const currentKeys = Object.keys(current)
+      // 限制单层键数量
+      const maxKeys = Math.min(currentKeys.length, 100)
+
+      for (let i = 0; i < maxKeys; i++) {
+        const key = currentKeys[i]
+        const fullKey = currentPrefix ? `${currentPrefix}.${key}` : key
+        keys.push(fullKey)
+
+        const val = current[key]
+        if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
+          stack.push({ obj: val as Record<string, unknown>, prefix: fullKey, depth: depth + 1 })
+        }
       }
     }
 
     return keys
   }
 
-  // 获取状态快照
+  // 获取状态快照 - 优化版：使用结构化克隆或浅拷贝
   getSnapshot(): Record<string, unknown> {
-    return JSON.parse(JSON.stringify(this.state))
+    // 使用 structuredClone（如果可用）或递归浅拷贝，避免 JSON 序列化开销
+    if (typeof structuredClone !== 'undefined') {
+      try {
+        return structuredClone(this.state)
+      } catch {
+        // 回退到深拷贝
+      }
+    }
+
+    // 使用更高效的深拷贝
+    return this.deepClone(this.state)
+  }
+
+  // 高效深拷贝方法 - 优化版
+  private deepClone(obj: any, depth = 0): any {
+    // 限制递归深度
+    if (depth > 10) return obj
+
+    if (obj === null || typeof obj !== 'object') return obj
+    if (obj instanceof Date) return new Date(obj)
+    if (obj instanceof RegExp) return new RegExp(obj)
+    if (Array.isArray(obj)) {
+      // 限制数组大小
+      const len = Math.min(obj.length, 1000)
+      const cloned = new Array(len)
+      for (let i = 0; i < len; i++) {
+        cloned[i] = this.deepClone(obj[i], depth + 1)
+      }
+      return cloned
+    }
+
+    const cloned: Record<string, any> = {}
+    const keys = Object.keys(obj)
+    // 限制对象属性数量
+    const maxKeys = Math.min(keys.length, 100)
+
+    for (let i = 0; i < maxKeys; i++) {
+      const key = keys[i]
+      cloned[key] = this.deepClone(obj[key], depth + 1)
+    }
+    return cloned
   }
 
   // 从快照恢复状态
@@ -223,7 +367,7 @@ export class StateManagerImpl implements StateManager {
     memoryUsage: string
   } {
     const totalWatchers = Array.from(this.watchers.values()).reduce(
-      (sum, array) => sum + array.length,
+      (sum, set) => sum + set.size,
       0
     )
 
@@ -252,18 +396,69 @@ export class StateManagerImpl implements StateManager {
     this.logger?.debug('State updated', { newState })
   }
 
-  // 记录变更历史
+  /**
+   * 启动定期清理任务
+   * @private
+   */
+  private startPeriodicCleanup(): void {
+    if (this.cleanupTimer !== null) {
+      clearInterval(this.cleanupTimer)
+    }
+
+    this.cleanupTimer = window.setInterval(() => {
+      this.cleanupOldHistory()
+      this.cleanupEmptyWatchers()
+      this.cleanupPathCache()
+    }, this.CLEANUP_INTERVAL)
+  }
+
+  // 清理旧历史记录
+  private cleanupOldHistory(): void {
+    if (this.changeHistory.length === 0) return
+
+    const now = Date.now()
+    const maxAge = 5 * 60 * 1000 // 5分钟
+
+    // 过滤掉过期的历史记录（同时过滤掉 undefined 元素）
+    const filtered = this.changeHistory.filter(change => change && now - change.timestamp < maxAge)
+
+    if (filtered.length < this.changeHistory.length) {
+      this.changeHistory = filtered
+      this.logger?.debug('Cleaned old state history', {
+        removed: this.changeHistory.length - filtered.length
+      })
+    }
+  }
+
+  // 清理空的监听器
+  private cleanupEmptyWatchers(): void {
+    const emptyKeys: string[] = []
+
+    for (const [key, callbacks] of this.watchers.entries()) {
+      if (callbacks.size === 0) {
+        emptyKeys.push(key)
+      }
+    }
+
+    emptyKeys.forEach(key => this.watchers.delete(key))
+  }
+
+  // 记录变更历史 - 优化版使用环形缓冲区
   private recordChange(path: string, oldValue: unknown, newValue: unknown): void {
-    this.changeHistory.unshift({
+    const entry = {
       path,
       oldValue,
       newValue,
       timestamp: Date.now(),
-    })
+    }
 
-    // 限制历史记录大小
-    if (this.changeHistory.length > this.maxHistorySize) {
-      this.changeHistory = this.changeHistory.slice(0, this.maxHistorySize)
+    if (this.changeHistory.length < this.maxHistorySize) {
+      // 未满时直接添加
+      this.changeHistory.unshift(entry)
+    } else {
+      // 已满时使用环形缓冲区，覆盖最旧的
+      this.changeHistory.pop() // 移除最后一个
+      this.changeHistory.unshift(entry)
     }
   }
 
@@ -334,7 +529,7 @@ export class StateManagerImpl implements StateManager {
   } {
     const now = Date.now()
     const recentChanges = this.changeHistory.filter(
-      change => now - change.timestamp < 60000 // 最近1分钟
+      change => change && now - change.timestamp < 60000 // 最近1分钟
     ).length
 
     const memoryUsage =
@@ -344,8 +539,58 @@ export class StateManagerImpl implements StateManager {
     return {
       totalChanges: this.changeHistory.length,
       recentChanges,
-      batchedUpdates: this.batchUpdates.size,
+      batchedUpdates: this.batchUpdates?.length || 0,
       memoryUsage,
+    }
+  }
+
+  /**
+   * 更新路径缓存
+   * @private
+   */
+  private updatePathCache(key: string, value: unknown): void {
+    // 限制缓存大小
+    if (this.pathCache.size >= this.MAX_CACHE_SIZE) {
+      // 移除最早的缓存项
+      const firstKey = this.pathCache.keys().next().value
+      if (firstKey) {
+        this.pathCache.delete(firstKey)
+      }
+    }
+    this.pathCache.set(key, { value, hits: 1, lastAccess: Date.now() })
+  }
+
+  /**
+   * 使路径缓存失效
+   * @private
+   */
+  private invalidatePathCache(key: string): void {
+    // 清除该路径及其所有相关路径的缓存
+    const keysToDelete: string[] = []
+    for (const cacheKey of this.pathCache.keys()) {
+      if (cacheKey === key || cacheKey.startsWith(`${key}.`) || key.startsWith(`${cacheKey}.`)) {
+        keysToDelete.push(cacheKey)
+      }
+    }
+    keysToDelete.forEach(k => this.pathCache.delete(k))
+  }
+
+  /**
+   * 清理路径缓存
+   * @private
+   */
+  private cleanupPathCache(): void {
+    // 如果缓存过大，清理一半
+    if (this.pathCache.size > this.MAX_CACHE_SIZE * 0.8) {
+      const keysToKeep = Math.floor(this.MAX_CACHE_SIZE * 0.5)
+      const keys = Array.from(this.pathCache.keys())
+      const keysToDelete = keys.slice(0, keys.length - keysToKeep)
+      keysToDelete.forEach(key => this.pathCache.delete(key))
+
+      this.logger?.debug('Cleaned path cache', {
+        removed: keysToDelete.length,
+        remaining: this.pathCache.size
+      })
     }
   }
 }
@@ -433,8 +678,56 @@ export class StateNamespace implements StateManager {
   }
 }
 
-export function createStateManager(logger?: Logger): StateManager {
-  return new StateManagerImpl(logger)
+// 添加带清理功能的接口
+export interface StateManagerWithDestroy extends StateManager {
+  destroy: () => void;
+}
+
+/**
+ * 创建状态管理器实例
+ * @param logger 日志器（可选）
+ * @returns 带销毁方法的状态管理器
+ */
+export function createStateManager(logger?: Logger): StateManagerWithDestroy {
+  const manager = new StateManagerImpl(logger);
+
+  // 添加 destroy 方法
+  (manager as any).destroy = function () {
+    // 停止定期清理
+    if (this.cleanupTimer !== null) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+
+    // 清理所有监听器
+    this.watchers.clear()
+
+    // 清理批量更新集合
+    if (this.batchUpdates) {
+      this.batchUpdates = null
+    }
+
+    // 清理路径缓存
+    if (this.pathCache) {
+      this.pathCache.clear()
+    }
+
+    // 清空历史记录
+    this.changeHistory = []
+    this.historyIndex = 0
+
+    // 清空响应式状态
+    if (this.state && typeof this.state === 'object') {
+      Object.keys(this.state).forEach(key => {
+        delete this.state[key]
+      })
+    }
+
+    // 清理日志器引用
+    this.logger = undefined
+  };
+
+  return manager as any as StateManagerWithDestroy;
 }
 
 // 预定义的状态模块

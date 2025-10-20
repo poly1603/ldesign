@@ -125,6 +125,34 @@ export enum EditorMode {
 }
 
 /**
+ * 视图初始位置类型
+ */
+export type ViewportAnchor = 
+  | 'center'           // 完全居中（水平+垂直）
+  | 'top-left'        // 左上角
+  | 'top-center'      // 顶部居中（水平居中，垂直顶部）
+  | 'top-right'       // 右上角
+  | 'middle-left'     // 左侧居中（水平左对齐，垂直居中）
+  | 'middle-right'    // 右侧居中（水平右对齐，垂直居中）
+  | 'bottom-left'     // 左下角
+  | 'bottom-center'   // 底部居中（水平居中，垂直底部）
+  | 'bottom-right';   // 右下角
+
+/**
+ * 缩放配置
+ */
+export interface ZoomConfig {
+  initialScale?: number;          // 初始缩放比例 (0.1-3)
+  minScale?: number;              // 最小缩放比例
+  maxScale?: number;              // 最大缩放比例
+  scaleStep?: number;             // 缩放步长
+  autoFit?: boolean;              // 自动适应画布
+  fitPadding?: number;            // 自动适应时的内边距
+  initialPosition?: ViewportAnchor | { x: number; y: number }; // 初始位置
+  centerOnInit?: boolean;         // 初始化时居中内容
+}
+
+/**
  * 流程图配置
  */
 export interface FlowChartConfig {
@@ -133,11 +161,13 @@ export interface FlowChartConfig {
   height?: number;
   nodeGap?: number;
   levelGap?: number;
+  primaryColor?: string;          // 主题色（hover时边的颜色）
   enableDrag?: boolean;          // 已废弃，使用 enablePan
   enableZoom?: boolean;           // 滚轮缩放
   enablePan?: boolean;            // 拖拽画布
   enableNodeDrag?: boolean;       // 拖动节点
   autoLayout?: boolean;
+  zoom?: ZoomConfig;              // 缩放配置
   mode?: EditorMode;              // 编辑器模式
   onNodeClick?: (node: NodeData) => void;
   onEdgeClick?: (edge: EdgeData) => void;
@@ -146,6 +176,7 @@ export interface FlowChartConfig {
   onEdgeAdd?: (edge: EdgeData) => void;
   onEdgeDelete?: (edgeId: string) => void;
   onModeChange?: (mode: EditorMode) => void;
+  onZoomChange?: (scale: number) => void;  // 缩放变化回调
 }
 
 /**

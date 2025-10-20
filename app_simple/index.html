@@ -1,13 +1,131 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/svg+xml" href="/vite.svg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LDesign Simple App</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="LDesign - 现代化、高性能的前端开发框架，基于 Vue 3 和 TypeScript 构建">
+  <meta name="keywords" content="LDesign, Vue3, TypeScript, 前端框架, UI组件库">
+  <meta name="author" content="LDesign Team">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="LDesign Simple App">
+  <meta property="og:description" content="现代化、高性能的前端开发框架">
+
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#0052d9">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/vite.svg">
+  <link rel="apple-touch-icon" href="/vite.svg">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+
+  <title>LDesign Simple App - 现代化前端开发框架</title>
+
+  <!-- 资源提示 - 提升性能 -->
+  <link rel="dns-prefetch" href="//localhost:8888">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+
+  <!-- 预加载关键资源 -->
+  <link rel="modulepreload" href="/src/main.ts">
+
+  <!-- 字体优化 -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  </noscript>
+
+  <!-- Inline critical CSS for faster rendering -->
+  <style>
+    /* Critical CSS - Above the fold */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: #f5f5f5;
+      line-height: 1.5;
+      color: #333;
+    }
+
+    /* 防止布局偏移 */
+    img,
+    svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    #app {
+      min-height: 100vh;
+    }
+
+    /* Loading spinner */
+    .app-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #ffffff;
+    }
+
+    .app-loading::after {
+      content: '';
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0052d9;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
 </head>
+
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <div class="app-loading"></div>
+  </div>
   <script type="module" src="/src/main.ts"></script>
+
+  <!-- 性能监控 -->
+  <script>
+    // 记录性能指标
+    window.addEventListener('load', function () {
+      if ('performance' in window) {
+        const perfData = performance.getEntriesByType('navigation')[0];
+        if (perfData && window.__PERFORMANCE__) {
+          window.__PERFORMANCE__.loadTime = perfData.loadEventEnd - perfData.fetchStart;
+        }
+      }
+    });
+  </script>
 </body>
+
 </html>

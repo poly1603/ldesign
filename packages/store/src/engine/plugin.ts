@@ -5,10 +5,10 @@
  */
 
 import type { App } from 'vue'
-import { createPinia, setActivePinia } from 'pinia'
-import { StoreFactory, StoreType } from '../core/StoreFactory'
-import { PerformanceOptimizer } from '../core/PerformanceOptimizer'
 import type { StoreOptions } from '../types'
+import { createPinia, setActivePinia } from 'pinia'
+import { PerformanceOptimizer } from '../core/PerformanceOptimizer'
+import { StoreFactory, StoreType } from '../core/StoreFactory'
 
 /**
  * Store Engine 插件配置选项
@@ -138,19 +138,13 @@ export function createStoreEnginePlugin(
   const {
     name = 'store',
     version = '1.0.0',
-    description = 'LDesign Store Engine Plugin',
     dependencies = [],
-    autoInstall = true,
     enablePerformanceMonitoring = false,
-    debug = false,
+    // debug = false,
     globalInjection = true,
     globalPropertyName = '$store',
     storeConfig = {},
-    globalConfig = {}
   } = config
-
-  if (debug) {
-      }
 
   return {
     name,
@@ -159,15 +153,9 @@ export function createStoreEnginePlugin(
 
     async install(context: EnginePluginContext) {
       try {
-        if (debug) {
-                  }
-
         // 从上下文中获取引擎实例和 Vue 应用实例
         const engine = context.engine || context
         const app = context.app || engine?.app
-
-        if (debug) {
-                            }
 
         // 创建 Pinia 实例
         const pinia = createPinia()
@@ -178,16 +166,12 @@ export function createStoreEnginePlugin(
         // 如果有 Vue 应用实例，安装 Pinia
         if (app) {
           app.use(pinia)
-          if (debug) {
-                      }
         }
 
         // 创建性能优化器实例
         let performanceOptimizer: PerformanceOptimizer | undefined
         if (storeConfig.enablePerformanceOptimization) {
           performanceOptimizer = new PerformanceOptimizer()
-          if (debug) {
-                      }
         }
 
         // 创建 Store 工厂实例
@@ -211,8 +195,6 @@ export function createStoreEnginePlugin(
               factory: storeFactory,
               optimizer: performanceOptimizer
             }
-            if (debug) {
-                          }
           } else if (globalInjection && globalPropertyName) {
             // 如果没有 Vue 应用实例，监听应用创建事件
             if (engine.events) {
@@ -222,8 +204,6 @@ export function createStoreEnginePlugin(
                   factory: storeFactory,
                   optimizer: performanceOptimizer
                 }
-                if (debug) {
-                                  }
               })
             }
           }
@@ -231,8 +211,6 @@ export function createStoreEnginePlugin(
           // 注册事件监听器
           if (engine.events) {
             engine.events.on('store:create', (storeOptions: any) => {
-              if (debug) {
-                              }
               // 确保 storeOptions 有正确的类型
               const options = {
                 ...storeOptions,
@@ -241,9 +219,7 @@ export function createStoreEnginePlugin(
               return storeFactory.createStore(options)
             })
 
-            engine.events.on('store:destroy', (storeName: string) => {
-              if (debug) {
-                              }
+            engine.events.on('store:destroy', (_storeName: string) => {
               // 这里可以添加 store 销毁逻辑
             })
           }
@@ -253,9 +229,6 @@ export function createStoreEnginePlugin(
             engine.performance.mark('store-plugin-installed')
           }
         }
-
-        if (debug) {
-                  }
       } catch (error) {
         console.error('[Store Plugin] Failed to install store plugin:', error)
         throw error
@@ -264,9 +237,6 @@ export function createStoreEnginePlugin(
 
     async uninstall(context: EnginePluginContext) {
       try {
-        if (debug) {
-                  }
-
         const engine = context.engine || context
 
         // 清理引擎状态
@@ -281,9 +251,6 @@ export function createStoreEnginePlugin(
           engine.events.off('store:create')
           engine.events.off('store:destroy')
         }
-
-        if (debug) {
-                  }
       } catch (error) {
         console.error('[Store Plugin] Failed to uninstall store plugin:', error)
         throw error

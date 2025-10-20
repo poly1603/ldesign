@@ -206,7 +206,7 @@ export async function batchRemove(
         await cache.remove(key)
         return { success: true, key }
       }
-      catch (error) {
+      catch {
         return { success: false, key }
       }
     })

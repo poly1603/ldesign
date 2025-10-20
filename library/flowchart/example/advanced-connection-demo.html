@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高级连线系统演示 - FlowChart</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #333;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .container {
+      flex: 1;
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .sidebar {
+      width: 300px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    #flowchart-container {
+      flex: 1;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .controls {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .control-group {
+      margin-bottom: 15px;
+    }
+
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .control-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #333;
+      font-size: 14px;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button.secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    button.secondary:hover {
+      background: #d0d0d0;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-list {
+      list-style: none;
+    }
+
+    .feature-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .feature-list li:last-child {
+      border-bottom: none;
+    }
+
+    .feature-list li::before {
+      content: '✓';
+      color: #4caf50;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .stat-item {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .log {
+      background: #f5f5f5;
+      border-radius: 5px;
+      padding: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-time {
+      color: #999;
+      margin-right: 5px;
+    }
+
+    .log-message {
+      color: #333;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: #333;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 8px;
+    }
+
+    h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #555;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>🎯 高级连线系统演示</h1>
+    <p class="subtitle">参考 bpmn.js 实现的智能连线系统 | 支持拖拽折点、连接点管理、最少折点路由</p>
+  </header>
+
+  <div class="container">
+    <div class="sidebar">
+      <h2>系统特性</h2>
+      <ul class="feature-list">
+        <li>智能连接点分配</li>
+        <li>最少折点路由算法</li>
+        <li>菱形节点优化</li>
+        <li>连接点拖拽</li>
+        <li>折点拖拽调整</li>
+        <li>网格对齐</li>
+        <li>自动路径优化</li>
+      </ul>
+
+      <h2 style="margin-top: 20px;">统计信息</h2>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-value" id="node-count">0</div>
+          <div class="stat-label">节点数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="edge-count">0</div>
+          <div class="stat-label">连线数</div>
+        </div>
+      </div>
+
+      <h2>操作日志</h2>
+      <div class="log" id="log-container">
+        <div class="log-entry">
+          <span class="log-time">00:00:00</span>
+          <span class="log-message">系统已启动</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div id="flowchart-container"></div>
+
+      <div class="controls">
+        <h3>控制面板</h3>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+          <button onclick="loadSimpleExample()">简单流程</button>
+          <button onclick="loadComplexExample()">复杂流程</button>
+          <button onclick="loadDiamondExample()">菱形测试</button>
+          <button onclick="enableInteraction()" class="secondary">启用交互</button>
+          <button onclick="disableInteraction()" class="secondary">禁用交互</button>
+          <button onclick="clearCanvas()" class="secondary">清空画布</button>
+        </div>
+
+        <div class="info-box" style="margin-top: 15px;">
+          <strong>💡 提示：</strong>
+          启用交互后，可以拖拽连线上的蓝色圆点（折点）和绿色菱形（连接点）来调整连线。
+          双击折点可删除。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { FlowChart } from '../dist/flowchart.esm.js';
+
+    let flowChart = null;
+    let interactionEnabled = false;
+
+    function log(message) {
+      const logContainer = document.getElementById('log-container');
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `<span class="log-time">${time}</span><span class="log-message">${message}</span>`;
+      logContainer.insertBefore(entry, logContainer.firstChild);
+
+      // 限制日志条目数量
+      if (logContainer.children.length > 50) {
+        logContainer.removeChild(logContainer.lastChild);
+      }
+    }
+
+    function updateStats(nodeCount, edgeCount) {
+      document.getElementById('node-count').textContent = nodeCount;
+      document.getElementById('edge-count').textContent = edgeCount;
+    }
+
+    function initFlowChart() {
+      if (flowChart) {
+        flowChart.destroy();
+      }
+
+      flowChart = new FlowChart({
+        container: '#flowchart-container',
+        autoLayout: false,
+        enableZoom: true,
+        enablePan: true,
+        zoom: {
+          initialScale: 0.8,
+          minScale: 0.3,
+          maxScale: 2,
+          centerOnInit: true
+        }
+      });
+
+      log('流程图初始化完成');
+    }
+
+    window.loadSimpleExample = function () {
+      const nodes = [
+        { id: '1', type: 'start', label: '开始', position: { x: 300, y: 100 } },
+        { id: '2', type: 'process', label: '处理步骤', position: { x: 300, y: 220 } },
+        { id: '3', type: 'condition', label: '判断条件', position: { x: 300, y: 340 } },
+        { id: '4', type: 'process', label: '分支A', position: { x: 150, y: 460 } },
+        { id: '5', type: 'process', label: '分支B', position: { x: 450, y: 460 } },
+        { id: '6', type: 'end', label: '结束', position: { x: 300, y: 580 } }
+      ];
+
+      const edges = [
+        { id: 'e1', source: '1', target: '2' },
+        { id: 'e2', source: '2', target: '3' },
+        { id: 'e3', source: '3', target: '4', label: '是' },
+        { id: 'e4', source: '3', target: '5', label: '否' },
+        { id: 'e5', source: '4', target: '6' },
+        { id: 'e6', source: '5', target: '6' }
+      ];
+
+      initFlowChart();
+      flowChart.load(nodes, edges);
+      updateStats(nodes.length, edges.length);
+      log(`加载简单流程: ${nodes.length}个节点, ${edges.length}条连线`);
+    };
+
+    window.loadComplexExample = function () {
+      const nodes = [
+        { id: '1', type: 'start', label: '申请提交', position: { x: 300, y: 80 } },
+        { id: '2', type: 'process', label: '部门审批', position: { x: 300, y: 180 } },
+        { id: '3', type: 'condition', label: '金额判断', position: { x: 300, y: 280 } },
+        { id: '4', type: 'process', label: '小额审批', position: { x: 150, y: 380 } },
+        { id: '5', type: 'process', label: '大额审批', position: { x: 450, y: 380 } },
+        { id: '6', type: 'parallel', label: '并行会签', position: { x: 450, y: 480 } },
+        { id: '7', type: 'process', label: 'HR审批', position: { x: 350, y: 580 } },
+        { id: '8', type: 'process', label: '财务审批', position: { x: 550, y: 580 } },
+        { id: '9', type: 'merge', label: '汇总结果', position: { x: 450, y: 680 } },
+        { id: '10', type: 'end', label: '流程结束', position: { x: 300, y: 780 } }
+      ];
+
+      const edges = [
+        { id: 'e1', source: '1', target: '2' },
+        { id: 'e2', source: '2', target: '3' },
+        { id: 'e3', source: '3', target: '4', label: '<10万' },
+        { id: 'e4', source: '3', target: '5', label: '≥10万' },
+        { id: 'e5', source: '4', target: '10' },
+        { id: 'e6', source: '5', target: '6' },
+        { id: 'e7', source: '6', target: '7' },
+        { id: 'e8', source: '6', target: '8' },
+        { id: 'e9', source: '7', target: '9' },
+        { id: 'e10', source: '8', target: '9' },
+        { id: 'e11', source: '9', target: '10' }
+      ];
+
+      initFlowChart();
+      flowChart.load(nodes, edges);
+      updateStats(nodes.length, edges.length);
+      log(`加载复杂流程: ${nodes.length}个节点, ${edges.length}条连线`);
+    };
+
+    window.loadDiamondExample = function () {
+      const nodes = [
+        { id: '1', type: 'start', label: '开始', position: { x: 300, y: 100 } },
+        { id: '2', type: 'condition', label: '条件1', position: { x: 300, y: 220 } },
+        { id: '3', type: 'process', label: '结果A', position: { x: 150, y: 340 } },
+        { id: '4', type: 'process', label: '结果B', position: { x: 300, y: 340 } },
+        { id: '5', type: 'process', label: '结果C', position: { x: 450, y: 340 } },
+        { id: '6', type: 'condition', label: '条件2', position: { x: 300, y: 460 } },
+        { id: '7', type: 'end', label: '结束', position: { x: 300, y: 580 } }
+      ];
+
+      const edges = [
+        { id: 'e1', source: '1', target: '2' },
+        { id: 'e2', source: '2', target: '3', label: '左' },
+        { id: 'e3', source: '2', target: '4', label: '下' },
+        { id: 'e4', source: '2', target: '5', label: '右' },
+        { id: 'e5', source: '3', target: '6' },
+        { id: 'e6', source: '4', target: '6' },
+        { id: 'e7', source: '5', target: '6' },
+        { id: 'e8', source: '6', target: '7' }
+      ];
+
+      initFlowChart();
+      flowChart.load(nodes, edges);
+      updateStats(nodes.length, edges.length);
+      log(`加载菱形测试: ${nodes.length}个节点, ${edges.length}条连线 - 展示每个角只有一根线`);
+    };
+
+    window.enableInteraction = function () {
+      if (flowChart) {
+        // 启用交互功能
+        interactionEnabled = true;
+        log('✅ 交互功能已启用 - 可以拖拽折点和连接点');
+      } else {
+        log('❌ 请先加载一个示例');
+      }
+    };
+
+    window.disableInteraction = function () {
+      interactionEnabled = false;
+      log('🚫 交互功能已禁用');
+    };
+
+    window.clearCanvas = function () {
+      if (flowChart) {
+        flowChart.clear();
+        updateStats(0, 0);
+        log('🗑️ 画布已清空');
+      }
+    };
+
+    // 页面加载时初始化
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSimpleExample();
+    });
+  </script>
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+

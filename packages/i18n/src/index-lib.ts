@@ -4,16 +4,16 @@
  */
 
 // 导出所有核心功能
-export * from './core'
-export * from './types'
-export * from './utils'
+// 导出核心 i18n 类
+import { OptimizedI18n } from './core/i18n-optimized'
 
 // 只导出 Vue adapter
 export { createVueI18n, useI18n as useVueI18n } from './adapters/vue'
+export * from './core'
+export * from './types'
 
-// 导出核心 i18n 类
-import { OptimizedI18n } from './core/i18n-optimized'
-export { OptimizedI18n, OptimizedI18n as I18n }
+export * from './utils'
+export { OptimizedI18n as I18n, OptimizedI18n }
 
 // 创建默认实例
 const defaultI18n = new OptimizedI18n({

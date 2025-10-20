@@ -31,7 +31,7 @@ export function debounce<T extends (...args: any[]) => any>(
 ): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null
 
-  return function (this: any, ...args: Parameters<T>) {
+  return function (this: unknown, ...args: Parameters<T>) {
     if (timeoutId !== null) {
       clearTimeout(timeoutId)
     }
@@ -68,7 +68,7 @@ export function throttle<T extends (...args: any[]) => any>(
   let inThrottle = false
   let lastResult: ReturnType<T>
 
-  return function (this: any, ...args: Parameters<T>) {
+  return function (this: unknown, ...args: Parameters<T>) {
     if (!inThrottle) {
       inThrottle = true
       lastResult = fn.apply(this, args)
@@ -85,13 +85,13 @@ export function throttle<T extends (...args: any[]) => any>(
 /**
  * 请求合并器配置
  */
-export interface BatchRequestConfig {
+export interface BatchRequestConfig<TInput = unknown, TOutput = unknown> {
   /** 最大批量大小 */
   maxBatchSize?: number
   /** 等待时间（毫秒） */
   delay?: number
   /** 批量请求执行器 */
-  batchFn: (items: any[]) => Promise<any[]>
+  batchFn: (items: TInput[]) => Promise<TOutput[]>
 }
 
 /**
@@ -122,7 +122,7 @@ export interface BatchRequestConfig {
  * ```
  */
 export function createBatchRequest<TInput, TOutput>(
-  config: BatchRequestConfig,
+  config: BatchRequestConfig<TInput, TOutput>,
 ): (input: TInput) => Promise<TOutput> {
   const {
     maxBatchSize = 100,
@@ -214,7 +214,7 @@ export function once<T extends (...args: any[]) => any>(
   let called = false
   let result: ReturnType<T>
 
-  return function (this: any, ...args: Parameters<T>): ReturnType<T> {
+  return function (this: unknown, ...args: Parameters<T>): ReturnType<T> {
     if (!called) {
       called = true
       result = fn.apply(this, args)
@@ -249,7 +249,7 @@ export function memoize<T extends (...args: any[]) => any>(
 ): T & { cache: Map<string, ReturnType<T>>, clear: () => void } {
   const cache = new Map<string, ReturnType<T>>()
 
-  const memoized = function (this: any, ...args: Parameters<T>): ReturnType<T> {
+  const memoized = function (this: unknown, ...args: Parameters<T>): ReturnType<T> {
     const key = keyFn ? keyFn(...args) : JSON.stringify(args)
 
     if (cache.has(key)) {
@@ -274,6 +274,9 @@ export function memoize<T extends (...args: any[]) => any>(
  * 
  * @param fn - 要执行的函数
  * @param options - 重试选项
+ * @param options.maxAttempts - 最大尝试次数，默认3
+ * @param options.delay - 重试延迟基数（毫秒），默认1000
+ * @param options.onRetry - 重试回调函数
  * @returns Promise
  * 
  * @example
@@ -289,27 +292,27 @@ export async function retry<T>(
   options: {
     maxAttempts?: number
     delay?: number
-    onRetry?: (attempt: number, error: any) => void
+    onRetry?: (attempt: number, error: Error) => void
   } = {},
 ): Promise<T> {
   const { maxAttempts = 3, delay = 1000, onRetry } = options
-  let lastError: any
+  let lastError: Error | undefined
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await fn()
     }
     catch (error) {
-      lastError = error
+      lastError = error instanceof Error ? error : new Error(String(error))
 
       if (attempt < maxAttempts) {
-        onRetry?.(attempt, error)
+        onRetry?.(attempt, lastError)
         await new Promise(resolve => setTimeout(resolve, delay * attempt))
       }
     }
   }
 
-  throw lastError
+  throw lastError || new Error('Unknown error')
 }
 
 /**
@@ -338,7 +341,7 @@ export async function retry<T>(
  *   .build()
  * ```
  */
-export function createChainBuilder<T extends Record<string, any>>(
+export function createChainBuilder<T extends Record<string, unknown>>(
   initial: T,
 ) {
   let config = { ...initial }
@@ -386,13 +389,13 @@ export function createChainBuilder<T extends Record<string, any>>(
  * get(obj, 'user.settings.theme') // undefined
  * ```
  */
-export function get<T = any>(
-  obj: any,
+export function get<T = unknown>(
+  obj: unknown,
   path: string,
   defaultValue?: T,
 ): T | undefined {
   const keys = path.split('.')
-  let result = obj
+  let result: any = obj
 
   for (const key of keys) {
     if (result === null || result === undefined) {
@@ -418,7 +421,7 @@ export function get<T = any>(
  * // obj 变为: { user: { profile: { name: 'John' } } }
  * ```
  */
-export function set(obj: any, path: string, value: any): void {
+export function set(obj: Record<string, any>, path: string, value: unknown): void {
   const keys = path.split('.')
   const lastKey = keys.pop()!
   let current = obj

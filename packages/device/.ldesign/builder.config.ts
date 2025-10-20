@@ -1,4 +1,4 @@
-﻿import { defineConfig } from '@ldesign/builder'
+import { defineConfig } from '@ldesign/builder'
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({

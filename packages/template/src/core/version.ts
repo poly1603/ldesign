@@ -2,9 +2,8 @@
  * 模板版本控制系统
  */
 
-import { ref, reactive, computed } from 'vue'
-import type { Template, TemplateConfig } from '../types'
-import { deepMerge, deepClone } from '../utils/helpers'
+import type { Template } from '../types'
+import { deepClone } from '../utils/helpers'
 
 /**
  * 版本信息

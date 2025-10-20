@@ -1,10 +1,10 @@
-import CryptoJS from 'crypto-js'
 import type {
   BlowfishOptions,
   DecryptResult,
   EncryptResult,
   IEncryptor,
 } from '../types'
+import CryptoJS from 'crypto-js'
 import { ErrorUtils, RandomUtils, ValidationUtils } from '../utils'
 
 /**

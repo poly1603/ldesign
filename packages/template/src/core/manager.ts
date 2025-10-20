@@ -12,16 +12,18 @@ import type {
   TemplateRegistryItem,
   TemplateScanResult,
 } from '../types'
+import { createSetPool } from '../utils/objectPool'
 import { getLoader } from './loader'
 import { getScanner } from './scanner'
 
-/**
- * 模板管理器类
- */
 export class TemplateManager {
   private initialized = false
   private scanResult: TemplateScanResult | null = null
   private options: TemplateManagerOptions
+  // 使用 WeakMap 缓存过滤结果，允许自动垃圾回收
+  private filterCache = new WeakMap<object, TemplateMetadata[]>()
+  // Set 池用于高效过滤
+  private setPool = createSetPool<string>(20)
 
   /**
    * 构造函数
@@ -164,34 +166,54 @@ export class TemplateManager {
   }
 
   /**
-   * 过滤模板
+   * 过滤模板 - 优化性能版本
    */
   private filterTemplates(templates: TemplateMetadata[], filter: TemplateFilter): TemplateMetadata[] {
-    return templates.filter(t => {
-      if (filter.category) {
-        const categories = Array.isArray(filter.category) ? filter.category : [filter.category]
-        if (!categories.includes(t.category)) return false
-      }
+    // 检查缓存
+    const cacheKey = { ...filter }
+    const cached = this.filterCache.get(cacheKey)
+    if (cached) return cached
 
-      if (filter.device) {
-        const devices = Array.isArray(filter.device) ? filter.device : [filter.device]
-        if (!devices.includes(t.device)) return false
-      }
+    // 预处理过滤条件，复用 Set 对象
+    const categorySet = this.createFilterSet(filter.category)
+    const deviceSet = this.createFilterSet(filter.device)
+    const nameSet = this.createFilterSet(filter.name)
+    const tagsArray = filter.tags ? (Array.isArray(filter.tags) ? filter.tags : [filter.tags]) : null
 
-      if (filter.name) {
-        const names = Array.isArray(filter.name) ? filter.name : [filter.name]
-        if (!names.includes(t.name)) return false
-      }
-
-      if (filter.tags) {
-        const tags = Array.isArray(filter.tags) ? filter.tags : [filter.tags]
-        if (!t.tags || !tags.some(tag => t.tags?.includes(tag) === true)) return false
-      }
-
+    const result = templates.filter(t => {
+      // 使用Set.has()代替Array.includes()，时间复杂度从O(n)降为O(1)
+      if (categorySet && !categorySet.has(t.category)) return false
+      if (deviceSet && !deviceSet.has(t.device)) return false
+      if (nameSet && !nameSet.has(t.name)) return false
+      
+      if (tagsArray && (!t.tags || !tagsArray.some(tag => t.tags!.includes(tag)))) return false
       if (filter.defaultOnly && !t.isDefault) return false
 
       return true
     })
+
+    // 释放 Set 对象回池
+    if (categorySet) this.setPool.release(categorySet)
+    if (deviceSet) this.setPool.release(deviceSet)
+    if (nameSet) this.setPool.release(nameSet)
+
+    // 缓存结果
+    this.filterCache.set(cacheKey, result)
+
+    return result
+  }
+
+  /**
+   * 创建过滤用的 Set
+   */
+  private createFilterSet(value: string | string[] | undefined): Set<string> | null {
+    if (!value) return null
+    const set = this.setPool.acquire()
+    const values = Array.isArray(value) ? value : [value]
+    for (const v of values) {
+      set.add(v)
+    }
+    return set
   }
 }
 

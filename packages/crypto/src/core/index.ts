@@ -54,17 +54,21 @@ export type {
   TripleDESOptions,
 } from '../types'
 
+// === 认证加密 ===
 export {
-  Decrypt,
-  DigitalSignature,
-  Encrypt,
-  Hash,
-  HMAC,
-  KeyGenerator,
-} from './crypto'
+  AuthenticatedEncryption,
+  authenticatedEncryption,
+  decryptJSONWithAuth,
+  decryptWithAuth,
+  encryptJSONWithAuth,
+  encryptWithAuth,
+} from './authenticated-encryption'
 
-// === 管理器和性能优化 ===
-export { type CryptoConfig, CryptoManager } from './manager'
+export type {
+  AuthenticatedDecryptResult,
+  AuthenticatedEncryptionOptions,
+  AuthenticatedEncryptResult,
+} from './authenticated-encryption'
 
 export const encrypt = new Encrypt()
 export const decrypt = new Decrypt()
@@ -85,6 +89,29 @@ export const cryptoManager = new CryptoManager({
   logLevel: 'error',
 })
 
+// === 链式调用 API ===
+export {
+  chain,
+  CryptoChain,
+  decryptFromBase64,
+  decryptJSON,
+  encryptJSON,
+  encryptToBase64,
+  hashPassword,
+} from './chain'
+
+export {
+  Decrypt,
+  DigitalSignature,
+  Encrypt,
+  Hash,
+  HMAC,
+  KeyGenerator,
+} from './crypto'
+
+// === 管理器和性能优化 ===
+export { type CryptoConfig, CryptoManager } from './manager'
+
 export { PerformanceOptimizer } from './performance'
 
 export type {
@@ -94,30 +121,3 @@ export type {
   PerformanceMetrics,
   PerformanceOptimizerConfig,
 } from './performance'
-
-// === 链式调用 API ===
-export {
-  CryptoChain,
-  chain,
-  encryptToBase64,
-  decryptFromBase64,
-  encryptJSON,
-  decryptJSON,
-  hashPassword,
-} from './chain'
-
-// === 认证加密 ===
-export {
-  AuthenticatedEncryption,
-  authenticatedEncryption,
-  encryptWithAuth,
-  decryptWithAuth,
-  encryptJSONWithAuth,
-  decryptJSONWithAuth,
-} from './authenticated-encryption'
-
-export type {
-  AuthenticatedEncryptResult,
-  AuthenticatedDecryptResult,
-  AuthenticatedEncryptionOptions,
-} from './authenticated-encryption'

@@ -7,7 +7,6 @@
 import type {
   HttpClient,
   RequestConfig,
-  ResponseData,
 } from './types'
 import type {
   DownloadConfig,
@@ -33,19 +32,19 @@ export interface FileOperations {
   /**
    * 上传文件
    */
-  upload<T = any>(
+  upload: <T = any>(
     url: string,
     file: File | File[] | FormData,
     config?: UploadConfig,
-  ): Promise<UploadResult<T>>
+  ) => Promise<UploadResult<T>>
 
   /**
    * 下载文件
    */
-  download(
+  download: (
     url: string,
     config?: DownloadConfig,
-  ): Promise<DownloadResult>
+  ) => Promise<DownloadResult>
 }
 
 /**
@@ -70,7 +69,7 @@ export class FileOperationHandler implements FileOperations {
       formData = file
       // 从FormData中提取文件（用于验证）
       files = []
-      for (const [_key, value] of formData.entries()) {
+      for (const [, value] of formData.entries()) {
         if (value instanceof File) {
           files.push(value)
         }
@@ -104,13 +103,13 @@ export class FileOperationHandler implements FileOperations {
 
     // 配置请求
     const requestConfig: RequestConfig = {
-      ...config,
       method: 'POST',
       url,
       data: formData,
       headers: {
-        ...config.headers,
+        ...(config.headers || {}),
       },
+      ...(config || {}),
       onUploadProgress: config.onProgress
         ? (progressEvent: any) => {
             const progress = progressCalculator.calculate(
@@ -143,10 +142,10 @@ export class FileOperationHandler implements FileOperations {
 
     // 配置请求
     const requestConfig: RequestConfig = {
-      ...config,
       method: 'GET',
       url,
       responseType: 'blob',
+      ...(config || {}),
       onDownloadProgress: config.onProgress
         ? (progressEvent: any) => {
             const progress = progressCalculator.calculate(

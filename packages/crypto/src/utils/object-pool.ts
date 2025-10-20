@@ -20,7 +20,7 @@
  * ```
  */
 
-import type { EncryptResult, DecryptResult } from '../types'
+import type { DecryptResult, EncryptResult } from '../types'
 
 /**
  * 对象池配置
@@ -31,9 +31,9 @@ export interface ObjectPoolOptions {
   /** 是否启用统计 */
   enableStats?: boolean
   /** 对象创建工厂函数 */
-  factory?: () => any
+  factory?: () => unknown
   /** 对象重置函数 */
-  reset?: (obj: any) => void
+  reset?: (obj: unknown) => void
 }
 
 /**
@@ -187,23 +187,27 @@ export class ObjectPool<T> {
  */
 export class EncryptResultPool extends ObjectPool<EncryptResult> {
   constructor(options: Omit<ObjectPoolOptions, 'factory' | 'reset'> = {}) {
+    const factoryFn = (): EncryptResult => ({
+      success: false,
+      data: '',
+      algorithm: '',
+    })
+    
+    const resetFn = (obj: EncryptResult): void => {
+      obj.success = false
+      obj.data = ''
+      obj.algorithm = ''
+      obj.mode = undefined
+      obj.keySize = undefined
+      obj.iv = undefined
+      obj.error = undefined
+    }
+    
     super({
       ...options,
-      factory: () => ({
-        success: false,
-        data: '',
-        algorithm: '',
-      }),
-      reset: (obj: EncryptResult) => {
-        obj.success = false
-        obj.data = ''
-        obj.algorithm = ''
-        obj.mode = undefined
-        obj.keySize = undefined
-        obj.iv = undefined
-        obj.error = undefined
-      },
-    })
+      factory: factoryFn,
+      reset: resetFn,
+    } as ObjectPoolOptions & { factory: () => EncryptResult, reset: (obj: EncryptResult) => void })
   }
 
   /**
@@ -242,21 +246,25 @@ export class EncryptResultPool extends ObjectPool<EncryptResult> {
  */
 export class DecryptResultPool extends ObjectPool<DecryptResult> {
   constructor(options: Omit<ObjectPoolOptions, 'factory' | 'reset'> = {}) {
+    const factoryFn = (): DecryptResult => ({
+      success: false,
+      data: '',
+      algorithm: '',
+    })
+    
+    const resetFn = (obj: DecryptResult): void => {
+      obj.success = false
+      obj.data = ''
+      obj.algorithm = ''
+      obj.mode = undefined
+      obj.error = undefined
+    }
+    
     super({
       ...options,
-      factory: () => ({
-        success: false,
-        data: '',
-        algorithm: '',
-      }),
-      reset: (obj: DecryptResult) => {
-        obj.success = false
-        obj.data = ''
-        obj.algorithm = ''
-        obj.mode = undefined
-        obj.error = undefined
-      },
-    })
+      factory: factoryFn,
+      reset: resetFn,
+    } as ObjectPoolOptions & { factory: () => DecryptResult, reset: (obj: DecryptResult) => void })
   }
 
   /**

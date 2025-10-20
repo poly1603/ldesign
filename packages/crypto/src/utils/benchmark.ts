@@ -19,8 +19,8 @@
  * ```
  */
 
-import { aes, hash, hmac, encoding } from '../algorithms'
-import type { EncryptionAlgorithm, HashAlgorithm } from '../types'
+import type { HashAlgorithm } from '../types'
+import { aes, encoding, hash } from '../algorithms'
 
 /**
  * 基准测试结果
@@ -316,9 +316,9 @@ export class Benchmark {
    */
   generateReport(suite: BenchmarkSuite): string {
     let report = '\n'
-    report += '═'.repeat(80) + '\n'
+    report += `${'═'.repeat(80)  }\n`
     report += '  性能基准测试报告\n'
-    report += '═'.repeat(80) + '\n\n'
+    report += `${'═'.repeat(80)  }\n\n`
 
     report += `测试套件: ${suite.name}\n`
     report += `开始时间: ${new Date(suite.startTime).toLocaleString()}\n`
@@ -332,17 +332,20 @@ export class Benchmark {
       if (!grouped.has(key)) {
         grouped.set(key, [])
       }
-      grouped.get(key)!.push(result)
+      const group = grouped.get(key)
+      if (group) {
+        group.push(result)
+      }
     }
 
     // 输出每个算法的结果
     for (const [algorithm, results] of grouped) {
-      report += `─`.repeat(80) + '\n'
+      report += `${`─`.repeat(80)  }\n`
       report += `算法: ${algorithm}\n`
-      report += `─`.repeat(80) + '\n\n'
+      report += `${`─`.repeat(80)  }\n\n`
 
       report += '  数据大小    操作      迭代次数    平均耗时    吞吐量\n'
-      report += '  ' + '─'.repeat(72) + '\n'
+      report += `  ${  '─'.repeat(72)  }\n`
 
       for (const result of results) {
         report += `  ${this.formatSize(result.dataSize).padEnd(10)}  `
@@ -355,7 +358,7 @@ export class Benchmark {
       report += '\n'
     }
 
-    report += '═'.repeat(80) + '\n'
+    report += `${'═'.repeat(80)  }\n`
 
     return report
   }
@@ -406,10 +409,9 @@ export class Benchmark {
   /**
    * 日志输出
    */
-  private log(message: string): void {
-    if (this.options.verbose) {
-      
-    }
+  private log(_message: string): void {
+    // 日志功能已禁用，避免控制台输出
+    // 如需启用，可以使用自定义日志处理器
   }
 }
 
@@ -432,7 +434,6 @@ export async function quickBenchmark(): Promise<BenchmarkSuite> {
   })
 
   const results = await benchmark.runAll()
-  )
   return results
 }
 
@@ -454,7 +455,7 @@ export async function compareBenchmark(
 
   let report = '\n'
   report += `比较 ${algorithm1} vs ${algorithm2}\n`
-  report += '─'.repeat(60) + '\n\n'
+  report += `${'─'.repeat(60)  }\n\n`
 
   const algo1Results = results.results.filter(r => r.algorithm === algorithm1)
   const algo2Results = results.results.filter(r => r.algorithm === algorithm2)

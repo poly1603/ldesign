@@ -3,7 +3,7 @@
  * 提供更简单的 Store 创建和使用方式
  */
 
-import type { Store, StateTree } from 'pinia'
+import type { StateTree, Store } from 'pinia'
 import type { App } from 'vue'
 import { defineStore } from 'pinia'
 

@@ -33,6 +33,10 @@ export class AnimationManager {
   private options: AnimationOptions;
   private styleElement: HTMLStyleElement | null = null;
   private isTransitioning = false;
+  private animationFrameId: number | null = null;
+  private pendingPromises = new WeakSet<Promise<void>>();
+  private pendingTimeouts = new Set<ReturnType<typeof setTimeout>>();
+  private isDestroyed = false;
 
   constructor(options: AnimationOptions = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options };
@@ -74,7 +78,7 @@ export class AnimationManager {
     beforeChange: () => void,
     afterChange?: () => void
   ): Promise<void> {
-    if (!this.options.enabled) {
+    if (!this.options.enabled || this.isDestroyed) {
       beforeChange();
       afterChange?.();
       return;
@@ -95,7 +99,14 @@ export class AnimationManager {
     beforeChange();
 
     // Wait for transition to complete
-    await this.waitForTransition();
+    const transitionPromise = this.waitForTransition();
+    this.pendingPromises.add(transitionPromise);
+    
+    try {
+      await transitionPromise;
+    } finally {
+      // WeakSet will automatically handle cleanup
+    }
 
     // Cleanup
     if (afterChange) {
@@ -107,10 +118,29 @@ export class AnimationManager {
    * Wait for transitions to complete
    */
   private async waitForTransition(): Promise<void> {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve();
+    return new Promise((resolve, reject) => {
+      if (this.isDestroyed) {
+        reject(new Error('AnimationManager is destroyed'));
+        return;
+      }
+      
+      const timeoutId = setTimeout(() => {
+        this.pendingTimeouts.delete(timeoutId);
+        if (!this.isDestroyed) {
+          resolve();
+        } else {
+          reject(new Error('AnimationManager was destroyed during transition'));
+        }
       }, this.options.duration || 300);
+      
+      this.pendingTimeouts.add(timeoutId);
+      
+      // Store timeout for cleanup if needed
+      if (this.isDestroyed) {
+        clearTimeout(timeoutId);
+        this.pendingTimeouts.delete(timeoutId);
+        reject(new Error('AnimationManager is destroyed'));
+      }
     });
   }
 
@@ -187,8 +217,25 @@ export class AnimationManager {
    * Destroy the animation manager
    */
   destroy(): void {
+    if (this.isDestroyed) return;
+    
+    this.isDestroyed = true;
+    
+    // Cancel any pending animations
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+    
+    // Cancel all pending timeouts
+    this.pendingTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+    this.pendingTimeouts.clear();
+    
+    // WeakSet will automatically cleanup promises
+    
+    // Disable transitions and clean up
     this.disableTransitions();
-    this.options = DEFAULT_OPTIONS;
+    this.options = Object.freeze({...DEFAULT_OPTIONS});  // Use immutable object
   }
 }
 
@@ -203,6 +250,17 @@ export function getAnimationManager(): AnimationManager {
     animationManager = new AnimationManager();
   }
   return animationManager;
+}
+
+/**
+ * Destroy animation manager instance
+ * Should be called when app is unmounted
+ */
+export function destroyAnimationManager(): void {
+  if (animationManager) {
+    animationManager.destroy();
+    animationManager = null;
+  }
 }
 
 /**

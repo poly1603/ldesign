@@ -125,7 +125,7 @@ export class DuplicateDetector {
   /**
    * 标记请求完成
    */
-  markComplete(key: string): void {
+  markComplete(_key: string): void {
     // 可以选择立即删除记录，或等待自动清理
     // 这里选择等待自动清理以保持检测准确性
   }

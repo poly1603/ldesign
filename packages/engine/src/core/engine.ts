@@ -1,10 +1,11 @@
+import type { CacheConfig, CacheManager } from '../cache/cache-manager'
 // 与 Engine 接口保持一致：从实现处引入这些管理器的类型
 import type { EnvironmentManager } from '../environment/environment-manager'
 import type { LifecycleManager } from '../lifecycle/lifecycle-manager'
-import type { UnifiedNotificationSystem } from '../notifications/unified-notification-system';
+import type { NotificationSystem } from '../notifications/notification-system';
 import type { PerformanceManager } from '../performance/performance-manager'
-import type { SecurityManager } from '../security/security-manager'
 
+import type { SecurityManager } from '../security/security-manager'
 import type {
   ConfigManager,
   DirectiveManager,
@@ -23,7 +24,7 @@ import type {
 } from '../types'
 import type { Engine } from '../types/engine'
 import { type App, type Component, createApp, type Directive } from 'vue'
-import { type CacheConfig, type CacheManager, createCacheManager } from '../cache/unified-cache-manager'
+import { createCacheManager } from '../cache/cache-manager'
 import {
   createConfigManager,
   defaultConfigSchema,
@@ -36,7 +37,7 @@ import { createEventManager } from '../events/event-manager'
 import { createLifecycleManager } from '../lifecycle/lifecycle-manager'
 import { createLogger } from '../logger/logger'
 import { createMiddlewareManager } from '../middleware/middleware-manager'
-import { createUnifiedNotificationSystem } from '../notifications/unified-notification-system'
+import { createNotificationSystem } from '../notifications/notification-system'
 import { createPerformanceManager } from '../performance/performance-manager'
 import { createPluginManager } from '../plugins/plugin-manager'
 import { createSecurityManager } from '../security/security-manager'
@@ -106,7 +107,7 @@ export class EngineImpl implements Engine {
   readonly logger: Logger
 
   /** 通知管理器 - 管理用户通知和提示 */
-  notifications!: UnifiedNotificationSystem
+  notifications!: NotificationSystem
 
   /** 缓存管理器实例 - 懒加载，提供多级缓存策略 */
   private _cache?: CacheManager
@@ -229,45 +230,51 @@ export class EngineImpl implements Engine {
    * @param config 引擎配置对象
    */
   constructor(config: EngineConfig = {}) {
-    // 1. 首先创建配置管理器 - 所有其他组件都可能需要读取配置
-    this.config = createConfigManager({
-      debug: false,
-      ...config,
-    })
+    try {
+      // 1. 首先创建配置管理器 - 所有其他组件都可能需要读取配置
+      this.config = createConfigManager({
+        debug: false,
+        ...config,
+      })
 
-    // 设置默认配置Schema，确保配置项的类型安全
-    this.config?.setSchema(defaultConfigSchema)
+      // 设置默认配置Schema，确保配置项的类型安全
+      this.config?.setSchema(defaultConfigSchema)
 
-    // 2. 基于配置创建日志器 - 所有组件都需要记录日志
-    this.logger = createLogger(
-      this.config?.get('debug', false) ? 'debug' : 'info'
-    )
+      // 2. 基于配置创建日志器 - 所有组件都需要记录日志
+      const logLevel = this.config?.get('debug', false) ? 'debug' : 'info'
+      this.logger = createLogger(logLevel)
 
-    // 3. 创建管理器注册表 - 管理所有管理器的依赖关系和初始化顺序
-    this.managerRegistry = new ManagerRegistry(this.logger)
-    this.registerManagers()
+      // 3. 创建管理器注册表 - 管理所有管理器的依赖关系和初始化顺序
+      this.managerRegistry = new ManagerRegistry(this.logger)
+      this.registerManagers()
 
-    // 4. 初始化环境管理器（优先级最高，其他管理器可能依赖环境信息）
-    this.environment = createEnvironmentManager(this.logger)
+      // 4. 初始化环境管理器（优先级最高，其他管理器可能依赖环境信息）
+      this.environment = createEnvironmentManager(this.logger)
 
-    // 5. 初始化生命周期管理器 - 管理整个应用的生命周期钩子
-    this.lifecycle = createLifecycleManager(this.logger)
+      // 5. 初始化生命周期管理器 - 管理整个应用的生命周期钩子
+      this.lifecycle = createLifecycleManager(this.logger)
 
-    // 6. 按依赖顺序初始化核心管理器 - 确保依赖关系正确
-    this.initializeManagers()
+      // 6. 按依赖顺序初始化核心管理器 - 确保依赖关系正确
+      this.initializeManagers()
 
-    // 设置全局错误处理机制
-    this.setupErrorHandling()
+      // 设置全局错误处理机制
+      this.setupErrorHandling()
 
-    // 设置配置变化监听器，实现响应式配置
-    this.setupConfigWatchers()
+      // 设置配置变化监听器，实现响应式配置
+      this.setupConfigWatchers()
 
-    // Engine initialized (日志已禁用)
-
-    // 执行初始化后的生命周期钩子
-    this.lifecycle.execute('afterInit', this).catch(error => {
-      this.logger.error('Error in afterInit lifecycle hooks', error)
-    })
+      // 异步执行初始化后的生命周期钩子，避免构造函数阻塞
+      Promise.resolve().then(() => {
+        this.lifecycle.execute('afterInit', this).catch(error => {
+          this.logger.error('Error in afterInit lifecycle hooks', error)
+        })
+      })
+    } catch (error) {
+      // 构造函数错误处理，确保资源清理
+      console.error('Failed to initialize engine:', error)
+      this.emergencyCleanup()
+      throw error
+    }
   }
 
   /**
@@ -308,11 +315,17 @@ export class EngineImpl implements Engine {
    * @private
    */
   private setupConfigWatchers(): void {
+    // 存储防抖函数引用，便于清理
+    if (!this.configWatchers) {
+      this.configWatchers = new Map()
+    }
+    
     // 使用防抖优化配置监听，避免频繁触发
     const debouncedDebugChange = this.debounce((newValue: unknown) => {
       this.logger.setLevel(newValue ? 'debug' : 'info')
       this.logger.info('Debug mode changed', { debug: newValue })
     }, 300)
+    this.configWatchers.set('debug', debouncedDebugChange)
 
     // 监听调试模式变化
     this.config?.watch('debug', debouncedDebugChange)
@@ -326,24 +339,49 @@ export class EngineImpl implements Engine {
       this.logger.setLevel(level)
       this.logger.info('Log level changed', { level })
     }, 300)
+    this.configWatchers.set('logger.level', debouncedLevelChange)
 
     // 监听日志级别变化
     this.config?.watch('logger.level', debouncedLevelChange)
   }
+  
+  /** 存储配置监听器的防抖函数，用于清理 */
+  private configWatchers?: Map<string, { cancel: () => void }>
 
   /**
-   * 防抖函数 - 优化性能
+   * 防抖函数 - 优化性能和内存
    * @private
+   * @template T 函数类型
+   * @param func 要防抖的函数
+   * @param wait 等待时间（毫秒）
+   * @returns 防抖后的函数
    */
   private debounce<T extends (...args: unknown[]) => void>(
     func: T,
     wait: number
-  ): (...args: Parameters<T>) => void {
-    let timeout: NodeJS.Timeout | undefined
-    return (...args: Parameters<T>) => {
-      if (timeout) clearTimeout(timeout)
-      timeout = setTimeout(() => func(...args), wait)
+  ): ((...args: Parameters<T>) => void) & { cancel: () => void } {
+    let timeoutId: number | undefined
+    
+    const debounced = (...args: Parameters<T>): void => {
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId)
+      }
+      
+      timeoutId = window.setTimeout(() => {
+        func(...args)
+        timeoutId = undefined
+      }, wait)
     }
+    
+    // 添加取消方法，用于清理
+    debounced.cancel = (): void => {
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId)
+        timeoutId = undefined
+      }
+    }
+    
+    return debounced
   }
 
   // 核心方法
@@ -536,41 +574,82 @@ export class EngineImpl implements Engine {
     return this._mountTarget
   }
 
-  // 销毁引擎
+  /**
+   * 销毁引擎 - 完全清理所有资源和内存
+   * 
+   * 按照依赖关系的反向顺序清理资源，确保没有内存泄漏
+   * @returns Promise<void>
+   */
   async destroy(): Promise<void> {
-    // 执行销毁前的生命周期钩子
-    await this.lifecycle.execute('beforeDestroy', this)
+    try {
+      // 执行销毁前的生命周期钩子
+      await this.lifecycle.execute('beforeDestroy', this)
 
-    if (this._mounted) {
-      await this.unmount()
+      // 如果已挂载，先卸载
+      if (this._mounted) {
+        await this.unmount()
+      }
+
+      // 发送销毁事件
+      this.events.emit('engine:destroy')
+
+      // 清理所有核心管理器
+      await this.cleanupManagers()
+
+      // 清理懒加载的管理器（如果已初始化）
+      if (this._cache) {
+        if ('destroy' in this._cache && typeof this._cache.destroy === 'function') {
+          (this._cache as any).destroy()
+        } else {
+          this._cache.clear()
+        }
+        this._cache = undefined
+      }
+
+      if (this._performance) {
+        if ('destroy' in this._performance && typeof this._performance.destroy === 'function') {
+          (this._performance as any).destroy()
+        }
+        this._performance = undefined
+      }
+
+      if (this._security) {
+        if ('destroy' in this._security && typeof this._security.destroy === 'function') {
+          (this._security as any).destroy()
+        }
+        this._security = undefined
+      }
+
+      // 清理 Vue 应用
+      if (this._app) {
+        delete (this._app.config.globalProperties as any).$engine
+        this._app = undefined
+      }
+      this._mountTarget = undefined
+
+      // 禁用配置自动保存
+      this.config?.disableAutoSave()
+
+      // 重置引擎状态
+      this._isReady = false
+      this._mounted = false
+
+      // 清理管理器注册表
+      this.managerRegistry.clear()
+
+      this.logger.info('Engine destroyed successfully')
+
+      // 执行销毁后的生命周期钩子
+      await this.lifecycle.execute('afterDestroy', this)
+
+      // 最后清理日志器引用
+      // @ts-expect-error - 清理引用
+      this.logger = undefined
+    } catch (error) {
+      console.error('Error during engine destruction:', error)
+      // 紧急清理
+      this.emergencyCleanup()
     }
-
-    // 清理资源
-    this.events.emit('engine:destroy')
-    this.errors.clearErrors()
-    this.logger.clearLogs()
-    this.notifications.closeAll()
-    this.state.clear()
-
-    // 清理懒加载的管理器（如果已初始化）
-    if (this._cache) {
-      this._cache.clear()
-    }
-    if (this._performance) {
-      // this._performance.stopMonitoring()
-    }
-
-    // 禁用配置自动保存
-    this.config?.disableAutoSave()
-
-    // 重置引擎状态
-    this._isReady = false
-    this._mounted = false
-
-    this.logger.info('Engine destroyed')
-
-    // 执行销毁后的生命周期钩子
-    await this.lifecycle.execute('afterDestroy', this)
   }
 
   // 配置相关方法
@@ -647,16 +726,26 @@ export class EngineImpl implements Engine {
     }
   }
 
-  // 管理器初始化工厂映射 - 提高可维护性
-  private readonly managerFactories: Record<string, () => unknown> = {
-    events: () => createEventManager(this.logger),
-    state: () => createStateManager(this.logger),
-    errors: () => createErrorManager(),
-    directives: () => createDirectiveManager(),
-    notifications: () => createUnifiedNotificationSystem(this),
-    middleware: () => createMiddlewareManager(this.logger),
-    plugins: () => createPluginManager(this),
+  /**
+   * 管理器初始化工厂映射 - 提高可维护性
+   * 使用懒初始化模式减少内存占用
+   */
+  private get managerFactories(): Record<string, () => unknown> {
+    // 缓存工厂映射，避免重复创建
+    if (!this._managerFactories) {
+      this._managerFactories = {
+        events: () => createEventManager(this.logger),
+        state: () => createStateManager(this.logger),
+        errors: () => createErrorManager(),
+        directives: () => createDirectiveManager(),
+        notifications: () => createNotificationSystem(this),
+        middleware: () => createMiddlewareManager(this.logger),
+        plugins: () => createPluginManager(this),
+      }
+    }
+    return this._managerFactories
   }
+  private _managerFactories?: Record<string, () => unknown>
 
   // 私有方法：按顺序初始化管理器
   private initializeManagersInOrder(order: string[]): void {
@@ -704,30 +793,115 @@ export class EngineImpl implements Engine {
     }
   }
 
-  // 私有方法：将管理器分配到对应的属性
+  /**
+   * 将管理器分配到对应的属性 - 优化版
+   * @private
+   * @param managerName 管理器名称
+   * @param manager 管理器实例
+   */
   private assignManagerToProperty(managerName: string, manager: unknown): void {
-    switch (managerName) {
-      case 'events':
-        this.events = manager as EventManager
-        break
-      case 'state':
-        this.state = manager as StateManager
-        break
-      case 'errors':
-        this.errors = manager as ErrorManager
-        break
-      case 'directives':
-        this.directives = manager as DirectiveManager
-        break
-      case 'notifications':
-        this.notifications = manager as UnifiedNotificationSystem
-        break
-      case 'middleware':
-        this.middleware = manager as MiddlewareManager
-        break
-      case 'plugins':
-        this.plugins = manager as PluginManager
-        break
+    // 使用对象映射替代switch，提高性能和可维护性
+    const managerMap: Record<string, (m: unknown) => void> = {
+      'events': (m) => { this.events = m as EventManager },
+      'state': (m) => { this.state = m as StateManager },
+      'errors': (m) => { this.errors = m as ErrorManager },
+      'directives': (m) => { this.directives = m as DirectiveManager },
+      'notifications': (m) => { this.notifications = m as NotificationSystem },
+      'middleware': (m) => { this.middleware = m as MiddlewareManager },
+      'plugins': (m) => { this.plugins = m as PluginManager }
+    }
+    
+    const setter = managerMap[managerName]
+    if (setter) {
+      setter(manager)
+    } else {
+      this.logger.warn(`Unknown manager type: ${managerName}`)
+    }
+  }
+
+  /**
+   * 清理所有管理器 - 新增方法
+   * @private
+   */
+  private async cleanupManagers(): Promise<void> {
+    try {
+      // 清理配置监听器的防抖函数
+      if (this.configWatchers) {
+        for (const watcher of this.configWatchers.values()) {
+          watcher.cancel()
+        }
+        this.configWatchers.clear()
+        this.configWatchers = undefined
+      }
+      
+      // 按照反向顺序清理管理器
+      const cleanupOrder = ['plugins', 'middleware', 'notifications', 'directives', 'errors', 'state', 'events']
+      
+      for (const managerName of cleanupOrder) {
+        const manager = (this as any)[managerName]
+        if (manager) {
+          // 检查是否有 destroy 方法
+          if ('destroy' in manager && typeof manager.destroy === 'function') {
+            await Promise.resolve(manager.destroy())
+          } else if ('clear' in manager && typeof manager.clear === 'function') {
+            manager.clear()
+          }
+          (this as any)[managerName] = undefined
+        }
+      }
+      
+      // 清理工厂函数缓存
+      this._managerFactories = undefined
+    } catch (error) {
+      this.logger?.error('Error cleaning up managers:', error)
+    }
+  }
+
+  /**
+   * 紧急清理 - 在发生严重错误时使用
+   * @private
+   */
+  private emergencyCleanup(): void {
+    try {
+      // 清理所有可能的资源
+      const managersToClean = [
+        this.events, this.state, this.errors, this.directives,
+        this.notifications, this.middleware, this.plugins,
+        this._cache, this._performance, this._security
+      ]
+
+      for (const manager of managersToClean) {
+        if (manager && typeof manager === 'object') {
+          if ('destroy' in manager && typeof manager.destroy === 'function') {
+            try {
+              (manager as any).destroy()
+            } catch {
+              // 忽略清理错误
+            }
+          } else if ('clear' in manager && typeof manager.clear === 'function') {
+            try {
+              (manager as any).clear()
+            } catch {
+              // 忽略清理错误
+            }
+          }
+        }
+      }
+
+      // 清理 Vue 应用
+      if (this._app) {
+        try {
+          delete (this._app.config.globalProperties as any).$engine
+        } catch {
+          // 忽略错误
+        }
+      }
+
+      // 重置状态
+      this._isReady = false
+      this._mounted = false
+    } catch (error) {
+      console.error('Emergency cleanup failed:', error)
     }
   }
 }

@@ -334,20 +334,44 @@ export class CacheManager {
   }
 
   /**
-   * 更新统计信息
+   * 更新统计信息（优化版：增量更新，避免频繁全量计算）
    */
+  private lastStatsUpdate = 0
+  private readonly statsUpdateInterval = 10000 // 10秒更新一次统计
+  
   private updateStats(): void {
+    const now = Date.now()
+    
+    // 节流统计更新，避免频繁计算
+    if (now - this.lastStatsUpdate < this.statsUpdateInterval) {
+      return
+    }
+    
+    this.lastStatsUpdate = now
     const keys = this.storage.keys()
     this.stats.totalItems = keys.length
 
-    // 计算缓存大小
+    // 计算缓存大小（采样估算）
     let totalSize = 0
-    keys.forEach((key) => {
-      const itemStr = this.storage.get(key)
-      if (itemStr) {
-        totalSize += itemStr.length * 2 // 估算字符串大小（UTF-16）
+    if (keys.length > 100) {
+      // 大缓存时采样估算
+      const sampleSize = 20
+      const step = Math.floor(keys.length / sampleSize)
+      for (let i = 0; i < keys.length; i += step) {
+        const itemStr = this.storage.get(keys[i])
+        if (itemStr) {
+          totalSize += itemStr.length * 2 * step // 估算字符串大小（UTF-16）
+        }
       }
-    })
+    } else {
+      // 小缓存时全量计算
+      keys.forEach((key) => {
+        const itemStr = this.storage.get(key)
+        if (itemStr) {
+          totalSize += itemStr.length * 2 // 估算字符串大小（UTF-16）
+        }
+      })
+    }
     this.stats.size = totalSize
   }
 
@@ -365,29 +389,35 @@ export class CacheManager {
   }
 
   /**
-   * 清理过期缓存项
+   * 清理过期缓存项（优化版：批量处理，减少重复调用）
    */
   private cleanupExpiredItems(): void {
     const now = Date.now()
     const keys = this.storage.keys()
+    let cleanedCount = 0
 
-    keys.forEach((key) => {
+    for (const key of keys) {
       try {
         const itemStr = this.storage.get(key)
         if (itemStr) {
           const item: CacheItem = JSON.parse(itemStr)
           if (now > item.expireTime) {
             this.storage.remove(key)
+            cleanedCount++
           }
         }
       }
       catch {
         // 删除无法解析的项
         this.storage.remove(key)
+        cleanedCount++
       }
-    })
+    }
 
-    this.updateStats()
+    // 只在清理了项时才更新统计
+    if (cleanedCount > 0) {
+      this.updateStats()
+    }
   }
 
   /**

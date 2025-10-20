@@ -6,16 +6,19 @@
 import { watch } from 'vue'
 import type { Ref } from 'vue'
 import { createI18nEnginePlugin } from '@/i18n'
+import { createCacheVuePlugin } from '@/plugins/cache'
 import { createColorPlugin } from '@ldesign/color/plugin'
 import { createSizePlugin } from '@ldesign/size/plugin'
 import { createTemplatePlugin } from '@ldesign/template'
 import { i18nConfig } from '@/config/i18n.config'
+import { createCacheConfig } from '@/config/cache.config'
 import { createColorConfig } from '@/config/color.config'
 import { createSizeConfig } from '@/config/size.config'
 import { templateConfig } from '@/config/template.config'
 
 export interface PluginsResult {
   i18nPlugin: any
+  cachePlugin: any
   colorPlugin: any
   sizePlugin: any
   templatePlugin: any
@@ -32,7 +35,7 @@ export function initializePlugins(): PluginsResult {
   // 获取响应式 locale（从 Engine 插件）
   const localeRef = i18nPlugin.localeRef
 
-  // 监听语言变化并广播事件
+  // 监听语言变化并广播事件 - 使用 { flush: 'post' } 优化性能
   watch(localeRef, (newLocale, oldLocale) => {
     // 广播全局事件（支持动态加载的组件）
     if (typeof window !== 'undefined') {
@@ -40,7 +43,10 @@ export function initializePlugins(): PluginsResult {
         detail: { locale: newLocale, oldLocale }
       }))
     }
-  })
+  }, { flush: 'post' })
+
+  // 创建 Cache 插件（使用 Vue 插件）
+  const cachePlugin = createCacheVuePlugin(createCacheConfig(localeRef))
 
   // 创建模板插件
   const templatePlugin = createTemplatePlugin(templateConfig)
@@ -59,6 +65,7 @@ export function initializePlugins(): PluginsResult {
 
   return {
     i18nPlugin,
+    cachePlugin,
     colorPlugin,
     sizePlugin,
     templatePlugin,

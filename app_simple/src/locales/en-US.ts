@@ -23,6 +23,7 @@ export default {
   nav: {
     home: 'Home',
     about: 'About',
+    crypto: 'Crypto Demo',
     dashboard: 'Dashboard',
     login: 'Login',
     logout: 'Logout',
@@ -159,6 +160,12 @@ export default {
       minLength: 'At least {min} characters required',
       network: 'Network error, please try again later'
     }
+  },
+
+  // Crypto Demo Page
+  crypto: {
+    title: 'Crypto Demo',
+    subtitle: 'Experience @ldesign/crypto encryption features'
   },
 
   // Dashboard Page
@@ -321,7 +328,7 @@ export default {
     url: 'Please enter a valid URL',
     phone: 'Please enter a valid phone number'
   },
-  
+
   // Date and Time
   datetime: {
     today: 'Today',

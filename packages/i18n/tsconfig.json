@@ -2,8 +2,8 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "moduleResolution": "node",
-    "lib": ["ES2020", "DOM"],
+    "moduleResolution": "bundler",
+    "lib": ["ES2020", "DOM", "ES2021.WeakRef"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -16,24 +16,38 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "noEmit": false,
-    "incremental": false
+    "incremental": true,
+    "tsBuildInfoFile": "./.tsbuildinfo",
+    "isolatedModules": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowImportingTsExtensions": false,
+    "verbatimModuleSyntax": false,
+    "composite": false,
+    "useDefineForClassFields": true,
+    "experimentalDecorators": false,
+    "emitDecoratorMetadata": false,
+    "preserveConstEnums": false,
+    "removeComments": false,
+    "importHelpers": true,
+    "importsNotUsedAsValues": "remove"
   },
   "include": [
-    "src/index.ts",
-    "src/core/**/*.ts",
-    "src/utils/**/*.ts",
-    "src/vue/**/*.ts",
-    "src/vue/**/*.vue",
-    "src/locales/**/*.ts",
-    "src/types/**/*.ts",
-    "src/shims-vue.d.ts"
+    "src/**/*.ts",
+    "src/**/*.vue"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "lib",
+    "es",
     "**/*.test.ts",
     "**/*.spec.ts",
-    "**/*.d.ts"
+    "**/__tests__/**",
+    "**/*.js",
+    "**/*.mjs",
+    "**/*.cjs"
   ]
 }

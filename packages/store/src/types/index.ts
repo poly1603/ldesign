@@ -56,7 +56,7 @@ export type StrictStateDefinition<T = Record<string, any>> = {
 /**
  * 更严格的 Action 类型定义
  */
-export type StrictActionDefinition<T = Record<string, Function>> = {
+export type StrictActionDefinition<T = Record<string, (...args: any[]) => any>> = {
   [K in keyof T]: T[K] extends (...args: any[]) => any ? T[K] : never
 }
 

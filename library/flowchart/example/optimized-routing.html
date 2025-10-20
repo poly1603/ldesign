@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>优化后的智能连线系统</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(to right, #667eea, #764ba2);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    .description {
+      margin-top: 8px;
+      opacity: 0.9;
+      font-size: 14px;
+    }
+    
+    .controls {
+      padding: 16px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+    
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #5a67d8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-secondary {
+      background: white;
+      color: #333;
+      border: 1px solid #dee2e6;
+    }
+    
+    .btn-secondary:hover {
+      background: #f8f9fa;
+    }
+    
+    #flowchart {
+      height: 600px;
+      background: #fafbfc;
+      background-image: 
+        linear-gradient(#e8ecef 1px, transparent 1px),
+        linear-gradient(90deg, #e8ecef 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    
+    .info-panel {
+      padding: 16px;
+      background: #e7f3ff;
+      border-left: 4px solid #2196f3;
+      margin: 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0 0 0;
+    }
+    
+    .feature-list li {
+      padding: 4px 0;
+      color: #0066cc;
+    }
+    
+    .feature-list li:before {
+      content: "✓ ";
+      color: #4caf50;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎯 智能连线系统 - 细节优化版</h1>
+      <div class="description">展示优化后的连线细节：菱形顶点连接、平行线分离、智能路由</div>
+    </div>
+    
+    <div class="info-panel">
+      <strong>优化细节：</strong>
+      <ul class="feature-list">
+        <li>部门主管审批到金额判断：连线到菱形的顶部角</li>
+        <li>审批拒绝和总经理审批：双向连线自动分离，避免重叠</li>
+        <li>菱形节点：四个顶点作为连接点，智能选择最佳连接角度</li>
+        <li>圆角优化：所有转角平滑处理，提升视觉效果</li>
+      </ul>
+    </div>
+    
+    <div class="controls">
+      <button class="btn-primary" onclick="loadApprovalFlow()">加载审批流程</button>
+      <button class="btn-primary" onclick="loadComplexFlow()">复杂连线测试</button>
+      <button class="btn-secondary" onclick="toggleGrid()">切换网格</button>
+      <button class="btn-secondary" onclick="resetView()">重置视图</button>
+    </div>
+    
+    <div id="flowchart"></div>
+  </div>
+  
+  <script src="../dist/flowchart.js"></script>
+  <script>
+    let flowChart;
+    let showGrid = true;
+    
+    function initFlowChart() {
+      flowChart = new FlowChart.FlowChart({
+        container: document.getElementById('flowchart'),
+        enableZoom: true,
+        enablePan: true,
+        enableNodeDrag: true,
+        autoLayout: false,
+        zoom: {
+          initialScale: 1,
+          minScale: 0.5,
+          maxScale: 2,
+          centerOnInit: true
+        }
+      });
+      
+      // 默认加载审批流程
+      loadApprovalFlow();
+    }
+    
+    function loadApprovalFlow() {
+      flowChart.clear();
+      
+      // 添加节点 - 精确定位展示优化效果
+      const nodes = [
+        { id: 'start', type: 'start', label: '提交申请', position: { x: 400, y: 50 } },
+        { id: 'manager', type: 'approval', label: '部门主管审批', position: { x: 400, y: 150 } },
+        { id: 'amount_check', type: 'condition', label: '金额判断', position: { x: 400, y: 280 } },
+        { id: 'small_amount', type: 'process', label: '小额报销', position: { x: 250, y: 400 } },
+        { id: 'reject', type: 'end', label: '审批拒绝', position: { x: 600, y: 280 } },
+        { id: 'finance', type: 'process', label: '财务审核', position: { x: 250, y: 520 } },
+        { id: 'gm', type: 'approval', label: '总经理审批', position: { x: 600, y: 520 } },
+        { id: 'approved', type: 'end', label: '审批通过', position: { x: 400, y: 650 } }
+      ];
+      
+      nodes.forEach(node => {
+        flowChart.addNode({ ...node, manualPosition: true });
+      });
+      
+      // 添加连线 - 展示优化后的连线效果
+      const edges = [
+        { id: 'e1', source: 'start', target: 'manager', label: '提交' },
+        { id: 'e2', source: 'manager', target: 'amount_check', label: '同意' }, // 这条线会连到菱形顶部
+        { id: 'e3', source: 'manager', target: 'reject', label: '拒绝' },
+        { id: 'e4', source: 'amount_check', target: 'small_amount', label: '<10万' },
+        { id: 'e5', source: 'small_amount', target: 'finance' },
+        { id: 'e6', source: 'amount_check', target: 'finance', label: '审核不通过' },
+        { id: 'e7', source: 'finance', target: 'approved', label: '批准' },
+        { id: 'e8', source: 'reject', target: 'gm', label: '不批准' }, // 这条线和下面的线会分离
+        { id: 'e9', source: 'gm', target: 'reject', label: '退回' }, // 反向连线，会自动分离
+        { id: 'e10', source: 'gm', target: 'approved', label: '同意' },
+        { id: 'e11', source: 'amount_check', target: 'gm', label: '>=10万' }
+      ];
+      
+      edges.forEach(edge => {
+        flowChart.addEdge({
+          ...edge,
+          style: {
+            type: 'polyline',
+            strokeColor: '#667eea',
+            strokeWidth: 2,
+            radius: 10
+          }
+        });
+      });
+      
+      flowChart.render();
+    }
+    
+    function loadComplexFlow() {
+      flowChart.clear();
+      
+      // 创建一个更复杂的流程来测试各种连线场景
+      const nodes = [
+        { id: 'center', type: 'condition', label: '核心判断', position: { x: 400, y: 300 } },
+        { id: 'top', type: 'process', label: '顶部处理', position: { x: 400, y: 150 } },
+        { id: 'right', type: 'process', label: '右侧处理', position: { x: 550, y: 300 } },
+        { id: 'bottom', type: 'process', label: '底部处理', position: { x: 400, y: 450 } },
+        { id: 'left', type: 'process', label: '左侧处理', position: { x: 250, y: 300 } },
+        { id: 'diamond2', type: 'condition', label: '二次判断', position: { x: 550, y: 150 } },
+        { id: 'end1', type: 'end', label: '结束1', position: { x: 700, y: 150 } },
+        { id: 'end2', type: 'end', label: '结束2', position: { x: 700, y: 300 } }
+      ];
+      
+      nodes.forEach(node => {
+        flowChart.addNode({ ...node, manualPosition: true });
+      });
+      
+      // 添加各种角度的连线
+      const edges = [
+        // 从菱形的四个方向出发
+        { id: 'e1', source: 'center', target: 'top', label: '向上' },
+        { id: 'e2', source: 'center', target: 'right', label: '向右' },
+        { id: 'e3', source: 'center', target: 'bottom', label: '向下' },
+        { id: 'e4', source: 'center', target: 'left', label: '向左' },
+        
+        // 交叉连线
+        { id: 'e5', source: 'top', target: 'diamond2' },
+        { id: 'e6', source: 'diamond2', target: 'end1', label: '是' },
+        { id: 'e7', source: 'diamond2', target: 'center', label: '否' },
+        
+        // 平行连线测试
+        { id: 'e8', source: 'right', target: 'end2' },
+        { id: 'e9', source: 'end2', target: 'right', label: '返回' },
+        
+        // 环形连接
+        { id: 'e10', source: 'bottom', target: 'left' },
+        { id: 'e11', source: 'left', target: 'top' },
+        { id: 'e12', source: 'top', target: 'right' },
+        { id: 'e13', source: 'right', target: 'bottom' }
+      ];
+      
+      edges.forEach(edge => {
+        flowChart.addEdge({
+          ...edge,
+          style: {
+            type: 'polyline',
+            strokeColor: edge.id === 'e9' ? '#e53e3e' : '#667eea',
+            strokeWidth: 2,
+            radius: 12
+          }
+        });
+      });
+      
+      flowChart.render();
+    }
+    
+    function toggleGrid() {
+      showGrid = !showGrid;
+      const chart = document.getElementById('flowchart');
+      if (showGrid) {
+        chart.style.backgroundImage = 
+          'linear-gradient(#e8ecef 1px, transparent 1px), ' +
+          'linear-gradient(90deg, #e8ecef 1px, transparent 1px)';
+      } else {
+        chart.style.backgroundImage = 'none';
+      }
+    }
+    
+    function resetView() {
+      if (flowChart) {
+        const renderer = flowChart.getRenderer();
+        if (renderer && renderer.resetZoom) {
+          renderer.resetZoom();
+        }
+        flowChart.render();
+      }
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', initFlowChart);
+  </script>
+</body>
+</html>

@@ -111,7 +111,7 @@ export function usePolling<T = any>(
   /**
    * 安排下一次轮询
    */
-  const scheduleNext = () => {
+  function scheduleNext() {
     if (timerId) {
       clearTimeout(timerId)
     }
@@ -133,7 +133,7 @@ export function usePolling<T = any>(
   /**
    * 执行单次请求
    */
-  const execute = async (): Promise<T | null> => {
+  async function execute(): Promise<T | null> {
   try {
    loading.value = true
    error.value = null
@@ -179,7 +179,7 @@ export function usePolling<T = any>(
  /**
   * 轮询循环
   */
- const pollLoop = async () => {
+ async function pollLoop() {
   if (!isPolling.value) return
 
   // 检查暂停条件
@@ -207,7 +207,7 @@ export function usePolling<T = any>(
   /**
    * 开始轮询
    */
-  const start = () => {
+  function start() {
     if (isPolling.value) return
 
     isPolling.value = true
@@ -225,7 +225,7 @@ export function usePolling<T = any>(
  /**
   * 重启轮询
   */
- const restart = () => {
+ function restart() {
   stop()
   start()
  }

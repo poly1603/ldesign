@@ -1,4 +1,4 @@
-import type { DeviceModule } from '../types'
+import type { DeviceModule, ExtendedNavigator, NetworkInformation } from '../types'
 import { EventEmitter } from '../core/EventEmitter'
 
 /**
@@ -82,7 +82,7 @@ export interface PerformanceModuleEvents extends Record<string, unknown> {
  * const perfModule = await detector.loadModule<PerformanceModule>('performance')
  * const perfInfo = perfModule.getData()
  *
- *  *  *  *  *
+ *  
  * // 根据性能等级调整应用配置
  * if (perfInfo.tier === 'low') {
  *   // 降低图形质量
@@ -234,8 +234,8 @@ export class PerformanceModule
    */
   private detectHardware() {
     return {
-      cpuCores: (navigator as any).hardwareConcurrency || 1,
-      deviceMemory: (navigator as any).deviceMemory || 4,
+      cpuCores: (navigator as ExtendedNavigator).hardwareConcurrency || 1,
+      deviceMemory: (navigator as ExtendedNavigator).deviceMemory || 4,
       maxTouchPoints: navigator.maxTouchPoints || 0,
     }
   }
@@ -254,6 +254,9 @@ export class PerformanceModule
       for (let i = 0; i < iterations; i++) {
         result += Math.sqrt(i) * Math.sin(i) * Math.cos(i)
       }
+
+      // 使用result防止被优化掉
+      if (result === 0) result = 1
 
       const duration = performance.now() - startTime
 
@@ -380,7 +383,7 @@ export class PerformanceModule
       const startTime = performance.now()
 
       // 创建大数组
-      const arr = new Array(arraySize)
+      const arr: number[] = Array.from({length: arraySize})
       for (let i = 0; i < arraySize; i++) {
         arr[i] = Math.random()
       }
@@ -423,13 +426,15 @@ export class PerformanceModule
   private async testNetworkPerformance(_timeout: number): Promise<number> {
     try {
       // 使用 Network Information API
-      const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
+      const connection = (navigator as ExtendedNavigator).connection || 
+                         (navigator as ExtendedNavigator).mozConnection || 
+                         (navigator as ExtendedNavigator).webkitConnection
 
       if (!connection)
         return 70 // 默认中等分数
 
-      const effectiveType = connection.effectiveType || '4g'
-      const downlink = connection.downlink || 0
+      const effectiveType = (connection as NetworkInformation).effectiveType || '4g'
+      const downlink = (connection as NetworkInformation).downlink || 0
 
       // 根据网络类型评分
       const typeScores: Record<string, number> = {

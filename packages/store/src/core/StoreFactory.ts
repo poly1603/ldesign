@@ -4,15 +4,15 @@
  */
 
 import type {
-  StateDefinition,
   ActionDefinition,
   GetterDefinition,
+  StateDefinition,
   StoreOptions,
 } from '../types'
 import type { Constructor } from '../types/decorators'
 import type { BaseStore } from './BaseStore'
-import { createFunctionalStore, type FunctionalStoreOptions, type FunctionalStoreInstance } from './FunctionalStore'
-import { createCompositionStore, type CompositionStoreOptions, type CompositionStoreSetup, type CompositionStoreInstance } from './CompositionStore'
+import { type CompositionStoreInstance, type CompositionStoreOptions, type CompositionStoreSetup, createCompositionStore } from './CompositionStore'
+import { createFunctionalStore, type FunctionalStoreInstance, type FunctionalStoreOptions } from './FunctionalStore'
 
 /**
  * Store 创建方式枚举
@@ -169,7 +169,8 @@ export class StoreFactory {
         const classOptions = options as ClassStoreOptions<TState, TActions, TGetters>
         storeDefinition = () => {
           if (!this.instances.has(id)) {
-            this.instances.set(id, new classOptions.storeClass(id, classOptions))
+            const StoreClass = classOptions.storeClass
+            this.instances.set(id, new StoreClass(id, classOptions))
           }
           return this.instances.get(id)
         }

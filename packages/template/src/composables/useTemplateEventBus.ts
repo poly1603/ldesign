@@ -4,8 +4,8 @@
  * 提供模板间的通信机制
  */
 
-import { ref, onUnmounted, provide, inject } from 'vue'
 import type { InjectionKey } from 'vue'
+import { inject, onUnmounted, provide, ref } from 'vue'
 
 /**
  * 事件处理器类型
@@ -51,6 +51,8 @@ class GlobalEventBus implements TemplateEventBus {
   private eventHistory = new Map<string, any[]>()
   private maxHistorySize = 100
   private idCounter = 0
+  // 使用 WeakMap 存储组件相关的订阅，组件销毁时自动清理
+  private componentSubscriptions = new WeakMap<object, Set<string>>()
   
   /**
    * 发送事件
@@ -187,18 +189,26 @@ class GlobalEventBus implements TemplateEventBus {
    * 记录事件历史
    */
   private recordHistory(event: string, payload: any): void {
-    const history = this.eventHistory.get(event) || []
-    history.push({
-      payload,
-      timestamp: Date.now()
-    })
-    
-    // 限制历史大小
-    if (history.length > this.maxHistorySize) {
-      history.shift()
+    let history = this.eventHistory.get(event)
+    if (!history) {
+      history = []
+      this.eventHistory.set(event, history)
     }
     
-    this.eventHistory.set(event, history)
+    // 使用环形缓冲区优化内存
+    if (history.length >= this.maxHistorySize) {
+      // 直接覆盖最老的记录，避免频繁的数组操作
+      const index = history.length % this.maxHistorySize
+      history[index] = {
+        payload,
+        timestamp: Date.now()
+      }
+    } else {
+      history.push({
+        payload,
+        timestamp: Date.now()
+      })
+    }
   }
   
   /**
@@ -222,7 +232,7 @@ const EventBusKey: InjectionKey<TemplateEventBus> = Symbol('TemplateEventBus')
  */
 export function useTemplateEventBus(isolated: boolean = false): TemplateEventBus {
   // 尝试从上下文注入
-  const injectedBus = inject<TemplateEventBus>(EventBusKey, null)
+  const injectedBus = inject<TemplateEventBus | null>(EventBusKey, null)
   
   if (!isolated && injectedBus) {
     return injectedBus
@@ -239,6 +249,10 @@ export function useTemplateEventBus(isolated: boolean = false): TemplateEventBus
   // 组件卸载时清理
   onUnmounted(() => {
     localBus.clear()
+    // 清理 WeakMap 引用
+    if ('componentSubscriptions' in localBus) {
+      (localBus as any).componentSubscriptions = new WeakMap()
+    }
   })
   
   return localBus

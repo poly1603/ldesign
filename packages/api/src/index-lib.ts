@@ -10,8 +10,8 @@ export { ApiEngineImpl } from './core/ApiEngine'
 // 主要的 API 创建工厂函数
 export {
  createApiEngine,
- createSystemApiEngine,
  createSingletonApiEngine,
+ createSystemApiEngine,
  destroySingletonApiEngine,
 } from './core/factory'
 

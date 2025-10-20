@@ -2,7 +2,6 @@
  * 模板快照与时间旅行系统
  */
 
-import { reactive, ref } from 'vue'
 import type { Template } from '../types'
 
 /**
@@ -607,8 +606,8 @@ export class TimeTravelController {
   /**
    * 记录DOM快照
    */
-  private recordDOMSnapshot(element: HTMLElement) {
-    const snapshot = element.innerHTML
+private recordDOMSnapshot(_element: HTMLElement) {
+    // const snapshot = element.innerHTML // Not used currently
     // 可以将DOM快照添加到当前状态
   }
   
@@ -642,15 +641,21 @@ export class TimeTravelController {
   private shallowDiff(prev: any, next: any): any {
     const diff: any = {}
     
+    // 优化：使用 Object.keys() 代替 for...in，性能更好
+    const prevKeys = Object.keys(prev)
+    const nextKeys = Object.keys(next)
+    
     // 检查删除的属性
-    for (const key in prev) {
+    for (let i = 0; i < prevKeys.length; i++) {
+      const key = prevKeys[i]
       if (!(key in next)) {
         diff[key] = { type: 'deleted', value: prev[key] }
       }
     }
     
     // 检查新增或修改的属性
-    for (const key in next) {
+    for (let i = 0; i < nextKeys.length; i++) {
+      const key = nextKeys[i]
       if (!(key in prev)) {
         diff[key] = { type: 'added', value: next[key] }
       } else if (prev[key] !== next[key]) {

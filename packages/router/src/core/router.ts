@@ -60,6 +60,10 @@ export class RouterImpl implements Router {
   // 内存管理
   private memoryManager: UnifiedMemoryManager
   private guardCleanupFunctions: Array<() => void> = []
+  
+  // 优化：守卫执行缓存
+  private guardResultCache = new Map<string, NavigationGuardReturn>()
+  private readonly MAX_GUARD_CACHE_SIZE = 100
 
   public readonly currentRoute: Ref<RouteLocationNormalized>
   public readonly options: RouterOptions
@@ -69,17 +73,26 @@ export class RouterImpl implements Router {
     this.matcher = new RouteMatcher()
     this.currentRoute = ref(START_LOCATION)
 
-    // 初始化内存管理器（优化：降低阈值以更早触发清理）
+    // 初始化内存管理器（优化：更积极的内存管理）
     this.memoryManager = new UnifiedMemoryManager({
       monitoring: {
         enabled: true,
-        warningThreshold: 30 * 1024 * 1024, // 30MB
-        criticalThreshold: 60 * 1024 * 1024, // 60MB
+        interval: 60000, // 每分钟检查
+        warningThreshold: 20 * 1024 * 1024, // 20MB
+        criticalThreshold: 40 * 1024 * 1024, // 40MB
       },
       tieredCache: {
-        l1Capacity: 20,
-        l2Capacity: 50,
-        l3Capacity: 100,
+        enabled: true,
+        l1Capacity: 15,
+        l2Capacity: 30,
+        l3Capacity: 60,
+        promotionThreshold: 2,
+        demotionThreshold: 30000, // 30秒
+      },
+      cleanup: {
+        strategy: 'aggressive',
+        autoCleanup: true,
+        cleanupInterval: 120000, // 2分钟
       },
     })
 
@@ -260,10 +273,13 @@ export class RouterImpl implements Router {
     this.guardCleanupFunctions = []
 
     // 清理数组
-    this.beforeGuards = []
-    this.beforeResolveGuards = []
-    this.afterHooks = []
-    this.errorHandlers = []
+    this.beforeGuards.length = 0
+    this.beforeResolveGuards.length = 0
+    this.afterHooks.length = 0
+    this.errorHandlers.length = 0
+
+    // 清理守卫缓存
+    this.guardResultCache.clear()
 
     // 清理匹配器缓存
     this.matcher.clearCache()
@@ -393,7 +409,7 @@ export class RouterImpl implements Router {
     }
 
     currentTo = redirectResult
-
+    
     // 执行全局前置守卫
     for (const guard of this.beforeGuards) {
       const result = await this.runGuard(guard, currentTo, from)
@@ -439,6 +455,12 @@ export class RouterImpl implements Router {
         // 重定向
         currentTo = this.resolve(result)
       }
+    }
+    
+    // 优化：定期清理守卫缓存
+    if (this.guardResultCache.size > 50) {
+      const keysToDelete = Array.from(this.guardResultCache.keys()).slice(0, 25)
+      keysToDelete.forEach(key => this.guardResultCache.delete(key))
     }
 
     return currentTo
@@ -497,7 +519,14 @@ export class RouterImpl implements Router {
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
   ): Promise<NavigationGuardReturn> {
-    return new Promise((resolve, reject) => {
+    // 优化：缓存守卫结果（对于无状态守卫）
+    const guardKey = `${guard.name || guard.toString().slice(0, 50)}_${to.path}_${from.path}`
+    
+    if (this.guardResultCache.has(guardKey)) {
+      return this.guardResultCache.get(guardKey)!
+    }
+    
+    const result = await new Promise<NavigationGuardReturn>((resolve, reject) => {
       const next = (result?: NavigationGuardReturn) => {
         if (result === false) {
           reject(new Error('Navigation cancelled'))
@@ -506,7 +535,6 @@ export class RouterImpl implements Router {
           reject(result)
         }
         else {
-          // 包括重定向在内的所有结果都通过 resolve 返回
           resolve(result)
         }
       }
@@ -518,9 +546,21 @@ export class RouterImpl implements Router {
         && 'then' in guardResult
         && typeof guardResult.then === 'function'
       ) {
-        ; (guardResult as Promise<NavigationGuardReturn>).then(resolve, reject)
+        (guardResult as Promise<NavigationGuardReturn>).then(resolve, reject)
       }
     })
+    
+    // 缓存结果，限制缓存大小
+    if (this.guardResultCache.size >= this.MAX_GUARD_CACHE_SIZE) {
+      // 删除最早的缓存项
+      const firstKey = this.guardResultCache.keys().next().value
+      if (firstKey !== undefined) {
+        this.guardResultCache.delete(firstKey)
+      }
+    }
+    this.guardResultCache.set(guardKey, result)
+    
+    return result
   }
 
   private runAfterHooks(

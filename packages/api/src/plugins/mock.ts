@@ -127,7 +127,13 @@ export function createMockPlugin(options: MockPluginOptions = {}): ApiPlugin {
     return reqConfig
   }
 
-  return {
+  const plugin: ApiPlugin & {
+    addRule: (rule: MockRule) => void
+    removeRule: (match: string | RegExp) => void
+    clearRules: () => void
+    setEnabled: (enabled: boolean) => void
+    setGlobalSwitch: (enabled: boolean) => void
+  } = {
     name: 'mock',
     version: '1.0.0',
     install(engine) {
@@ -191,6 +197,14 @@ export function createMockPlugin(options: MockPluginOptions = {}): ApiPlugin {
 
         return mockedResponse
       })
+
+      // 将插件API存储到引擎
+      ;(engine as any).__mockPlugin = plugin
+    },
+
+    uninstall() {
+      // 清理mock规则
+      config.rules = []
     },
 
     /**
@@ -239,6 +253,8 @@ export function createMockPlugin(options: MockPluginOptions = {}): ApiPlugin {
       config.globalSwitch = enabled
     },
   }
+
+  return plugin
 }
 
 /**

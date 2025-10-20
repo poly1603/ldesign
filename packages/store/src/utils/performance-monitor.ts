@@ -3,6 +3,15 @@
  * 提供更精确和稳定的性能监控功能
  */
 
+// Node.js process 类型声明
+declare const process: {
+  memoryUsage: () => {
+    heapUsed: number
+    heapTotal: number
+    external: number
+  }
+} | undefined
+
 export interface PerformanceMetrics {
   /** 执行时间（毫秒） */
   duration: number

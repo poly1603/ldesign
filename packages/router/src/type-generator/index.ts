@@ -5,13 +5,13 @@
 
 // 导出生成器
 export {
-  RouteTypeGenerator,
-  createRouteTypeGenerator
+  createRouteTypeGenerator,
+  RouteTypeGenerator
 } from './RouteTypeGenerator'
 
 // 导出类型
 export type {
   RouteTypeGeneratorOptions,
-  TypeTransformer,
-  TypeTemplates
+  TypeTemplates,
+  TypeTransformer
 } from './RouteTypeGenerator'

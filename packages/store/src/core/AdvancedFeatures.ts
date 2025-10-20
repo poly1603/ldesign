@@ -6,15 +6,15 @@
  * @description 统一的高级功能模块，整合了所有高级特性
  */
 
-import type { StateDefinition, ActionDefinition, GetterDefinition } from '../types'
 import type { Store } from 'pinia'
-import { readonly, toRaw } from 'vue'
+import type { ActionDefinition, GetterDefinition, StateDefinition } from '../types'
+import { toRaw } from 'vue'
 
 /**
  * 批量操作管理器
  * 支持批量执行多个操作，提供原子性保障
  */
-export class BatchOperationManager<TState extends StateDefinition = StateDefinition> {
+export class BatchOperationManager {
   private operations: Array<() => void | Promise<void>> = []
   private isExecuting = false
   private rollbackStack: Array<() => void> = []
@@ -316,7 +316,7 @@ export class SnapshotManager<TState extends StateDefinition = StateDefinition> {
     try {
       const snapshot = JSON.parse(data)
       this.snapshots.set(name, snapshot)
-    } catch (error) {
+    } catch {
       throw new Error('Invalid snapshot data')
     }
   }
@@ -363,7 +363,7 @@ export class TimeTravelDebugger<TState extends StateDefinition = StateDefinition
     this.record('INIT')
 
     // 监听状态变更
-    this.store.$subscribe((mutation, state) => {
+    this.store.$subscribe((mutation) => {
       if (!this.isTimeTravel) {
         this.record(mutation.type, (mutation as any).payload || mutation)
       }
@@ -498,7 +498,7 @@ export class TimeTravelDebugger<TState extends StateDefinition = StateDefinition
       this.history = history
       this.currentIndex = currentIndex
       this.goto(currentIndex)
-    } catch (error) {
+    } catch {
       throw new Error('Invalid history data')
     }
   }
@@ -679,7 +679,7 @@ export function createAdvancedStore<
   TActions extends ActionDefinition = ActionDefinition,
   TGetters extends GetterDefinition = GetterDefinition
 >(store: Store<string, TState, TGetters, TActions>) {
-  const batchManager = new BatchOperationManager<TState>()
+  const batchManager = new BatchOperationManager()
   const transactionManager = new TransactionManager(store)
   const snapshotManager = new SnapshotManager(store)
   const timeTravelDebugger = new TimeTravelDebugger(store)
@@ -809,24 +809,25 @@ export class MiddlewareSystem<S = any> {
       }
 
       if (context.action) {
-        
+        console.log('Action:', context.action)
       }
 
       if (context.oldState) {
-        
+        console.log('Old State:', context.oldState)
       }
 
       await next()
 
-      
+      console.log('New State:', context.state)
 
       if (duration) {
         const endTime = performance.now()
-        .toFixed(2)}ms`)
+        console.log(`Duration: ${(endTime - startTime).toFixed(2)}ms`)
       }
 
       if (diff && context.oldState) {
-        )
+        const stateDiff = this.computeDiff(context.oldState, context.state)
+        console.log('Diff:', stateDiff)
       }
 
       console.groupEnd()

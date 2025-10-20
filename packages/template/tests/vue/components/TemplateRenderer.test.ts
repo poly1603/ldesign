@@ -2,19 +2,19 @@
  * TemplateRenderer 组件单元测试
  */
 
-import type { TemplateManager } from '../../../src/core/template-manager'
-import type { TemplateInfo } from '../../../src/types'
+import type { TemplateManager } from '../../../src/core/manager'
+import type { Template } from '../../../src/types'
 import { mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
-import TemplateRenderer from '../../../src/vue/components/TemplateRenderer'
+import TemplateRenderer from '../../../src/components/TemplateRenderer.vue'
 
 // Mock 模板管理器
-vi.mock('../../../src/core/template-manager')
+vi.mock('../../../src/core/manager')
 
 describe('templateRenderer', () => {
   let mockManager: TemplateManager
-  let mockTemplates: TemplateInfo[]
+  let mockTemplates: Template[]
 
   beforeEach(() => {
     // 创建模拟模板数据

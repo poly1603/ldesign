@@ -3,8 +3,8 @@ import type {
   EncryptionAlgorithm,
   EncryptResult,
 } from '../types'
-import { LRUCache } from '../utils/lru-cache'
 import CryptoJS from 'crypto-js'
+import { LRUCache } from '../utils/lru-cache'
 
 /**
  * 批量操作接口
@@ -14,7 +14,7 @@ export interface BatchOperation {
   data: string
   key: string
   algorithm: EncryptionAlgorithm
-  options?: any
+  options?: Record<string, unknown>
 }
 
 /**
@@ -23,6 +23,26 @@ export interface BatchOperation {
 export interface BatchResult<T> {
   id: string
   result: T
+}
+
+/**
+ * Worker Pool 接口
+ */
+interface WorkerPoolInterface {
+  batchEncrypt: (operations: Array<{
+    data: string
+    key: string
+    algorithm: string
+    options?: Record<string, unknown>
+  }>) => Promise<EncryptResult[]>
+  batchDecrypt: (operations: Array<{
+    data: string
+    key: string
+    algorithm: string
+    options?: Record<string, unknown>
+  }>) => Promise<DecryptResult[]>
+  terminate: () => Promise<void>
+  getStats: () => Record<string, unknown>
 }
 
 /**
@@ -92,7 +112,7 @@ export class PerformanceOptimizer {
   private memoryThreshold: number
   private cleanupTimer?: NodeJS.Timeout | number
   private enableWorker: boolean
-  private workerPool: any // WorkerPool | null
+  private workerPool: WorkerPoolInterface | null
   private maxConcurrency: number
 
   constructor(config: PerformanceOptimizerConfig = {}) {
@@ -104,7 +124,7 @@ export class PerformanceOptimizer {
       autoCleanupInterval = 60 * 1000, // 默认 1 分钟清理一次
       memoryThreshold = 50 * 1024 * 1024, // 默认 50MB
       enableWorker = false,
-      workerPoolSize,
+      // workerPoolSize, // 未使用，Worker池在Web平台中暂不支持
       maxConcurrency = 10, // 默认最大 10 个并发
     } = config
 
@@ -123,15 +143,11 @@ export class PerformanceOptimizer {
       updateAgeOnGet: true,
     })
 
-    // 初始化 Worker 池（如果启用）
+    // Worker池在Web平台中需要特殊处理
     if (this.enableWorker) {
-      try {
-        const { getGlobalWorkerPool } = require('../workers')
-        this.workerPool = getGlobalWorkerPool({ size: workerPoolSize })
-      } catch (error) {
-        console.warn('Failed to initialize worker pool, falling back to main thread:', error)
-        this.enableWorker = false
-      }
+      // 暂时禁用Worker池，需要配置打包工具
+      console.warn('Worker pool is not available in browser environment')
+      this.enableWorker = false
     }
 
     // 启动自动清理
@@ -241,11 +257,12 @@ export class PerformanceOptimizer {
   /**
    * 并发控制执行任务
    * 优化：限制同时执行的任务数量，避免资源耗尽
+   * 优化：使用 Array.from 预分配结果数组，减少动态扩容
    * @param tasks 任务数组
    * @returns Promise 结果数组
    */
   private async runWithConcurrencyControl<T>(tasks: (() => Promise<T>)[]): Promise<T[]> {
-    const results: T[] = new Array(tasks.length)
+    const results: T[] = Array.from({length: tasks.length})
     const executing: Set<Promise<void>> = new Set()
 
     for (let index = 0; index < tasks.length; index++) {
@@ -279,7 +296,7 @@ export class PerformanceOptimizer {
    * 执行加密操作
    * 优化：使用真实的加密实现
    */
-  private performEncryption(operation: BatchOperation): EncryptResult {
+  private async performEncryption(operation: BatchOperation): Promise<EncryptResult> {
     const startTime = performance.now()
 
     try {
@@ -288,28 +305,28 @@ export class PerformanceOptimizer {
       
       switch (operation.algorithm.toUpperCase()) {
         case 'AES': {
-          // 延迟导入 AES
-          const { aes } = require('../algorithms')
+          // 使用动态导入避免循环依赖
+          const { aes } = await import('../algorithms')
           result = aes.encrypt(operation.data, operation.key, operation.options)
           break
         }
         case 'RSA': {
-          const { rsa } = require('../algorithms')
+          const { rsa } = await import('../algorithms')
           result = rsa.encrypt(operation.data, operation.key, operation.options)
           break
         }
         case 'DES': {
-          const { des } = require('../algorithms')
+          const { des } = await import('../algorithms')
           result = des.encrypt(operation.data, operation.key, operation.options)
           break
         }
         case '3DES': {
-          const { des3 } = require('../algorithms')
+          const { des3 } = await import('../algorithms')
           result = des3.encrypt(operation.data, operation.key, operation.options)
           break
         }
         case 'BLOWFISH': {
-          const { blowfish } = require('../algorithms')
+          const { blowfish } = await import('../algorithms')
           result = blowfish.encrypt(operation.data, operation.key, operation.options)
           break
         }
@@ -344,7 +361,7 @@ export class PerformanceOptimizer {
    * 执行解密操作
    * 优化：使用真实的解密实现
    */
-  private performDecryption(operation: BatchOperation): DecryptResult {
+  private async performDecryption(operation: BatchOperation): Promise<DecryptResult> {
     const startTime = performance.now()
 
     try {
@@ -353,27 +370,27 @@ export class PerformanceOptimizer {
       
       switch (operation.algorithm.toUpperCase()) {
         case 'AES': {
-          const { aes } = require('../algorithms')
+          const { aes } = await import('../algorithms')
           result = aes.decrypt(operation.data, operation.key, operation.options)
           break
         }
         case 'RSA': {
-          const { rsa } = require('../algorithms')
+          const { rsa } = await import('../algorithms')
           result = rsa.decrypt(operation.data, operation.key, operation.options)
           break
         }
         case 'DES': {
-          const { des } = require('../algorithms')
+          const { des } = await import('../algorithms')
           result = des.decrypt(operation.data, operation.key, operation.options)
           break
         }
         case '3DES': {
-          const { des3 } = require('../algorithms')
+          const { des3 } = await import('../algorithms')
           result = des3.decrypt(operation.data, operation.key, operation.options)
           break
         }
         case 'BLOWFISH': {
-          const { blowfish } = require('../algorithms')
+          const { blowfish } = await import('../algorithms')
           result = blowfish.decrypt(operation.data, operation.key, operation.options)
           break
         }
@@ -580,7 +597,7 @@ export class PerformanceOptimizer {
   /**
    * 获取 Worker 池统计信息
    */
-  getWorkerStats(): any {
+  getWorkerStats(): Record<string, unknown> | null {
     if (this.workerPool) {
       return this.workerPool.getStats()
     }

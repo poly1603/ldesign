@@ -51,7 +51,7 @@ export interface KeyStorageOptions {
   /** 主密钥派生算法 */
   kdfAlgorithm: 'pbkdf2' | 'argon2' | 'scrypt'
   /** KDF 参数 */
-  kdfParams?: any
+  kdfParams?: Record<string, unknown>
   /** 是否启用密钥轮换 */
   autoRotation: boolean
   /** 轮换间隔（天） */
@@ -378,7 +378,10 @@ export class KeyManager {
       throw new Error(`Key ${keyId} not found`)
     }
 
-    const keyMaterial = this.keys.get(keyId)!
+    const keyMaterial = this.keys.get(keyId)
+    if (!keyMaterial) {
+      throw new Error(`Key material for ${keyId} not found`)
+    }
 
     switch (format) {
       case 'raw':
@@ -456,7 +459,7 @@ export class KeyManager {
    * 备份所有密钥
    */
   async backup(password?: string): Promise<string> {
-    const backup: any = {
+    const backup: { version: string; created: string; keys: Array<{ id: string; key: string; metadata: KeyMetadata }> } = {
       version: '1.0',
       created: new Date().toISOString(),
       keys: [],
@@ -501,17 +504,17 @@ export class KeyManager {
       if (parts.length === 2) {
         const [iv, encryptedData] = parts
         const decrypted = aes.decrypt(encryptedData, password, { iv })
-        if (!decrypted.success) {
-          throw new Error('Failed to decrypt backup')
-        }
-        json = decrypted.data!
+    if (!decrypted.success || !decrypted.data) {
+      throw new Error('Failed to decrypt backup')
+    }
+    json = decrypted.data
       } else {
         // 兼容旧格式，直接尝试解密
         const decrypted = aes.decrypt(backupData, password)
-        if (!decrypted.success) {
+        if (!decrypted.success || !decrypted.data) {
           throw new Error('Failed to decrypt backup')
         }
-        json = decrypted.data!
+        json = decrypted.data
       }
     } else {
       json = backupData
@@ -614,8 +617,12 @@ export class KeyManager {
       iv,
     })
 
+    if (!encrypted.data) {
+      throw new Error('Failed to encrypt key - no data returned')
+    }
+    
     return {
-      key: encrypted.data!,
+      key: encrypted.data,
       salt,
       iv,
     }
@@ -635,11 +642,11 @@ export class KeyManager {
       },
     )
 
-    if (!decrypted.success) {
+    if (!decrypted.success || !decrypted.data) {
       throw new Error('Failed to decrypt key')
     }
 
-    return decrypted.data!
+    return decrypted.data
   }
 
   private getDefaultPermissions(purpose: KeyMetadata['purpose']): KeyPermission[] {

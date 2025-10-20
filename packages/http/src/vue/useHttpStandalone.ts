@@ -1,4 +1,4 @@
-import type { HttpClientConfig } from '../types'
+import type { HttpClientConfig, RequestConfig } from '../types'
 import { computed, ref } from 'vue'
 import { createAdapter } from '../adapters'
 import { HttpClientImpl } from '../client'
@@ -11,7 +11,7 @@ export function useHttp(config?: HttpClientConfig) {
   const client = new HttpClientImpl(config || {}, adapter)
   const loading = ref(false)
   const error = ref<Error | null>(null)
-  const data = ref<any>(null)
+  const data = ref<unknown>(null)
 
   // 计算属性
   const isLoading = computed(() => loading.value)
@@ -30,7 +30,7 @@ export function useHttp(config?: HttpClientConfig) {
   }
 
   // GET请求
-  const get = async <T = any>(url: string, config?: any): Promise<T | null> => {
+  const get = async <T = unknown>(url: string, config?: RequestConfig): Promise<T | null> => {
     try {
       loading.value = true
       error.value = null
@@ -48,15 +48,15 @@ export function useHttp(config?: HttpClientConfig) {
   }
 
   // POST请求
-  const post = async <T = any>(
+  const post = async <T = unknown, D = unknown>(
     url: string,
-    data?: any,
-    config?: any,
+    postData?: D,
+    config?: RequestConfig,
   ): Promise<T | null> => {
     try {
       loading.value = true
       error.value = null
-      const response = await client.post<T>(url, data, config)
+      const response = await client.post<T>(url, postData, config)
       data.value = response.data
       return response.data
     }
@@ -70,15 +70,15 @@ export function useHttp(config?: HttpClientConfig) {
   }
 
   // PUT请求
-  const put = async <T = any>(
+  const put = async <T = unknown, D = unknown>(
     url: string,
-    data?: any,
-    config?: any,
+    putData?: D,
+    config?: RequestConfig,
   ): Promise<T | null> => {
     try {
       loading.value = true
       error.value = null
-      const response = await client.put<T>(url, data, config)
+      const response = await client.put<T>(url, putData, config)
       data.value = response.data
       return response.data
     }
@@ -92,7 +92,7 @@ export function useHttp(config?: HttpClientConfig) {
   }
 
   // DELETE请求
-  const del = async <T = any>(url: string, config?: any): Promise<T | null> => {
+  const del = async <T = unknown>(url: string, config?: RequestConfig): Promise<T | null> => {
     try {
       loading.value = true
       error.value = null

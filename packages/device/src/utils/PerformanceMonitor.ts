@@ -155,20 +155,22 @@ export class PerformanceMonitor {
    *
    * @param name - 函数名称
    * @param fn - 要执行的函数
-   * @returns 函数返回值
+   * @returns 执行时间（毫秒）
    */
-  measure<T>(name: string, fn: () => T): T {
+  measure<T>(name: string, fn: () => T): number {
     if (!this.options.enabled) {
-      return fn()
+      fn()
+      return 0
     }
 
     const startTime = performance.now()
-    const result = fn()
+    fn()
     const endTime = performance.now()
+    const duration = endTime - startTime
 
-    this.recordExecutionTime(name, endTime - startTime)
+    this.recordExecutionTime(name, duration)
 
-    return result
+    return duration
   }
 
   /**
@@ -176,20 +178,22 @@ export class PerformanceMonitor {
    *
    * @param name - 函数名称
    * @param fn - 要执行的异步函数
-   * @returns Promise
+   * @returns Promise<执行时间（毫秒）>
    */
-  async measureAsync<T>(name: string, fn: () => Promise<T>): Promise<T> {
+  async measureAsync<T>(name: string, fn: () => Promise<T>): Promise<number> {
     if (!this.options.enabled) {
-      return fn()
+      await fn()
+      return 0
     }
 
     const startTime = performance.now()
-    const result = await fn()
+    await fn()
     const endTime = performance.now()
+    const duration = endTime - startTime
 
-    this.recordExecutionTime(name, endTime - startTime)
+    this.recordExecutionTime(name, duration)
 
-    return result
+    return duration
   }
 
   /**
@@ -305,7 +309,7 @@ export class PerformanceMonitor {
         lastTime = currentTime
 
         // 检查 FPS 警告
-        if (this.metrics.fps < this.options.thresholds.fps!) {
+        if (this.options.thresholds.fps && this.metrics.fps < this.options.thresholds.fps) {
           this.addWarning(`Low FPS detected: ${this.metrics.fps}`)
         }
       }
@@ -327,14 +331,14 @@ export class PerformanceMonitor {
    * 启动内存监控
    */
   private startMemoryMonitoring(): void {
-    if (typeof window === 'undefined' || !(performance as any).memory)
+    if (typeof window === 'undefined' || !(performance as unknown as { memory?: unknown }).memory)
       return
 
     this.memoryTimer = setInterval(() => {
       if (!this.isRunning)
         return
 
-      const memory = (performance as any).memory
+      const memory = (performance as unknown as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory
       if (memory) {
         this.metrics.memory = {
           used: Math.round(memory.usedJSHeapSize / 1024 / 1024),
@@ -345,7 +349,7 @@ export class PerformanceMonitor {
         }
 
         // 检查内存警告
-        if (this.metrics.memory.percentage > this.options.thresholds.memory!) {
+        if (this.options.thresholds.memory && this.metrics.memory.percentage > this.options.thresholds.memory) {
           this.addWarning(
             `High memory usage: ${this.metrics.memory.percentage}%`,
           )
@@ -381,7 +385,7 @@ export class PerformanceMonitor {
       = (oldAverage * (count - 1) + duration) / count
 
     // 检查执行时间警告
-    if (duration > this.options.thresholds.executionTime!) {
+    if (this.options.thresholds.executionTime && duration > this.options.thresholds.executionTime) {
       this.addWarning(
         `Slow execution detected for "${name}": ${duration.toFixed(2)}ms`,
       )
@@ -423,7 +427,7 @@ export class PerformanceMonitor {
 
     // 执行时间优化建议
     const slowFunctions = Object.entries(this.metrics.averageTime)
-      .filter(([_, time]) => time > this.options.thresholds.executionTime!)
+      .filter(([_, time]) => this.options.thresholds.executionTime ? time > this.options.thresholds.executionTime : false)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
 
@@ -455,10 +459,10 @@ export const defaultPerformanceMonitor = new PerformanceMonitor({
  */
 export const startMonitoring = () => defaultPerformanceMonitor.start()
 export const stopMonitoring = () => defaultPerformanceMonitor.stop()
-export function measure<T>(name: string, fn: () => T) {
+export function measure<T>(name: string, fn: () => T): number {
   return defaultPerformanceMonitor.measure(name, fn)
 }
-export function measureAsync<T>(name: string, fn: () => Promise<T>) {
+export function measureAsync<T>(name: string, fn: () => Promise<T>): Promise<number> {
   return defaultPerformanceMonitor.measureAsync(name, fn)
 }
 export const getPerformanceReport = () => defaultPerformanceMonitor.getReport()

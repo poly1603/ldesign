@@ -21,6 +21,9 @@
           <RouterLink to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
             {{ t('nav.about') }}
           </RouterLink>
+          <RouterLink to="/crypto" class="nav-link" :class="{ active: $route.path === '/crypto' }">
+            {{ t('nav.crypto') || 'Crypto' }}
+          </RouterLink>
           <RouterLink v-if="isLoggedIn" to="/dashboard" class="nav-link"
             :class="{ active: $route.path === '/dashboard' }">
             {{ t('nav.dashboard') }}

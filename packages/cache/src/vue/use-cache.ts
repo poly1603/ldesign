@@ -1,7 +1,8 @@
 import type { ComputedRef } from 'vue'
-import { computed, inject, onUnmounted, ref, watch } from 'vue'
-
 import type { CacheStats, SerializableValue, SetOptions, UseCacheOptions } from '../types'
+
+import { computed, inject, onUnmounted, ref, watch } from 'vue'
+import { TIME_INTERVALS } from '../constants/performance'
 import { CacheManager } from '../core/cache-manager'
 
 import { CACHE_MANAGER_KEY } from './cache-provider'
@@ -368,11 +369,11 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
       debounce?: number
       immediate?: boolean
     }): (() => void) => {
-      const throttleMs = opts?.throttle ?? 500
-      const debounceMs = opts?.debounce ?? 100
+      const throttleMs = opts?.throttle ?? TIME_INTERVALS.AUTO_SAVE_THROTTLE_DEFAULT
+      const debounceMs = opts?.debounce ?? TIME_INTERVALS.AUTO_SAVE_DEBOUNCE_DEFAULT
       let pending = false
-      let throttleTimer: number | undefined
-      let debounceTimer: number | undefined
+      let throttleTimer: ReturnType<typeof setTimeout> | undefined
+      let debounceTimer: ReturnType<typeof setTimeout> | undefined
       let lastSaveTime = 0
 
       const performSave = async (val: T) => {
@@ -394,29 +395,30 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
           if (val === null || pending) { return }
 
           // 清除之前的防抖定时器
-          if (debounceTimer) {
+          if (debounceTimer !== undefined) {
             clearTimeout(debounceTimer)
+            debounceTimer = undefined
           }
 
           // 防抖：延迟执行
-          debounceTimer = window.setTimeout(() => {
+          debounceTimer = setTimeout(() => {
             const now = Date.now()
             const timeSinceLastSave = now - lastSaveTime
 
             // 节流：如果距离上次保存时间太短，延迟执行
             if (timeSinceLastSave < throttleMs) {
-              if (throttleTimer) {
+              if (throttleTimer !== undefined) {
                 clearTimeout(throttleTimer)
               }
-              throttleTimer = window.setTimeout(() => {
+              throttleTimer = setTimeout(() => {
                 pending = true
-                performSave(val as T)
+                performSave(val as T).catch(console.error)
               }, throttleMs - timeSinceLastSave)
             }
             else {
               // 立即执行
               pending = true
-              performSave(val as T)
+              performSave(val as T).catch(console.error)
             }
           }, debounceMs)
         },
@@ -428,11 +430,11 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
 
       return () => {
         stop()
-        if (throttleTimer) {
+        if (throttleTimer !== undefined) {
           clearTimeout(throttleTimer)
           throttleTimer = undefined
         }
-        if (debounceTimer) {
+        if (debounceTimer !== undefined) {
           clearTimeout(debounceTimer)
           debounceTimer = undefined
         }
@@ -576,7 +578,7 @@ export function useCache(options?: UseCacheOptions): UseCacheReturn {
     options?: { ttl?: number, throttle?: number },
   ) => {
     const cache = useReactiveCache<T>(key, defaultValue)
-    const throttleMs = options?.throttle ?? 300
+    const _throttleMs = options?.throttle ?? TIME_INTERVALS.AUTO_SAVE_THROTTLE_DEFAULT
 
     // 创建可写的计算属性用于双向绑定
     const syncValue = computed({

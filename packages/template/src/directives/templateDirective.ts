@@ -12,9 +12,9 @@
  */
 
 import type { App, Component, DirectiveBinding, VNode } from 'vue'
-import { createApp, h, Teleport, defineComponent, ref, watchEffect, onUnmounted } from 'vue'
-import { getManager } from '../core/manager'
 import type { DeviceType, TemplateLoadOptions } from '../types'
+import { createApp, defineComponent, h, onUnmounted, ref, watchEffect } from 'vue'
+import { getManager } from '../core/manager'
 
 interface TemplateDirectiveOptions {
   category: string
@@ -33,28 +33,31 @@ interface TemplateDirectiveInstance {
   app: App | null
   component: Component | null
   cleanup: () => void
+  abortController?: AbortController
 }
 
-const instances = new WeakMap<Element, TemplateDirectiveInstance>()
+// 使用 Map 而不是 WeakMap，以支持 forEach 遍历清理
+// 在 beforeunload 时会清理所有实例，所以不会造成内存泄漏
+const instances = new Map<Element, TemplateDirectiveInstance>()
 
 /**
  * Parse directive arguments and modifiers
  */
 function parseBinding(binding: DirectiveBinding): TemplateDirectiveOptions {
   const options: TemplateDirectiveOptions = {} as any
-  
+
   // Parse argument (e.g., v-template:login)
   if (binding.arg) {
     options.category = binding.arg
   }
-  
+
   // Parse modifiers (e.g., v-template:login.desktop.default)
   const modifiers = Object.keys(binding.modifiers)
   if (modifiers.length > 0) {
     if (modifiers[0]) options.device = modifiers[0] as DeviceType
     if (modifiers[1]) options.name = modifiers[1]
   }
-  
+
   // Parse value (overrides arg and modifiers)
   if (typeof binding.value === 'object' && binding.value !== null) {
     Object.assign(options, binding.value)
@@ -65,11 +68,11 @@ function parseBinding(binding: DirectiveBinding): TemplateDirectiveOptions {
     if (parts[1]) options.device = parts[1] as DeviceType
     if (parts[2]) options.name = parts[2]
   }
-  
+
   // Set defaults
   if (!options.device) options.device = detectDevice()
   if (!options.name) options.name = 'default'
-  
+
   return options
 }
 
@@ -89,15 +92,15 @@ function detectDevice(): DeviceType {
  */
 function createLoadingComponent(loading?: Component | string) {
   if (loading) {
-    return typeof loading === 'string' 
+    return typeof loading === 'string'
       ? defineComponent({
-          render() {
-            return h('div', { class: 'v-template-loading' }, loading)
-          }
-        })
+        render() {
+          return h('div', { class: 'v-template-loading' }, loading)
+        }
+      })
       : loading
   }
-  
+
   return defineComponent({
     render() {
       return h('div', { class: 'v-template-loading' }, [
@@ -116,20 +119,20 @@ function createErrorComponent(error: Error, errorHandler?: Component | ((error: 
       const result = errorHandler(error)
       return typeof result === 'string'
         ? defineComponent({
-            render() {
-              return h('div', { class: 'v-template-error' }, result)
-            }
-          })
+          render() {
+            return h('div', { class: 'v-template-error' }, result)
+          }
+        })
         : result
     }
     return errorHandler
   }
-  
+
   return defineComponent({
     render() {
       return h('div', { class: 'v-template-error' }, [
         h('p', `加载模板失败: ${error.message}`),
-        h('button', { 
+        h('button', {
           class: 'v-template-retry',
           onClick: () => window.location.reload()
         }, '重试')
@@ -143,28 +146,43 @@ function createErrorComponent(error: Error, errorHandler?: Component | ((error: 
  */
 async function mountTemplate(el: Element, options: TemplateDirectiveOptions) {
   const manager = getManager()
-  
+
   // Clean up previous instance
   unmountTemplate(el)
-  
+
+  // Create abort controller for async operations
+  const abortController = new AbortController()
+
   // Create container
   const container = document.createElement('div')
   container.className = 'v-template-container'
-  
+
   // Create reactive state
   const isLoading = ref(true)
   const loadError = ref<Error | null>(null)
   const templateComponent = ref<Component | null>(null)
-  
+
   // Create wrapper component
   const WrapperComponent = defineComponent({
     setup() {
+      let stopWatcher: (() => void) | null = null
+
       // Load template
-      watchEffect(async () => {
+      stopWatcher = watchEffect(async (onInvalidate) => {
+        // Clean up on invalidation
+        onInvalidate(() => {
+          // Cancel any pending operations
+          if (abortController) {
+            abortController.abort()
+          }
+        })
         try {
+          // Check if aborted
+          if (abortController?.signal.aborted) return
+
           isLoading.value = true
           loadError.value = null
-          
+
           const component = await manager.loadTemplate(
             options.category,
             options.device as string,
@@ -174,7 +192,10 @@ async function mountTemplate(el: Element, options: TemplateDirectiveOptions) {
               onError: options.onError
             } as TemplateLoadOptions
           )
-          
+
+          // Check again after async operation
+          if (abortController?.signal.aborted) return
+
           templateComponent.value = component
           isLoading.value = false
         } catch (error) {
@@ -183,56 +204,71 @@ async function mountTemplate(el: Element, options: TemplateDirectiveOptions) {
           options.onError?.(error as Error)
         }
       })
-      
+
+      // Clean up on unmount
+      onUnmounted(() => {
+        if (stopWatcher) {
+          stopWatcher()
+          stopWatcher = null
+        }
+        if (abortController) {
+          abortController.abort()
+        }
+      })
+
       return () => {
         // Show loading
         if (isLoading.value) {
           const LoadingComp = createLoadingComponent(options.loading)
           return h(LoadingComp)
         }
-        
+
         // Show error
         if (loadError.value) {
           const ErrorComp = createErrorComponent(loadError.value, options.error)
           return h(ErrorComp)
         }
-        
+
         // Show template
         if (templateComponent.value) {
           const content = h(templateComponent.value, options.props, options.slots)
-          
+
           // Add transition if requested
           if (options.transition) {
-            const transitionName = typeof options.transition === 'string' 
-              ? options.transition 
+            const transitionName = typeof options.transition === 'string'
+              ? options.transition
               : 'v-template-fade'
-            
+
             return h('transition', { name: transitionName }, () => content)
           }
-          
+
           return content
         }
-        
+
         return null
       }
     }
   })
-  
+
   // Create and mount app
   const app = createApp(WrapperComponent)
-  
+
   // Clear element content and append container
   el.innerHTML = ''
   el.appendChild(container)
-  
+
   // Mount app
   app.mount(container)
-  
+
   // Store instance
   instances.set(el, {
     app,
     component: WrapperComponent,
+    abortController,
     cleanup: () => {
+      if (abortController) {
+        abortController.abort()
+      }
       app.unmount()
       if (container.parentNode) {
         container.parentNode.removeChild(container)
@@ -256,22 +292,22 @@ function unmountTemplate(el: Element) {
  * Template directive definition
  */
 export const vTemplate = {
-  mounted(el: Element, binding: DirectiveBinding, vnode: VNode) {
+mounted(el: Element, binding: DirectiveBinding, _vnode: VNode) {
     const options = parseBinding(binding)
-    
+
     if (!options.category) {
       console.error('[v-template] Category is required')
       return
     }
-    
+
     mountTemplate(el, options)
   },
-  
+
   updated(el: Element, binding: DirectiveBinding) {
-    const oldOptions = parseBinding(binding.oldValue ? 
+    const oldOptions = parseBinding(binding.oldValue ?
       { ...binding, value: binding.oldValue } : binding)
     const newOptions = parseBinding(binding)
-    
+
     // Check if options changed
     if (
       oldOptions.category !== newOptions.category ||
@@ -282,20 +318,24 @@ export const vTemplate = {
       mountTemplate(el, newOptions)
     }
   },
-  
+
   unmounted(el: Element) {
     unmountTemplate(el)
   }
 }
+
+// Track installed styles to avoid duplicates
+let stylesInstalled = false
 
 /**
  * Install directive plugin
  */
 export function installTemplateDirective(app: App) {
   app.directive('template', vTemplate)
-  
-  // Add global styles for directive
-  if (typeof document !== 'undefined' && !document.getElementById('v-template-styles')) {
+
+  // Add global styles for directive (prevent duplicates)
+  if (typeof document !== 'undefined' && !stylesInstalled && !document.getElementById('v-template-styles')) {
+    stylesInstalled = true
     const style = document.createElement('style')
     style.id = 'v-template-styles'
     style.textContent = `
@@ -367,6 +407,14 @@ export function installTemplateDirective(app: App) {
       }
     `
     document.head.appendChild(style)
+
+    // Clean up on unload
+    window.addEventListener('beforeunload', () => {
+      // Clean up all instances
+      instances.forEach((instance, el) => {
+        unmountTemplate(el)
+      })
+    }, { once: true })
   }
 }
 

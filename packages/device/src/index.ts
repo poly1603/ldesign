@@ -1,12 +1,12 @@
+import type { DeviceDetectorOptions } from './types'
 // 核心类
+// 工厂函数
+import { DeviceDetector } from './core/DeviceDetector'
+
 export { DeviceDetector } from './core/DeviceDetector'
 // 默认导出
 export { DeviceDetector as default } from './core/DeviceDetector'
 export { EventEmitter } from './core/EventEmitter'
-
-// 工厂函数
-import { DeviceDetector } from './core/DeviceDetector'
-import type { DeviceDetectorOptions } from './types'
 
 /**
  * 创建设备检测器实例的工厂函数

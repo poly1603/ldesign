@@ -246,7 +246,7 @@ export class OfflineQueueManager {
     try {
       const data = localStorage.getItem(this.config?.storageKey)
       if (!data) {
-        return
+        // 没有存储的队列数据
       }
 
       // 注意：这里无法恢复 resolve 和 reject 函数

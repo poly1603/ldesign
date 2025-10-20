@@ -5,9 +5,9 @@
  * Based on algorithms from a-nice-red and tailwindcss-palette-generator
  */
 
-import { Color } from './Color';
-import { ColorInput, HSL } from '../types';
+import type { ColorInput, HSL } from '../types';
 import { clamp } from '../utils/math';
+import { Color } from './Color';
 
 /**
  * Generate semantic colors based on primary color using a-nice-red algorithm
@@ -40,8 +40,6 @@ export function generateNaturalSemanticColors(primaryColor: ColorInput): {
  */
 function generateSuccessColor(primaryHSL: HSL): string {
   let h: number;
-  let s: number;
-  let l: number;
   
   // Determine green hue based on primary hue
   const primaryH = primaryHSL.h;
@@ -61,11 +59,11 @@ function generateSuccessColor(primaryHSL: HSL): string {
   
   // Adjust saturation (55-70%)
   const primaryS = primaryHSL.s;
-  s = clamp(primaryS - 5, 55, 70);
+  const s = clamp(primaryS - 5, 55, 70);
   
   // Adjust lightness (45-60%)
   const primaryL = primaryHSL.l;
-  l = clamp(primaryL + 5, 45, 60);
+  const l = clamp(primaryL + 5, 45, 60);
   
   return Color.fromHSL(h, s, l).toHex();
 }
@@ -76,8 +74,6 @@ function generateSuccessColor(primaryHSL: HSL): string {
  */
 function generateWarningColor(primaryHSL: HSL): string {
   let h: number;
-  let s: number;
-  let l: number;
   
   // Determine amber hue based on primary hue
   const primaryH = primaryHSL.h;
@@ -93,11 +89,11 @@ function generateWarningColor(primaryHSL: HSL): string {
   
   // Adjust saturation (80-100%)
   const primaryS = primaryHSL.s;
-  s = clamp(primaryS + 5, 80, 100);
+  const s = clamp(primaryS + 5, 80, 100);
   
   // Adjust lightness (55-65%)
   const primaryL = primaryHSL.l;
-  l = clamp(primaryL + 15, 55, 65);
+  const l = clamp(primaryL + 15, 55, 65);
   
   return Color.fromHSL(h, s, l).toHex();
 }
@@ -108,8 +104,6 @@ function generateWarningColor(primaryHSL: HSL): string {
  */
 function generateDangerColor(primaryHSL: HSL): string {
   let h: number;
-  let s: number;
-  let l: number;
   
   // Determine red hue based on primary hue
   const primaryH = primaryHSL.h;
@@ -129,11 +123,11 @@ function generateDangerColor(primaryHSL: HSL): string {
   
   // Adjust saturation (75-85%)
   const primaryS = primaryHSL.s;
-  s = clamp(primaryS, 75, 85);
+  const s = clamp(primaryS, 75, 85);
   
   // Adjust lightness (45-55%)
   const primaryL = primaryHSL.l;
-  l = clamp(primaryL + 5, 45, 55);
+  const l = clamp(primaryL + 5, 45, 55);
   
   return Color.fromHSL(h, s, l).toHex();
 }
@@ -143,8 +137,6 @@ function generateDangerColor(primaryHSL: HSL): string {
  */
 function generateInfoColor(primaryHSL: HSL): string {
   let h: number;
-  let s: number;
-  let l: number;
   
   // Determine blue hue based on primary hue
   const primaryH = primaryHSL.h;
@@ -160,11 +152,11 @@ function generateInfoColor(primaryHSL: HSL): string {
   
   // Adjust saturation (60-75%)
   const primaryS = primaryHSL.s;
-  s = clamp(primaryS - 10, 60, 75);
+  const s = clamp(primaryS - 10, 60, 75);
   
   // Adjust lightness (45-60%)
   const primaryL = primaryHSL.l;
-  l = clamp(primaryL, 45, 60);
+  const l = clamp(primaryL, 45, 60);
   
   return Color.fromHSL(h, s, l).toHex();
 }
@@ -278,7 +270,7 @@ export const ANTD_SHADES: ShadeConfig[] = [
 ];
 
 /**
- * Generate a natural-looking color scale using tailwindcss-palette-generator algorithm
+ * Generate a natural-looking color scale - Optimized memory usage
  */
 export function generateNaturalScale(
   baseColor: ColorInput,
@@ -296,64 +288,62 @@ export function generateNaturalScale(
   
   const color = new Color(baseColor);
   const baseHSL = color.toHSL();
-  const baseHex = color.toHex();
+  const baseHex = preserve ? color.toHex() : '';
+  const baseH = baseHSL.h;
+  const baseS = baseHSL.s;
+  const baseL = baseHSL.l;
   
-  // Track lightness delta for preserving original color
-  const lightnessDelta: Record<string | number, number> = {};
+  const palette = Object.create(null);
+  let closestShade = '';
+  let minDelta = Infinity;
   
-  // Generate shades
-  const palette = shades.reduce((obj: Record<string | number, string>, shade) => {
-    const { name, lightness } = shade;
-    let h = baseHSL.h;
-    let s = baseHSL.s;
-    let l = lightness;
+  // Generate shades with inline calculations
+  for (let i = 0; i < shades.length; i++) {
+    const { name, lightness } = shades[i];
+    let h = baseH;
+    let s = baseS;
     
-    // Adjust saturation for more natural look
     if (adjustSaturation) {
-      // Reduce saturation at extremes for more natural look
+      // Simplified saturation adjustment
       if (lightness > 90) {
-        // Very light shades
-        s = s * (0.3 + (100 - lightness) * 0.07); // 30-100% of original
+        s *= 0.3 + (100 - lightness) * 0.07;
       } else if (lightness > 70) {
-        // Light shades
-        s = s * (0.7 + (90 - lightness) * 0.015); // 70-100% of original
+        s *= 0.7 + (90 - lightness) * 0.015;
       } else if (lightness < 20) {
-        // Very dark shades
-        s = s * (0.8 + lightness * 0.01); // 80-100% of original
+        s *= 0.8 + lightness * 0.01;
       } else if (lightness < 40) {
-        // Dark shades
-        s = s * (0.9 + (lightness - 20) * 0.005); // 90-100% of original
+        s *= 0.9 + (lightness - 20) * 0.005;
       }
       
-      // Slightly shift hue at extremes for more vibrant look
+      // Hue shift at extremes
       if (lightness > 85) {
-        h = (h + 2) % 360; // Slightly warmer lights
+        h = (h + 2) % 360;
       } else if (lightness < 15) {
-        h = (h - 2 + 360) % 360; // Slightly cooler darks
+        h = (h + 358) % 360;
       }
     }
     
-    const hex = Color.fromHSL(h, s, l).toHex();
-    obj[name] = hex;
+    // Create color and immediately convert to hex
+    const tempColor = Color.fromHSL(h, s, lightness);
+    palette[name] = tempColor.toHex();
+    tempColor.dispose(); // Return to pool
     
-    // Track delta for preservation
+    // Track closest shade inline
     if (preserve) {
-      lightnessDelta[name] = Math.abs(baseHSL.l - lightness);
-    }
-    
-    return obj;
-  }, {});
-  
-  // Preserve original color at closest shade
-  if (preserve) {
-    const closestShade = Object.keys(lightnessDelta).sort(
-      (a, b) => lightnessDelta[a] - lightnessDelta[b]
-    )[0];
-    if (closestShade) {
-      palette[closestShade] = baseHex;
+      const delta = Math.abs(baseL - lightness);
+      if (delta < minDelta) {
+        minDelta = delta;
+        closestShade = String(name);
+      }
     }
   }
   
+  // Preserve original color
+  if (preserve && closestShade) {
+    palette[closestShade] = baseHex;
+  }
+  
+  color.dispose();
   return palette;
 }
 

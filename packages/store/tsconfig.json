@@ -1,14 +1,15 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "useDefineForClassFields": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "baseUrl": ".",
     "rootDir": "src",
     "paths": {
       "@/*": ["src/*"]
     },
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "useDefineForClassFields": false,
+    "allowImportingTsExtensions": false,
     "noEmit": false,
     "outDir": "dist"
   },

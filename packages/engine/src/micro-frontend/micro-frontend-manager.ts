@@ -84,7 +84,7 @@ export class MicroFrontendManager {
   private logger?: Logger
   private routerMode: 'hash' | 'history' = 'history'
   private globalState = new Map<string, unknown>()
-  private eventBus = new Map<string, Set<Function>>()
+  private eventBus = new Map<string, Set<(...args: any[]) => void>>()
   private prefetchQueue: Set<string> = new Set()
   private moduleFederations = new Map<string, ModuleFederationConfig>()
 
@@ -154,7 +154,7 @@ export class MicroFrontendManager {
       app.loader?.(true)
       
       // 加载应用资源
-      const { scripts, styles, html } = await this.fetchAppResources(app)
+      const { scripts, styles } = await this.fetchAppResources(app)
       
       // 创建沙箱
       if (app.sandbox !== false) {
@@ -302,7 +302,7 @@ export class MicroFrontendManager {
   onGlobalStateChange(
     callback: (state: Map<string, unknown>, prev: Map<string, unknown>) => void
   ): () => void {
-    const handler = (data?: unknown) => {
+    const handler = (_data?: unknown) => {
       callback(this.globalState, new Map(this.globalState))
     }
     
@@ -516,7 +516,7 @@ export class MicroFrontendManager {
     })
   }
 
-  private createSandbox(app: LoadedMicroApp): Sandbox {
+  private createSandbox(_app: LoadedMicroApp): Sandbox {
     const fakeWindow = {} as any
     const proxy = new Proxy(fakeWindow, {
       get(target, prop) {

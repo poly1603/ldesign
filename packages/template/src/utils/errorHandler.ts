@@ -5,7 +5,9 @@
  */
 
 import type { Component } from 'vue'
-import { defineComponent, h, ref, computed } from 'vue'
+import { computed, defineComponent, h, provide, ref  } from 'vue'
+
+
 
 /**
  * Template error types
@@ -146,8 +148,8 @@ export class TemplateError extends Error {
  * Error recovery strategies
  */
 export interface ErrorRecoveryStrategy {
-  canRecover(error: TemplateError): boolean
-  recover(error: TemplateError): Promise<void>
+  canRecover: (error: TemplateError) => boolean
+  recover: (error: TemplateError) => Promise<void>
   priority: number
 }
 
@@ -157,8 +159,8 @@ export interface ErrorRecoveryStrategy {
 export const defaultRecoveryStrategies: ErrorRecoveryStrategy[] = [
   {
     // Retry strategy for network errors
-    canRecover: (error) => error.type === TemplateErrorType.NETWORK_ERROR && error.retryable,
-    recover: async (error) => {
+canRecover: (templateError) => templateError.type === TemplateErrorType.NETWORK_ERROR && templateError.retryable,
+recover: async (_templateError) => {
       await new Promise(resolve => setTimeout(resolve, 2000))
       // Retry logic would be implemented by the caller
     },
@@ -166,10 +168,10 @@ export const defaultRecoveryStrategies: ErrorRecoveryStrategy[] = [
   },
   {
     // Fallback to default template
-    canRecover: (error) => error.type === TemplateErrorType.NOT_FOUND,
-    recover: async (error) => {
+    canRecover: (templateError) => templateError.type === TemplateErrorType.NOT_FOUND,
+    recover: async (_templateError) => {
       // Load default template instead
-      if (error.context?.category) {
+      if (_templateError.context?.category) {
         // This would be handled by the template manager
       }
     },
@@ -177,8 +179,8 @@ export const defaultRecoveryStrategies: ErrorRecoveryStrategy[] = [
   },
   {
     // Clear cache and retry
-    canRecover: (error) => error.type === TemplateErrorType.PARSE_ERROR,
-    recover: async (error) => {
+canRecover: (templateError) => templateError.type === TemplateErrorType.PARSE_ERROR,
+recover: async (_templateError) => {
       // Clear cache
       if (typeof localStorage !== 'undefined') {
         localStorage.removeItem('template-cache')
@@ -195,6 +197,7 @@ export class ErrorRecoveryManager {
   private strategies: ErrorRecoveryStrategy[] = []
   private retryCount = new Map<string, number>()
   private readonly maxRetries = 3
+  private retryCleanupTimer: ReturnType<typeof setTimeout> | null = null
   
   constructor(strategies: ErrorRecoveryStrategy[] = defaultRecoveryStrategies) {
     this.strategies = [...strategies].sort((a, b) => a.priority - b.priority)
@@ -244,6 +247,41 @@ export class ErrorRecoveryManager {
     } else {
       this.retryCount.clear()
     }
+    // 清理过期的重试计数
+    this.scheduleRetryCleanup()
+  }
+  
+  /**
+   * Schedule cleanup of old retry counts
+   */
+  private scheduleRetryCleanup() {
+    if (this.retryCleanupTimer) {
+      clearTimeout(this.retryCleanupTimer)
+    }
+    // 5分钟后清理重试计数
+    this.retryCleanupTimer = setTimeout(() => {
+      if (this.retryCount.size > 100) {
+        // 只保留最近的50个
+        const entries = Array.from(this.retryCount.entries())
+        this.retryCount.clear()
+        entries.slice(-50).forEach(([key, value]) => {
+          this.retryCount.set(key, value)
+        })
+      }
+      this.retryCleanupTimer = null
+    }, 5 * 60 * 1000)
+  }
+  
+  /**
+   * Dispose the recovery manager
+   */
+  dispose() {
+    if (this.retryCleanupTimer) {
+      clearTimeout(this.retryCleanupTimer)
+      this.retryCleanupTimer = null
+    }
+    this.retryCount.clear()
+    this.strategies.length = 0
   }
 }
 
@@ -347,10 +385,12 @@ export function createErrorBoundary(options?: {
  * Global error handler
  */
 export class GlobalTemplateErrorHandler {
-  private static instance: GlobalTemplateErrorHandler
+  private static instance: GlobalTemplateErrorHandler | null = null
   private errorLog: TemplateError[] = []
   private readonly maxLogSize = 100
-  private listeners: Set<(error: TemplateError) => void> = new Set()
+  private listeners = new WeakMap<object, (error: TemplateError) => void>()
+  private listenerRefs = new Set<WeakRef<object>>()
+  private disposed = false
   
   private constructor() {}
   
@@ -365,6 +405,8 @@ export class GlobalTemplateErrorHandler {
    * Log error
    */
   logError(error: TemplateError) {
+    if (this.disposed) return
+    
     this.errorLog.push(error)
     
     // Keep log size under control
@@ -373,10 +415,10 @@ export class GlobalTemplateErrorHandler {
     }
     
     // Notify listeners
-    this.listeners.forEach(listener => listener(error))
+    this.notifyListeners(error)
     
     // Send to remote logging if in production
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.PROD) {
       this.sendToRemote(error)
     }
   }
@@ -399,14 +441,43 @@ export class GlobalTemplateErrorHandler {
    * Subscribe to errors
    */
   subscribe(listener: (error: TemplateError) => void): () => void {
-    this.listeners.add(listener)
-    return () => this.listeners.delete(listener)
+    const listenerObj = {} // Create unique object as key
+    const ref = new WeakRef(listenerObj)
+    this.listeners.set(listenerObj, listener)
+    this.listenerRefs.add(ref)
+    
+    return () => {
+      this.listeners.delete(listenerObj)
+      this.listenerRefs.delete(ref)
+    }
+  }
+  
+  /**
+   * Notify all active listeners
+   */
+  private notifyListeners(error: TemplateError) {
+    const deadRefs = new Set<WeakRef<object>>()
+    
+    this.listenerRefs.forEach(ref => {
+      const obj = ref.deref()
+      if (obj) {
+        const listener = this.listeners.get(obj)
+        if (listener) {
+          listener(error)
+        }
+      } else {
+        deadRefs.add(ref)
+      }
+    })
+    
+    // 清理已失效的引用
+    deadRefs.forEach(ref => this.listenerRefs.delete(ref))
   }
   
   /**
    * Send error to remote logging service
    */
-  private async sendToRemote(error: TemplateError) {
+private async sendToRemote(_error: TemplateError) {
     // Implement remote logging
     // This is a placeholder
     try {
@@ -437,9 +508,24 @@ export class GlobalTemplateErrorHandler {
     
     return stats
   }
+  
+  /**
+   * Destroy the singleton instance
+   */
+  static destroy() {
+    if (GlobalTemplateErrorHandler.instance) {
+      GlobalTemplateErrorHandler.instance.disposed = true
+      GlobalTemplateErrorHandler.instance.clearErrorLog()
+      GlobalTemplateErrorHandler.instance.listeners = new WeakMap()
+      GlobalTemplateErrorHandler.instance.listenerRefs.clear()
+      GlobalTemplateErrorHandler.instance = null
+    }
+  }
 }
 
 // Export singleton instance
 export const globalErrorHandler = GlobalTemplateErrorHandler.getInstance()
 
-import { provide } from 'vue'
+// Re-export memory optimization utilities
+export * from './memoryLeakDetector'
+export * from './objectPool'

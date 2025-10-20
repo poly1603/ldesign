@@ -139,10 +139,13 @@ export function useDebouncedRef<T>(
  */
 export function useApiMethod<T = unknown>(methodName: string) {
   // 延迟导入以避免循环依赖
-  const { useApi } = require('./composables')
-  const api = useApi()
-
-  return (params?: unknown, options?: any) => {
+  let api: any = null
+  
+  return async (params?: unknown, options?: any) => {
+    if (!api) {
+      const module = await import('./composables')
+      api = module.useApi()
+    }
     return api.call(methodName, params, options) as Promise<T>
   }
 }
@@ -164,16 +167,21 @@ export function useApiMethod<T = unknown>(methodName: string) {
  * ```
  */
 export function useApiAvailable(): ComputedRef<boolean> {
-  return computed(() => {
+  const available = ref(false)
+  
+  import('./composables').then((module) => {
     try {
-      const { useApi } = require('./composables')
-      useApi()
-      return true
+      module.useApi()
+      available.value = true
     }
     catch {
-      return false
+      available.value = false
     }
+  }).catch(() => {
+    available.value = false
   })
+  
+  return computed(() => available.value)
 }
 
 /**
@@ -193,18 +201,23 @@ export function useApiStatus() {
   const engine = ref<ApiEngine | null>(null)
   const error = ref<Error | null>(null)
 
-  try {
-    const { useApi } = require('./composables')
-    const apiEngine = useApi()
-    isAvailable.value = true
-    engine.value = apiEngine
-    error.value = null
-  }
-  catch (err) {
+  import('./composables').then((module) => {
+    try {
+      const apiEngine = module.useApi()
+      isAvailable.value = true
+      engine.value = apiEngine
+      error.value = null
+    }
+    catch (err) {
+      isAvailable.value = false
+      engine.value = null
+      error.value = err instanceof Error ? err : new Error(String(err))
+    }
+  }).catch((err) => {
     isAvailable.value = false
     engine.value = null
     error.value = err instanceof Error ? err : new Error(String(err))
-  }
+  })
 
   return {
     isAvailable: computed(() => isAvailable.value),

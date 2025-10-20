@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, provide } from 'vue'
+import { ref, onMounted, onBeforeUnmount, provide } from 'vue'
 import LoginTabs from './components/LoginTabs.vue'
 import UsernameLoginForm from './components/UsernameLoginForm.vue'
 import PhoneLoginForm from './components/PhoneLoginForm.vue'
@@ -80,6 +80,9 @@ const isLoading = ref(false)
 const captchaUrl = ref('')
 const messageRef = ref<InstanceType<typeof MessageToast>>()
 
+// 定时器引用
+let loginTimer: number | null = null
+
 // 提供消息服务给子组件
 onMounted(() => {
   if (messageRef.value?.message) {
@@ -103,12 +106,19 @@ const handleTabChange = (key: string) => {
 
 const handleUsernameLogin = async (data: LoginFormData) => {
   isLoading.value = true
+  
+  // 清理之前的定时器
+  if (loginTimer !== null) {
+    clearTimeout(loginTimer)
+  }
+  
   try {
     emit('login', { ...data, type: 'username' })
     // 模拟登录延迟
-    setTimeout(() => {
+    loginTimer = window.setTimeout(() => {
       isLoading.value = false
       console.log('Username login:', data)
+      loginTimer = null
     }, 1500)
   } catch (error) {
     isLoading.value = false
@@ -118,12 +128,19 @@ const handleUsernameLogin = async (data: LoginFormData) => {
 
 const handlePhoneLogin = async (data: LoginFormData) => {
   isLoading.value = true
+  
+  // 清理之前的定时器
+  if (loginTimer !== null) {
+    clearTimeout(loginTimer)
+  }
+  
   try {
     emit('login', { ...data, type: 'phone' })
     // 模拟登录延迟
-    setTimeout(() => {
+    loginTimer = window.setTimeout(() => {
       isLoading.value = false
       console.log('Phone login:', data)
+      loginTimer = null
     }, 1500)
   } catch (error) {
     isLoading.value = false
@@ -160,6 +177,14 @@ const handleSendSms = (phone: string) => {
 onMounted(() => {
   // 初始化时加载验证码
   handleRefreshCaptcha()
+})
+
+onBeforeUnmount(() => {
+  // 清理定时器
+  if (loginTimer !== null) {
+    clearTimeout(loginTimer)
+    loginTimer = null
+  }
 })
 </script>
 

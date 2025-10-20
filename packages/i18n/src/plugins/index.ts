@@ -2,10 +2,10 @@
  * Plugins module exports
  */
 
+export * from './realtime-sync'
 // Core plugins
 export * from './smart-cache'
 export * from './version-control'
-export * from './realtime-sync'
 
 // Advanced/Experimental plugins - Import these separately when needed:
 // import { MLOptimizerPlugin } from '@ldesign/i18n/plugins/ml-optimizer'

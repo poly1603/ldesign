@@ -4,9 +4,23 @@
  * 完整优化版本 - 包含所有增强功能
  */
 
-import type { Component, Router, RouteLocationNormalized } from '../types'
-import { defineComponent, h, inject, KeepAlive, markRaw, type PropType, provide, ref, Transition, watch, type Ref } from 'vue'
-import { ROUTER_INJECTION_SYMBOL, ROUTE_INJECTION_SYMBOL } from '../core/constants'
+import type { Component, RouteLocationNormalized, Router } from '../types'
+import { computed, defineComponent, h, inject, KeepAlive, markRaw, type PropType, provide, ref, type Ref, shallowRef, Transition, watch } from 'vue'
+import { ROUTE_INJECTION_SYMBOL, ROUTER_INJECTION_SYMBOL } from '../core/constants'
+
+// 类型定义
+interface KeepAliveProps {
+  include?: string | RegExp | (string | RegExp)[]
+  exclude?: string | RegExp | (string | RegExp)[]
+  max?: string | number
+}
+
+interface TransitionProps {
+  name?: string
+  mode?: 'in-out' | 'out-in' | 'default'
+  appear?: boolean
+  duration?: number | { enter: number; leave: number }
+}
 
 // RouterView 深度注入键
 const ROUTER_VIEW_DEPTH_SYMBOL = Symbol('RouterViewDepth')
@@ -94,81 +108,111 @@ export const RouterView = defineComponent({
       throw new Error('RouterView must be used within a Router')
     }
 
-    // 当前组件和状态
-    const currentComponent = ref<Component | null>(null)
+    // 优化：使用 shallowRef 减少深度响应式开销
+    const currentComponent = shallowRef<Component | null>(null)
     const isLoading = ref(false)
-    const error = ref<Error | null>(null)
+    const error = shallowRef<Error | null>(null)
+    
+    // 优化：组件缓存
+    const componentCache = new Map<string, Component>()
+    const loadingPromises = new Map<string, Promise<Component>>()
 
-    // 加载组件
-    const loadComponent = async (componentDef: any): Promise<Component | null> => {
+    // 优化：加载组件并缓存
+    const loadComponent = async (componentDef: any, cacheKey: string): Promise<Component | null> => {
       try {
         if (!componentDef)
           return null
 
-        // 如果是函数（懒加载）
-        if (typeof componentDef === 'function') {
-          const result = await componentDef()
-
-          // 处理ES模块默认导出
-          if (result && typeof result === 'object' && 'default' in result) {
-            return result.default
-          }
-
-          return result
+        // 检查缓存
+        if (componentCache.has(cacheKey)) {
+          return componentCache.get(cacheKey)!
+        }
+        
+        // 检查是否正在加载
+        if (loadingPromises.has(cacheKey)) {
+          return await loadingPromises.get(cacheKey)!
         }
 
-        // 直接返回组件
+        // 如果是函数（懒加载）
+        if (typeof componentDef === 'function') {
+          const loadPromise = componentDef().then((result: any) => {
+            // 处理ES模块默认导出
+            const component = result && typeof result === 'object' && 'default' in result
+              ? result.default
+              : result
+            
+            // 缓存组件
+            componentCache.set(cacheKey, component)
+            loadingPromises.delete(cacheKey)
+            
+            return component
+          })
+          
+          loadingPromises.set(cacheKey, loadPromise)
+          return await loadPromise
+        }
+
+        // 直接缓存并返回组件
+        componentCache.set(cacheKey, componentDef)
         return componentDef
       }
       catch (error) {
+        loadingPromises.delete(cacheKey)
         console.error('Failed to load component:', error)
         throw error
       }
     }
 
-    // 监听路由变化
+    // 优化：使用 computed 减少重复计算
+    const matchedRecord = computed(() => {
+      const matched = route.value?.matched
+      if (!matched?.length) return null
+      return matched[currentDepth - 1]
+    })
+    
+    const componentDef = computed(() => {
+      return matchedRecord.value?.components?.[props.name]
+    })
+    
+    // 优化：使用更精确的依赖追踪
     watch(
-      () => route.value,
-      async (newRoute) => {
-        if (!newRoute?.matched?.length) {
-          currentComponent.value = null
-          isLoading.value = false
-          return
-        }
-
-        // 根据当前RouterView的深度找到对应的路由记录
-        // 深度从0开始，第一层RouterView（深度1）渲染matched[0]，第二层渲染matched[1]，以此类推
-        const matchedIndex = currentDepth - 1
-        const matched = newRoute.matched?.[matchedIndex]
-        const component = matched?.components?.[props.name]
-
-        if (component) {
-          try {
-            // 如果是函数（懒加载），显示loading状态
-            if (typeof component === 'function' && props.loading) {
-              isLoading.value = true
-            }
-
-            const loadedComponent = await loadComponent(component)
-
-            if (loadedComponent) {
-              currentComponent.value = markRaw(loadedComponent)
-              error.value = null
-            }
-
-            isLoading.value = false
-          }
-          catch (err) {
-            console.error('Failed to load component:', err)
-            error.value = err as Error
-            currentComponent.value = null
-            isLoading.value = false
-          }
-        }
-        else {
+      componentDef,
+      async (newComponentDef, oldComponentDef) => {
+        if (!newComponentDef) {
           currentComponent.value = null
           isLoading.value = false
           error.value = null
+          return
+        }
+        
+        // 如果组件没有变化，不重新加载
+        if (newComponentDef === oldComponentDef && currentComponent.value) {
+          return
+        }
+        
+        // 生成缓存键
+        const cacheKey = `${String(matchedRecord.value?.name ?? 'default')}_${String(props.name)}`
+
+        try {
+          // 如果是函数（懒加载），显示loading状态
+          if (typeof newComponentDef === 'function' && props.loading) {
+            isLoading.value = true
+          }
+
+          const loadedComponent = await loadComponent(newComponentDef, cacheKey)
+
+          if (loadedComponent) {
+            currentComponent.value = markRaw(loadedComponent)
+            error.value = null
+          }
+
+          isLoading.value = false
+        }
+        catch (err) {
+          console.error('Failed to load component:', err)
+          error.value = err as Error
+          currentComponent.value = null
+          isLoading.value = false
         }
       },
       { immediate: true },
@@ -188,17 +232,15 @@ export const RouterView = defineComponent({
         return slots.loading?.() || h('div', { class: 'router-view-loading' }, '加载中...')
       }
 
-      // 渲染组件的函数
+      // 优化：使用稳定的key生成策略
       const renderComponent = () => {
         if (!component)
           return null
 
-        // 根据当前RouterView的深度生成稳定的key
-        // 对于父路由组件，使用路由名称而不是完整路径作为key
-        // 这样子路由切换时父组件不会重新挂载
-        const matchedIndex = currentDepth - 1
-        const matched = route.value?.matched?.[matchedIndex]
-        const componentKey = matched?.name || route.value?.path || 'default'
+        // 优化：使用缓存的key
+        const componentKey = matchedRecord.value?.name 
+          ? String(matchedRecord.value.name)
+          : route.value?.path || 'default'
 
         return h(component, {
           key: componentKey,

@@ -4,10 +4,10 @@
  * Functions for generating dark mode color palettes with proper contrast
  */
 
+import type { HSL } from '../types';
 import { Color } from '../core/Color';
-import { HSL } from '../types';
+import { generateTailwindGrayScale, generateTailwindScale } from '../core/tailwindPalette';
 import { clamp } from '../utils/math';
-import { generateTailwindScale, generateTailwindGrayScale } from '../core/tailwindPalette';
 
 /**
  * Generate a dark mode version of a color scale
@@ -15,7 +15,7 @@ import { generateTailwindScale, generateTailwindGrayScale } from '../core/tailwi
  */
 export function generateDarkModeScale(lightScale: Record<string, string>): Record<string, string> {
   const darkScale: Record<string, string> = {};
-  const shades = Object.keys(lightScale).sort((a, b) => parseInt(a) - parseInt(b));
+  const shades = Object.keys(lightScale).sort((a, b) => Number.parseInt(a) - Number.parseInt(b));
   
   shades.forEach((shade, index) => {
     const lightColor = new Color(lightScale[shade]);
@@ -28,16 +28,16 @@ export function generateDarkModeScale(lightScale: Record<string, string>): Recor
     // We want to maintain readability while inverting the scale
     let darkLightness: number;
     
-    if (parseInt(shade) <= 100) {
+    if (Number.parseInt(shade) <= 100) {
       // Very light shades become very dark
       darkLightness = clamp(5 + (index * 2), 2, 15);
-    } else if (parseInt(shade) <= 300) {
+    } else if (Number.parseInt(shade) <= 300) {
       // Light shades become dark
       darkLightness = clamp(15 + (index * 3), 15, 30);
-    } else if (parseInt(shade) <= 500) {
+    } else if (Number.parseInt(shade) <= 500) {
       // Mid shades stay relatively centered but darker
       darkLightness = clamp(35 + (index * 2), 30, 50);
-    } else if (parseInt(shade) <= 700) {
+    } else if (Number.parseInt(shade) <= 700) {
       // Dark shades become light
       darkLightness = clamp(55 + (index * 3), 50, 75);
     } else {

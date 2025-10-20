@@ -6,67 +6,104 @@
 import type { Cache } from '../types';
 
 /**
- * LRU Cache implementation
+ * Optimized LRU Cache implementation with O(1) operations
+ * Using doubly linked list for efficient access order management
  */
+class LRUNode<K, V> {
+  key: K;
+  value: V;
+  expires?: number;
+  prev: LRUNode<K, V> | null = null;
+  next: LRUNode<K, V> | null = null;
+
+  constructor(key: K, value: V, expires?: number) {
+    this.key = key;
+    this.value = value;
+    this.expires = expires;
+  }
+}
+
 export class LRUCache<K = string, V = any> implements Cache<K, V> {
-  private maxSize: number;
-  private cache: Map<K, { value: V; expires?: number }> = new Map();
-  private accessOrder: K[] = [];
+  private readonly maxSize: number;
+  private readonly cache = new Map<K, LRUNode<K, V>>();
+  private head: LRUNode<K, V> | null = null;
+  private tail: LRUNode<K, V> | null = null;
   private defaultTTL?: number;
+  private cleanupTimer?: NodeJS.Timeout;
+  private hits = 0;
+  private misses = 0;
   
   constructor(maxSize = 1000, defaultTTL?: number) {
-    this.maxSize = maxSize;
+    this.maxSize = maxSize > 0 ? maxSize : 1000;
     this.defaultTTL = defaultTTL;
+    
+    // Setup periodic cleanup for expired items
+    if (defaultTTL && typeof setInterval !== 'undefined') {
+      this.cleanupTimer = setInterval(() => this.cleanupExpired(), 60000);
+      if (typeof (this.cleanupTimer as any)?.unref === 'function') {
+        (this.cleanupTimer as any).unref();
+      }
+    }
   }
   
   get(key: K): V | undefined {
-    const item = this.cache.get(key);
+    const node = this.cache.get(key);
     
-    if (!item) {
+    if (!node) {
+      this.misses++;
       return undefined;
     }
     
     // Check expiration
-    if (item.expires && Date.now() > item.expires) {
+    if (node.expires && Date.now() > node.expires) {
       this.delete(key);
+      this.misses++;
       return undefined;
     }
     
-    // Update access order (move to end)
-    this.updateAccessOrder(key);
+    // Move to head (most recently used) - O(1)
+    this.moveToHead(node);
+    this.hits++;
     
-    return item.value;
+    return node.value;
   }
   
   set(key: K, value: V, ttl?: number): void {
-    // Remove oldest if at capacity
-    if (!this.cache.has(key) && this.cache.size >= this.maxSize) {
-      const oldestKey = this.accessOrder.shift();
-      if (oldestKey !== undefined) {
-        this.cache.delete(oldestKey);
+    let node = this.cache.get(key);
+    
+    if (node) {
+      // Update existing node
+      node.value = value;
+      const effectiveTTL = ttl ?? this.defaultTTL;
+      node.expires = effectiveTTL ? Date.now() + effectiveTTL : undefined;
+      this.moveToHead(node);
+    } else {
+      // Check capacity
+      if (this.cache.size >= this.maxSize && this.tail) {
+        // Remove least recently used (tail) - O(1)
+        this.cache.delete(this.tail.key);
+        this.removeNode(this.tail);
       }
+      
+      // Create new node
+      const effectiveTTL = ttl ?? this.defaultTTL;
+      const expires = effectiveTTL ? Date.now() + effectiveTTL : undefined;
+      node = new LRUNode(key, value, expires);
+      
+      this.cache.set(key, node);
+      this.addToHead(node);
     }
-    
-    // Calculate expiration
-    const effectiveTTL = ttl ?? this.defaultTTL;
-    const expires = effectiveTTL ? Date.now() + effectiveTTL : undefined;
-    
-    // Set value
-    this.cache.set(key, { value, expires });
-    
-    // Update access order
-    this.updateAccessOrder(key);
   }
   
   has(key: K): boolean {
-    const item = this.cache.get(key);
+    const node = this.cache.get(key);
     
-    if (!item) {
+    if (!node) {
       return false;
     }
     
     // Check expiration
-    if (item.expires && Date.now() > item.expires) {
+    if (node.expires && Date.now() > node.expires) {
       this.delete(key);
       return false;
     }
@@ -75,43 +112,79 @@ export class LRUCache<K = string, V = any> implements Cache<K, V> {
   }
   
   delete(key: K): boolean {
-    const index = this.accessOrder.indexOf(key);
-    if (index > -1) {
-      this.accessOrder.splice(index, 1);
-    }
+    const node = this.cache.get(key);
+    if (!node) return false;
+    
+    this.removeNode(node);
     return this.cache.delete(key);
   }
   
   clear(): void {
     this.cache.clear();
-    this.accessOrder = [];
+    this.head = null;
+    this.tail = null;
+    this.hits = 0;
+    this.misses = 0;
   }
   
   get size(): number {
-    // Clean up expired items before returning size
-    this.cleanupExpired();
     return this.cache.size;
   }
   
-  private updateAccessOrder(key: K): void {
-    const index = this.accessOrder.indexOf(key);
-    if (index > -1) {
-      this.accessOrder.splice(index, 1);
+  // O(1) move node to head
+  private moveToHead(node: LRUNode<K, V>): void {
+    if (this.head === node) return;
+    this.removeNode(node);
+    this.addToHead(node);
+  }
+  
+  // O(1) add node to head
+  private addToHead(node: LRUNode<K, V>): void {
+    node.next = this.head;
+    node.prev = null;
+    
+    if (this.head) {
+      this.head.prev = node;
     }
-    this.accessOrder.push(key);
+    
+    this.head = node;
+    
+    if (!this.tail) {
+      this.tail = node;
+    }
+  }
+  
+  // O(1) remove node from list
+  private removeNode(node: LRUNode<K, V>): void {
+    if (node.prev) {
+      node.prev.next = node.next;
+    } else {
+      this.head = node.next;
+    }
+    
+    if (node.next) {
+      node.next.prev = node.prev;
+    } else {
+      this.tail = node.prev;
+    }
+    
+    node.prev = null;
+    node.next = null;
   }
   
   private cleanupExpired(): void {
+    if (this.cache.size === 0) return;
+    
     const now = Date.now();
-    const expiredKeys: K[] = [];
+    const maxCleanup = Math.min(100, Math.ceil(this.cache.size * 0.1));
+    let cleaned = 0;
     
-    this.cache.forEach((item, key) => {
-      if (item.expires && now > item.expires) {
-        expiredKeys.push(key);
+    for (const [key, node] of this.cache) {
+      if (node.expires && now > node.expires) {
+        this.delete(key);
+        if (++cleaned >= maxCleanup) break;
       }
-    });
-    
-    expiredKeys.forEach(key => this.delete(key));
+    }
   }
   
   /**
@@ -123,21 +196,50 @@ export class LRUCache<K = string, V = any> implements Cache<K, V> {
     hitRate: number;
     missRate: number;
   } {
+    const total = this.hits + this.misses;
     return {
       size: this.size,
       maxSize: this.maxSize,
-      hitRate: 0, // Would need to track hits/misses for this
-      missRate: 0
+      hitRate: total > 0 ? this.hits / total : 0,
+      missRate: total > 0 ? this.misses / total : 0
     };
+  }
+  
+  /**
+   * Clean up resources
+   */
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = undefined;
+    }
+    this.clear();
+  }
+}
+
+/**
+ * WeakRef polyfill for environments that don't support it
+ */
+declare global {
+  interface WeakRef<T extends object> {
+    deref: () => T | undefined;
+  }
+  interface WeakRefConstructor {
+    new<T extends object>(target: T): WeakRef<T>;
   }
 }
 
 /**
  * Memory-efficient cache with weak references
+ * Fixed memory leak from timers and added resource limits
  */
 export class WeakCache<K extends object, V = any> {
-  private cache: WeakMap<K, { value: V; expires?: number }> = new WeakMap();
-  private timers: Map<K, NodeJS.Timeout> = new Map();
+  private readonly cache = new WeakMap<K, { value: V; expires?: number; timerId?: number }>();
+  private readonly timerRefs = typeof globalThis !== 'undefined' && typeof globalThis.WeakRef !== 'undefined' 
+    ? new WeakMap<K, WeakRef<K>>() 
+    : undefined;
+  private readonly maxTimers = 1000;
+  private timerCount = 0;
   
   get(key: K): V | undefined {
     const item = this.cache.get(key);
@@ -157,40 +259,64 @@ export class WeakCache<K extends object, V = any> {
   
   set(key: K, value: V, ttl?: number): void {
     // Clear existing timer if any
-    const existingTimer = this.timers.get(key);
-    if (existingTimer) {
-      clearTimeout(existingTimer);
-      this.timers.delete(key);
+    const existing = this.cache.get(key);
+    if (existing?.timerId) {
+      clearTimeout(existing.timerId);
+      this.timerCount--;
     }
     
-    // Calculate expiration
     const expires = ttl ? Date.now() + ttl : undefined;
+    const item: any = { value, expires };
     
-    // Set value
-    this.cache.set(key, { value, expires });
-    
-    // Set cleanup timer if TTL specified
-    if (ttl) {
-      const timer = setTimeout(() => {
-        this.delete(key);
-      }, ttl);
-      this.timers.set(key, timer);
+    // Only set timer if under limit and ttl specified
+    if (ttl && this.timerCount < this.maxTimers && typeof globalThis?.WeakRef !== 'undefined' && this.timerRefs) {
+      const weakRef = new globalThis.WeakRef(key);
+      this.timerRefs.set(key, weakRef);
+      
+      item.timerId = setTimeout(() => {
+        const keyRef = weakRef.deref();
+        if (keyRef) {
+          this.delete(keyRef);
+        }
+        this.timerCount--;
+      }, ttl) as unknown as number;
+      
+      this.timerCount++;
     }
+    
+    this.cache.set(key, item);
   }
   
   has(key: K): boolean {
-    return this.cache.has(key);
+    const item = this.cache.get(key);
+    if (!item) return false;
+    
+    // Check expiration
+    if (item.expires && Date.now() > item.expires) {
+      this.delete(key);
+      return false;
+    }
+    
+    return true;
   }
   
   delete(key: K): boolean {
-    // Clear timer if any
-    const timer = this.timers.get(key);
-    if (timer) {
-      clearTimeout(timer);
-      this.timers.delete(key);
+    const item = this.cache.get(key);
+    if (item?.timerId) {
+      clearTimeout(item.timerId);
+      this.timerCount--;
     }
     
+    this.timerRefs?.delete(key);
     return this.cache.delete(key);
+  }
+  
+  /**
+   * Clean up all timers
+   */
+  destroy(): void {
+    // WeakMap can't be iterated, but timers will be GC'd with objects
+    this.timerCount = 0;
   }
 }
 
@@ -228,7 +354,7 @@ export class StorageCache implements Cache<string, any> {
       }
       
       return parsed.value;
-    } catch (error) {
+    } catch {
       return undefined;
     }
   }

@@ -3,7 +3,7 @@
  * Advanced multi-layer caching with predictive loading and intelligent invalidation
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 
 interface CacheEntry<T> {
   value: T;
@@ -48,7 +48,6 @@ interface CacheStats {
 
 class LRUCache<T> {
   private cache: Map<string, CacheEntry<T>> = new Map();
-  private accessOrder: string[] = [];
   private maxSize: number;
   private maxItems: number;
   private currentSize: number = 0;
@@ -88,8 +87,10 @@ class LRUCache<T> {
       return undefined;
     }
 
-    // Update access order
-    this.updateAccessOrder(key);
+    // Move to end (most recently used) - Map maintains insertion order
+    this.cache.delete(key);
+    this.cache.set(key, entry);
+    
     entry.hits++;
     entry.lastAccess = Date.now();
     this.stats.hits++;
@@ -101,10 +102,17 @@ class LRUCache<T> {
   set(key: string, value: T, options?: Partial<CacheEntry<T>>): void {
     const size = this.calculateSize(value);
     
+    // Remove existing entry if present
+    if (this.cache.has(key)) {
+      const oldEntry = this.cache.get(key)!;
+      this.currentSize -= oldEntry.size;
+      this.cache.delete(key);
+    }
+    
     // Check if we need to evict items
     while (
       (this.currentSize + size > this.maxSize || this.cache.size >= this.maxItems) &&
-      this.accessOrder.length > 0
+      this.cache.size > 0
     ) {
       this.evictLRU();
     }
@@ -121,7 +129,6 @@ class LRUCache<T> {
     };
 
     this.cache.set(key, entry);
-    this.accessOrder.push(key);
     this.currentSize += size;
     this.stats.items = this.cache.size;
     this.stats.size = this.currentSize;
@@ -133,7 +140,6 @@ class LRUCache<T> {
 
     this.cache.delete(key);
     this.currentSize -= entry.size;
-    this.accessOrder = this.accessOrder.filter(k => k !== key);
     this.stats.items = this.cache.size;
     this.stats.size = this.currentSize;
     
@@ -142,7 +148,6 @@ class LRUCache<T> {
 
   clear(): void {
     this.cache.clear();
-    this.accessOrder = [];
     this.currentSize = 0;
     this.stats.items = 0;
     this.stats.size = 0;
@@ -152,35 +157,16 @@ class LRUCache<T> {
     return { ...this.stats };
   }
 
-  private updateAccessOrder(key: string): void {
-    const index = this.accessOrder.indexOf(key);
-    if (index > -1) {
-      this.accessOrder.splice(index, 1);
-    }
-    this.accessOrder.push(key);
-  }
 
   private evictLRU(): void {
-    if (this.accessOrder.length === 0) return;
+    if (this.cache.size === 0) return;
 
-    // Find the least recently used item with lowest priority
-    let victimKey = this.accessOrder[0];
-    let minScore = Infinity;
-
-    for (let i = 0; i < Math.min(10, this.accessOrder.length); i++) {
-      const key = this.accessOrder[i];
-      const entry = this.cache.get(key);
-      if (entry) {
-        const score = this.calculateEvictionScore(entry);
-        if (score < minScore) {
-          minScore = score;
-          victimKey = key;
-        }
-      }
+    // Get first item (least recently used) from Map
+    const victimKey = this.cache.keys().next().value;
+    if (victimKey) {
+      this.delete(victimKey);
+      this.stats.evictions++;
     }
-
-    this.delete(victimKey);
-    this.stats.evictions++;
   }
 
   private calculateEvictionScore(entry: CacheEntry<T>): number {
@@ -212,6 +198,9 @@ export class SmartCache extends EventEmitter {
   private accessPatterns: Map<string, string[]> = new Map();
   private prefetchQueue: Set<string> = new Set();
   private compressionCache: Map<string, ArrayBuffer> = new Map();
+  private optimizeInterval: NodeJS.Timeout | null = null;
+  private maxAccessPatterns: number = 1000;
+  private maxPrefetchQueue: number = 100;
 
   constructor() {
     super();
@@ -307,7 +296,7 @@ export class SmartCache extends EventEmitter {
   }
 
   async invalidateByTag(tag: string): Promise<number> {
-    let invalidated = 0;
+    const invalidated = 0;
     
     // This would need to be implemented with tag tracking
     // For now, returning placeholder
@@ -343,26 +332,39 @@ export class SmartCache extends EventEmitter {
 
   private recordAccess(key: string): void {
     // Track access patterns for prediction
-    const pattern = this.accessPatterns.get(key) || [];
+    let pattern = this.accessPatterns.get(key) || [];
     const now = Date.now().toString();
     pattern.push(now);
     
     // Keep only recent accesses
     if (pattern.length > 10) {
-      pattern.shift();
+      pattern = pattern.slice(-10);
     }
     
     this.accessPatterns.set(key, pattern);
+    
+    // Limit total number of patterns tracked
+    if (this.accessPatterns.size > this.maxAccessPatterns) {
+      // Remove oldest patterns
+      const keysToDelete = Array.from(this.accessPatterns.keys())
+        .slice(0, Math.floor(this.maxAccessPatterns / 2));
+      keysToDelete.forEach(k => this.accessPatterns.delete(k));
+    }
   }
 
   private predictAndPrefetch(key: string): void {
     if (!this.prediction.enabled) return;
 
+    // Limit prefetch queue size
+    if (this.prefetchQueue.size >= this.maxPrefetchQueue) {
+      return;
+    }
+
     // Analyze patterns to predict next keys
     const predictions = this.analyzePatterns(key);
     
     for (const predictedKey of predictions) {
-      if (!this.prefetchQueue.has(predictedKey)) {
+      if (!this.prefetchQueue.has(predictedKey) && this.prefetchQueue.size < this.maxPrefetchQueue) {
         this.prefetchQueue.add(predictedKey);
         
         // Schedule prefetch
@@ -385,10 +387,10 @@ export class SmartCache extends EventEmitter {
     }
 
     // Look for sequential patterns
-    const match = currentKey.match(/(.+?)(\d+)$/);
+    const match = currentKey.match(/^(.*?)(\d+)$/);
     if (match) {
       const base = match[1];
-      const num = parseInt(match[2], 10);
+      const num = Number.parseInt(match[2], 10);
       for (let i = 1; i <= this.prediction.lookAhead; i++) {
         predictions.push(`${base}${num + i}`);
       }
@@ -404,7 +406,7 @@ export class SmartCache extends EventEmitter {
 
   private startPredictionEngine(): void {
     // Periodically analyze and optimize cache
-    setInterval(() => {
+    this.optimizeInterval = setInterval(() => {
       this.optimizeCache();
     }, 60000); // Every minute
   }
@@ -557,10 +559,31 @@ export class SmartCache extends EventEmitter {
     
     this.emit('cache:memory:pressure', { level });
   }
+  
+  destroy(): void {
+    // Clear optimization interval
+    if (this.optimizeInterval) {
+      clearInterval(this.optimizeInterval);
+      this.optimizeInterval = null;
+    }
+    
+    // Clear all caches
+    this.clear();
+    
+    // Clear all data structures
+    this.layers.clear();
+    this.accessPatterns.clear();
+    this.prefetchQueue.clear();
+    this.compressionCache.clear();
+    this.prediction.patterns.clear();
+    
+    // Remove all event listeners
+    this.removeAllListeners();
+  }
 }
 
 // Export singleton instance
 export const smartCache = new SmartCache();
 
 // Type exports
-export type { CacheEntry, CacheLayer, PredictionConfig, CacheStats };
+export type { CacheEntry, CacheLayer, CacheStats, PredictionConfig };

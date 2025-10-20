@@ -28,7 +28,7 @@
           <div class="captcha-row">
             <BaseInput v-model="accountForm.captcha" placeholder="请输入验证码" prefix-icon="shield" :maxlength="4" />
             <div class="captcha-image" @click="refreshCaptcha">
-              <img :src="captchaUrl" alt="验证码" />
+              <img :src="captchaUrl" alt="验证码" loading="lazy" decoding="async" />
             </div>
           </div>
         </div>
@@ -67,7 +67,7 @@
           <div class="captcha-row">
             <BaseInput v-model="phoneForm.captcha" placeholder="请输入验证码" prefix-icon="shield" :maxlength="4" />
             <div class="captcha-image" @click="refreshCaptcha">
-              <img :src="captchaUrl" alt="验证码" />
+              <img :src="captchaUrl" alt="验证码" loading="lazy" decoding="async" />
             </div>
           </div>
         </div>

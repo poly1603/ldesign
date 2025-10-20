@@ -1,6 +1,6 @@
 /**
- * 智能路由管理器
- * 提供自动路由生成、动态路由、嵌套路由优化、路由分组
+ * 智能路由管理�?
+ * 提供自动路由生成、动态路由、嵌套路由优化、路由分�?
  */
 
 import type {
@@ -20,7 +20,7 @@ export interface SmartRouteConfig {
     layouts?: Record<string, any>
     importMode?: 'sync' | 'async'
   }
-  // 动态路由
+  // 动态路�?
   dynamic?: {
     enabled?: boolean
     loader?: (path: string) => Promise<RouteRecordRaw>
@@ -52,14 +52,14 @@ export interface RouteGroup {
   priority?: number
 }
 
-// ============= 自动路由生成器 =============
+// ============= 自动路由生成�?=============
 export class AutoRouteGenerator {
   private routes: RouteRecordRaw[] = []
   private fileRouteMap = new Map<string, RouteRecordRaw>()
-  private config: SmartRouteConfig['autoGenerate']
+  private _config: SmartRouteConfig['autoGenerate']
 
   constructor(config: SmartRouteConfig['autoGenerate'] = {}) {
-    this.config = {
+    this._config = {
       enabled: true,
       pagesDir: 'src/pages',
       excludes: ['components', 'utils', 'hooks'],
@@ -69,14 +69,14 @@ export class AutoRouteGenerator {
     }
   }
 
-  // 从文件系统生成路由
+  // 从文件系统生成路�?
   async generateFromFileSystem(): Promise<RouteRecordRaw[]> {
-    if (!this.config?.enabled)
+    if (!this._config?.enabled)
       return []
 
     // 在实际环境中，这里会读取文件系统
     // 这里使用模拟数据展示功能
-    const pagesDir = this.config?.pagesDir || 'src/pages'
+    const pagesDir = this._config?.pagesDir || 'src/pages'
     const files = await this.scanDirectory(pagesDir)
 
     for (const file of files) {
@@ -98,7 +98,7 @@ export class AutoRouteGenerator {
 
   // 扫描目录（模拟实现）
   private async scanDirectory(_dir: string): Promise<string[]> {
-    // 实际实现中，这里会使用 fs 或 glob 扫描文件
+    // 实际实现中，这里会使�?fs �?glob 扫描文件
     // 这里返回模拟数据
     return [
       'src/pages/index.vue',
@@ -113,19 +113,19 @@ export class AutoRouteGenerator {
     ]
   }
 
-  // 文件路径转路由
+  // 文件路径转路�?
   private fileToRoute(file: string): RouteRecordRaw | null {
-    // 检查是否需要排除
-    if (this.config?.excludes?.some(exc => file.includes(exc))) {
+    // 检查是否需要排�?
+    if (this._config?.excludes?.some(exc => file.includes(exc))) {
       return null
     }
 
     // 解析文件路径
     const relativePath = file
-      .replace(`${this.config?.pagesDir}/`, '')
+      .replace(`${this._config?.pagesDir}/`, '')
       .replace(/\.(vue|tsx?|jsx?)$/, '')
 
-    // 转换为路由路径
+    // 转换为路由路�?
     let path = `/${relativePath
       .replace(/index$/, '')
       .replace(/\[\.\.\.(.+)\]/, ':$1(.*)') // [...slug] -> :slug(.*)
@@ -160,7 +160,7 @@ export class AutoRouteGenerator {
     const nested: RouteRecordRaw[] = []
     const routeMap = new Map<string, RouteRecordRaw>()
 
-    // 排序，确保父路由先处理
+    // 排序，确保父路由先处�?
     routes.sort((a, b) => a.path.split('/').length - b.path.split('/').length)
 
     for (const route of routes) {
@@ -172,7 +172,7 @@ export class AutoRouteGenerator {
         routeMap.set(route.path, route)
       }
       else {
-        // 查找父路由
+        // 查找父路�?
         const parentPath = `/${segments.slice(0, -1).join('/')}`
         const parent = routeMap.get(parentPath)
 
@@ -181,7 +181,7 @@ export class AutoRouteGenerator {
           if (!parent.children)
             parent.children = []
 
-          // 调整子路由路径
+          // 调整子路由路�?
           route.path = segments[segments.length - 1] || ''
           parent.children.push(route)
         }
@@ -204,7 +204,7 @@ export class AutoRouteGenerator {
       // 确定使用的布局
       const layoutName = this.determineLayout(route)
 
-      if (layoutName && this.config?.layouts?.[layoutName]) {
+      if (layoutName && this._config?.layouts?.[layoutName]) {
         if (!layoutGroups.has(layoutName)) {
           layoutGroups.set(layoutName, [])
         }
@@ -212,18 +212,18 @@ export class AutoRouteGenerator {
       }
     }
 
-    // 创建带布局的路由
+    // 创建带布局的路�?
     const result: RouteRecordRaw[] = []
 
     for (const [layoutName, groupRoutes] of layoutGroups) {
       result.push({
         path: '',
-        component: this.config?.layouts![layoutName],
+        component: this._config?.layouts![layoutName],
         children: groupRoutes,
       })
     }
 
-    // 添加无布局的路由
+    // 添加无布局的路�?
     routes.forEach((route) => {
       const hasLayout = Array.from(layoutGroups.values())
         .flat()
@@ -260,7 +260,7 @@ export class AutoRouteGenerator {
     }
   }
 
-  // 获取所有路由
+  // 获取所有路�?
   getRoutes(): RouteRecordRaw[] {
     return this.routes
   }
@@ -270,11 +270,11 @@ export class AutoRouteGenerator {
 export class DynamicRouteLoader {
   private loadedRoutes = new Map<string, RouteRecordRaw>()
   private loadingPromises = new Map<string, Promise<RouteRecordRaw>>()
-  private config: SmartRouteConfig['dynamic']
+  private _config: SmartRouteConfig['dynamic']
   private retryCount = new Map<string, number>()
 
   constructor(private router: Router, config: SmartRouteConfig['dynamic'] = {}) {
-    this.config = {
+    this._config = {
       enabled: true,
       cache: true,
       retry: 3,
@@ -282,17 +282,17 @@ export class DynamicRouteLoader {
     }
   }
 
-  // 动态加载路由
+  // 动态加载路�?
   async loadRoute(path: string): Promise<RouteRecordRaw | null> {
-    if (!this.config?.enabled || !this.config?.loader)
+    if (!this._config?.enabled || !this._config?.loader)
       return null
 
-    // 检查缓存
-    if (this.config?.cache && this.loadedRoutes.has(path)) {
+    // 检查缓�?
+    if (this._config?.cache && this.loadedRoutes.has(path)) {
       return this.loadedRoutes.get(path)!
     }
 
-    // 检查是否正在加载
+    // 检查是否正在加�?
     if (this.loadingPromises.has(path)) {
       return this.loadingPromises.get(path)!
     }
@@ -305,7 +305,7 @@ export class DynamicRouteLoader {
       const route = await loadPromise
 
       // 缓存路由
-      if (this.config?.cache) {
+      if (this._config?.cache) {
         this.loadedRoutes.set(path, route)
       }
 
@@ -331,7 +331,7 @@ export class DynamicRouteLoader {
   // 创建加载 Promise
   private async createLoadPromise(path: string): Promise<RouteRecordRaw> {
     try {
-      const route = await this.config?.loader!(path)
+      const route = await this._config?.loader!(path)
       if (!route) {
         throw new Error(`Route loader returned null for path: ${path}`)
       }
@@ -346,7 +346,7 @@ export class DynamicRouteLoader {
   // 判断是否应该重试
   private shouldRetry(path: string): boolean {
     const count = this.retryCount.get(path) || 0
-    return count < (this.config?.retry || 3)
+    return count < (this._config?.retry || 3)
   }
 
   // 批量加载路由
@@ -360,7 +360,7 @@ export class DynamicRouteLoader {
       .filter((route): route is RouteRecordRaw => route !== null)
   }
 
-  // 预加载路由
+  // 预加载路�?
   preloadRoute(path: string): void {
     if ('requestIdleCallback' in window) {
       requestIdleCallback(() => this.loadRoute(path))
@@ -377,12 +377,12 @@ export class DynamicRouteLoader {
   }
 }
 
-// ============= 嵌套路由优化器 =============
+// ============= 嵌套路由优化�?=============
 export class NestedRouteOptimizer {
-  private config: SmartRouteConfig['nested']
+  private _config: SmartRouteConfig['nested']
 
   constructor(config: SmartRouteConfig['nested'] = {}) {
-    this.config = {
+    this._config = {
       enabled: true,
       maxDepth: 5,
       flattenSingleChild: true,
@@ -393,7 +393,7 @@ export class NestedRouteOptimizer {
 
   // 优化嵌套路由
   optimizeRoutes(routes: RouteRecordRaw[]): RouteRecordRaw[] {
-    if (!this.config?.enabled)
+    if (!this._config?.enabled)
       return routes
 
     return routes.map(route => this.optimizeRoute(route))
@@ -401,18 +401,18 @@ export class NestedRouteOptimizer {
 
   // 优化单个路由
   private optimizeRoute(route: RouteRecordRaw, depth = 0): RouteRecordRaw {
-    // 检查深度限制
-    if (depth >= (this.config?.maxDepth || 5)) {
+    // 检查深度限�?
+    if (depth >= (this._config?.maxDepth || 5)) {
       console.warn(`Route nesting depth exceeded: ${route.path}`)
       return route
     }
 
     const optimized = { ...route }
 
-    // 优化子路由
+    // 优化子路�?
     if (optimized.children && optimized.children.length > 0) {
-      // 扁平化只有一个子路由的情况
-      if (this.config?.flattenSingleChild && optimized.children.length === 1) {
+      // 扁平化只有一个子路由的情�?
+      if (this._config?.flattenSingleChild && optimized.children.length === 1) {
         const child = optimized.children[0]
 
         // 如果父路由没有自己的组件，可以扁平化
@@ -425,13 +425,13 @@ export class NestedRouteOptimizer {
         }
       }
 
-      // 递归优化子路由
+      // 递归优化子路�?
       optimized.children = optimized.children.map(child =>
         this.optimizeRoute(child, depth + 1),
       )
 
       // 合并参数
-      if (this.config?.mergeParams) {
+      if (this._config?.mergeParams) {
         optimized.children = this.mergeChildParams(optimized, optimized.children)
       }
     }
@@ -450,7 +450,7 @@ export class NestedRouteOptimizer {
     return `${parentPath}/${childPath}`
   }
 
-  // 合并子路由参数
+  // 合并子路由参�?
   private mergeChildParams(
     parent: RouteRecordRaw,
     children: RouteRecordRaw[],
@@ -484,22 +484,22 @@ export class NestedRouteOptimizer {
   }
 }
 
-// ============= 路由分组管理器 =============
+// ============= 路由分组管理�?=============
 export class RouteGroupManager {
   private groups = new Map<string, RouteGroup>()
   private routeGroupMap = new Map<string, string>()
-  private config: SmartRouteConfig['grouping']
+  private _config: SmartRouteConfig['grouping']
 
   constructor(config: SmartRouteConfig['grouping'] = {}) {
-    this.config = {
+    this._config = {
       enabled: true,
       groups: [],
       defaultGroup: 'default',
       ...config,
     }
 
-    // 初始化分组
-    this.config?.groups?.forEach((group) => {
+    // 初始化分�?
+    this._config?.groups?.forEach((group) => {
       this.addGroup(group)
     })
   }
@@ -521,7 +521,7 @@ export class RouteGroupManager {
     }
   }
 
-  // 将路由分组
+  // 将路由分�?
   groupRoutes(routes: RouteRecordRaw[]): Map<string, RouteRecordRaw[]> {
     const grouped = new Map<string, RouteRecordRaw[]>()
 
@@ -543,7 +543,7 @@ export class RouteGroupManager {
     return grouped
   }
 
-  // 确定路由所属分组
+  // 确定路由所属分�?
   private determineGroup(route: RouteRecordRaw, groups: RouteGroup[]): string {
     for (const group of groups) {
       if (this.matchesGroup(route, group)) {
@@ -551,10 +551,10 @@ export class RouteGroupManager {
       }
     }
 
-    return this.config?.defaultGroup || 'default'
+    return this._config?.defaultGroup || 'default'
   }
 
-  // 检查路由是否匹配分组
+  // 检查路由是否匹配分�?
   private matchesGroup(route: RouteRecordRaw, group: RouteGroup): boolean {
     // 根据模式匹配
     if (group.pattern) {
@@ -602,16 +602,16 @@ export class RouteGroupManager {
       const originalBeforeEnter = applied.beforeEnter
 
       applied.beforeEnter = async (to, from, next) => {
-        // 先执行分组守卫
+        // 先执行分组守�?
         const groupResult = await group.guard!(to, from, next)
 
         if (groupResult === false) {
           return false
         }
 
-        // 再执行原有守卫
+        // 再执行原有守�?
         if (originalBeforeEnter) {
-          return originalBeforeEnter(to, from, next)
+          return Array.isArray(originalBeforeEnter) ? originalBeforeEnter[0]?.(to, from, next) : originalBeforeEnter(to, from, next)
         }
 
         return true
@@ -626,12 +626,12 @@ export class RouteGroupManager {
     return this.groups.get(name)
   }
 
-  // 获取路由所属分组
+  // 获取路由所属分�?
   getRouteGroup(routeName: string): string | undefined {
     return this.routeGroupMap.get(routeName)
   }
 
-  // 获取分组下的所有路由
+  // 获取分组下的所有路�?
   getGroupRoutes(groupName: string, routes: RouteRecordRaw[]): RouteRecordRaw[] {
     return routes.filter(route =>
       this.routeGroupMap.get(route.name as string) === groupName,
@@ -639,17 +639,21 @@ export class RouteGroupManager {
   }
 }
 
-// ============= 智能路由管理器主类 =============
+// ============= 智能路由管理器主�?=============
 export class SmartRouteManager {
   private autoGenerator: AutoRouteGenerator
   private dynamicLoader: DynamicRouteLoader
   private nestedOptimizer: NestedRouteOptimizer
   private groupManager: RouteGroupManager
   private router: Router
-  private config: SmartRouteConfig
 
-  // 响应式状态
-  public state = reactive({
+  // 响应式状�?
+  public state: {
+    routes: RouteRecordRaw[]
+    groups: Map<string, RouteRecordRaw[]>
+    loading: boolean
+    error: Error | null
+  } = reactive({
     routes: [] as RouteRecordRaw[],
     groups: new Map<string, RouteRecordRaw[]>(),
     loading: false,
@@ -658,7 +662,6 @@ export class SmartRouteManager {
 
   constructor(router: Router, config: SmartRouteConfig = {}) {
     this.router = router
-    this.config = config
 
     this.autoGenerator = new AutoRouteGenerator(config.autoGenerate)
     this.dynamicLoader = new DynamicRouteLoader(router, config.dynamic)
@@ -666,7 +669,7 @@ export class SmartRouteManager {
     this.groupManager = new RouteGroupManager(config.grouping)
   }
 
-  // 初始化
+  // 初始�?
   async initialize(): Promise<void> {
     this.state.loading = true
     this.state.error = null
@@ -686,7 +689,7 @@ export class SmartRouteManager {
         routes.forEach(route => this.router.addRoute(route))
       }
 
-      // 更新状态
+      // 更新状�?
       this.state.routes = optimizedRoutes
       this.state.groups = groupedRoutes
     }
@@ -699,7 +702,7 @@ export class SmartRouteManager {
     }
   }
 
-  // 动态添加路由
+  // 动态添加路�?
   async addDynamicRoute(path: string): Promise<void> {
     const route = await this.dynamicLoader.loadRoute(path)
     if (route) {
@@ -707,10 +710,11 @@ export class SmartRouteManager {
       const optimized = this.nestedOptimizer.optimizeRoutes([route])[0]
 
       // 分组
+      if (!optimized) return
       const grouped = this.groupManager.groupRoutes([optimized])
 
-      // 更新状态
-      this.state.routes.push(optimized)
+      // 更新状�?
+      if (optimized) this.state.routes.push(optimized)
 
       for (const [groupName, routes] of grouped) {
         if (!this.state.groups.has(groupName)) {
@@ -721,7 +725,7 @@ export class SmartRouteManager {
     }
   }
 
-  // 批量添加动态路由
+  // 批量添加动态路�?
   async addDynamicRoutes(paths: string[]): Promise<void> {
     const routes = await this.dynamicLoader.loadRoutes(paths)
 
@@ -732,7 +736,7 @@ export class SmartRouteManager {
       // 分组
       const grouped = this.groupManager.groupRoutes(optimized)
 
-      // 更新状态
+      // 更新状�?
       this.state.routes.push(...optimized)
 
       for (const [groupName, groupRoutes] of grouped) {

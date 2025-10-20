@@ -5,11 +5,11 @@
 
 import type { Store, StoreDefinition } from 'pinia'
 import type {
-  StateDefinition,
   ActionDefinition,
-  GetterDefinition,
   CacheOptions,
+  GetterDefinition,
   PersistOptions,
+  StateDefinition,
 } from '../types'
 import { defineStore as piniaDefineStore } from 'pinia'
 import { PerformanceOptimizer } from './PerformanceOptimizer'
@@ -45,29 +45,28 @@ export interface FunctionalStoreInstance<
   readonly $getters: TGetters
 
   // 状态管理方法
-  $reset(): void
-  $patch(partialState: Partial<TState>): void
-  $patch(mutator: (state: TState) => void): void
+  $reset: () => void
+  $patch: ((partialState: Partial<TState>) => void) & ((mutator: (state: TState) => void) => void)
 
   // 订阅方法
-  $subscribe(callback: (mutation: any, state: TState) => void, options?: { detached?: boolean }): () => void
-  $onAction(callback: (context: any) => void): () => void
+  $subscribe: (callback: (mutation: any, state: TState) => void, options?: { detached?: boolean }) => () => void
+  $onAction: (callback: (context: any) => void) => () => void
 
   // 生命周期方法
-  $dispose(): void
+  $dispose: () => void
 
   // 性能优化方法
-  $persist(): void
-  $hydrate(): void
-  $clearPersisted(): void
-  $getCache(key: string): any
-  $setCache(key: string, value: any, ttl?: number): void
-  $deleteCache(key: string): boolean
-  $clearCache(): void
+  $persist: () => void
+  $hydrate: () => void
+  $clearPersisted: () => void
+  $getCache: (key: string) => any
+  $setCache: (key: string, value: any, ttl?: number) => void
+  $deleteCache: (key: string) => boolean
+  $clearCache: () => void
 
   // 工具方法
-  getStore(): Store<string, TState, TGetters, TActions>
-  getStoreDefinition(): StoreDefinition<string, TState, TGetters, TActions>
+  getStore: () => Store<string, TState, TGetters, TActions>
+  getStoreDefinition: () => StoreDefinition<string, TState, TGetters, TActions>
 }
 
 /**

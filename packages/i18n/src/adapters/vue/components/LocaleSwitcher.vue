@@ -1,70 +1,5 @@
-<template>
-  <div class="locale-switcher-wrapper">
-    <!-- 下拉选择器样式 -->
-    <div v-if="mode === 'dropdown'" class="locale-dropdown" ref="dropdownRef">
-      <button 
-        class="locale-dropdown-trigger"
-        @click="toggleDropdown"
-        :aria-expanded="isOpen"
-      >
-        <span class="locale-icon">{{ getCurrentFlag() }}</span>
-        <span class="locale-label">{{ getCurrentLabel() }}</span>
-        <svg class="locale-arrow" :class="{ 'rotate': isOpen }" width="12" height="12" viewBox="0 0 12 12">
-          <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        </svg>
-      </button>
-      
-      <transition name="dropdown">
-        <div v-if="isOpen" class="locale-dropdown-menu">
-          <button
-            v-for="loc in availableLocales"
-            :key="loc"
-            class="locale-option"
-            :class="{ 'active': isCurrentLocale(loc) }"
-            @click="selectLocale(loc)"
-          >
-            <span class="locale-option-flag">{{ getFlag(loc) }}</span>
-            <span class="locale-option-label">{{ getLocaleName(loc) }}</span>
-            <svg v-if="isCurrentLocale(loc)" class="locale-check" width="16" height="16" viewBox="0 0 16 16">
-              <path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-            </svg>
-          </button>
-        </div>
-      </transition>
-    </div>
-
-    <!-- 按钮组样式 -->
-    <div v-else-if="mode === 'buttons'" class="locale-buttons">
-      <button
-        v-for="loc in availableLocales"
-        :key="loc"
-        class="locale-button"
-        :class="{ 'active': isCurrentLocale(loc) }"
-        @click="selectLocale(loc)"
-        :title="getLocaleName(loc)"
-      >
-        <span class="locale-button-flag">{{ getFlag(loc) }}</span>
-        <span class="locale-button-label">{{ getShortName(loc) }}</span>
-      </button>
-    </div>
-
-    <!-- 标签样式 -->
-    <div v-else-if="mode === 'tabs'" class="locale-tabs">
-      <button
-        v-for="loc in availableLocales"
-        :key="loc"
-        class="locale-tab"
-        :class="{ 'active': isCurrentLocale(loc) }"
-        @click="selectLocale(loc)"
-      >
-        {{ getLocaleName(loc) }}
-      </button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 interface Props {
@@ -150,6 +85,71 @@ onBeforeUnmount(() => {
   }
 });
 </script>
+
+<template>
+  <div class="locale-switcher-wrapper">
+    <!-- 下拉选择器样式 -->
+    <div v-if="mode === 'dropdown'" ref="dropdownRef" class="locale-dropdown">
+      <button 
+        class="locale-dropdown-trigger"
+        :aria-expanded="isOpen"
+        @click="toggleDropdown"
+      >
+        <span class="locale-icon">{{ getCurrentFlag() }}</span>
+        <span class="locale-label">{{ getCurrentLabel() }}</span>
+        <svg class="locale-arrow" :class="{ 'rotate': isOpen }" width="12" height="12" viewBox="0 0 12 12">
+          <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        </svg>
+      </button>
+      
+      <transition name="dropdown">
+        <div v-if="isOpen" class="locale-dropdown-menu">
+          <button
+            v-for="loc in availableLocales"
+            :key="loc"
+            class="locale-option"
+            :class="{ 'active': isCurrentLocale(loc) }"
+            @click="selectLocale(loc)"
+          >
+            <span class="locale-option-flag">{{ getFlag(loc) }}</span>
+            <span class="locale-option-label">{{ getLocaleName(loc) }}</span>
+            <svg v-if="isCurrentLocale(loc)" class="locale-check" width="16" height="16" viewBox="0 0 16 16">
+              <path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            </svg>
+          </button>
+        </div>
+      </transition>
+    </div>
+
+    <!-- 按钮组样式 -->
+    <div v-else-if="mode === 'buttons'" class="locale-buttons">
+      <button
+        v-for="loc in availableLocales"
+        :key="loc"
+        class="locale-button"
+        :class="{ 'active': isCurrentLocale(loc) }"
+        :title="getLocaleName(loc)"
+        @click="selectLocale(loc)"
+      >
+        <span class="locale-button-flag">{{ getFlag(loc) }}</span>
+        <span class="locale-button-label">{{ getShortName(loc) }}</span>
+      </button>
+    </div>
+
+    <!-- 标签样式 -->
+    <div v-else-if="mode === 'tabs'" class="locale-tabs">
+      <button
+        v-for="loc in availableLocales"
+        :key="loc"
+        class="locale-tab"
+        :class="{ 'active': isCurrentLocale(loc) }"
+        @click="selectLocale(loc)"
+      >
+        {{ getLocaleName(loc) }}
+      </button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .locale-switcher-wrapper {

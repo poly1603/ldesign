@@ -291,8 +291,11 @@ declare module 'vue' {
   }
 }
 
-// 重新导出 Ref 类型
+// 导出 Ref 类型供用户使用
 export type { Ref }
+
+// 导出辅助类型
+export * from './helpers'
 
 /**
  * 扩展 Navigator 接口以支持 Battery API

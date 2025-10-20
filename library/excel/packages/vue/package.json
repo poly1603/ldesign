@@ -1,0 +1,32 @@
+{
+  "name": "@ldesign/excel-viewer-vue",
+  "version": "1.0.0",
+  "description": "Excel 预览编辑插件 Vue 3 组件",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c ../../rollup.config.js --environment BUILD:vue"
+  },
+  "dependencies": {
+    "@ldesign/excel-viewer-core": "workspace:*"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "devDependencies": {
+    "vue": "^3.4.15"
+  },
+  "keywords": [
+    "excel",
+    "vue",
+    "vue3",
+    "spreadsheet"
+  ],
+  "author": "ldesign",
+  "license": "MIT"
+}
+

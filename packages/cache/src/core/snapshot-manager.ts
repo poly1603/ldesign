@@ -141,7 +141,6 @@ export class SnapshotManager {
   async restore(snapshot: CacheSnapshot, options: RestoreOptions = {}): Promise<void> {
     const {
       clear = false,
-      merge = true,
       keys: includeKeys,
       excludeKeys = [],
       engine,

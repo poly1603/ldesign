@@ -178,7 +178,7 @@ export class RequestCancellationManager {
    */
   cancelAll(reason?: string): number {
     let count = 0
-    this.tokens.forEach((token, requestId) => {
+    this.tokens.forEach((token, _requestId) => {
       if (!token.isCancelled) {
         token.cancel(reason)
         count++

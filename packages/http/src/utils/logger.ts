@@ -3,6 +3,7 @@
  *
  * 替换所有console.log,提供更好的日志控制
  */
+import process from 'node:process'
 
 export enum LogLevel {
   DEBUG = 0,
@@ -46,6 +47,7 @@ export interface LoggerConfig {
  * logger.groupEnd()
  * ```
  */
+
 export class Logger {
   private config: Omit<Required<LoggerConfig>, 'customHandler'> & { customHandler: ((level: LogLevel, message: string, data?: any) => void) | null }
   private isProduction: boolean
@@ -179,7 +181,7 @@ export class Logger {
     // 根据级别选择console方法
     switch (level) {
       case LogLevel.DEBUG:
-        
+        console.debug(formattedMessage, ...args)
         break
       case LogLevel.INFO:
         console.info(formattedMessage, ...args)

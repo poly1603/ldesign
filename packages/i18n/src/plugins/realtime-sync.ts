@@ -3,7 +3,7 @@
  * WebSocket-based real-time sync for collaborative translation editing
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 
 interface SyncConfig {
   url: string;
@@ -82,6 +82,8 @@ export class RealtimeSync extends EventEmitter {
   private transformQueue: Map<string, OperationalTransform[]> = new Map();
   private localUserId: string;
   private localUserName: string;
+  private maxQueueSize: number = 1000; // Prevent unbounded queue growth
+  private maxTransformQueueSize: number = 100; // Limit transform queue per key
 
   constructor(config: Partial<SyncConfig> = {}) {
     super();
@@ -273,6 +275,15 @@ export class RealtimeSync extends EventEmitter {
   }
 
   private handlePeerJoin(peer: PeerInfo): void {
+    // Limit peer connections to prevent memory exhaustion
+    if (this.state.peers.size >= 100) {
+      // Remove oldest peer
+      const oldestPeer = Array.from(this.state.peers.entries())
+        .sort((a, b) => a[1].lastSeen - b[1].lastSeen)[0];
+      if (oldestPeer) {
+        this.state.peers.delete(oldestPeer[0]);
+      }
+    }
     this.state.peers.set(peer.id, peer);
     this.emit('peer:join', peer);
   }
@@ -321,9 +332,22 @@ export class RealtimeSync extends EventEmitter {
 
   private handleTransform(transform: OperationalTransform): void {
     const key = `${transform.version}`;
-    const queue = this.transformQueue.get(key) || [];
+    let queue = this.transformQueue.get(key) || [];
+    
+    // Limit queue size to prevent memory leak
+    if (queue.length >= this.maxTransformQueueSize) {
+      queue = queue.slice(-this.maxTransformQueueSize + 1); // Keep most recent
+    }
     queue.push(transform);
     this.transformQueue.set(key, queue);
+    
+    // Clean up old transform queues
+    if (this.transformQueue.size > 50) {
+      const sortedKeys = Array.from(this.transformQueue.keys())
+        .sort((a, b) => Number.parseInt(a) - Number.parseInt(b));
+      const keysToDelete = sortedKeys.slice(0, sortedKeys.length - 50);
+      keysToDelete.forEach(k => this.transformQueue.delete(k));
+    }
     
     // Apply operational transform
     this.applyTransform(transform);
@@ -346,7 +370,17 @@ export class RealtimeSync extends EventEmitter {
     if (this.state.connected) {
       this.send('update', update);
       this.versionMap.set(`${locale}:${key}`, update.version);
+      
+      // Clean up old version map entries
+      if (this.versionMap.size > 10000) {
+        const entriesToDelete = Array.from(this.versionMap.keys()).slice(0, 1000);
+        entriesToDelete.forEach(k => this.versionMap.delete(k));
+      }
     } else if (this.config?.enableOfflineQueue) {
+      // Limit offline queue size
+      if (this.offlineQueue.length >= this.maxQueueSize) {
+        this.offlineQueue.shift(); // Remove oldest
+      }
       this.offlineQueue.push(update);
       this.state.pendingUpdates = this.offlineQueue.length;
     }
@@ -436,6 +470,12 @@ export class RealtimeSync extends EventEmitter {
     
     // Remove from queue
     this.conflictQueue = this.conflictQueue.filter(c => c !== conflict);
+    
+    // Limit conflict queue size
+    if (this.conflictQueue.length > 100) {
+      this.conflictQueue = this.conflictQueue.slice(-100);
+    }
+    
     this.state.conflicts = this.conflictQueue.length;
     
     this.emit('conflict:resolved', conflict);
@@ -533,7 +573,7 @@ export class RealtimeSync extends EventEmitter {
   private scheduleReconnect(): void {
     this.reconnectAttempts++;
     const delay = Math.min(
-      this.config?.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1),
+      this.config?.reconnectDelay * 2**(this.reconnectAttempts - 1),
       30000
     );
 
@@ -667,10 +707,18 @@ export class RealtimeSync extends EventEmitter {
   destroy(): void {
     this.disconnect();
     this.removeAllListeners();
+    
+    // Clear all data structures
+    this.offlineQueue.length = 0;
     this.offlineQueue = [];
+    this.conflictQueue.length = 0;
     this.conflictQueue = [];
     this.transformQueue.clear();
     this.versionMap.clear();
+    this.state.peers.clear();
+    
+    // Clear any remaining references
+    this.ws = null;
   }
 }
 
@@ -679,11 +727,11 @@ export const realtimeSync = new RealtimeSync();
 
 // Type exports
 export type {
-  SyncConfig,
-  TranslationUpdate,
-  SyncState,
-  PeerInfo,
-  CursorPosition,
   Conflict,
-  OperationalTransform
+  CursorPosition,
+  OperationalTransform,
+  PeerInfo,
+  SyncConfig,
+  SyncState,
+  TranslationUpdate
 };

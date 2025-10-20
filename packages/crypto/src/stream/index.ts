@@ -2,54 +2,19 @@
  * Stream Encryption Module
  * 流式加密模块
  * 
- * 提供大文件加密/解密支持，避免内存溢出
- * 
- * @example
- * ```typescript
- * import { encryptFile, decryptFile } from '@ldesign/crypto/stream'
- * 
- * // 加密大文件
- * const result = await encryptFile({
- *   inputPath: './large-file.dat',
- *   outputPath: './large-file.enc',
- *   algorithm: 'AES',
- *   key: 'my-secret-key',
- *   options: { keySize: 256, mode: 'CBC' },
- *   onProgress: (progress) => {
- *     }%`)
- *     .toFixed(2)} MB/s`)
- *   }
- * })
- * 
- * 
- * 
- * // 解密文件
- * const decResult = await decryptFile({
- *   inputPath: './large-file.enc',
- *   outputPath: './large-file-decrypted.dat',
- *   algorithm: 'AES',
- *   key: 'my-secret-key',
- *   options: { keySize: 256, mode: 'CBC' },
- * })
- * ```
+ * 提供流式加密/解密支持
  */
 
 // 导出类型
 export type {
-  StreamEncryptionOptions,
-  StreamDecryptionOptions,
-  StreamProgress,
-  StreamEncryptionResult,
-  StreamDecryptionResult,
-  FileEncryptionOptions,
   FileDecryptionOptions,
-  IStreamProcessor,
-  IStreamEncryptor,
+  FileEncryptionOptions,
   IStreamDecryptor,
+  IStreamEncryptor,
+  IStreamProcessor,
+  StreamDecryptionOptions,
+  StreamDecryptionResult,
+  StreamEncryptionOptions,
+  StreamEncryptionResult,
+  StreamProgress,
 } from './types'
-
-// 导出处理器
-export { ChunkEncryptor, ChunkDecryptor } from './chunk-processor'
-
-// 导出文件加密/解密函数
-export { encryptFile, decryptFile } from './file-crypto'

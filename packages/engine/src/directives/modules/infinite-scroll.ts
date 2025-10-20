@@ -48,6 +48,7 @@ export class InfiniteScrollDirective extends DirectiveBase {
       // Clear existing timeout
       if (timeoutId) {
         clearTimeout(timeoutId)
+        timeoutId = null // 释放引用
       }
 
       // Debounce the scroll handler
@@ -76,6 +77,7 @@ export class InfiniteScrollDirective extends DirectiveBase {
             isLoading = false
           }
         }
+        timeoutId = null // 清理引用
       }, delay)
     }
 
@@ -115,18 +117,26 @@ export class InfiniteScrollDirective extends DirectiveBase {
     const container = directiveUtils.getData(el, 'infinite-scroll-container')
     const timeout = directiveUtils.getData(el, 'infinite-scroll-timeout')
 
+    // 清理事件监听器
     if (handler && container) {
       const typedContainer = container as HTMLElement | Window
       typedContainer.removeEventListener('scroll', handler as EventListener)
     }
 
+    // 清理定时器
     if (timeout) {
       clearTimeout(timeout as NodeJS.Timeout)
     }
 
+    // 清理存储的数据，避免内存泄漏
     directiveUtils.removeData(el, 'infinite-scroll-handler')
     directiveUtils.removeData(el, 'infinite-scroll-container')
     directiveUtils.removeData(el, 'infinite-scroll-timeout')
+    
+    // 清理元素的引用
+    if (el && typeof el === 'object') {
+      (el as any).__infiniteScroll = null
+    }
   }
 
   private getContainer(el: HTMLElement, container?: string | HTMLElement): HTMLElement | Window {

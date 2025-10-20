@@ -1,5 +1,4 @@
-import { ref, computed, watch, type Ref } from 'vue'
-import type { TemplateMetadata } from '../types'
+import { computed, onUnmounted, ref, type Ref, watch } from 'vue'
 
 /**
  * 快照数据结构
@@ -93,6 +92,7 @@ export function useTemplateSnapshot<T = any>(
     
     // 简单压缩：如果是旧快照，可以删除一些不必要的元数据
     if (snapshots.value.length > maxSnapshots / 2) {
+      // eslint-disable-next-line ts/no-unused-vars
       const { metadata, ...compressed } = snapshot
       return compressed as TemplateSnapshot<T>
     }
@@ -132,7 +132,7 @@ export function useTemplateSnapshot<T = any>(
         
         // 恢复当前数据
         if (currentSnapshotIndex.value >= 0 && snapshots.value[currentSnapshotIndex.value]) {
-          currentData.value = deepClone(snapshots.value[currentSnapshotIndex.value].data)
+          currentData.value = deepClone(snapshots.value[currentSnapshotIndex.value].data) as T
         }
       }
     } catch (error) {
@@ -161,7 +161,7 @@ export function useTemplateSnapshot<T = any>(
     }
 
     // 添加新快照
-    snapshots.value.push(compressSnapshot(snapshot))
+    snapshots.value.push(compressSnapshot(snapshot) as any)
     currentSnapshotIndex.value = snapshots.value.length - 1
 
     // 限制快照数量
@@ -181,7 +181,7 @@ export function useTemplateSnapshot<T = any>(
    */
   const applySnapshot = (snapshot: TemplateSnapshot<T>) => {
     isApplyingSnapshot.value = true
-    currentData.value = deepClone(snapshot.data)
+    currentData.value = deepClone(snapshot.data) as T
     
     // 使用 nextTick 确保数据已更新
     setTimeout(() => {
@@ -198,7 +198,7 @@ export function useTemplateSnapshot<T = any>(
     currentSnapshotIndex.value--
     const snapshot = snapshots.value[currentSnapshotIndex.value]
     if (snapshot) {
-      applySnapshot(snapshot)
+      applySnapshot(snapshot as any)
     }
   }
 
@@ -211,7 +211,7 @@ export function useTemplateSnapshot<T = any>(
     currentSnapshotIndex.value++
     const snapshot = snapshots.value[currentSnapshotIndex.value]
     if (snapshot) {
-      applySnapshot(snapshot)
+      applySnapshot(snapshot as any)
     }
   }
 
@@ -226,7 +226,7 @@ export function useTemplateSnapshot<T = any>(
     }
 
     currentSnapshotIndex.value = index
-    applySnapshot(snapshots.value[index])
+    applySnapshot(snapshots.value[index] as any)
   }
 
   /**
@@ -239,7 +239,7 @@ export function useTemplateSnapshot<T = any>(
     }
 
     currentSnapshotIndex.value = index
-    applySnapshot(snapshots.value[index])
+    applySnapshot(snapshots.value[index] as any)
   }
 
   /**
@@ -248,7 +248,7 @@ export function useTemplateSnapshot<T = any>(
   const reset = () => {
     snapshots.value = []
     currentSnapshotIndex.value = -1
-    currentData.value = deepClone(initialData)
+    currentData.value = (deepClone(initialData) as T) || (initialData as any)
     persistSnapshots()
   }
 
@@ -277,9 +277,9 @@ export function useTemplateSnapshot<T = any>(
       // 如果删除的是当前快照，跳转到前一个
       if (currentSnapshotIndex.value > 0) {
         currentSnapshotIndex.value--
-        applySnapshot(snapshots.value[currentSnapshotIndex.value])
+        applySnapshot(snapshots.value[currentSnapshotIndex.value] as any)
       } else if (snapshots.value.length > 0) {
-        applySnapshot(snapshots.value[0])
+        applySnapshot(snapshots.value[0] as any)
       }
     }
 
@@ -411,7 +411,7 @@ export function useTemplateSnapshot<T = any>(
       currentSnapshotIndex.value = imported.currentIndex ?? -1
       
       if (currentSnapshotIndex.value >= 0 && snapshots.value[currentSnapshotIndex.value]) {
-        applySnapshot(snapshots.value[currentSnapshotIndex.value])
+        applySnapshot(snapshots.value[currentSnapshotIndex.value] as any)
       }
       
       persistSnapshots()
@@ -439,7 +439,7 @@ export function useTemplateSnapshot<T = any>(
   }
 
   // 监听数据变化（可选）
-  watch(
+  const unwatch = watch(
     currentData,
     () => {
       // 可以在这里添加自动创建快照的逻辑
@@ -451,8 +451,13 @@ export function useTemplateSnapshot<T = any>(
   const cleanup = () => {
     if (autoSaveTimer) {
       clearInterval(autoSaveTimer)
+      autoSaveTimer = null
     }
+    unwatch()
   }
+
+  // 组件卸载时自动清理
+  onUnmounted(cleanup)
 
   return {
     // 状态

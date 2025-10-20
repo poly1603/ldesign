@@ -211,11 +211,12 @@ export class BatchManager {
    * 默认批处理响应解析器
    */
   private defaultResponseParser(response: ResponseData): ResponseData[] {
-    if (!response.data || !Array.isArray(response.data.responses)) {
+    const responseData = response.data as any
+    if (!responseData || !Array.isArray(responseData.responses)) {
       throw new Error('Invalid batch response format')
     }
 
-    return response.data.responses.map((res: any) => ({
+    return responseData.responses.map((res: any) => ({
       data: res.data,
       status: res.status || 200,
       statusText: res.statusText || 'OK',

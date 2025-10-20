@@ -1,5 +1,5 @@
 import { config } from '@vue/test-utils'
-import { createPinia, setActivePinia, getActivePinia } from 'pinia'
+import { createPinia, getActivePinia, setActivePinia } from 'pinia'
 import { vi } from 'vitest'
 import 'reflect-metadata'
 

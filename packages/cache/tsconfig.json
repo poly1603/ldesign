@@ -1,27 +1,23 @@
 {
   "compilerOptions": {
+
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.cache/typescript/tsbuildinfo",
     "target": "ES2020",
-    "module": "ESNext",
+
+    "jsx": "preserve",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": false,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": false,
     "useDefineForClassFields": true,
 
-    "strict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "exactOptionalPropertyTypes": false,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": false,
-    "noImplicitOverride": false,
-    "allowUnusedLabels": false,
-    "allowUnreachableCode": false,
 
+
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "paths": {
       "@/*": ["src/*"],
       "@tests/*": ["__tests__/*"],
@@ -33,29 +29,33 @@
       "@/vue/*": ["src/vue/*"],
       "@/types/*": ["src/types/*"]
     },
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": false,
+    "strict": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "exactOptionalPropertyTypes": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": false,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
 
-    "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
-    "removeComments": true,
-    "importHelpers": true,
     "downlevelIteration": true,
+    "importHelpers": true,
+    "noEmit": false,
+    "outDir": "./dist",
+    "removeComments": true,
+    "sourceMap": true,
 
-    "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-
-    "jsx": "preserve",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
-
-    "incremental": true,
-    "tsBuildInfoFile": "./node_modules/.cache/typescript/tsbuildinfo"
+    "isolatedModules": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*",

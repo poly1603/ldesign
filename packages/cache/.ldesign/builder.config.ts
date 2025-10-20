@@ -1,9 +1,9 @@
-﻿import { defineConfig } from '@ldesign/builder'
+import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
   // Output format config
   output: {
-    format: ['esm', 'cjs']
+    format: ['esm', 'cjs', 'umd']
   },
 
   // 绂佺敤鏋勫缓鍚庨獙璇侊紙搴撻」鐩笉闇€瑕佽繍琛屾祴璇曢獙璇侊級
@@ -26,9 +26,14 @@ export default defineConfig({
   // 涓嶅帇缂╀唬鐮侊紙寮€鍙戦樁娈碉級
   minify: false,
 
-  // UMD 构建配置 - 暂时禁用，因为没有 index-lib.ts 文件
+  // UMD 构建配置
   umd: {
-    enabled: false
+    enabled: true,
+    name: 'LDesignCache',
+    globals: {
+      'vue': 'Vue',
+      'lodash-es': '_'
+    }
   },
 
   // 澶栭儴渚濊禆閰嶇疆
@@ -63,9 +68,9 @@ export default defineConfig({
   build: {
     // 绂佺敤鏋勫缓璀﹀憡
     rollupOptions: {
-      onwarn: (warning, warn) => {
+      onwarn: (_warning, _warn) => {
         // 瀹屽叏闈欓粯锛屼笉杈撳嚭浠讳綍璀﹀憡
-        return
+        
       }
     }
   }

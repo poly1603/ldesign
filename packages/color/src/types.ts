@@ -133,7 +133,7 @@ export type ColorInput =
   | OKLCH
   | CMYK
   | number[]
-  | { toHex(): string; toRGB(): RGB };  // Support Color instances
+  | { toHex: () => string; toRGB: () => RGB };  // Support Color instances
 
 /**
  * Color format types
@@ -467,8 +467,8 @@ export interface PluginConfig {
  */
 export interface Plugin {
   config: PluginConfig;
-  install(target: any): void;
-  uninstall?(): void;
+  install: (target: any) => void;
+  uninstall?: () => void;
 }
 
 // ============================================

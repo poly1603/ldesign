@@ -1,9 +1,10 @@
-﻿/**
+/**
  * 主题管理�?- 处理主题的应用、存储和恢复
  */
 
+import type { PresetTheme } from './presets';
 import { generateThemePalettes, injectThemedCssVariables } from '../core'
-import { presetThemes, getPresetTheme, PresetTheme } from './presets'
+import { getPresetTheme, presetThemes } from './presets'
 
 export interface ThemeOptions {
   prefix?: string
@@ -37,10 +38,13 @@ export class ThemeManager {
   private currentTheme: ThemeState | null = null
   private listeners: Set<(theme: ThemeState) => void> = new Set()
   private systemThemeMediaQuery?: MediaQueryList
+  private systemThemeHandler?: (e: MediaQueryListEvent) => void
   private themeHistory: ThemeState[] = []  // 主题历史
-  private maxHistorySize = 10  // 最大历史记录数
-  private themeRegistry = new Map<string, ThemeState>()  // 主题注册�?
+  private maxHistorySize = 5  // 减少历史记录数以节省内存
+  private themeRegistry = new Map<string, ThemeState>()  // 主题注册表
   private aiIntegration?: any  // AI集成实例
+  private destroyed = false  // 标记是否已销毁
+  private themeCache = new Map<string, ThemeState>()  // 简单缓存主题
 
   constructor(options: ThemeOptions = {}) {
     this.storageKey = options.storageKey || DEFAULT_STORAGE_KEY
@@ -157,29 +161,44 @@ export class ThemeManager {
   }
 
   /**
-   * 监听系统主题变化
+   * 监听系统主题变化 - 修复内存泄漏
    */
   watchSystemTheme(callback: (mode: 'light' | 'dark') => void): () => void {
+    // 清理之前的监听器
+    this.cleanupSystemThemeWatcher()
+    
     if (typeof window !== 'undefined' && window.matchMedia) {
       this.systemThemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
       
-      const handler = (e: MediaQueryListEvent) => {
-        callback(e.matches ? 'dark' : 'light')
+      this.systemThemeHandler = (e: MediaQueryListEvent) => {
+        if (!this.destroyed) {
+          callback(e.matches ? 'dark' : 'light')
+        }
       }
       
-      this.systemThemeMediaQuery.addEventListener('change', handler)
+      this.systemThemeMediaQuery.addEventListener('change', this.systemThemeHandler)
       
       // 返回清理函数
       return () => {
-        this.systemThemeMediaQuery?.removeEventListener('change', handler)
+        this.cleanupSystemThemeWatcher()
       }
     }
     
     return () => {}
   }
+  
+  /**
+   * 清理系统主题监听器
+   */
+  private cleanupSystemThemeWatcher(): void {
+    if (this.systemThemeMediaQuery && this.systemThemeHandler) {
+      this.systemThemeMediaQuery.removeEventListener('change', this.systemThemeHandler)
+      this.systemThemeHandler = undefined
+    }
+  }
 
   /**
-   * 下载主题配置文件
+   * 下载主题配置文件 - 修复内存泄漏
    */
   downloadTheme(filename = 'theme.json'): void {
     if (typeof window === 'undefined' || !this.currentTheme) {
@@ -189,12 +208,20 @@ export class ThemeManager {
     const blob = new Blob([this.exportTheme()], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    
+    try {
+      a.href = url
+      a.download = filename
+      a.style.display = 'none'
+      document.body.appendChild(a)
+      a.click()
+    } finally {
+      // 确保清理资源
+      setTimeout(() => {
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }, 100)
+    }
   }
 
   /**
@@ -299,31 +326,56 @@ export class ThemeManager {
   }
   
   /**
-   * 获取主题
+   * 获取主题 - 优化内存使用，使用缓存
    */
   getTheme(name: string): ThemeState | undefined {
-    // 先从注册表查�?
+    // 先从缓存查找
+    const cached = this.themeCache.get(name)
+    if (cached) {
+      return cached
+    }
+    
+    // 从注册表查找
     if (this.themeRegistry.has(name)) {
-      return this.themeRegistry.get(name)
+      const theme = this.themeRegistry.get(name)
+      if (theme) {
+        // 存入缓存
+        this.themeCache.set(name, theme)
+        return theme
+      }
     }
     
     // 再从预设主题查找
     const preset = getPresetTheme(name)
     if (preset) {
-      return {
+      const theme: ThemeState = {
         primaryColor: preset.color,
         themeName: preset.name,
         version: '1.0.0'
       }
+      // 存入缓存
+      this.themeCache.set(name, theme)
+      return theme
     }
     
     return undefined
   }
   
   /**
-   * 注册主题
+   * 注册主题 - 优化内存使用
    */
   registerTheme(name: string, theme: ThemeState): void {
+    // 限制注册表大小
+    const MAX_REGISTRY_SIZE = 50
+    if (this.themeRegistry.size >= MAX_REGISTRY_SIZE && !this.themeRegistry.has(name)) {
+      // 删除最久未使用的主题
+      const firstKey = this.themeRegistry.keys().next().value
+      if (firstKey) {
+        this.themeRegistry.delete(firstKey)
+        this.themeCache.delete(firstKey)
+      }
+    }
+    
     this.themeRegistry.set(name, theme)
     this.saveThemeRegistry()
   }
@@ -380,11 +432,25 @@ export class ThemeManager {
   }
   
   /**
-   * 主题历史管理
+   * 主题历史管理 - 优化内存使用
    */
   addToHistory(theme: ThemeState): void {
-    this.themeHistory.unshift(theme)
-    if (this.themeHistory.length > this.maxHistorySize) {
+    // 避免重复添加相同主题
+    const lastTheme = this.themeHistory[0]
+    if (lastTheme && lastTheme.primaryColor === theme.primaryColor) {
+      return
+    }
+    
+    // 创建轻量级副本，只保留必要属性
+    const lightTheme: ThemeState = {
+      primaryColor: theme.primaryColor,
+      themeName: theme.themeName,
+      isDark: theme.isDark,
+      updatedAt: theme.updatedAt
+    }
+    
+    this.themeHistory.unshift(lightTheme)
+    while (this.themeHistory.length > this.maxHistorySize) {
       this.themeHistory.pop()
     }
   }
@@ -416,9 +482,19 @@ export class ThemeManager {
   }
   
   /**
-   * 集成AI配色建议
+   * 集成AI配色建议 - 延迟加载，节省内存
    */
   async enableAIIntegration(apiKey?: string): Promise<void> {
+    // 如果已销毁，不再加载
+    if (this.destroyed) {
+      return
+    }
+    
+    // 避免重复加载
+    if (this.aiIntegration) {
+      return
+    }
+    
     try {
       const { ColorAI } = await import('../ai/colorAI')
       this.aiIntegration = new ColorAI({ apiKey })
@@ -539,19 +615,22 @@ export class ThemeManager {
   }
   
   /**
-   * 批量导入主题
+   * 批量导入主题 - 优化内存使用
    */
   importAllThemes(data: string): void {
     try {
       const themes = JSON.parse(data)
       
       if (themes.registry) {
+        // 清理缓存以避免内存泄漏
+        this.themeCache.clear()
         this.themeRegistry = new Map(themes.registry)
         this.saveThemeRegistry()
       }
       
       if (themes.history) {
-        this.themeHistory = themes.history
+        // 限制历史记录大小
+        this.themeHistory = themes.history.slice(0, this.maxHistorySize)
       }
       
       if (themes.current) {
@@ -563,10 +642,48 @@ export class ThemeManager {
       throw new Error(`Failed to import themes: ${(error as Error).message}`)
     }
   }
+  
+  /**
+   * 销毁主题管理器，清理所有资源
+   */
+  destroy(): void {
+    this.destroyed = true
+    
+    // 清理系统主题监听器
+    this.cleanupSystemThemeWatcher()
+    
+    // 清理监听器
+    this.listeners.clear()
+    
+    // 清理AI集成
+    if (this.aiIntegration && typeof this.aiIntegration.destroy === 'function') {
+      this.aiIntegration.destroy()
+    }
+    this.aiIntegration = undefined
+    
+    // 清理主题历史
+    this.themeHistory.length = 0  // 更高效的数组清空
+    
+    // 清理主题注册表
+    this.themeRegistry.clear()
+    
+    // 清理主题缓存
+    this.themeCache.clear()
+    
+    // 清理当前主题
+    this.currentTheme = null
+  }
 }
 
 // 创建默认实例
 export const defaultThemeManager = new ThemeManager()
+
+// 全局清理
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    defaultThemeManager.destroy()
+  }, { once: true })
+}
 
 /**
  * 快捷方法：应用主�?

@@ -2,16 +2,18 @@
  * 模板动画组合式函数
  */
 
-import { ref, onMounted, onUnmounted, Ref, watchEffect, computed } from 'vue'
-import {
+import type { Ref} from 'vue';
+import type {
   AnimationConfig,
   AnimationState,
-  ParallaxConfig,
   GestureConfig,
-  ScrollAnimationConfig,
+  ParallaxConfig,
+  ScrollAnimationConfig} from '../core/animation';
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import {
   Animation,
-  GestureController,
   animationController,
+  GestureController,
   parallaxController
 } from '../core/animation'
 
@@ -191,10 +193,13 @@ export function useGesture(
       const customEvent = e as CustomEvent
       swipeDirection.value = customEvent.detail.direction
       
-      // 自动重置
-      setTimeout(() => {
-        swipeDirection.value = null
-      }, 500)
+    // 自动重置
+    const timer = setTimeout(() => {
+      swipeDirection.value = null
+    }, 500)
+    
+    // 确保清理定时器
+    onUnmounted(() => clearTimeout(timer))
     })
   }
   
@@ -343,6 +348,7 @@ export function useAnimationGroup(
   const animationInstances = ref<Animation[]>([])
   const isPlaying = ref(false)
   const isPaused = ref(false)
+  const staggerTimers: ReturnType<typeof setTimeout>[] = []
   
   // 初始化所有动画
   const init = () => {
@@ -357,10 +363,15 @@ export function useAnimationGroup(
   
   // 播放所有
   const playAll = (stagger: number = 0) => {
+    // 清理之前的定时器
+    staggerTimers.forEach(timer => clearTimeout(timer))
+    staggerTimers.length = 0
+    
     animationInstances.value.forEach((animation, index) => {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         animation.play()
       }, index * stagger)
+      staggerTimers.push(timer)
     })
     isPlaying.value = true
     isPaused.value = false
@@ -394,6 +405,10 @@ export function useAnimationGroup(
   
   // 销毁所有
   const destroyAll = () => {
+    // 清理定时器
+    staggerTimers.forEach(timer => clearTimeout(timer))
+    staggerTimers.length = 0
+    
     animationInstances.value.forEach(animation => {
       animation.destroy()
     })
@@ -438,6 +453,7 @@ export function useTimeline() {
   const isPlaying = ref(false)
   const rafId = ref<number | null>(null)
   const startTimestamp = ref(0)
+  const MAX_TIMELINE_ITEMS = 100 // 限制timeline项目数量
   
   // 添加动画到时间线
   const add = (
@@ -459,6 +475,14 @@ export function useTimeline() {
     }
     
     timeline.value.push(item)
+    
+    // 限制timeline数量，防止内存泄漏
+    if (timeline.value.length > MAX_TIMELINE_ITEMS) {
+      const removed = timeline.value.shift()
+      if (removed) {
+        removed.animation.destroy()
+      }
+    }
     
     // 更新总时长
     duration.value = Math.max(

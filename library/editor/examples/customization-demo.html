@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>编辑器定制化演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--editor-color-background, #f5f5f5);
+      transition: background 0.3s;
+    }
+
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .app-header {
+      background: var(--editor-color-toolbar-background, #ffffff);
+      border-bottom: 1px solid var(--editor-color-border, #e5e7eb);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s;
+    }
+
+    .app-header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--editor-color-text-primary, #1f2937);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px;
+      border-right: 1px solid var(--editor-color-border, #e5e7eb);
+      margin-right: 8px;
+    }
+
+    .quick-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border: 1px solid var(--editor-color-border, #d1d5db);
+      border-radius: 6px;
+      background: var(--editor-color-background, #ffffff);
+      color: var(--editor-color-text-primary, #374151);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-btn:hover {
+      background: var(--editor-color-toolbar-button-hover, #f3f4f6);
+      border-color: var(--editor-color-primary, #3b82f6);
+    }
+
+    .quick-btn.active {
+      background: var(--editor-color-primary, #3b82f6);
+      color: white;
+      border-color: var(--editor-color-primary, #3b82f6);
+    }
+
+    .editor-wrapper {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 300px;
+      background: var(--editor-color-background-paper, #ffffff);
+      border-right: 1px solid var(--editor-color-border, #e5e7eb);
+      overflow-y: auto;
+      transition: all 0.3s;
+    }
+
+    .sidebar-section {
+      padding: 16px;
+      border-bottom: 1px solid var(--editor-color-border-light, #f3f4f6);
+    }
+
+    .sidebar-section h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--editor-color-text-primary, #1f2937);
+      margin-bottom: 12px;
+    }
+
+    .option-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .option-item {
+      padding: 10px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--editor-color-text-primary, #374151);
+      transition: all 0.2s;
+    }
+
+    .option-item:hover {
+      background: var(--editor-color-toolbar-button-hover, #f3f4f6);
+    }
+
+    .option-item.active {
+      background: var(--editor-color-primary, #3b82f6);
+      color: white;
+      font-weight: 500;
+    }
+
+    .editor-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--editor-color-editor-background, #ffffff);
+    }
+
+    #editor {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      background: var(--editor-color-toolbar-background, #f9fafb);
+      border-top: 1px solid var(--editor-color-border, #e5e7eb);
+      font-size: 12px;
+      color: var(--editor-color-text-secondary, #6b7280);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .demo-badge {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        left: -300px;
+        height: 100%;
+        z-index: 100;
+      }
+
+      .sidebar.open {
+        left: 0;
+      }
+
+      .quick-actions {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- 顶部导航栏 -->
+    <div class="app-header">
+      <h1>
+        <span>📝</span>
+        <span>编辑器定制化演示</span>
+        <span class="demo-badge">DEMO</span>
+      </h1>
+      <div class="header-actions">
+        <div class="quick-actions">
+          <button class="quick-btn" id="theme-light">
+            ☀️ 浅色
+          </button>
+          <button class="quick-btn active" id="theme-dark">
+            🌙 深色
+          </button>
+          <button class="quick-btn" id="theme-contrast">
+            🔆 高对比
+          </button>
+        </div>
+        <button class="quick-btn" id="settings-btn">
+          ⚙️ 设置
+        </button>
+        <button class="quick-btn" id="save-btn">
+          💾 保存
+        </button>
+      </div>
+    </div>
+
+    <!-- 主体区域 -->
+    <div class="editor-wrapper">
+      <!-- 侧边栏 -->
+      <div class="sidebar">
+        <!-- 图标集选择 -->
+        <div class="sidebar-section">
+          <h3>🎨 图标集</h3>
+          <div class="option-group">
+            <div class="option-item active" data-iconset="lucide">
+              <span>✓</span>
+              <span>Lucide Icons</span>
+            </div>
+            <div class="option-item" data-iconset="feather">
+              <span></span>
+              <span>Feather Icons</span>
+            </div>
+            <div class="option-item" data-iconset="material">
+              <span></span>
+              <span>Material Icons</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 语言选择 -->
+        <div class="sidebar-section">
+          <h3>🌍 语言</h3>
+          <div class="option-group">
+            <div class="option-item active" data-locale="zh-CN">
+              <span>✓</span>
+              <span>简体中文</span>
+            </div>
+            <div class="option-item" data-locale="en-US">
+              <span></span>
+              <span>English</span>
+            </div>
+            <div class="option-item" data-locale="ja-JP">
+              <span></span>
+              <span>日本語</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 预设主题 -->
+        <div class="sidebar-section">
+          <h3>🎨 预设主题</h3>
+          <div class="option-group">
+            <div class="option-item" data-theme="light">
+              <span></span>
+              <span>默认浅色</span>
+            </div>
+            <div class="option-item active" data-theme="dark">
+              <span>✓</span>
+              <span>默认深色</span>
+            </div>
+            <div class="option-item" data-theme="high-contrast">
+              <span></span>
+              <span>高对比度</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 快捷操作 -->
+        <div class="sidebar-section">
+          <h3>🚀 快捷操作</h3>
+          <div class="option-group">
+            <button class="quick-btn" id="export-config-btn" style="width: 100%;">
+              📤 导出配置
+            </button>
+            <button class="quick-btn" id="import-config-btn" style="width: 100%;">
+              📥 导入配置
+            </button>
+            <button class="quick-btn" id="reset-config-btn" style="width: 100%;">
+              🔄 重置配置
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 编辑器主区域 -->
+      <div class="editor-main">
+        <div id="editor">
+          <h1>欢迎使用编辑器定制化功能！</h1>
+          <p>本演示展示了编辑器的以下功能：</p>
+          <h2>✨ 主要特性</h2>
+          <ul>
+            <li><strong>主题切换</strong>：支持浅色、深色、高对比度等多种主题</li>
+            <li><strong>图标系统</strong>：可以切换 Lucide、Feather、Material 等图标集</li>
+            <li><strong>多语言</strong>：支持中文、英文、日文等多种语言</li>
+            <li><strong>配置管理</strong>：可以导出、导入和重置配置</li>
+            <li><strong>实时预览</strong>：所有更改立即生效</li>
+          </ul>
+          <h2>🎯 快速开始</h2>
+          <ol>
+            <li>点击左侧边栏选择不同的图标集、语言或主题</li>
+            <li>点击顶部的主题切换按钮快速切换主题</li>
+            <li>点击"设置"按钮打开完整的设置面板</li>
+            <li>使用"导出配置"保存您的设置</li>
+          </ol>
+          <blockquote>
+            <p>💡 提示：所有配置都会自动保存到浏览器本地存储，刷新页面后配置会自动恢复。</p>
+          </blockquote>
+          <h2>📖 代码示例</h2>
+          <pre><code>import { getConfigManager } from '@ldesign/editor'
+
+// 初始化配置管理器
+const config = getConfigManager({
+  icons: { defaultSet: 'lucide' },
+  theme: { defaultTheme: 'dark' },
+  i18n: { defaultLocale: 'zh-CN' }
+})
+
+// 切换主题
+config.setTheme('light')
+
+// 切换图标集
+config.setIconSet('material')
+
+// 切换语言
+await config.setLocale('en-US')</code></pre>
+        </div>
+        
+        <!-- 状态栏 -->
+        <div class="status-bar">
+          <div class="status-item">
+            <span>当前主题：</span>
+            <span id="current-theme">dark</span>
+          </div>
+          <div class="status-item">
+            <span>图标集：</span>
+            <span id="current-iconset">lucide</span>
+          </div>
+          <div class="status-item">
+            <span>语言：</span>
+            <span id="current-locale">简体中文</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 隐藏的文件输入 -->
+  <input type="file" id="import-file" accept=".json" style="display: none;">
+
+  <script type="module">
+    // 这里是演示代码，实际使用时需要引入真实的编辑器库
+    console.log('编辑器定制化演示已加载')
+    console.log('实际使用时，请按照以下方式引入：')
+    console.log('import { Editor, getConfigManager, showSettingsPanel } from "@ldesign/editor"')
+
+    // 模拟配置管理器（实际使用时替换为真实的库）
+    const mockConfig = {
+      theme: 'dark',
+      iconSet: 'lucide',
+      locale: 'zh-CN'
+    }
+
+    // 主题切换
+    const themeButtons = document.querySelectorAll('[id^="theme-"]')
+    themeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.id.replace('theme-', '')
+        themeButtons.forEach(b => b.classList.remove('active'))
+        btn.classList.add('active')
+        mockConfig.theme = theme
+        updateStatusBar()
+        console.log('切换主题到:', theme)
+        // 实际使用: config.setTheme(theme)
+      })
+    })
+
+    // 图标集切换
+    const iconSetItems = document.querySelectorAll('[data-iconset]')
+    iconSetItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const iconSet = item.dataset.iconset
+        iconSetItems.forEach(i => {
+          i.classList.remove('active')
+          i.querySelector('span:first-child').textContent = ''
+        })
+        item.classList.add('active')
+        item.querySelector('span:first-child').textContent = '✓'
+        mockConfig.iconSet = iconSet
+        updateStatusBar()
+        console.log('切换图标集到:', iconSet)
+        // 实际使用: config.setIconSet(iconSet)
+      })
+    })
+
+    // 语言切换
+    const localeItems = document.querySelectorAll('[data-locale]')
+    localeItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const locale = item.dataset.locale
+        const localeName = item.querySelector('span:last-child').textContent
+        localeItems.forEach(i => {
+          i.classList.remove('active')
+          i.querySelector('span:first-child').textContent = ''
+        })
+        item.classList.add('active')
+        item.querySelector('span:first-child').textContent = '✓'
+        mockConfig.locale = localeName
+        updateStatusBar()
+        console.log('切换语言到:', locale)
+        // 实际使用: await config.setLocale(locale)
+      })
+    })
+
+    // 主题预设
+    const themeItems = document.querySelectorAll('[data-theme]')
+    themeItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const theme = item.dataset.theme
+        themeItems.forEach(i => {
+          i.classList.remove('active')
+          i.querySelector('span:first-child').textContent = ''
+        })
+        item.classList.add('active')
+        item.querySelector('span:first-child').textContent = '✓'
+        mockConfig.theme = theme
+        
+        // 同步顶部按钮
+        themeButtons.forEach(b => b.classList.remove('active'))
+        document.getElementById(`theme-${theme}`)?.classList.add('active')
+        
+        updateStatusBar()
+        console.log('应用预设主题:', theme)
+        // 实际使用: config.setTheme(theme)
+      })
+    })
+
+    // 设置按钮
+    document.getElementById('settings-btn').addEventListener('click', () => {
+      console.log('打开设置面板')
+      alert('实际使用时，这里会打开完整的设置面板\n\n代码示例：\nimport { showSettingsPanel } from "@ldesign/editor"\n\nshowSettingsPanel()')
+      // 实际使用: showSettingsPanel()
+    })
+
+    // 保存按钮
+    document.getElementById('save-btn').addEventListener('click', () => {
+      localStorage.setItem('editor-config', JSON.stringify(mockConfig))
+      console.log('配置已保存:', mockConfig)
+      alert('配置已保存到本地存储！')
+      // 实际使用: const json = config.exportConfig()
+      // localStorage.setItem('config', json)
+    })
+
+    // 导出配置
+    document.getElementById('export-config-btn').addEventListener('click', () => {
+      const json = JSON.stringify(mockConfig, null, 2)
+      const blob = new Blob([json], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `editor-config-${Date.now()}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+      console.log('配置已导出')
+      // 实际使用: const json = config.exportConfig()
+    })
+
+    // 导入配置
+    document.getElementById('import-config-btn').addEventListener('click', () => {
+      document.getElementById('import-file').click()
+    })
+
+    document.getElementById('import-file').addEventListener('change', (e) => {
+      const file = e.target.files[0]
+      if (!file) return
+      
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target.result)
+          Object.assign(mockConfig, imported)
+          updateStatusBar()
+          console.log('配置已导入:', mockConfig)
+          alert('配置导入成功！')
+          // 刷新UI
+          location.reload()
+        } catch (error) {
+          alert('导入失败：无效的配置文件')
+          console.error(error)
+        }
+      }
+      reader.readAsText(file)
+      // 实际使用: config.importConfig(json)
+    })
+
+    // 重置配置
+    document.getElementById('reset-config-btn').addEventListener('click', () => {
+      if (!confirm('确定要重置所有配置吗？')) return
+      
+      Object.assign(mockConfig, {
+        theme: 'light',
+        iconSet: 'lucide',
+        locale: '简体中文'
+      })
+      localStorage.removeItem('editor-config')
+      console.log('配置已重置')
+      alert('配置已重置为默认值！')
+      location.reload()
+      // 实际使用: config.reset()
+    })
+
+    // 更新状态栏
+    function updateStatusBar() {
+      document.getElementById('current-theme').textContent = mockConfig.theme
+      document.getElementById('current-iconset').textContent = mockConfig.iconSet
+      document.getElementById('current-locale').textContent = mockConfig.locale
+    }
+
+    // 从本地存储恢复配置
+    const saved = localStorage.getItem('editor-config')
+    if (saved) {
+      try {
+        Object.assign(mockConfig, JSON.parse(saved))
+        updateStatusBar()
+        console.log('已恢复保存的配置:', mockConfig)
+      } catch (error) {
+        console.error('恢复配置失败:', error)
+      }
+    }
+
+    console.log('%c✨ 编辑器定制化演示', 'font-size: 24px; color: #3b82f6; font-weight: bold;')
+    console.log('%c这是一个演示页面，展示了编辑器的定制化功能', 'font-size: 14px; color: #6b7280;')
+    console.log('%c实际使用时，请参考文档：docs/guide/customization.md', 'font-size: 14px; color: #10b981;')
+  </script>
+</body>
+</html>
+
+
+
+
+
+

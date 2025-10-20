@@ -3,23 +3,26 @@
  * @module useDataFetching
  */
 
+import type {
+  ComputedRef,
+  Ref,
+  WatchStopHandle
+} from 'vue';
+import type { RouteLocationNormalizedLoaded } from '../types'
+import type {
+  DataFetchConfig, 
+  DataFetchingManager, 
+  DataFetchState} from './DataFetchingManager';
 import { 
-  ref, 
   computed, 
-  watch, 
+  inject, 
   onMounted, 
   onUnmounted, 
-  inject,
-  Ref,
-  ComputedRef,
-  WatchStopHandle
+  ref, 
+  watch
 } from 'vue'
 import { useRoute } from '../composables'
-import type { RouteLocationNormalizedLoaded } from '../types'
 import {
-  DataFetchingManager, 
-  DataFetchConfig, 
-  DataFetchState,
   DATA_FETCHING_KEY 
 } from './DataFetchingManager'
 

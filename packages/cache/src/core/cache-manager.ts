@@ -11,10 +11,14 @@ import type {
   SetOptions,
   StorageEngine,
 } from '../types'
+import type { MemoryManager} from './memory-manager';
+import type { PrefetchManager} from './prefetch-manager';
 import { StorageEngineFactory } from '../engines/factory'
 import { SecurityManager } from '../security/security-manager'
 import { StorageStrategy } from '../strategies/storage-strategy'
 import { EventEmitter, Validator } from '../utils'
+import { createMemoryManager } from './memory-manager'
+import { createPrefetchManager } from './prefetch-manager'
 
 /**
  * 缓存管理器核心实现
@@ -31,20 +35,55 @@ export class CacheManager implements ICacheManager {
   private initialized: boolean = false
   private initPromise: Promise<void> | null = null
 
-  // 性能优化：序列化缓存（带LRU淘汰）
-  private serializationCache = new Map<string, string>()
+  // 内存管理器
+  private memoryManager: MemoryManager
+  // 预取管理器
+  private prefetchManager?: PrefetchManager
+  
+  // 优化：使用WeakMap避免内存泄漏
+  private serializationCache = new WeakMap<object, string>()
+  private stringSerializationCache = new Map<string, string>()
+  private readonly maxStringCacheSize = 500
   private serializationCacheOrder = new Map<string, number>()
   private serializationCacheCounter = 0
-  private readonly maxSerializationCacheSize = 1000
 
-  // 性能优化：事件节流
-  private eventThrottleMap = new Map<string, number>()
+  // 优化：事件节流，使用环形缓冲区
+  private eventThrottleRing: Array<{ key: string, time: number }> = []
+  private eventThrottleIndex = new Map<string, number>()
   private readonly eventThrottleMs = 100
+  private readonly maxEventThrottleSize = 200
 
   constructor(private options: CacheOptions = {}) {
     this.strategy = new StorageStrategy(options.strategy)
     this.security = new SecurityManager(options.security)
     this.eventEmitter = new EventEmitter()
+    
+    // 初始化内存管理器
+    this.memoryManager = createMemoryManager({
+      maxMemory: options.maxMemory || 100 * 1024 * 1024,
+      highPressureThreshold: 0.8,
+      criticalPressureThreshold: 0.95,
+      autoCleanupInterval: options.cleanupInterval || 60000
+    })
+    
+    // 监听内存压力
+    this.memoryManager.onPressure((level) => {
+      if (level === 'critical') {
+        this.performEmergencyCleanup()
+      } else if (level === 'high') {
+        this.cleanup().catch(console.error)
+      }
+    })
+    
+    // 初始化预取管理器（如果启用）
+    if (options.enablePrefetch) {
+      this.prefetchManager = createPrefetchManager({
+        strategy: options.prefetch?.strategy || 'markov',
+        cacheGetter: async (key: string) => await this.get(key),
+        cacheSetter: async (key: string, value: SerializableValue, opts?: SetOptions) => await this.set(key, value, opts),
+        fetcher: options.prefetch?.fetcher
+      })
+    }
 
     this.initPromise = this.initializeEngines()
     this.startCleanupTimer()
@@ -149,8 +188,8 @@ export class CacheManager implements ICacheManager {
 
       // 调试输出策略选择结果
       if (this.options.debug) {
-        // eslint-disable-next-line no-console
-        
+         
+        console.info(`[CacheManager] Strategy selected engine: ${result.engine}`)
       }
 
       const engine = this.engines.get(result.engine)
@@ -245,10 +284,11 @@ export class CacheManager implements ICacheManager {
       const needsEncryption = options?.encrypt || this.options.security?.encryption?.enabled
       const cacheKey = needsEncryption ? null : this.createSerializationCacheKey(value)
 
-      if (cacheKey !== null && this.serializationCache.has(cacheKey)) {
+      // 对于简单类型使用字符串缓存
+      if (cacheKey !== null && this.stringSerializationCache.has(cacheKey)) {
         // 更新访问顺序
         this.serializationCacheOrder.set(cacheKey, this.serializationCacheCounter++)
-        const cached = this.serializationCache.get(cacheKey)
+        const cached = this.stringSerializationCache.get(cacheKey)
         if (cached !== undefined) {
           return cached
         }
@@ -298,18 +338,16 @@ export class CacheManager implements ICacheManager {
   }
 
   /**
-   * 创建序列化缓存键
+   * 创建序列化缓存键（优化版）
    */
   private createSerializationCacheKey(value: any): string | null {
     try {
-      // 只为简单值创建缓存键
       const type = typeof value
+      // 基本类型使用字符串缓存
       if (type === 'string' || type === 'number' || type === 'boolean' || value === null) {
-        return `${type}:${String(value)}`
-      }
-      // 对于小对象也可以缓存
-      if (type === 'object' && value !== null && JSON.stringify(value).length < 100) {
-        return `object:${JSON.stringify(value)}`
+        const key = `${type}:${String(value)}`
+        // 限制键长度
+        return key.length < 200 ? key : null
       }
       return null
     }
@@ -319,30 +357,18 @@ export class CacheManager implements ICacheManager {
   }
 
   /**
-   * 缓存序列化结果（使用LRU淘汰策略）
+   * 缓存序列化结果（优化版）
    */
   private cacheSerializationResult(key: string, result: string): void {
-    // 限制缓存大小，使用LRU淘汰
-    if (this.serializationCache.size >= this.maxSerializationCacheSize) {
-      // 找到最久未使用的键
-      let oldestKey: string | null = null
-      let oldestTime = Infinity
-
-      for (const [k, time] of this.serializationCacheOrder) {
-        if (time < oldestTime) {
-          oldestTime = time
-          oldestKey = k
-        }
-      }
-
-      if (oldestKey !== null) {
-        this.serializationCache.delete(oldestKey)
-        this.serializationCacheOrder.delete(oldestKey)
+    // 限制字符串缓存大小
+    if (this.stringSerializationCache.size >= this.maxStringCacheSize) {
+      // 简单FIFO淘汰第一个
+      const firstKey = this.stringSerializationCache.keys().next().value
+      if (firstKey !== undefined) {
+        this.stringSerializationCache.delete(firstKey)
       }
     }
-
-    this.serializationCache.set(key, result)
-    this.serializationCacheOrder.set(key, this.serializationCacheCounter++)
+    this.stringSerializationCache.set(key, result)
   }
 
   /**
@@ -498,7 +524,7 @@ export class CacheManager implements ICacheManager {
   }
 
   /**
-   * 触发事件
+   * 触发事件（优化版）
    */
   private emitEvent<T>(
     type: CacheEventType,
@@ -507,26 +533,35 @@ export class CacheManager implements ICacheManager {
     value?: T,
     error?: Error,
   ): void {
-    // 性能优化：对高频事件进行节流
+    // 对高频事件进行节流
     const eventKey = `${type}:${key}:${engine}`
     const now = Date.now()
-    const lastEmitTime = this.eventThrottleMap.get(eventKey) ?? 0
-
-    // 对于某些事件类型进行节流（除了错误事件，错误事件需要立即发出）
-    if (type !== 'error' && now - lastEmitTime < this.eventThrottleMs) {
-      return
+    
+    // 检查节流
+    const index = this.eventThrottleIndex.get(eventKey)
+    if (index !== undefined && type !== 'error') {
+      const entry = this.eventThrottleRing[index]
+      if (entry && now - entry.time < this.eventThrottleMs) {
+        return
+      }
     }
 
-    this.eventThrottleMap.set(eventKey, now)
-
-    // 清理过期的节流记录（简单的清理策略）
-    if (this.eventThrottleMap.size > 1000) {
-      const cutoff = now - this.eventThrottleMs * 10
-      for (const [key, time] of this.eventThrottleMap.entries()) {
-        if (time < cutoff) {
-          this.eventThrottleMap.delete(key)
-        }
+    // 更新或添加到环形缓冲区
+    if (this.eventThrottleRing.length >= this.maxEventThrottleSize) {
+      // 覆盖最旧的条目
+      const oldestIndex = 0
+      const oldEntry = this.eventThrottleRing[oldestIndex]
+      if (oldEntry) {
+        this.eventThrottleIndex.delete(oldEntry.key)
       }
+      this.eventThrottleRing[oldestIndex] = { key: eventKey, time: now }
+      this.eventThrottleIndex.set(eventKey, oldestIndex)
+      // 旋转数组
+      this.eventThrottleRing.push(this.eventThrottleRing.shift()!)
+    } else {
+      const newIndex = this.eventThrottleRing.length
+      this.eventThrottleRing.push({ key: eventKey, time: now })
+      this.eventThrottleIndex.set(eventKey, newIndex)
     }
 
     const event: CacheEvent<T> = {
@@ -539,11 +574,6 @@ export class CacheManager implements ICacheManager {
     }
 
     this.eventEmitter.emit(type, event)
-
-    if (this.options.debug) {
-      // eslint-disable-next-line no-console
-      
-    }
   }
 
   /**
@@ -573,8 +603,7 @@ export class CacheManager implements ICacheManager {
     this.eventEmitter.emit('strategy', event)
 
     if (this.options.debug) {
-      // eslint-disable-next-line no-console
-      
+      // Debug logging handled by event emitter
     }
   }
 
@@ -1338,28 +1367,40 @@ export class CacheManager implements ICacheManager {
     this.stats.clear()
 
     // 清理性能优化相关的缓存
-    this.serializationCache.clear()
-    this.eventThrottleMap.clear()
+    // WeakMap doesn't have clear method, recreate it
+    this.serializationCache = new WeakMap()
+    this.stringSerializationCache.clear()
+    this.eventThrottleIndex.clear()
+    this.eventThrottleRing = []
   }
 
   /**
    * 性能优化：手动触发内存清理
    */
   async optimizeMemory(): Promise<void> {
-    // 清理序列化缓存
-    if (this.serializationCache.size > this.maxSerializationCacheSize / 2) {
-      const keysToDelete = Array.from(this.serializationCache.keys()).slice(0, this.serializationCache.size / 2)
-      keysToDelete.forEach(key => this.serializationCache.delete(key))
+    // 清理字符串序列化缓存
+    if (this.stringSerializationCache.size > this.maxStringCacheSize / 2) {
+      const keysToDelete: string[] = []
+      let count = 0
+      for (const key of this.stringSerializationCache.keys()) {
+        if (count++ >= this.maxStringCacheSize / 4) break
+        keysToDelete.push(key)
+      }
+      keysToDelete.forEach(key => this.stringSerializationCache.delete(key))
     }
 
-    // 清理事件节流映射
-    const now = Date.now()
-    const cutoff = now - this.eventThrottleMs * 5
-    for (const [key, time] of this.eventThrottleMap.entries()) {
-      if (time < cutoff) {
-        this.eventThrottleMap.delete(key)
-      }
+    // 清理事件节流环形缓冲区
+    if (this.eventThrottleRing.length > this.maxEventThrottleSize / 2) {
+      const halfSize = Math.floor(this.maxEventThrottleSize / 2)
+      this.eventThrottleRing = this.eventThrottleRing.slice(-halfSize)
+      this.eventThrottleIndex.clear()
+      this.eventThrottleRing.forEach((entry, index) => {
+        this.eventThrottleIndex.set(entry.key, index)
+      })
     }
+
+    // 触发内存管理器清理
+    this.memoryManager.requestMemory(0)
 
     // 触发内存引擎的清理
     const memoryEngine = this.engines.get('memory')
@@ -1369,6 +1410,29 @@ export class CacheManager implements ICacheManager {
       }
       catch (error) {
         console.warn('Error during memory engine cleanup:', error)
+      }
+    }
+  }
+  
+  /**
+   * 紧急内存清理
+   */
+  private async performEmergencyCleanup(): Promise<void> {
+    console.warn('[CacheManager] Emergency cleanup triggered')
+    
+    // 清空所有缓存
+    this.stringSerializationCache.clear()
+    this.eventThrottleRing = []
+    this.eventThrottleIndex.clear()
+    
+    // 触发各引擎清理
+    for (const [, engine] of this.engines) {
+      if (typeof (engine as any).cleanup === 'function') {
+        try {
+          await (engine as any).cleanup()
+        } catch (error) {
+          console.error(`Cleanup failed for ${engine.name}:`, error)
+        }
       }
     }
   }

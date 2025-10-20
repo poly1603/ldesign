@@ -74,19 +74,19 @@ const ENCODED_CHARS_CACHE = new Map<string, string>()
 const CACHE_SIZE_LIMIT = 1000
 
 /**
- * 带缓存的 encodeURIComponent（性能优化）
+ * 带缓存的 encodeURIComponent（优化版：减少缓存检查开销）
  */
 function cachedEncodeURIComponent(str: string): string {
-  // 对于短字符串使用缓存
-  if (str.length <= 50) {
-    let encoded = ENCODED_CHARS_CACHE.get(str)
-    if (encoded !== undefined) {
-      return encoded
+  // 只对非常短的字符串使用缓存（减少 Map 查找开销）
+  if (str.length <= 20) {
+    const cached = ENCODED_CHARS_CACHE.get(str)
+    if (cached !== undefined) {
+      return cached
     }
 
-    encoded = encodeURIComponent(str).replace(/%20/g, '+')
+    const encoded = encodeURIComponent(str).replace(/%20/g, '+')
 
-    // 限制缓存大小，防止内存泄漏
+    // 限制缓存大小
     if (ENCODED_CHARS_CACHE.size < CACHE_SIZE_LIMIT) {
       ENCODED_CHARS_CACHE.set(str, encoded)
     }
@@ -94,7 +94,7 @@ function cachedEncodeURIComponent(str: string): string {
     return encoded
   }
 
-  // 长字符串直接编码
+  // 长字符串直接编码（不使用缓存）
   return encodeURIComponent(str).replace(/%20/g, '+')
 }
 
@@ -275,7 +275,7 @@ export function generateId(): string {
 }
 
 /**
- * 深拷贝对象
+ * 深拷贝对象（优化版）
  */
 export function deepClone<T>(obj: T): T {
   if (obj === null || typeof obj !== 'object') {
@@ -292,9 +292,12 @@ export function deepClone<T>(obj: T): T {
 
   if (typeof obj === 'object') {
     const cloned = {} as T
-    Object.keys(obj).forEach((key) => {
-      ;(cloned as any)[key] = deepClone((obj as any)[key])
-    })
+    // 使用 for-in 遍历，性能更好
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        cloned[key] = deepClone(obj[key])
+      }
+    }
     return cloned
   }
 
@@ -304,28 +307,28 @@ export function deepClone<T>(obj: T): T {
 /**
  * 判断是否为 FormData
  */
-export function isFormData(data: any): data is FormData {
+export function isFormData(data: unknown): data is FormData {
   return typeof FormData !== 'undefined' && data instanceof FormData
 }
 
 /**
  * 判断是否为 Blob
  */
-export function isBlob(data: any): data is Blob {
+export function isBlob(data: unknown): data is Blob {
   return typeof Blob !== 'undefined' && data instanceof Blob
 }
 
 /**
  * 判断是否为 ArrayBuffer
  */
-export function isArrayBuffer(data: any): data is ArrayBuffer {
+export function isArrayBuffer(data: unknown): data is ArrayBuffer {
   return typeof ArrayBuffer !== 'undefined' && data instanceof ArrayBuffer
 }
 
 /**
  * 判断是否为 URLSearchParams
  */
-export function isURLSearchParams(data: any): data is URLSearchParams {
+export function isURLSearchParams(data: unknown): data is URLSearchParams {
   return (
     typeof URLSearchParams !== 'undefined' && data instanceof URLSearchParams
   )

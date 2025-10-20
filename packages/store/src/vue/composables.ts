@@ -9,7 +9,7 @@ import type {
   StoreHookReturn,
   UseStoreOptions,
 } from '../types'
-import { computed, inject, onUnmounted, ref, watch } from 'vue'
+import { computed, inject, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { STORE_PROVIDER_KEY } from '../types/provider'
 
 /**
@@ -82,7 +82,7 @@ export function useState<T = any>(
     value,
     setValue: (newValue) => {
       if (typeof newValue === 'function') {
-        value.value = (newValue as Function)(value.value)
+        value.value = (newValue as (prev: T) => T)(value.value)
       }
       else {
         value.value = newValue
@@ -107,7 +107,7 @@ export function useAction<T extends (...args: any[]) => any>(
 
   const loading = ref(false)
   const error = ref<Error | null>(null)
-  const data = ref<ReturnType<T> | null>(null)
+  const data = shallowRef<ReturnType<T> | null>(null)
 
   const execute = async (...args: Parameters<T>): Promise<ReturnType<T>> => {
     loading.value = true
@@ -355,7 +355,7 @@ export function useReactiveState<T = any>(
   const originalSetValue = baseHook.setValue
   const setValue = (newValue: T | ((oldValue: T) => T)) => {
     const finalValue = typeof newValue === 'function'
-      ? (newValue as Function)(baseHook.value.value)
+      ? (newValue as (prev: T) => T)(baseHook.value.value)
       : newValue
 
     // 验证新值

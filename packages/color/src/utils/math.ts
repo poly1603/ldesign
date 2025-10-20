@@ -15,7 +15,7 @@ export function clamp(value: number, min: number, max: number): number {
  * Round a number to specified decimal places
  */
 export function round(value: number, decimals = 0): number {
-  const factor = Math.pow(10, decimals);
+  const factor = 10**decimals;
   return Math.round(value * factor) / factor;
 }
 
@@ -147,7 +147,7 @@ export function standardDeviation(numbers: number[]): number {
   if (numbers.length === 0) return 0;
   
   const mean = average(numbers);
-  const squaredDiffs = numbers.map(n => Math.pow(n - mean, 2));
+  const squaredDiffs = numbers.map(n => (n - mean)**2);
   const avgSquaredDiff = average(squaredDiffs);
   
   return Math.sqrt(avgSquaredDiff);
@@ -157,7 +157,7 @@ export function standardDeviation(numbers: number[]): number {
  * Calculate the factorial of a number
  */
 export function factorial(n: number): number {
-  if (n < 0) return NaN;
+  if (n < 0) return Number.NaN;
   if (n === 0 || n === 1) return 1;
   
   let result = 1;

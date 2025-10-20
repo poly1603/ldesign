@@ -3,9 +3,9 @@
  * 集成 DeepSeek API 提供智能配色建议
  */
 
+import type { ColorScheme, ColorSchemeType } from '../schemes';
 import { Color } from '../core/Color';
 import { ColorSchemeGenerator } from '../schemes';
-import type { ColorScheme, ColorSchemeType } from '../schemes';
 
 /**
  * AI 配色请求选项

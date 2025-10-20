@@ -1,88 +1,9 @@
-<template>
-  <div class="conditional-template">
-    <!-- 加载状态 -->
-    <div v-if="evaluating && !selectedTemplate" class="loading-state">
-      <slot name="loading">
-        <TemplateSkeleton v-if="showSkeleton" />
-        <div v-else class="evaluating-message">
-          正在选择最佳模板...
-        </div>
-      </slot>
-    </div>
-
-    <!-- 渲染选中的模板 -->
-    <TemplateRenderer
-      v-else-if="selectedTemplate"
-      :key="templateKey"
-      :template-name="selectedTemplate"
-      :data="data"
-      :custom-components="customComponents"
-      :enable-skeleton="enableSkeleton"
-      :enable-cache="enableCache"
-      :enable-retry="enableRetry"
-      :enable-auto-save="enableAutoSave"
-      :enable-v-model="enableVModel"
-      @rendered="handleRendered"
-      @error="handleError"
-      @save="handleSave"
-    />
-
-    <!-- 默认内容（无匹配模板） -->
-    <div v-else class="default-content">
-      <slot name="default">
-        <TemplateRenderer
-          v-if="defaultTemplate"
-          :template-name="defaultTemplate"
-          :data="data"
-          :custom-components="customComponents"
-          :enable-skeleton="enableSkeleton"
-          :enable-cache="enableCache"
-          :enable-retry="enableRetry"
-          :enable-auto-save="enableAutoSave"
-          :enable-v-model="enableVModel"
-          @rendered="handleRendered"
-          @error="handleError"
-          @save="handleSave"
-        />
-        <div v-else class="no-template">
-          <slot name="no-template">
-            <p>没有匹配的模板</p>
-          </slot>
-        </div>
-      </slot>
-    </div>
-
-    <!-- 调试信息 -->
-    <div v-if="showDebug" class="debug-info">
-      <h4>条件渲染调试信息</h4>
-      <div class="debug-content">
-        <div>选中模板: {{ selectedTemplate || '无' }}</div>
-        <div>评估时间: {{ lastEvaluation?.toLocaleString() || '未评估' }}</div>
-        <div>当前上下文:</div>
-        <pre>{{ JSON.stringify(context, null, 2) }}</pre>
-        <div>条件列表:</div>
-        <ul>
-          <li v-for="(condition, index) in conditions" :key="index">
-            {{ condition.description || condition.id || `条件 ${index + 1}` }}
-            - 模板: {{ condition.template }}
-            - 优先级: {{ condition.priority || 0 }}
-            - 状态: {{ condition.enabled !== false ? '启用' : '禁用' }}
-          </li>
-        </ul>
-      </div>
-      <button @click="handleReevaluate" class="reevaluate-btn">
-        重新评估条件
-      </button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, watch, toRefs, onMounted } from 'vue'
+import type { TemplateCondition, TemplateContext } from '../composables/useTemplateCondition'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { useTemplateCondition } from '../composables/useTemplateCondition'
 import TemplateRenderer from './TemplateRenderer.vue'
 import TemplateSkeleton from './TemplateSkeleton.vue'
-import { useTemplateCondition } from '../composables/useTemplateCondition'
-import type { TemplateCondition, TemplateContext } from '../composables/useTemplateCondition'
 
 /**
  * 组件属性
@@ -130,11 +51,11 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'template-selected', template: string | null): void
+  (e: 'templateSelected', template: string | null): void
   (e: 'rendered', data: any): void
-  (e: 'error', error: Error): void
+  (e: 'error', ...args: unknown[]): void
   (e: 'save', data: any): void
-  (e: 'evaluation-complete', template: string | null): void
+  (e: 'evaluationComplete', template: string | null): void
 }>()
 
 // 使用条件渲染
@@ -143,7 +64,7 @@ const {
   evaluating,
   lastEvaluation,
   context,
-  selectTemplate,
+  // selectTemplate, // Removing unused variable
   reevaluate
 } = useTemplateCondition(props.conditions, props.context)
 
@@ -156,7 +77,7 @@ const templateKey = ref(0)
 const handleReevaluate = async () => {
   const template = await reevaluate()
   templateKey.value++
-  emit('evaluation-complete', template)
+  emit('evaluationComplete', template)
 }
 
 /**
@@ -180,26 +101,37 @@ const handleSave = (data: any) => {
   emit('save', data)
 }
 
+// 存储watchers以便清理
+const watchers: Array<() => void> = []
+
 // 监听条件变化
-watch(() => props.conditions, async (newConditions) => {
-  // 重新设置条件并评估
-  await handleReevaluate()
-}, { deep: true })
+watchers.push(
+  watch(() => props.conditions, async (_newConditions) => {
+    // 重新设置条件并评估
+    await handleReevaluate()
+  }, { deep: true })
+)
 
 // 监听上下文变化
-watch(() => props.context, (newContext) => {
-  context.value = newContext
-}, { deep: true })
+watchers.push(
+  watch(() => props.context, (newContext) => {
+    context.value = newContext
+  }, { deep: true })
+)
 
 // 监听强制刷新键
-watch(() => props.forceRefreshKey, () => {
-  templateKey.value++
-})
+watchers.push(
+  watch(() => props.forceRefreshKey, () => {
+    templateKey.value++
+  })
+)
 
 // 监听选中模板变化
-watch(selectedTemplate, (template) => {
-  emit('template-selected', template)
-})
+watchers.push(
+  watch(selectedTemplate, (template) => {
+    emit('templateSelected', template)
+  })
+)
 
 // 初始化
 onMounted(() => {
@@ -208,7 +140,95 @@ onMounted(() => {
     context.value = props.context
   }
 })
+
+// 清理
+onUnmounted(() => {
+  // 停止所有watchers
+  watchers.forEach(unwatch => unwatch())
+  watchers.length = 0
+})
 </script>
+
+<template>
+  <div class="conditional-template">
+    <!-- 加载状态 -->
+    <div v-if="evaluating && !selectedTemplate" class="loading-state">
+      <slot name="loading">
+        <TemplateSkeleton v-if="showSkeleton" />
+        <div v-else class="evaluating-message">
+          正在选择最佳模板...
+        </div>
+      </slot>
+    </div>
+
+    <!-- 渲染选中的模板 -->
+    <TemplateRenderer
+      v-else-if="selectedTemplate"
+      :key="templateKey"
+      :template-name="selectedTemplate"
+      category="dashboard"
+      :data="data"
+      :custom-components="customComponents"
+      :enable-skeleton="enableSkeleton"
+      :enable-cache="enableCache"
+      :enable-retry="enableRetry"
+      :enable-auto-save="enableAutoSave"
+      :enable-v-model="enableVModel"
+      @rendered="handleRendered"
+      @error="handleError"
+      @save="handleSave"
+    />
+
+    <!-- 默认内容（无匹配模板） -->
+    <div v-else class="default-content">
+      <slot name="default">
+        <TemplateRenderer
+          v-if="defaultTemplate"
+          :template-name="defaultTemplate"
+          category="dashboard"
+          :data="data"
+          :custom-components="customComponents"
+          :enable-skeleton="enableSkeleton"
+          :enable-cache="enableCache"
+          :enable-retry="enableRetry"
+          :enable-auto-save="enableAutoSave"
+          :enable-v-model="enableVModel"
+          @rendered="handleRendered"
+          @error="handleError"
+          @save="handleSave"
+        />
+        <div v-else class="no-template">
+          <slot name="no-template">
+            <p>没有匹配的模板</p>
+          </slot>
+        </div>
+      </slot>
+    </div>
+
+    <!-- 调试信息 -->
+    <div v-if="showDebug" class="debug-info">
+      <h4>条件渲染调试信息</h4>
+      <div class="debug-content">
+        <div>选中模板: {{ selectedTemplate || '无' }}</div>
+        <div>评估时间: {{ lastEvaluation?.toLocaleString() || '未评估' }}</div>
+        <div>当前上下文:</div>
+        <pre>{{ JSON.stringify(context, null, 2) }}</pre>
+        <div>条件列表:</div>
+        <ul>
+          <li v-for="(condition, index) in conditions" :key="index">
+            {{ condition.description || condition.id || `条件 ${index + 1}` }}
+            - 模板: {{ condition.template }}
+            - 优先级: {{ condition.priority || 0 }}
+            - 状态: {{ condition.enabled !== false ? '启用' : '禁用' }}
+          </li>
+        </ul>
+      </div>
+      <button class="reevaluate-btn" @click="handleReevaluate">
+        重新评估条件
+      </button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .conditional-template {

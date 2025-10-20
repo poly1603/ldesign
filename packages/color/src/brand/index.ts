@@ -3,9 +3,9 @@
  * 管理品牌色系统、生成品牌调色板、导出品牌指南
  */
 
-import { Color } from '../core/Color'
-import { generateSemanticColors, generateTailwindPalette } from '../core'
 import type { ColorInput } from '../types'
+import { generateSemanticColors, generateTailwindPalette } from '../core'
+import { Color } from '../core/Color'
 
 /**
  * 品牌色定义
@@ -319,8 +319,8 @@ export class BrandColorManager {
       brand: this.config.name,
       description: this.config.description,
       metadata: this.config.metadata,
-      palette: palette,
-      consistency: consistency
+      palette,
+      consistency
     }
     
     if (includeUsageExamples) {

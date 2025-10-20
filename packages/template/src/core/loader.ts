@@ -8,11 +8,21 @@ import { getScanner } from './scanner'
 import { loadComponentStyle } from './style-loader'
 
 /**
- * 模板加载器类
+ * 模板加载器类 - 内存优化版本
  */
 export class TemplateLoader {
-  private loadedComponents: Map<string, Component> = new Map()
+  // 使用 WeakRef 存储组件，允许垃圾回收
+  private loadedComponents: Map<string, WeakRef<Component>> = new Map()
+  // 加载中的 Promise 缓存，完成后立即清理
   private loadingPromises: Map<string, Promise<Component>> = new Map()
+  // FinalizationRegistry 自动清理已回收的组件
+  private componentRegistry = new FinalizationRegistry((key: string) => {
+    // 自动清理已被垃圾回收的组件引用
+    this.loadedComponents.delete(key)
+  })
+  // 预编译的键生成函数，避免重复字符串拼接
+  private static createKey = (category: string, device: string, name: string): string => 
+    `${category}/${device}/${name}`
 
   /**
    * 加载模板组件
@@ -23,22 +33,23 @@ export class TemplateLoader {
     name: string,
     options?: TemplateLoadOptions
   ): Promise<Component> {
-    const key = `${category}/${device}/${name}`
+    const key = TemplateLoader.createKey(category, device, name)
 
-    // 检查缓存
-    if (this.loadedComponents.has(key)) {
-      const cached = this.loadedComponents.get(key)
+    // 检查缓存 - 优化查找逻辑
+    const weakRef = this.loadedComponents.get(key)
+    if (weakRef) {
+      const cached = weakRef.deref()
       if (cached) {
         options?.onLoad?.(cached)
         return cached
       }
+      // 组件已被垃圾回收，清理引用
+      this.loadedComponents.delete(key)
     }
 
-    // 检查是否正在加载
-    if (this.loadingPromises.has(key)) {
-      const pending = this.loadingPromises.get(key)
-      if (pending) return pending
-    }
+    // 检查是否正在加载 - 简化逻辑
+    const pending = this.loadingPromises.get(key)
+    if (pending) return pending
 
     // 从注册表获取模板
     const scanner = getScanner()
@@ -59,7 +70,10 @@ export class TemplateLoader {
 
     try {
       const component = await loadPromise
-      this.loadedComponents.set(key, component)
+      // 使用WeakRef存储组件，允许垃圾回收
+      const weakRef = new WeakRef(component)
+      this.loadedComponents.set(key, weakRef)
+      this.componentRegistry.register(component, key)
       this.loadingPromises.delete(key)
       options?.onLoad?.(component)
       return component
@@ -123,50 +137,41 @@ export class TemplateLoader {
   }
 
   /**
-   * 过滤模板
+   * 过滤模板 - 内存优化版本
    */
   private filterTemplates(templates: TemplateMetadata[], filter: TemplateFilter): TemplateMetadata[] {
+    // 预处理过滤条件，避免在循环中重复处理
+    const categorySet = filter.category ? 
+      new Set(Array.isArray(filter.category) ? filter.category : [filter.category]) : null
+    const deviceSet = filter.device ? 
+      new Set(Array.isArray(filter.device) ? filter.device : [filter.device]) : null
+    const nameSet = filter.name ? 
+      new Set(Array.isArray(filter.name) ? filter.name : [filter.name]) : null
+    const tagsArray = filter.tags ? 
+      (Array.isArray(filter.tags) ? filter.tags : [filter.tags]) : null
+
     return templates.filter(t => {
-      // 过滤分类
-      if (filter.category) {
-        const categories = Array.isArray(filter.category) ? filter.category : [filter.category]
-        if (!categories.includes(t.category)) return false
-      }
-
-      // 过滤设备
-      if (filter.device) {
-        const devices = Array.isArray(filter.device) ? filter.device : [filter.device]
-        if (!devices.includes(t.device)) return false
-      }
-
-      // 过滤名称
-      if (filter.name) {
-        const names = Array.isArray(filter.name) ? filter.name : [filter.name]
-        if (!names.includes(t.name)) return false
-      }
-
-      // 过滤标签
-      if (filter.tags) {
-        const tags = Array.isArray(filter.tags) ? filter.tags : [filter.tags]
-        if (!t.tags || !tags.some(tag => t.tags?.includes(tag) === true)) return false
-      }
-
-      // 只返回默认模板
+      // 使用 Set 进行 O(1) 查找
+      if (categorySet && !categorySet.has(t.category)) return false
+      if (deviceSet && !deviceSet.has(t.device)) return false
+      if (nameSet && !nameSet.has(t.name)) return false
+      if (tagsArray && (!t.tags || !tagsArray.some(tag => t.tags!.includes(tag)))) return false
       if (filter.defaultOnly && !t.isDefault) return false
-
       return true
     })
   }
 
   /**
-   * 清除缓存
+   * 清除缓存 - 优化版本
    */
   clearCache(category?: string, device?: string, name?: string): void {
     if (category && device && name) {
-      const key = `${category}/${device}/${name}`
+      const key = TemplateLoader.createKey(category, device, name)
       this.loadedComponents.delete(key)
+      this.loadingPromises.delete(key) // 同时清理加载中的 Promise
     } else {
       this.loadedComponents.clear()
+      this.loadingPromises.clear() // 清理所有加载中的 Promise
     }
   }
 

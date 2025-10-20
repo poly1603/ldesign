@@ -43,6 +43,11 @@
       "import": "./es/config/*.js",
       "require": "./lib/config/*.cjs"
     },
+    "./constants/*": {
+      "types": "./es/constants/*.d.ts",
+      "import": "./es/constants/*.js",
+      "require": "./lib/constants/*.cjs"
+    },
     "./core/*": {
       "types": "./es/core/*.d.ts",
       "import": "./es/core/*.js",

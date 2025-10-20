@@ -78,6 +78,8 @@ export class PriorityQueue<T = any> {
   private processing = false
   private boostTimer?: NodeJS.Timeout
   private lastBoostCheck = 0 // 上次提权检查时间
+  private cachedQueueSize = 0 // 缓存队列大小
+  private queueSizeDirty = true // 队列大小是否需要重新计算
 
   constructor(config: PriorityQueueConfig = {}) {
     this.config = {
@@ -133,6 +135,7 @@ export class PriorityQueue<T = any> {
       if (priorityQueue) {
         priorityQueue.push(item)
         this.stats.totalQueued++
+        this.queueSizeDirty = true // 标记队列大小变化
       }
 
       // 设置超时
@@ -251,32 +254,47 @@ export class PriorityQueue<T = any> {
   }
 
   /**
-   * 执行优先级提升
+   * 执行优先级提升（优化版）
    */
   private performPriorityBoost(now: number): void {
-    // 遍历所有队列，提升等待时间过长的请求
+    // 收集需要移动的项，避免在遍历时修改
+    const itemsToMove: Array<{ item: PriorityItem<T>, from: Priority, to: Priority }> = []
+    
+    // 遍历所有队列，找出需要提升的项
     for (const [priority, items] of this.queue.entries()) {
       if (priority === Priority.CRITICAL || items.length === 0) {
         continue // 已经是最高优先级或队列为空
       }
 
-      // 优化：使用索引而非 filter，减少数组创建
-      for (let i = items.length - 1; i >= 0; i--) {
+      const boostInterval = this.config?.boostInterval
+      
+      // 收集需要提升的项
+      for (let i = 0; i < items.length; i++) {
         const item = items[i]
-        if (now - item.timestamp > this.config?.boostInterval) {
-          // 移除原队列
-          items.splice(i, 1)
-
-          // 提升优先级
+        if (now - item.timestamp > boostInterval) {
           const newPriority = Math.max(Priority.CRITICAL, priority - 1)
-          item.priority = newPriority
-
-          // 添加到新队列
-          const newQueue = this.queue.get(newPriority)
-          if (newQueue) {
-            newQueue.push(item)
-          }
+          itemsToMove.push({ item, from: priority, to: newPriority })
         }
+      }
+    }
+    
+    // 批量移动项（避免在遍历时修改数组）
+    for (const move of itemsToMove) {
+      // 从原队列移除
+      const fromQueue = this.queue.get(move.from)
+      if (fromQueue) {
+        const index = fromQueue.indexOf(move.item)
+        if (index !== -1) {
+          fromQueue.splice(index, 1)
+          this.queueSizeDirty = true // 标记队列大小变化
+        }
+      }
+      
+      // 更新优先级并添加到新队列
+      move.item.priority = move.to
+      const toQueue = this.queue.get(move.to)
+      if (toQueue) {
+        toQueue.push(move.item)
       }
     }
   }
@@ -349,13 +367,21 @@ export class PriorityQueue<T = any> {
   }
 
   /**
-   * 获取总队列大小
+   * 获取总队列大小（优化版：使用缓存）
    */
   private getTotalQueueSize(): number {
+    if (!this.queueSizeDirty) {
+      return this.cachedQueueSize
+    }
+
     let total = 0
     for (const [, items] of this.queue.entries()) {
       total += items.length
     }
+    
+    this.cachedQueueSize = total
+    this.queueSizeDirty = false
+    
     return total
   }
 

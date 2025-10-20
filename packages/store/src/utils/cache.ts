@@ -259,7 +259,7 @@ export function fastHash(value: any): string {
 }
 
 /**
- * 对象池
+ * 对象池（优化版：预分配对象，减少运行时创建开销）
  * 复用对象以减少 GC 压力
  */
 export class ObjectPool<T> {
@@ -267,15 +267,30 @@ export class ObjectPool<T> {
   private factory: () => T
   private reset: (obj: T) => void
   private maxSize: number
+  private preallocateSize: number
 
   constructor(
     factory: () => T,
     reset: (obj: T) => void,
-    maxSize = 100
+    maxSize = 100,
+    preallocateSize = 10
   ) {
     this.factory = factory
     this.reset = reset
     this.maxSize = maxSize
+    this.preallocateSize = Math.min(preallocateSize, maxSize)
+    
+    // 性能优化：预分配对象
+    this.preallocate()
+  }
+  
+  /**
+   * 预分配对象（性能优化）
+   */
+  private preallocate(): void {
+    for (let i = 0; i < this.preallocateSize; i++) {
+      this.pool.push(this.factory())
+    }
   }
 
   /**

@@ -6,8 +6,8 @@
  */
 
 // Re-export everything from main index
-export * from './index'
-
 // For UMD builds, also export a default object containing all exports
 import * as RouterLib from './index'
+
+export * from './index'
 export default RouterLib

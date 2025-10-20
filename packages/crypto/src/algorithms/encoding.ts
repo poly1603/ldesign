@@ -1,5 +1,5 @@
-import CryptoJS from 'crypto-js'
 import type { EncodingType, IEncoder } from '../types'
+import CryptoJS from 'crypto-js'
 import { ErrorUtils, ValidationUtils } from '../utils'
 
 /**

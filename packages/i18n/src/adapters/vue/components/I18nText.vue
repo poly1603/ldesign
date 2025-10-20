@@ -1,13 +1,7 @@
-<template>
-  <component :is="tag">
-    {{ translatedText }}
-  </component>
-</template>
-
 <script setup lang="ts">
+import type { InterpolationParams, MessageKey } from '../../../types';
 import { computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
-import type { MessageKey, InterpolationParams } from '../../../types';
 
 interface Props {
   keypath: MessageKey;
@@ -38,3 +32,9 @@ const translatedText = computed(() => {
   return t(props.keypath, options);
 });
 </script>
+
+<template>
+  <component :is="tag">
+    {{ translatedText }}
+  </component>
+</template>

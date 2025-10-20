@@ -1,0 +1,45 @@
+{
+  "name": "@word-viewer/lit",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Lit Web Component 封装 - Word 文档查看器",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "word",
+    "docx",
+    "viewer",
+    "lit",
+    "web-components"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "lit": "^2.0.0 || ^3.0.0",
+    "@word-viewer/core": "^1.0.0"
+  },
+  "dependencies": {
+    "@word-viewer/core": "^1.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "lit": "^3.0.0",
+    "rollup": "^4.1.4",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "^5.2.2"
+  }
+}
+
+

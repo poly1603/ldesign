@@ -1,9 +1,9 @@
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
-  // Output format config - 只构建ESM和CJS
+  // Output format config - 构建ESM, CJS和UMD
   output: {
-    format: ['esm', 'cjs'],
+    format: ['esm', 'cjs', 'umd'],
   },
 
   // 禁用构建后验证
@@ -23,12 +23,12 @@ export default defineConfig({
   // 不压缩代码
   minify: false,
 
-  // 完全禁用dist目录的构建
+  // 启用dist目录的构建用于UMD
   build: {
-    // 不构建UMD
-    umd: false,
-    // 不生成dist目录
-    dist: false,
+    // 构建UMD
+    umd: true,
+    // 生成dist目录
+    dist: true,
   },
 
   // 外部依赖配置

@@ -30,15 +30,18 @@
  */
 
 import type {
-  EncryptionAlgorithm,
-  HashAlgorithm,
   AESOptions,
-  RSAOptions,
-  EncryptResult,
+  BlowfishOptions,
   DecryptResult,
+  DESOptions,
+  EncryptionAlgorithm,
+  EncryptResult,
+  HashAlgorithm,
+  RSAOptions,
+  TripleDESOptions,
 } from '../types'
-import { aes, rsa, des, des3, blowfish, encoding } from '../algorithms'
-import { Hasher } from '../algorithms'
+import { aes, blowfish, des, des3, encoding, Hasher, rsa  } from '../algorithms'
+
 import { ErrorUtils } from '../utils'
 
 /**
@@ -48,11 +51,14 @@ type ChainData = string | EncryptResult
 
 /**
  * CryptoChain - 链式加解密操作类
+ * 优化：改进内存管理，减少字符串复制
  */
 export class CryptoChain {
   private data: ChainData
   private errorOccurred = false
   private lastError?: Error
+  // 内存优化：使用WeakRef避免循环引用
+  private resultCache = new WeakMap<object, ChainData>()
 
   constructor(data: ChainData) {
     this.data = data
@@ -63,8 +69,8 @@ export class CryptoChain {
    */
   encrypt(algorithm: 'AES', key: string, options?: AESOptions): CryptoChain
   encrypt(algorithm: 'RSA', key: string, options?: RSAOptions): CryptoChain
-  encrypt(algorithm: 'DES' | '3DES', key: string, options?: any): CryptoChain
-  encrypt(algorithm: EncryptionAlgorithm, key: string, options?: any): CryptoChain {
+  encrypt(algorithm: 'DES' | '3DES', key: string, options?: Record<string, unknown>): CryptoChain
+  encrypt(algorithm: EncryptionAlgorithm, key: string, options?: AESOptions | RSAOptions | Record<string, unknown>): CryptoChain {
     if (this.errorOccurred) return this
 
     try {
@@ -73,19 +79,19 @@ export class CryptoChain {
 
       switch (algorithm.toUpperCase()) {
         case 'AES':
-          result = aes.encrypt(text, key, options)
+          result = aes.encrypt(text, key, options as AESOptions)
           break
         case 'RSA':
-          result = rsa.encrypt(text, key, options)
+          result = rsa.encrypt(text, key, options as RSAOptions)
           break
         case 'DES':
-          result = des.encrypt(text, key, options)
+          result = des.encrypt(text, key, options as DESOptions)
           break
         case '3DES':
-          result = des3.encrypt(text, key, options)
+          result = des3.encrypt(text, key, options as TripleDESOptions)
           break
         case 'BLOWFISH':
-          result = blowfish.encrypt(text, key, options)
+          result = blowfish.encrypt(text, key, options as BlowfishOptions)
           break
         default:
           throw ErrorUtils.createEncryptionError(
@@ -111,8 +117,8 @@ export class CryptoChain {
    */
   decrypt(algorithm: 'AES', key: string, options?: AESOptions): CryptoChain
   decrypt(algorithm: 'RSA', key: string, options?: RSAOptions): CryptoChain
-  decrypt(algorithm: 'DES' | '3DES', key: string, options?: any): CryptoChain
-  decrypt(algorithm: EncryptionAlgorithm, key: string, options?: any): CryptoChain {
+  decrypt(algorithm: 'DES' | '3DES', key: string, options?: Record<string, unknown>): CryptoChain
+  decrypt(algorithm: EncryptionAlgorithm, key: string, options?: AESOptions | RSAOptions | Record<string, unknown>): CryptoChain {
     if (this.errorOccurred) return this
 
     try {
@@ -120,19 +126,19 @@ export class CryptoChain {
 
       switch (algorithm.toUpperCase()) {
         case 'AES':
-          result = aes.decrypt(this.data, key, options)
+          result = aes.decrypt(this.data, key, options as AESOptions)
           break
         case 'RSA':
-          result = rsa.decrypt(this.data, key, options)
+          result = rsa.decrypt(this.data, key, options as RSAOptions)
           break
         case 'DES':
-          result = des.decrypt(this.data, key, options)
+          result = des.decrypt(this.data, key, options as DESOptions)
           break
         case '3DES':
-          result = des3.decrypt(this.data, key, options)
+          result = des3.decrypt(this.data, key, options as TripleDESOptions)
           break
         case 'BLOWFISH':
-          result = blowfish.decrypt(this.data, key, options)
+          result = blowfish.decrypt(this.data, key, options as BlowfishOptions)
           break
         default:
           throw ErrorUtils.createDecryptionError(
@@ -275,7 +281,7 @@ export class CryptoChain {
   /**
    * JSON 序列化
    */
-  toJSON<T = any>(obj: T): CryptoChain {
+  toJSON<T>(obj: T): CryptoChain {
     if (this.errorOccurred) return this
 
     try {
@@ -290,7 +296,7 @@ export class CryptoChain {
   /**
    * JSON 反序列化
    */
-  fromJSON<T = any>(): T | null {
+  fromJSON<T>(): T | null {
     if (this.errorOccurred) {
       throw this.lastError || new Error('Chain execution failed')
     }
@@ -387,11 +393,29 @@ export class CryptoChain {
   }
 
   /**
-   * 处理错误
+   * 处理错误（优化内存使用）
    */
   private handleError(error: unknown): void {
     this.errorOccurred = true
-    this.lastError = error instanceof Error ? error : new Error(String(error))
+    // 限制错误消息长度，避免内存泄漏
+    const message = error instanceof Error 
+      ? error.message.slice(0, 500) 
+      : String(error).slice(0, 500)
+    this.lastError = new Error(message)
+  }
+  
+  /**
+   * 清理内部状态，释放内存
+   */
+  dispose(): void {
+    // 清理敏感数据
+    if (typeof this.data === 'string') {
+      this.data = ''
+    } else if (this.data && typeof this.data === 'object') {
+      this.data.data = ''
+    }
+    this.lastError = undefined
+    this.resultCache = new WeakMap()
   }
 }
 
@@ -409,11 +433,10 @@ export function encryptToBase64(
   data: string,
   algorithm: EncryptionAlgorithm,
   key: string,
-  options?: any
+  options?: AESOptions | RSAOptions | Record<string, unknown>
 ): string {
   const chainInstance = chain(data)
-  // 使用类型断言来满足重载签名
-  return (chainInstance as any).encrypt(algorithm, key, options).base64().execute()
+  return chainInstance.encrypt(algorithm as 'AES', key, options as AESOptions).base64().execute()
 }
 
 /**
@@ -423,48 +446,61 @@ export function decryptFromBase64(
   data: string,
   algorithm: EncryptionAlgorithm,
   key: string,
-  options?: any
+  options?: AESOptions | RSAOptions | Record<string, unknown>
 ): string {
   const chainInstance = chain(data).fromBase64()
-  return (chainInstance as any).decrypt(algorithm, key, options).execute()
+  return chainInstance.decrypt(algorithm as 'AES', key, options as AESOptions).execute()
 }
 
 /**
  * 快捷 JSON 加密
  */
-export function encryptJSON<T = any>(
+export function encryptJSON<T>(
   obj: T,
   algorithm: EncryptionAlgorithm,
   key: string,
-  options?: any
+  options?: AESOptions | RSAOptions | Record<string, unknown>
 ): string {
   const chainInstance = chain(JSON.stringify(obj))
-  return (chainInstance as any).encrypt(algorithm, key, options).base64().execute()
+  return chainInstance.encrypt(algorithm as 'AES', key, options as AESOptions).base64().execute()
 }
 
 /**
  * 快捷 JSON 解密
  */
-export function decryptJSON<T = any>(
+export function decryptJSON<T>(
   data: string,
   algorithm: EncryptionAlgorithm,
   key: string,
-  options?: any
+  options?: AESOptions | RSAOptions | Record<string, unknown>
 ): T {
   const chainInstance = chain(data).fromBase64()
-  const decrypted = (chainInstance as any).decrypt(algorithm, key, options).execute()
+  const decrypted = chainInstance.decrypt(algorithm as 'AES', key, options as AESOptions).execute()
   return JSON.parse(decrypted) as T
 }
 
 /**
- * 密码哈希（多次）
+ * 密码哈希（多次）- 优化内存使用
  */
 export function hashPassword(password: string, iterations = 10000): string {
-  let result = chain(password)
-
-  for (let i = 0; i < iterations; i++) {
-    result = result.hash('SHA256')
+  let chainInstance = chain(password)
+  
+  // 批量处理，减少中间对象创建
+  const batchSize = 100
+  for (let i = 0; i < iterations; i += batchSize) {
+    const count = Math.min(batchSize, iterations - i)
+    for (let j = 0; j < count; j++) {
+      chainInstance = chainInstance.hash('SHA256')
+    }
+    // 定期清理，避免内存累积
+    if (i % 1000 === 0 && i > 0) {
+      const intermediate = chainInstance.execute()
+      chainInstance.dispose()
+      chainInstance = chain(intermediate)
+    }
   }
-
-  return result.execute()
+  
+  const result = chainInstance.execute()
+  chainInstance.dispose()
+  return result
 }

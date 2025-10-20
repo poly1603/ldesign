@@ -554,14 +554,14 @@ export function consoleExporter(spans: TraceSpan[]): void {
   const status = span.status === SpanStatus.SUCCESS ? '✅' : span.status === SpanStatus.ERROR ? '❌' : '⏳'
 
   console.group(`${status} ${span.name}${duration}`)
-  console.log('Start:', new Date(span.startTime).toISOString())
+  console.info('Start:', new Date(span.startTime).toISOString())
 
   if (span.tags.length > 0) {
-   console.log('Tags:', span.tags)
+   console.info('Tags:', span.tags)
   }
 
   if (span.logs.length > 0) {
-   console.log('Logs:', span.logs)
+   console.info('Logs:', span.logs)
   }
 
   if (span.error) {

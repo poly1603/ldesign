@@ -75,13 +75,14 @@ export class InterceptorManagerImpl<T> implements InterceptorManager<T> {
   }
 
   /**
-   * 遍历拦截器（优化版 - 无需检查 null）
+   * 遍历拦截器（高性能版 - 使用索引遍历）
    * @param fn 遍历函数
    */
   forEach(fn: (interceptor: InterceptorItem<T>) => void): void {
-    // 直接遍历，无需检查 null
-    for (const interceptor of this.interceptors) {
-      fn(interceptor)
+    // 使用索引遍历，比 for-of 更快
+    const len = this.interceptors.length
+    for (let i = 0; i < len; i++) {
+      fn(this.interceptors[i]!)
     }
   }
 

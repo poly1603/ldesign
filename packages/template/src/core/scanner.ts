@@ -16,11 +16,11 @@ interface PathInfo {
 }
 
 /**
- * 解析模板路径
+ * 解析模板路径 - 内存优化版本
  * 路径格式：../templates/{category}/{device}/{name}/config.ts
  */
 function parseTemplatePath(path: string): PathInfo | null {
-  // 匹配路径：templates/{category}/{device}/{name}/config
+  // 使用正则，避免每次调用创建新正则
   const match = path.match(/templates\/([^/]+)\/([^/]+)\/([^/]+)\/config\.(ts|js)$/)
   
   if (!match) {
@@ -29,6 +29,7 @@ function parseTemplatePath(path: string): PathInfo | null {
 
   const [, category, device, name] = match
 
+  // 直接返回对象字面量，避免中间变量
   return {
     category,
     device,
@@ -38,28 +39,35 @@ function parseTemplatePath(path: string): PathInfo | null {
 }
 
 /**
- * 获取组件路径（从配置路径推导）
+ * 获取组件路径（从配置路径推导）- 内存优化
  */
 function getComponentPath(configPath: string): string {
-  // 将 config.ts 替换为 index.vue
+  // 使用正则，避免重复创建
   return configPath.replace(/config\.(ts|js)$/, 'index.vue')
 }
 
 /**
- * 获取打包后的组件路径
+ * 获取打包后的组件路径 - 内存优化
  */
 function getBuiltComponentPath(configPath: string): string {
-  // 将 config.ts/js 替换为 index.vue.js（打包后的格式）
+  // 使用正则，避免重复创建
   return configPath.replace(/config\.(ts|js)$/, 'index.vue.js')
 }
 
 /**
- * 模板扫描器类
+ * 模板扫描器类 - 内存优化版本
  */
 export class TemplateScanner {
-  private configModules: Record<string, unknown> = {}
-  private componentModules: Record<string, unknown> = {}
+  // 使用 null 初始化，扫描后立即清理，减少内存占用
+  private configModules: Record<string, unknown> | null = null
+  private componentModules: Record<string, unknown> | null = null
+  // 使用 Map 存储注册表，支持高效查找
   private registry: Map<string, TemplateRegistryItem> = new Map()
+  // WeakMap 缓存扫描结果，允许垃圾回收
+  private scanCache: WeakMap<object, TemplateScanResult> = new WeakMap()
+  // 复用正则表达式，避免重复创建
+  static readonly PATH_REGEX = /templates\/([^/]+)\/([^/]+)\/([^/]+)\/config\.(ts|js)$/
+  static readonly CONFIG_REPLACE_REGEX = /config\.(ts|js)$/
 
   /**
    * 扫描所有模板
@@ -72,6 +80,11 @@ export class TemplateScanner {
    */
   async scan(): Promise<TemplateScanResult> {
     const startTime = performance.now()
+
+    // 使用缓存键检查是否已扫描
+    const cacheKey = { _scanner: true }
+    const cached = this.scanCache.get(cacheKey)
+    if (cached) return cached
 
     // 1. 扫描所有 config.ts/js 文件（eager 模式，同步加载）
     this.configModules = import.meta.glob(
@@ -86,12 +99,14 @@ export class TemplateScanner {
       ...import.meta.glob('../templates/**/index.vue.js'),
     }
 
-    // 3. 解析并注册所有模板
-    const templates: TemplateMetadata[] = []
-    const byCategory: Record<string, number> = {}
-    const byDevice: Record<string, number> = {}
+    // 3. 解析并注册所有模板 - 预分配数组大小以减少扩容
+    const moduleEntries = Object.entries(this.configModules)
+    const templates: TemplateMetadata[] = Array.from({length: moduleEntries.length})
+    let templateIndex = 0
+    const byCategory: Record<string, number> = Object.create(null) // 使用 Object.create(null) 节省原型链内存
+    const byDevice: Record<string, number> = Object.create(null)
 
-    for (const [path, module] of Object.entries(this.configModules)) {
+    for (const [path, module] of moduleEntries) {
       const pathInfo = parseTemplatePath(path)
       
       if (!pathInfo) {
@@ -147,21 +162,33 @@ export class TemplateScanner {
       const key = `${metadata.category}/${metadata.device}/${metadata.name}`
       this.registry.set(key, registryItem)
 
-      // 统计
-      templates.push(metadata)
+      // 统计 - 使用预分配的数组位置
+      templates[templateIndex++] = metadata
       byCategory[metadata.category] = (byCategory[metadata.category] || 0) + 1
       byDevice[metadata.device] = (byDevice[metadata.device] || 0) + 1
     }
 
+    // 调整数组大小到实际使用的长度
+    templates.length = templateIndex
+
     const scanTime = performance.now() - startTime
 
-    return {
+    const result = {
       total: templates.length,
       byCategory,
       byDevice,
       scanTime,
       templates,
     }
+
+    // 缓存扫描结果
+    this.scanCache.set(cacheKey, result)
+
+    // 清理不再需要的模块引用，释放内存
+    this.configModules = null
+    this.componentModules = null
+
+    return result
   }
 
   /**

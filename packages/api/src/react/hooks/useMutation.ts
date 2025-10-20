@@ -33,7 +33,7 @@ export function useMutation<TResult = unknown, TVars = unknown>(
         return { ...(val as Record<string, unknown>) }
       return val
     }
-    try { // @ts-ignore
+    try {
       if (typeof structuredClone === 'function')
         return structuredClone(val)
     }

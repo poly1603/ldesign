@@ -7,7 +7,7 @@ coverage:
   # 舍入模式
   round: down
   # 范围设置
-  range: "70...100"
+  range: 70...100
 
   # 状态检查配置
   status:
@@ -25,7 +25,7 @@ coverage:
           - cache
         # 路径过滤
         paths:
-          - "packages/cache/src"
+          - packages/cache/src
     
     # 补丁级别检查
     patch:
@@ -36,19 +36,19 @@ coverage:
         flags:
           - cache
         paths:
-          - "packages/cache/src"
+          - packages/cache/src
 
   # 忽略的路径
   ignore:
-    - "packages/cache/dist"
-    - "packages/cache/lib"
-    - "packages/cache/es"
-    - "packages/cache/cjs"
-    - "packages/cache/types"
-    - "packages/cache/docs"
-    - "packages/cache/examples"
-    - "packages/cache/__tests__"
-    - "packages/cache/coverage"
+    - packages/cache/dist
+    - packages/cache/lib
+    - packages/cache/es
+    - packages/cache/cjs
+    - packages/cache/types
+    - packages/cache/docs
+    - packages/cache/examples
+    - packages/cache/__tests__
+    - packages/cache/coverage
     - "packages/cache/**/*.d.ts"
     - "packages/cache/**/*.config.*"
     - "packages/cache/**/*.test.*"

@@ -3,7 +3,7 @@
  * Common utility functions for the i18n system
  */
 
-import type { Locale, Messages, InterpolationParams } from '../types';
+import type { Locale } from '../types';
 
 /**
  * Check if a value is a plain object
@@ -39,28 +39,48 @@ export function isPromise<T = any>(value: any): value is Promise<T> {
 }
 
 /**
- * Deep clone an object
+ * Deep clone an object - Optimized version with depth limit
  */
-export function deepClone<T>(obj: T): T {
+export function deepClone<T>(obj: T, maxDepth = 10, currentDepth = 0): T {
   if (obj === null || typeof obj !== 'object') return obj;
+  if (currentDepth >= maxDepth) return obj; // Prevent stack overflow
+  
   if (obj instanceof Date) return new Date(obj.getTime()) as any;
-  if (obj instanceof Array) return obj.map((item) => deepClone(item)) as any;
-  if (obj instanceof Set) return new Set(Array.from(obj).map(deepClone)) as any;
+  if (obj instanceof RegExp) return new RegExp(obj.source, obj.flags) as any;
+  if (Array.isArray(obj)) {
+    const arr = Array.from({length: obj.length});
+    for (let i = 0; i < obj.length; i++) {
+      arr[i] = deepClone(obj[i], maxDepth, currentDepth + 1);
+    }
+    return arr as any;
+  }
+  if (obj instanceof Set) {
+    const set = new Set();
+    for (const item of obj) {
+      set.add(deepClone(item, maxDepth, currentDepth + 1));
+    }
+    return set as any;
+  }
   if (obj instanceof Map) {
-    return new Map(Array.from(obj.entries()).map(([k, v]) => [k, deepClone(v)])) as any;
+    const map = new Map();
+    for (const [k, v] of obj) {
+      map.set(k, deepClone(v, maxDepth, currentDepth + 1));
+    }
+    return map as any;
   }
   
+  // Use Object.create(null) for faster object creation
   const cloned = Object.create(Object.getPrototypeOf(obj));
-  for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      cloned[key] = deepClone(obj[key]);
-    }
+  const keys = Object.keys(obj);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    cloned[key] = deepClone((obj as any)[key], maxDepth, currentDepth + 1);
   }
   return cloned;
 }
 
 /**
- * Deep merge objects
+ * Deep merge objects - Optimized iterative version
  */
 export function deepMerge<T extends Record<string, any>>(
   target: T,
@@ -68,37 +88,53 @@ export function deepMerge<T extends Record<string, any>>(
 ): T {
   if (!sources.length) return target;
   
-  const source = sources.shift();
-  if (!source) return target;
-  
-  if (isPlainObject(target) && isPlainObject(source)) {
-    for (const key in source) {
-      if (isPlainObject(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} });
-        deepMerge(target[key] as any, source[key] as any);
-      } else {
-        Object.assign(target, { [key]: source[key] });
+  for (const source of sources) {
+    if (!source) continue;
+    
+    if (isPlainObject(target) && isPlainObject(source)) {
+      // Use Object.keys for better performance
+      const keys = Object.keys(source);
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        const sourceValue = source[key];
+        
+        if (isPlainObject(sourceValue)) {
+          if (!target[key]) {
+            target[key] = {} as any;
+          }
+          deepMerge(target[key] as any, sourceValue as any);
+        } else {
+          target[key] = sourceValue as any;
+        }
       }
     }
   }
   
-  return deepMerge(target, ...sources);
+  return target;
 }
 
 /**
- * Get nested value from object using dot notation
+ * Get nested value from object using dot notation - Optimized with cache
  */
+const pathCache = new Map<string, string[]>();
+const PATH_CACHE_MAX = 500;
+
 export function getNestedValue(obj: any, path: string, separator = '.'): any {
   if (!path) return obj;
   
-  const keys = path.split(separator);
-  let current = obj;
-  
-  for (const key of keys) {
-    if (current === null || current === undefined) {
-      return undefined;
+  // Cache path splits
+  let keys = pathCache.get(path);
+  if (!keys) {
+    keys = path.split(separator);
+    if (pathCache.size < PATH_CACHE_MAX) {
+      pathCache.set(path, keys);
     }
-    current = current[key];
+  }
+  
+  let current = obj;
+  for (let i = 0; i < keys.length; i++) {
+    if (current == null) return undefined;
+    current = current[keys[i]];
   }
   
   return current;
@@ -142,7 +178,7 @@ export function flattenObject(
   const result: Record<string, any> = {};
   
   for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
       const newKey = prefix ? `${prefix}${separator}${key}` : key;
       
       if (isPlainObject(obj[key]) && Object.keys(obj[key]).length > 0) {
@@ -166,7 +202,7 @@ export function unflattenObject(
   const result: any = {};
   
   for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
       setNestedValue(result, key, obj[key], separator);
     }
   }
@@ -175,19 +211,21 @@ export function unflattenObject(
 }
 
 /**
- * Escape HTML special characters
+ * Escape HTML special characters - Optimized with static map
  */
+const HTML_ESCAPE_MAP: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '/': '&#x2F;'
+};
+
+const HTML_ESCAPE_REGEX = /[&<>"'/]/g;
+
 export function escapeHtml(str: string): string {
-  const escapeMap: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-    '/': '&#x2F;'
-  };
-  
-  return str.replace(/[&<>"'\/]/g, (char) => escapeMap[char] || char);
+  return str.replace(HTML_ESCAPE_REGEX, char => HTML_ESCAPE_MAP[char]);
 }
 
 /**
@@ -268,26 +306,48 @@ export function throttle<T extends (...args: any[]) => any>(
 }
 
 /**
- * Create a simple event emitter
+ * Create a simple event emitter with memory leak protection
  */
 export class EventEmitter {
-  private events: Map<string, Set<Function>> = new Map();
+  private readonly events = new Map<string, Set<(...args: any[]) => void>>();
+  private readonly maxListeners = 100; // Prevent memory leaks
+  private listenerCount = 0;
   
-  on(event: string, listener: Function): () => void {
-    if (!this.events.has(event)) {
-      this.events.set(event, new Set());
+  on(event: string, listener: (...args: any[]) => void): () => void {
+    let listeners = this.events.get(event);
+    if (!listeners) {
+      listeners = new Set();
+      this.events.set(event, listeners);
     }
-    this.events.get(event)!.add(listener);
+    
+    // Prevent memory leaks
+    if (this.listenerCount >= this.maxListeners) {
+      console.warn(`[@ldesign/i18n] Max listeners (${this.maxListeners}) exceeded`);
+      return () => {};
+    }
+    
+    listeners.add(listener);
+    this.listenerCount++;
     
     // Return unsubscribe function
-    return () => this.off(event, listener);
+    return () => {
+      if (listeners.delete(listener)) {
+        this.listenerCount--;
+      }
+    };
   }
   
-  off(event: string, listener: Function): void {
-    this.events.get(event)?.delete(listener);
+  off(event: string, listener: (...args: any[]) => void): void {
+    const listeners = this.events.get(event);
+    if (listeners?.delete(listener)) {
+      this.listenerCount--;
+      if (listeners.size === 0) {
+        this.events.delete(event);
+      }
+    }
   }
   
-  once(event: string, listener: Function): void {
+  once(event: string, listener: (...args: any[]) => void): void {
     const wrapper = (...args: any[]) => {
       listener(...args);
       this.off(event, wrapper);
@@ -296,20 +356,29 @@ export class EventEmitter {
   }
   
   emit(event: string, ...args: any[]): void {
-    this.events.get(event)?.forEach(listener => {
+    const listeners = this.events.get(event);
+    if (!listeners || listeners.size === 0) return;
+    
+    // Use for...of for better performance
+    for (const listener of listeners) {
       try {
         listener(...args);
       } catch (error) {
-        console.error(`Error in event listener for "${event}":`, error);
+        console.error(`[@ldesign/i18n] Error in event listener for "${event}":`, error);
       }
-    });
+    }
   }
   
   removeAllListeners(event?: string): void {
     if (event) {
-      this.events.delete(event);
+      const listeners = this.events.get(event);
+      if (listeners) {
+        this.listenerCount -= listeners.size;
+        this.events.delete(event);
+      }
     } else {
       this.events.clear();
+      this.listenerCount = 0;
     }
   }
 }

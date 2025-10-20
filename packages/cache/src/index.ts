@@ -31,6 +31,10 @@ export type {
 // 缓存管理器
 export { CacheManager } from './core/cache-manager'
 
+// 内存管理
+export { createMemoryManager, MemoryManager } from './core/memory-manager'
+export type { MemoryManagerConfig, MemoryStats } from './core/memory-manager'
+
 // 命名空间管理
 export { CacheNamespace, createNamespace } from './core/namespace-manager'
 export type { NamespaceOptions } from './core/namespace-manager'
@@ -43,10 +47,14 @@ export type {
   PerformanceStats,
 } from './core/performance-monitor'
 
+// 智能预取
+export { createPrefetchManager, PrefetchManager } from './core/prefetch-manager'
+
+export type { PrefetchStrategy, WarmupConfig } from './core/prefetch-manager'
 // 快照管理
 export { createSnapshotManager, SnapshotManager } from './core/snapshot-manager'
-export type { CacheSnapshot, RestoreOptions, SnapshotOptions } from './core/snapshot-manager'
 
+export type { CacheSnapshot, RestoreOptions, SnapshotOptions } from './core/snapshot-manager'
 // 跨标签页同步
 export { SyncManager } from './core/sync-manager'
 
@@ -153,7 +161,8 @@ function detectPreset(): DetectedPreset {
   }
 
   // Node.js 环境
-  if (typeof process !== 'undefined' && process.versions?.node) {
+  // eslint-disable-next-line node/prefer-global/process
+  if (typeof globalThis !== 'undefined' && typeof (globalThis as any).process !== 'undefined' && (globalThis as any).process?.versions?.node) {
     return 'node'
   }
 
@@ -195,7 +204,7 @@ function detectPreset(): DetectedPreset {
  */
 export function createCache(options?: CacheOptions & { preset?: DetectedPreset }): CacheManager {
   const preset = options?.preset ?? detectPreset()
-  const { preset: _omit, ...rest } = options || {}
+  const { preset: _preset, ...rest } = options || {}
   const merged = { ...getPresetOptions(preset), ...rest } as CacheOptions
   return new CacheManager(merged)
 }

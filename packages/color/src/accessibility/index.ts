@@ -3,9 +3,9 @@
  * 提供色盲模拟、对比度检查和自动调整等功能
  */
 
-import { Color } from '../core/Color'
+import type { TextSize, WCAGLevel } from '../types'
 import { getContrast, isWCAGCompliant } from '../core/analysis'
-import type { WCAGLevel, TextSize } from '../types'
+import { Color } from '../core/Color'
 
 /**
  * 色盲类型

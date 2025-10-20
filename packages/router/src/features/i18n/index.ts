@@ -4,8 +4,8 @@
  * 提供多语言路由功能，支持路径本地化、自动语言检测等
  */
 
-import type { RouteLocationNormalized, RouteRecordRaw, Router } from '../../types'
-import { computed, ref, watch } from 'vue'
+import type { RouteLocationNormalized, Router, RouteRecordRaw } from '../../types'
+import { computed, ref } from 'vue'
 import { logger } from '../../utils/logger'
 
 // ==================== 类型定义 ====================
@@ -148,7 +148,7 @@ export class I18nRouteManager {
           return lower
         }
         const short = lower.split('-')[0]
-        if (this.config.locales.includes(short)) {
+        if (short && this.config.locales.includes(short)) {
           return short
         }
       }
@@ -295,7 +295,7 @@ export class I18nRouteManager {
    * 设置导航守卫
    */
   private setupNavigationGuards(): void {
-    this.router.beforeEach((to, from, next) => {
+    this.router.beforeEach((to, _from, next) => {
       // 从 URL 中提取语言
       const urlLocale = this.extractLocaleFromPath(to.path)
       
@@ -320,8 +320,9 @@ export class I18nRouteManager {
    */
   private extractLocaleFromPath(path: string): string | null {
     const segments = path.split('/').filter(Boolean)
-    if (segments.length > 0 && this.config.locales.includes(segments[0])) {
-      return segments[0]
+    const firstSegment = segments[0]
+    if (segments.length > 0 && firstSegment && this.config.locales.includes(firstSegment)) {
+      return firstSegment
     }
     return null
   }
@@ -445,7 +446,8 @@ export class I18nRouteManager {
   nextLocale(): void {
     const currentIndex = this.config.locales.indexOf(this.currentLocale.value)
     const nextIndex = (currentIndex + 1) % this.config.locales.length
-    this.setLocale(this.config.locales[nextIndex])
+    const nextLocale = this.config.locales[nextIndex]
+    if (nextLocale) this.setLocale(nextLocale)
   }
   
   /**
@@ -515,10 +517,10 @@ export function useI18nRoute() {
       i18nManager!.getLocaleSwitchLinks(),
     
     // 支持的语言列表
-    locales: i18nManager.config.locales,
+    locales: (i18nManager as any).config.locales,
     
     // 默认语言
-    defaultLocale: i18nManager.config.defaultLocale,
+    defaultLocale: (i18nManager as any).config.defaultLocale,
   }
 }
 

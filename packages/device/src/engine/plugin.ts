@@ -4,10 +4,14 @@
  * 将 Device 功能集成到 LDesign Engine 中，提供统一的设备检测管理体验
  */
 
-import type { DevicePluginOptions } from '../types'
+import type { DevicePluginOptions, EngineContext } from '../types'
 import { DeviceDetector } from '../core/DeviceDetector'
 // import type { Plugin } from '@ldesign/engine/types' // 暂时注释，等待外部包安装
 import { DevicePlugin } from '../vue/plugin'
+
+// 本地 EngineLike 类型，避免使用 any
+// 注意：必须在所有 import 之后声明，以满足 import/first 规则
+type EngineLike = NonNullable<EngineContext['engine']>
 
 /**
  * Device Engine 插件配置选项
@@ -36,8 +40,8 @@ export interface Plugin {
   name: string
   version?: string
   dependencies?: string[]
-  install: (context: any) => Promise<void> | void
-  uninstall?: (context: any) => Promise<void> | void
+  install: (context: unknown) => Promise<void> | void
+  uninstall?: (context: unknown) => Promise<void> | void
 }
 
 /**
@@ -151,14 +155,15 @@ export function createDeviceEnginePlugin(
     version,
     dependencies,
 
-    async install(context: any) {
+    async install(context: unknown) {
       try {
         if (debug) {
           console.warn('[Device Plugin] install method called with context:', context)
         }
 
         // 从上下文中获取引擎实例
-        const engine = context.engine || context
+        const engineRaw = (context as { engine?: unknown }).engine ?? context
+        const engine = engineRaw as EngineLike
 
         if (debug) {
           console.warn('[Device Plugin] engine instance:', !!engine)
@@ -169,7 +174,7 @@ export function createDeviceEnginePlugin(
           engine.logger?.info(`[Device Plugin] performInstall called`)
 
           // 获取 Vue 应用实例
-          const vueApp = engine.getApp()
+          const vueApp = engine.getApp() as any
           if (!vueApp) {
             throw new Error(
               'Vue app not found. Make sure the engine has created a Vue app before installing device plugin.',
@@ -202,7 +207,7 @@ export function createDeviceEnginePlugin(
 
           // 添加到全局属性
           const globalPropertyName = config.globalPropertyName || '$device'
-          if (!vueApp.config.globalProperties[globalPropertyName]) {
+          if (!vueApp.config?.globalProperties[globalPropertyName]) {
             vueApp.config.globalProperties[globalPropertyName] = globalDevice
             engine.logger?.info(`[Device Plugin] Global property ${globalPropertyName} added`)
           }
@@ -254,8 +259,9 @@ export function createDeviceEnginePlugin(
         const errorMessage = `Failed to install ${name} plugin: ${error instanceof Error ? error.message : String(error)}`
 
         // 记录错误日志
-        if (context.engine?.logger) {
-          context.engine.logger.error(errorMessage, { error })
+        const ctx = context as EngineContext
+        if (ctx.engine?.logger) {
+          ctx.engine.logger.error(errorMessage, { error })
         }
         else {
           console.error(errorMessage)
@@ -265,17 +271,18 @@ export function createDeviceEnginePlugin(
       }
     },
 
-    async uninstall(context: any) {
+    async uninstall(context: unknown) {
       try {
         if (debug) {
           console.warn('[Device Plugin] uninstall method called')
         }
 
-        const engine = context.engine || context
+        const engineRaw = (context as { engine?: unknown }).engine ?? context
+        const engine = engineRaw as EngineLike
 
         // 从状态管理中移除
         if (engine.state) {
-          const deviceInstance = engine.state.get('device')
+          const deviceInstance = engine.state.get('device') as any
           if (deviceInstance && typeof deviceInstance.destroy === 'function') {
             deviceInstance.destroy()
           }
@@ -283,19 +290,22 @@ export function createDeviceEnginePlugin(
         }
 
         // 移除全局属性
-        const vueApp = engine.getApp()
-        if (vueApp) {
-          const globalPropertyName = config.globalPropertyName || '$device'
-          delete vueApp.config.globalProperties[globalPropertyName]
-        }
+          const vueApp = engine.getApp() as any
+          if (vueApp) {
+            const globalPropertyName = config.globalPropertyName || '$device'
+            if (vueApp.config?.globalProperties) {
+              delete vueApp.config.globalProperties[globalPropertyName]
+            }
+          }
 
         engine.logger?.info(`[Device Plugin] ${name} plugin uninstalled successfully`)
       }
       catch (error) {
         const errorMessage = `Failed to uninstall ${name} plugin: ${error instanceof Error ? error.message : String(error)}`
 
-        if (context.engine?.logger) {
-          context.engine.logger.error(errorMessage, { error })
+        const ctx = context as EngineContext
+        if (ctx.engine?.logger) {
+          ctx.engine.logger.error(errorMessage, { error })
         }
         else {
           console.error(errorMessage)

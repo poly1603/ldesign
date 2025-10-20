@@ -17,7 +17,7 @@ export interface LogEntry {
   message: string
   timestamp: number
   module?: string
-  data?: any
+  data?: unknown
   stack?: string
 }
 
@@ -137,28 +137,28 @@ export class Logger {
   /**
    * Debug 级别日志
    */
-  debug(message: string, data?: any): void {
+  debug(message: string, data?: unknown): void {
     this.log(LogLevel.DEBUG, message, data)
   }
 
   /**
    * Info 级别日志
    */
-  info(message: string, data?: any): void {
+  info(message: string, data?: unknown): void {
     this.log(LogLevel.INFO, message, data)
   }
 
   /**
    * Warn 级别日志
    */
-  warn(message: string, data?: any): void {
+  warn(message: string, data?: unknown): void {
     this.log(LogLevel.WARN, message, data)
   }
 
   /**
    * Error 级别日志
    */
-  error(message: string, error?: any): void {
+  error(message: string, error?: unknown): void {
     const stack = error instanceof Error ? error.stack : undefined
     this.log(LogLevel.ERROR, message, error, stack)
   }
@@ -170,7 +170,6 @@ export class Logger {
     if (!this.options.enabled || typeof console.group !== 'function')
       return
 
-    // eslint-disable-next-line no-console
     console.group(this.formatPrefix() + label)
   }
 
@@ -181,18 +180,16 @@ export class Logger {
     if (!this.options.enabled || typeof console.groupEnd !== 'function')
       return
 
-    // eslint-disable-next-line no-console
     console.groupEnd()
   }
 
   /**
    * 表格日志
    */
-  table(data: any): void {
+  table(data: unknown): void {
     if (!this.options.enabled || typeof console.table !== 'function')
       return
 
-    // eslint-disable-next-line no-console
     console.table(data)
   }
 
@@ -203,7 +200,6 @@ export class Logger {
     if (!this.options.enabled || typeof console.time !== 'function')
       return
 
-    // eslint-disable-next-line no-console
     console.time(this.formatPrefix() + label)
   }
 
@@ -214,7 +210,6 @@ export class Logger {
     if (!this.options.enabled || typeof console.timeEnd !== 'function')
       return
 
-    // eslint-disable-next-line no-console
     console.timeEnd(this.formatPrefix() + label)
   }
 
@@ -275,7 +270,7 @@ export class Logger {
   private log(
     level: LogLevel,
     message: string,
-    data?: any,
+    data?: unknown,
     stack?: string,
   ): void {
     // 检查是否启用和级别过滤
@@ -331,7 +326,7 @@ export class Logger {
     // 浏览器环境使用颜色
     if (typeof window !== 'undefined') {
       const color = this.levelColors[level]
-      const args = [
+      const args: unknown[] = [
         `%c${timestamp}%c${prefix}%c[${levelName}]%c ${message}`,
         'color: #999',
         'color: #333; font-weight: bold',
@@ -352,7 +347,7 @@ export class Logger {
     else {
       // Node.js 环境
       const output = `${timestamp}${prefix}[${levelName}] ${message}`
-      const args = [output]
+      const args: unknown[] = [output]
 
       if (data !== undefined) {
         args.push('\n', data)
@@ -369,21 +364,18 @@ export class Logger {
   /**
    * 获取对应的 console 方法
    */
-  private getConsoleMethod(level: LogLevel): (...args: any[]) => void {
+  private getConsoleMethod(level: LogLevel): (...args: unknown[]) => void {
     switch (level) {
       case LogLevel.DEBUG:
-        // eslint-disable-next-line no-console
-        return console.debug || console.log
+        return console.debug || console.info
       case LogLevel.INFO:
-        // eslint-disable-next-line no-console
-        return console.info || console.log
+        return console.info
       case LogLevel.WARN:
         return console.warn
       case LogLevel.ERROR:
         return console.error
       default:
-        // eslint-disable-next-line no-console
-        return console.log
+        return console.info
     }
   }
 
@@ -442,7 +434,7 @@ export const defaultLogger = new Logger({
 /**
  * 便捷方法导出
  */
-export const debug = (message: string, data?: any) => defaultLogger.debug(message, data)
-export const info = (message: string, data?: any) => defaultLogger.info(message, data)
-export const warn = (message: string, data?: any) => defaultLogger.warn(message, data)
-export const error = (message: string, err?: any) => defaultLogger.error(message, err)
+export const debug = (message: string, data?: unknown) => defaultLogger.debug(message, data)
+export const info = (message: string, data?: unknown) => defaultLogger.info(message, data)
+export const warn = (message: string, data?: unknown) => defaultLogger.warn(message, data)
+export const error = (message: string, err?: unknown) => defaultLogger.error(message, err)

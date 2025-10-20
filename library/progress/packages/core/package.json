@@ -1,0 +1,26 @@
+{
+  "name": "@ldesign/progress-core",
+  "version": "1.1.0",
+  "description": "核心进度条库，框架无关，支持14种进度条类型",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "progress",
+    "progress-bar"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "peerDependencies": {},
+  "dependencies": {}
+}
+
+

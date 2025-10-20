@@ -33,11 +33,11 @@ export interface CacheStrategy {
   /** 策略名称 */
   name: string
   /** 是否应该缓存该响应 */
-  shouldCache(config: RequestConfig, response: ResponseData): boolean
+  shouldCache: (config: RequestConfig, response: ResponseData) => boolean
   /** 获取缓存TTL */
-  getTTL(config: RequestConfig, response: ResponseData): number
+  getTTL: (config: RequestConfig, response: ResponseData) => number
   /** 生成缓存键 */
-  generateKey(config: RequestConfig): string
+  generateKey: (config: RequestConfig) => string
 }
 
 /**
@@ -84,6 +84,10 @@ export class LRUCacheStrategy implements CacheStrategy {
    */
   recordAccess(key: string): void {
     this.accessOrder.set(key, this.counter++)
+    // 超过容量则淘汰最久未使用项
+    if (this.accessOrder.size > this.maxSize) {
+      this.evict()
+    }
   }
 
   /**
@@ -118,7 +122,7 @@ export class LRUCacheStrategy implements CacheStrategy {
 
   private parseMaxAge(cacheControl: string): number | null {
     const match = cacheControl.match(/max-age=(\d+)/)
-    return match ? parseInt(match[1], 10) : null
+    return match ? Number.parseInt(match[1], 10) : null
   }
 }
 
@@ -154,6 +158,10 @@ export class LFUCacheStrategy implements CacheStrategy {
   recordAccess(key: string): void {
     const count = this.frequency.get(key) || 0
     this.frequency.set(key, count + 1)
+    // 超过容量则淘汰最少使用项
+    if (this.frequency.size > this.maxSize) {
+      this.evict()
+    }
   }
 
   /**
@@ -198,15 +206,16 @@ export class TTLCacheStrategy implements CacheStrategy {
     this.defaultTTL = defaultTTL
   }
 
-  shouldCache(config: RequestConfig, response: ResponseData): boolean {
+  shouldCache(_config: RequestConfig, response: ResponseData): boolean {
     // 不缓存错误响应
     return response.status >= 200 && response.status < 400
   }
 
   getTTL(config: RequestConfig, response: ResponseData): number {
     // 优先使用配置中的TTL
-    if (config.cache?.ttl) {
-      return config.cache.ttl
+    const ttl = (config as any)?.cache?.ttl as number | undefined
+    if (ttl) {
+      return ttl
     }
 
     // 然后使用响应头中的缓存控制
@@ -231,7 +240,7 @@ export class TTLCacheStrategy implements CacheStrategy {
 
   private parseMaxAge(cacheControl: string): number | null {
     const match = cacheControl.match(/max-age=(\d+)/)
-    return match ? parseInt(match[1], 10) : null
+    return match ? Number.parseInt(match[1], 10) : null
   }
 }
 

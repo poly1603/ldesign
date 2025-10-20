@@ -174,11 +174,13 @@ export class ManagerRegistry {
     }
   }
 
-  // 验证依赖图的完整性
+  /**
+   * 验证依赖关系图的完整性
+   */
   validateDependencyGraph(): {
     valid: boolean
     errors: string[]
-    warnings: string[]
+    warnings?: string[]
   } {
     const errors: string[] = []
     const warnings: string[] = []
@@ -267,13 +269,13 @@ export function Manager(
   dependencies: string[] = [],
   lazy = false
 ) {
-  // eslint-disable-next-line ts/no-explicit-any
+   
   return function <T extends new (...args: any[]) => object>(constructor: T) {
     const registry = getGlobalManagerRegistry()
     registry.register(name, dependencies, lazy)
 
     return class extends constructor {
-      // eslint-disable-next-line ts/no-explicit-any
+       
       constructor(...args: any[]) {
         super(...args)
         registry.markInitialized(name)

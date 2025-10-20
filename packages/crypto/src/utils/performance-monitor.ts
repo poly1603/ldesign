@@ -163,7 +163,10 @@ export class PerformanceMonitor {
       return
     }
 
-    const startTime = this.startTimes.get(operationId)!
+    const startTime = this.startTimes.get(operationId)
+    if (!startTime) {
+      return
+    }
     const endTime = performance.now()
     const duration = endTime - startTime
 
@@ -208,8 +211,9 @@ export class PerformanceMonitor {
     if (typeof process !== 'undefined' && process.memoryUsage) {
       return process.memoryUsage().heapUsed
     }
- else if (typeof performance !== 'undefined' && (performance as any).memory) {
-      return (performance as any).memory.usedJSHeapSize
+ else if (typeof performance !== 'undefined') {
+      const perf = performance as unknown as { memory?: { usedJSHeapSize: number } }
+      return perf.memory?.usedJSHeapSize
     }
     return undefined
   }
@@ -274,7 +278,8 @@ export class PerformanceMonitor {
         })
       }
 
-      const stats = grouped.get(algorithm)!
+      const stats = grouped.get(algorithm)
+      if (!stats) continue
       stats.count++
       stats.totalDataProcessed += metric.dataSize || 0
 
@@ -310,7 +315,8 @@ export class PerformanceMonitor {
         })
       }
 
-      const stats = grouped.get(operation)!
+      const stats = grouped.get(operation)
+      if (!stats) continue
       stats.count++
 
       // 更新平均时长
@@ -376,7 +382,7 @@ export class PerformanceMonitor {
     const validMetrics = metrics.filter(m => m.throughput !== undefined)
     if (validMetrics.length === 0) { return 0 }
 
-    const throughputs = validMetrics.map(m => m.throughput!)
+    const throughputs = validMetrics.map(m => m.throughput).filter((t): t is number => t !== undefined)
     return this.average(throughputs)
   }
 
@@ -483,13 +489,13 @@ export const performanceMonitor = new PerformanceMonitor()
  * 性能测量装饰器
  */
 export function measurePerformance(
-  target: any,
+  target: unknown,
   propertyName: string,
   descriptor: PropertyDescriptor,
 ): PropertyDescriptor {
   const originalMethod = descriptor.value
 
-  descriptor.value = async function (...args: any[]) {
+  descriptor.value = async function (...args: unknown[]) {
     const operationId = `${propertyName}_${Date.now()}`
     performanceMonitor.startOperation(operationId)
 

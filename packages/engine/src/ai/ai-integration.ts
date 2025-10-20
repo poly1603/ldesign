@@ -471,12 +471,17 @@ export class AIIntegration {
 
   private parseCompletions(response: string): string[] {
     const completions: string[] = []
-    const matches = response.matchAll(/\d\.[\t ]*([^\n]+)(?:\n|$)/g)
-    
-    for (const match of matches) {
-      completions.push(match[1].trim())
+    for (const raw of response.split('\n')) {
+      const line = raw.trim()
+      const dot = line.indexOf('.')
+      if (dot > 0) {
+        const leading = line.slice(0, dot)
+        if (/^\d+$/.test(leading)) {
+          const text = line.slice(dot + 1).trim()
+          if (text) completions.push(text)
+        }
+      }
     }
-    
     return completions.slice(0, 5)
   }
 

@@ -179,7 +179,7 @@ export class RoutePerformanceAnalyzer {
    */
   private setupNavigationTracking(): void {
     // 导航开始前
-    this.router.beforeEach((to, from, next) => {
+    this.router.beforeEach((to, _from, next) => {
       if (this.shouldRecord()) {
         this.startNavigation(to)
       }
@@ -416,7 +416,7 @@ export class RoutePerformanceAnalyzer {
       return 0
 
     const index = Math.ceil(sorted.length * p) - 1
-    return sorted[Math.max(0, Math.min(index, sorted.length - 1))]
+    return sorted[Math.max(0, Math.min(index, sorted.length - 1))] ?? 0
   }
 
   /**
@@ -461,7 +461,7 @@ export class RoutePerformanceAnalyzer {
       const avgTime = pathMetrics.reduce((sum, m) => sum + (m.duration || 0), 0) / pathMetrics.length
 
       // 检查慢路由
-      if (avgTime > this.config?.thresholds.poor) {
+      if (this.config && avgTime > (this.config.thresholds?.poor ?? 1000)) {
         suggestions.push({
           priority: 'high',
           type: 'lazy-loading',
@@ -477,7 +477,7 @@ export class RoutePerformanceAnalyzer {
       }
 
       // 检查频繁访问的路由
-      if (pathMetrics.length > metrics.length * 0.2 && avgTime > this.config?.thresholds.acceptable) {
+      if (this.config && pathMetrics.length > metrics.length * 0.2 && avgTime > (this.config.thresholds?.acceptable ?? 500)) {
         suggestions.push({
           priority: 'medium',
           type: 'caching',

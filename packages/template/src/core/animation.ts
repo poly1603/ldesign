@@ -2,8 +2,8 @@
  * 模板动画系统
  */
 
-import { reactive, ref, computed, watchEffect, Ref } from 'vue'
 import type { CSSProperties } from 'vue'
+import { reactive } from 'vue'
 
 /**
  * 动画类型
@@ -282,6 +282,7 @@ export class AnimationController {
   private animations: Map<string, Animation>
   private rafId: number | null = null
   private startTime: number = 0
+  private disposed = false
   
   constructor() {
     this.animations = new Map()
@@ -351,12 +352,15 @@ export class AnimationController {
    * 销毁所有动画
    */
   destroyAll() {
+    if (this.disposed) return
+    
     this.animations.forEach(animation => animation.destroy())
     this.animations.clear()
     if (this.rafId) {
       cancelAnimationFrame(this.rafId)
       this.rafId = null
     }
+    this.disposed = true
   }
 }
 
@@ -412,9 +416,9 @@ export class Animation {
           { opacity: direction === 'out' ? 0 : 1 }
         ]
       
-      case 'slide':
+      case 'slide': {
         const distance = properties?.distance || 100
-        const translateMap = {
+        const translateMap: Record<string, string> = {
           up: `translateY(${distance}px)`,
           down: `translateY(-${distance}px)`,
           left: `translateX(${distance}px)`,
@@ -424,6 +428,7 @@ export class Animation {
           { transform: translateMap[direction || 'up'] || 'none' },
           { transform: 'translateX(0) translateY(0)' }
         ]
+      }
       
       case 'scale':
         return [
@@ -431,19 +436,21 @@ export class Animation {
           { transform: direction === 'out' ? 'scale(0)' : 'scale(1)' }
         ]
       
-      case 'rotate':
+      case 'rotate': {
         const degrees = properties?.degrees || 360
         return [
           { transform: 'rotate(0deg)' },
           { transform: `rotate(${degrees}deg)` }
         ]
+      }
       
-      case 'flip':
+      case 'flip': {
         const axis = properties?.axis || 'Y'
         return [
           { transform: `rotate${axis}(0deg)` },
           { transform: `rotate${axis}(180deg)` }
         ]
+      }
       
       case 'custom':
         return properties?.keyframes || []

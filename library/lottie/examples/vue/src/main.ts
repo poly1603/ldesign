@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import LottiePlugin from '../../../src/adapters/vue'
+// import { LottiePlugin } from '@ldesign/lottie/vue'
 
 const app = createApp(App)
-app.use(LottiePlugin)
+// app.use(LottiePlugin) // 可选：全局注册
 app.mount('#app')

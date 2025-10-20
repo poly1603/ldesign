@@ -219,6 +219,7 @@
   "scripts": {
     "build": "ldesign-builder build",
     "build:watch": "ldesign-builder build --watch",
+    "type-check": "tsc --noEmit",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "benchmark": "node scripts/performance-benchmark.js",
@@ -242,8 +243,8 @@
   },
   "dependencies": {
     "@ldesign/device": "workspace:*",
-    "nanoid": "^5.0.9",
-    "mitt": "^3.0.1"
+    "mitt": "^3.0.1",
+    "nanoid": "^5.0.9"
   },
   "peerDependencies": {
     "@ldesign/device": "^1.0.0",

@@ -81,15 +81,15 @@ export function createMinimalI18n(config: any) {
   return productionConfig;
 }
 
+// Export cache features
+export * from '../core/cache';
 /**
  * Tree-shakeable exports
  * Each module can be imported separately to reduce bundle size
  */
 export * from '../core/interpolation';
-export * from '../core/pluralization';
 
-// Export cache features
-export * from '../core/cache';
+export * from '../core/pluralization';
 
 // Export formatter features  
 // export * from '../core/formatter'; // TODO: Add when formatter module is created
@@ -259,7 +259,7 @@ export const VITE_OPTIMIZATION = {
     lib: {
       entry: './src/index.ts',
       formats: ['es', 'cjs', 'umd'],
-      fileName: (format) => `i18n.${format}.js`,
+      fileName: (format: any) => `i18n.${format}.js`,
     },
   },
 };

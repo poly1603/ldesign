@@ -1,9 +1,12 @@
 import type {
+  BatteryInfo,
   DeviceDetectorEvents,
   DeviceDetectorOptions,
   DeviceInfo,
   DeviceModule,
   DeviceType,
+  GeolocationInfo,
+  NetworkInfo,
   Orientation,
 } from '../types'
 import {
@@ -15,6 +18,7 @@ import {
   parseBrowser,
   parseOS,
 } from '../utils'
+import { memoryManager, SafeTimerManager } from '../utils/MemoryManager'
 import { EventEmitter } from './EventEmitter'
 import { ModuleLoader } from './ModuleLoader'
 
@@ -54,17 +58,20 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   private resizeHandler?: () => void
   private orientationHandler?: () => void
   private isDestroyed = false
+  private timerManager: SafeTimerManager
 
   // 性能优化：缓存计算结果
   private cachedUserAgent?: string
   private cachedOS?: { name: string, version: string }
   private cachedBrowser?: { name: string, version: string }
   private cachedWebGLSupport?: boolean // 缓存WebGL检测结果
+  private webglCacheExpireTime = 0 // WebGL缓存过期时间
   private lastDetectionTime = 0
   private readonly minDetectionInterval = 16 // 约60fps
 
   // 缓存过期时间(毫秒)
   private readonly cacheExpireTime = 60000 // 1分钟
+  private readonly webglCacheLifetime = 300000 // WebGL缓存5分钟
   private cacheTimestamp = 0
 
   // 错误处理和重试机制
@@ -73,7 +80,9 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   private lastErrorTime = 0
   private readonly errorCooldown = 5000 // 5秒错误冷却时间
 
-  // 性能监控
+  // 性能监控（使用环形缓冲区，避免无限增长）
+  private readonly maxMetricsHistory = 100
+  private metricsHistory: number[] = []
   private detectionMetrics = {
     detectionCount: 0,
     averageDetectionTime: 0,
@@ -82,6 +91,10 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
 
   // 模块事件桥接的取消订阅器集合
   private moduleEventUnsubscribers: Map<string, Array<() => void>> = new Map()
+
+  // Canvas对象池（复用canvas元素）
+  private static canvasPool: HTMLCanvasElement[] = []
+  private static readonly maxCanvasPool = 2
 
   /**
    * 构造函数 - 创建设备检测器实例
@@ -126,10 +139,14 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
       ...options,
     }
 
+    this.timerManager = new SafeTimerManager()
     this.moduleLoader = new ModuleLoader()
     this.currentDeviceInfo = this.detectDevice()
 
     this.setupEventListeners()
+
+    // 注册内存清理回调
+    memoryManager.addGCCallback(() => this.cleanupCache())
   }
 
   /**
@@ -233,25 +250,25 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     // 桥接模块事件到 DeviceDetector，自适应各模块事件名称
     try {
       const unsubs: Array<() => void> = []
-      const anyInstance = instance as any
-      const hasOn = typeof anyInstance.on === 'function'
-      const hasOff = typeof anyInstance.off === 'function'
+    const withEvents = instance as Partial<{ on: (event: string, handler: (info: unknown) => void) => void; off: (event: string, handler: (info: unknown) => void) => void }>
+    const hasOn = typeof withEvents.on === 'function'
+    const hasOff = typeof withEvents.off === 'function'
 
       if (hasOn && hasOff) {
         if (name === 'network') {
-          const handler = (info: unknown) => this.emit('networkChange', info as any)
-          anyInstance.on('networkChange', handler)
-          unsubs.push(() => anyInstance.off('networkChange', handler))
+          const handler = (info: unknown) => this.emit('networkChange', info as NetworkInfo)
+          withEvents.on?.('networkChange', handler)
+          unsubs.push(() => withEvents.off?.('networkChange', handler))
         }
         if (name === 'battery') {
-          const handler = (info: unknown) => this.emit('batteryChange', info as any)
-          anyInstance.on('batteryChange', handler)
-          unsubs.push(() => anyInstance.off('batteryChange', handler))
+          const handler = (info: unknown) => this.emit('batteryChange', info as BatteryInfo)
+          withEvents.on?.('batteryChange', handler)
+          unsubs.push(() => withEvents.off?.('batteryChange', handler))
         }
         if (name === 'geolocation') {
-          const handler = (info: unknown) => this.emit('positionChange', info as any)
-          anyInstance.on('positionChange', handler)
-          unsubs.push(() => anyInstance.off('positionChange', handler))
+          const handler = (info: unknown) => this.emit('positionChange', info as GeolocationInfo)
+          withEvents.on?.('positionChange', handler)
+          unsubs.push(() => withEvents.off?.('positionChange', handler))
         }
       }
 
@@ -309,6 +326,9 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     // 移除事件监听器
     this.removeEventListeners()
 
+    // 清理定时器
+    this.timerManager.clearAll()
+
     // 先清理模块事件桥接
     this.moduleEventUnsubscribers.forEach((unsubs) => {
       unsubs.forEach((fn) => {
@@ -327,11 +347,25 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     this.removeAllListeners()
 
     // 清理缓存
+    this.cleanupCache()
+    
+    // 清理性能指标历史
+    this.metricsHistory.length = 0
+    
+    // 移除内存管理器回调
+    memoryManager.removeGCCallback(() => this.cleanupCache())
+  }
+
+  /**
+   * 清理缓存
+   */
+  private cleanupCache(): void {
     this.cachedUserAgent = undefined
     this.cachedOS = undefined
     this.cachedBrowser = undefined
     this.cachedWebGLSupport = undefined
     this.cacheTimestamp = 0
+    this.webglCacheExpireTime = 0
   }
 
   /**
@@ -341,10 +375,15 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
     this.detectionMetrics.detectionCount++
     this.detectionMetrics.lastDetectionDuration = detectionTime
 
-    // 计算平均检测时间（使用移动平均）
-    const alpha = 0.1 // 平滑因子
-    this.detectionMetrics.averageDetectionTime
-      = this.detectionMetrics.averageDetectionTime * (1 - alpha) + detectionTime * alpha
+    // 使用环形缓冲区存储历史数据
+    this.metricsHistory.push(detectionTime)
+    if (this.metricsHistory.length > this.maxMetricsHistory) {
+      this.metricsHistory.shift()
+    }
+
+    // 计算平均检测时间
+    const sum = this.metricsHistory.reduce((a, b) => a + b, 0)
+    this.detectionMetrics.averageDetectionTime = sum / this.metricsHistory.length
   }
 
   /**
@@ -362,7 +401,7 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
         message: 'Too many detection errors',
         count: this.errorCount,
         lastError: error as unknown,
-      } as any)
+      } as { message: string, count: number, lastError: unknown })
     }
   }
 
@@ -438,8 +477,8 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
         pixelRatio,
         isTouchDevice: touchDevice,
         userAgent,
-        os: os!,
-        browser: browser!,
+        os: os || { name: 'unknown', version: 'unknown' },
+        browser: browser || { name: 'unknown', version: 'unknown' },
         screen: {
           width,
           height,
@@ -471,27 +510,60 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
   /**
    * 检测 WebGL 支持
    *
-   * 优化: 缓存检测结果,避免重复创建canvas
+   * 优化: 缓存检测结果,复用canvas元素，减少内存分配
    */
   private detectWebGL(): boolean {
-    // 使用缓存结果
-    if (this.cachedWebGLSupport !== undefined) {
+    const now = Date.now()
+    
+    // 检查缓存是否有效（优化：直接比较，避免多余计算）
+    if (this.cachedWebGLSupport !== undefined && 
+        this.webglCacheExpireTime > 0 &&
+        now - this.webglCacheExpireTime < this.webglCacheLifetime) {
       return this.cachedWebGLSupport
     }
 
     try {
-      const canvas = document.createElement('canvas')
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+      // 从池中获取或创建canvas（优化：减少条件判断）
+      const canvas = DeviceDetector.canvasPool.pop() || document.createElement('canvas')
+      
+      // 最小尺寸以减少内存占用
+      canvas.width = 1
+      canvas.height = 1
+      
+      // 尝试获取WebGL上下文（优化：使用更宽松的配置）
+      const gl = canvas.getContext('webgl', { 
+        failIfMajorPerformanceCaveat: false,
+        antialias: false,
+        depth: false,
+        stencil: false
+      }) || canvas.getContext('experimental-webgl', {
+        failIfMajorPerformanceCaveat: false,
+        antialias: false,
+        depth: false,
+        stencil: false
+      })
+      
       this.cachedWebGLSupport = !!gl
 
-      // 清理canvas引用,帮助垃圾回收
-      canvas.width = 0
-      canvas.height = 0
+      // 清理WebGL上下文以释放GPU内存
+      if (gl && 'getExtension' in gl) {
+        const loseContext = (gl as WebGLRenderingContext).getExtension('WEBGL_lose_context')
+        loseContext?.loseContext()
+      }
 
+      // 将canvas返回池中（优化：重置尺寸以节省内存）
+      if (DeviceDetector.canvasPool.length < DeviceDetector.maxCanvasPool) {
+        canvas.width = 1
+        canvas.height = 1
+        DeviceDetector.canvasPool.push(canvas)
+      }
+
+      this.webglCacheExpireTime = now
       return this.cachedWebGLSupport
     }
     catch {
       this.cachedWebGLSupport = false
+      this.webglCacheExpireTime = now
       return false
     }
   }
@@ -552,17 +624,15 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
       if (this.hasDeviceInfoChanged(oldDeviceInfo, newDeviceInfo)) {
         this.currentDeviceInfo = newDeviceInfo
 
-        // 批量触发事件以提高性能
-        const events: Array<{ event: keyof DeviceDetectorEvents, data: any }> = []
-
+        // 优化：直接触发事件，避免创建中间数组
         // 检查设备类型是否发生变化
         if (oldDeviceInfo.type !== newDeviceInfo.type) {
-          events.push({ event: 'deviceChange', data: newDeviceInfo })
+          this.emit('deviceChange', newDeviceInfo)
         }
 
         // 检查屏幕方向是否发生变化
         if (oldDeviceInfo.orientation !== newDeviceInfo.orientation) {
-          events.push({ event: 'orientationChange', data: newDeviceInfo.orientation })
+          this.emit('orientationChange', newDeviceInfo.orientation)
         }
 
         // 检查尺寸是否发生变化
@@ -570,19 +640,11 @@ export class DeviceDetector extends EventEmitter<DeviceDetectorEvents> {
           oldDeviceInfo.width !== newDeviceInfo.width
           || oldDeviceInfo.height !== newDeviceInfo.height
         ) {
-          events.push({
-            event: 'resize',
-            data: {
-              width: newDeviceInfo.width,
-              height: newDeviceInfo.height,
-            },
+          this.emit('resize', {
+            width: newDeviceInfo.width,
+            height: newDeviceInfo.height,
           })
         }
-
-        // 批量触发事件
-        events.forEach(({ event, data }) => {
-          this.emit(event, data)
-        })
       }
     }
     catch (error) {

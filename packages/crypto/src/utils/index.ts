@@ -1,8 +1,7 @@
 import type { EncodingType } from '../types'
 import CryptoJS from 'crypto-js'
 
-// 导出 LRU 缓存
-export { LRUCache, type LRUCacheOptions } from './lru-cache'
+export * from './advanced-validation'
 
 /**
  * 字符串转换工具
@@ -345,13 +344,16 @@ export const CONSTANTS = {
   },
 } as const
 
+export * from './benchmark'
 // 导出新增实用工具
 export * from './compression'
-export * from './key-derivation'
-export * from './secure-storage'
-export * from './rate-limiter'
-export * from './errors'
-export * from './benchmark'
-export * from './object-pool'
 export * from './crypto-helpers'
+export * from './errors'
+export * from './key-derivation'
 export * from './key-rotation'
+// 导出 LRU 缓存
+export { LRUCache, type LRUCacheOptions } from './lru-cache'
+export * from './object-pool'
+export * from './performance-logger'
+export * from './rate-limiter'
+export * from './secure-storage'

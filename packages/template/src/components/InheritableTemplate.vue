@@ -1,57 +1,8 @@
-<template>
-  <div class="inheritable-template" :class="cssClasses">
-    <!-- 头部块 -->
-    <template v-if="hasBlock('header')">
-      <component :is="renderBlock('header')" />
-    </template>
-    
-    <!-- 主内容 -->
-    <div class="template-content">
-      <slot name="before-content" />
-      
-      <!-- 继承的内容 -->
-      <template v-if="inheritedContent">
-        <component :is="inheritedContent" v-bind="contentProps" />
-      </template>
-      
-      <!-- 默认内容 -->
-      <slot v-else>
-        <component 
-          v-if="template.component"
-          :is="template.component"
-          v-bind="componentProps"
-        />
-      </slot>
-      
-      <slot name="after-content" />
-    </div>
-    
-    <!-- 底部块 -->
-    <template v-if="hasBlock('footer')">
-      <component :is="renderBlock('footer')" />
-    </template>
-    
-    <!-- 调试信息 -->
-    <div v-if="showDebug" class="inheritance-debug">
-      <div class="debug-info">
-        <h4>Inheritance Chain</h4>
-        <ul>
-          <li v-for="(item, index) in inheritanceChain" :key="index">
-            {{ item }}
-          </li>
-        </ul>
-        <p>Depth: {{ depth }}</p>
-        <p>Is Inherited: {{ isInherited }}</p>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { computed, provide, inject, watch, onBeforeUnmount } from 'vue'
+import type { MergeStrategy, TemplateBlock } from '../core/inheritance'
 import type { Template } from '../types'
+import { computed, onBeforeUnmount, watch } from 'vue'
 import { useTemplateInheritance } from '../composables/useTemplateInheritance'
-import type { TemplateInheritanceConfig, MergeStrategy, TemplateBlock } from '../core/inheritance'
 
 /**
  * 组件属性
@@ -142,12 +93,12 @@ const emit = defineEmits<{
   /**
    * 块覆盖
    */
-  'block-override': [name: string, success: boolean]
+  'blockOverride': [name: string, success: boolean]
   
   /**
    * 深度超限
    */
-  'depth-exceeded': [depth: number]
+  'depthExceeded': [depth: number]
 }>()
 
 // 使用模板继承
@@ -156,7 +107,7 @@ const {
   isInherited,
   inheritanceChain,
   blocks,
-  context,
+  // context, // Removing unused variable
   defineBlock,
   overrideBlock,
   getBlock,
@@ -237,7 +188,7 @@ watch(
   depth,
   (newDepth) => {
     if (newDepth > props.maxDepth) {
-      emit('depth-exceeded', newDepth)
+      emit('depthExceeded', newDepth)
     }
   }
 )
@@ -249,7 +200,7 @@ defineExpose({
    */
   overrideBlock: (name: string, content: any) => {
     const success = overrideBlock(name, content)
-    emit('block-override', name, success)
+    emit('blockOverride', name, success)
     return success
   },
   
@@ -279,6 +230,55 @@ onBeforeUnmount(() => {
   cleanup()
 })
 </script>
+
+<template>
+  <div class="inheritable-template" :class="cssClasses">
+    <!-- 头部块 -->
+    <template v-if="hasBlock('header')">
+      <component :is="renderBlock('header')" />
+    </template>
+    
+    <!-- 主内容 -->
+    <div class="template-content">
+      <slot name="before-content" />
+      
+      <!-- 继承的内容 -->
+      <template v-if="inheritedContent">
+        <component :is="inheritedContent" v-bind="contentProps" />
+      </template>
+      
+      <!-- 默认内容 -->
+      <slot v-else>
+        <component 
+          :is="template.component"
+          v-if="template.component"
+          v-bind="componentProps"
+        />
+      </slot>
+      
+      <slot name="after-content" />
+    </div>
+    
+    <!-- 底部块 -->
+    <template v-if="hasBlock('footer')">
+      <component :is="renderBlock('footer')" />
+    </template>
+    
+    <!-- 调试信息 -->
+    <div v-if="showDebug" class="inheritance-debug">
+      <div class="debug-info">
+        <h4>Inheritance Chain</h4>
+        <ul>
+          <li v-for="(item, index) in inheritanceChain" :key="index">
+            {{ item }}
+          </li>
+        </ul>
+        <p>Depth: {{ depth }}</p>
+        <p>Is Inherited: {{ isInherited }}</p>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .inheritable-template {

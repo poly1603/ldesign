@@ -145,7 +145,7 @@ export function generateId(): string {
 /**
  * 类型守卫：检查是否为函数
  */
-export function isFunction(value: any): value is Function {
+export function isFunction(value: any): value is (...args: any[]) => any {
   return typeof value === 'function'
 }
 

@@ -1,0 +1,7 @@
+src
+tsconfig.json
+rollup.config.js
+*.log
+node_modules
+*.tsbuildinfo
+.DS_Store

@@ -26,11 +26,15 @@ export class ConfigManagerImpl implements ConfigManager {
   private watchers = new Map<string, ConfigWatcher[]>()
   private snapshots: ConfigSnapshot[] = []
   private environment: 'development' | 'production' | 'test' = 'development'
-  private autoSaveInterval?: NodeJS.Timeout
-  private maxSnapshots = 10
+  private autoSaveInterval?: number
+  private maxSnapshots = 5 // 从10减少到5，降低内存占用
   private logger?: Logger
   private loaders: ConfigLoader[] = []
   private loadWatchers: Array<() => void> = []
+
+  // 内存优化：限制数量
+  private readonly MAX_WATCHERS_PER_PATH = 50
+  private readonly MAX_LOADERS = 20
 
   constructor(initialConfig: Record<string, unknown> = {}, logger?: Logger) {
     this.config = { ...initialConfig }
@@ -47,12 +51,16 @@ export class ConfigManagerImpl implements ConfigManager {
   }
 
   /**
-   * 添加配置加载器
+   * 添加配置加载器 - 优化版：限制加载器数量
    *
    * @param loader 配置加载器实例
    * @returns this 支持链式调用
    */
   addLoader(loader: ConfigLoader): this {
+    if (this.loaders.length >= this.MAX_LOADERS) {
+      this.logger?.warn(`Maximum config loaders limit (${this.MAX_LOADERS}) reached, removing oldest`)
+      this.loaders.shift()
+    }
     this.loaders.push(loader)
     return this
   }
@@ -66,12 +74,12 @@ export class ConfigManagerImpl implements ConfigManager {
     for (const loader of this.loaders) {
       try {
         const loadedConfig = await loader.load()
-        this.merge(loadedConfig as Record<string, unknown>)
+        this.merge(loadedConfig as Partial<Record<string, unknown>>)
 
         // 如果加载器支持监听，启用热重载
         if (loader.watch) {
           const unwatcher = loader.watch((newConfig: ConfigObject) => {
-            this.merge(newConfig as Record<string, unknown>)
+            this.merge(newConfig as Partial<Record<string, unknown>>)
             this.logger?.info('Configuration hot-reloaded')
           })
           if (unwatcher) {
@@ -86,28 +94,44 @@ export class ConfigManagerImpl implements ConfigManager {
   }
 
   /**
-   * 销毁配置管理器
+   * 销毁配置管理器 - 增强版
    *
    * 清理所有监听器和定时器
    */
   destroy(): void {
     // 清理加载器监听器
     this.loadWatchers.forEach(unwatch => unwatch())
-    this.loadWatchers = []
+    this.loadWatchers.length = 0 // 更高效的数组清空
 
     // 清理自动保存定时器
     if (this.autoSaveInterval) {
-      clearInterval(this.autoSaveInterval)
+      window.clearInterval(this.autoSaveInterval)
       this.autoSaveInterval = undefined
     }
 
+    // 清理所有watchers
+    this.watchers.clear()
+
+    // 清理快照
+    this.snapshots.length = 0
+
+    // 清理加载器
+    this.loaders.length = 0
+
+    // 清理配置
+    this.config = {}
+
+    // 清理 schema
+    this.schema = undefined
+
     this.logger?.info('ConfigManager destroyed')
+    this.logger = undefined
   }
 
   // 基础操作
   get<T = unknown>(path: string, defaultValue?: T): T {
-    const value = getNestedValue(this.config, path, defaultValue) as T
-    return value
+    const value = getNestedValue(this.config, path) as T
+    return value !== undefined ? value : (defaultValue as T)
   }
 
   set(path: string, value: unknown): void {
@@ -319,7 +343,7 @@ export class ConfigManagerImpl implements ConfigManager {
   enableAutoSave(interval = 30000): void {
     this.disableAutoSave()
 
-    this.autoSaveInterval = setInterval(() => {
+    this.autoSaveInterval = window.setInterval(() => {
       this.save().catch(error => {
         this.logger?.error('Auto-save failed', error)
       })
@@ -330,7 +354,7 @@ export class ConfigManagerImpl implements ConfigManager {
 
   disableAutoSave(): void {
     if (this.autoSaveInterval) {
-      clearInterval(this.autoSaveInterval)
+      window.clearInterval(this.autoSaveInterval)
       this.autoSaveInterval = undefined
       this.logger?.info('Auto-save disabled')
     }
@@ -447,31 +471,23 @@ export class ConfigManagerImpl implements ConfigManager {
 
   // 私有方法
   private detectEnvironment(): 'development' | 'production' | 'test' {
-    try {
-      // eslint-disable-next-line ts/no-require-imports
-      const nodeProcess = require('node:process')
-      if (typeof nodeProcess !== 'undefined' && nodeProcess.env) {
-        const nodeEnv = nodeProcess.env.NODE_ENV
-        if (nodeEnv === 'production') {
-          return 'production'
-        }
-        if (nodeEnv === 'test') {
-          return 'test'
-        }
-      }
-
-      // 在测试环境中，vitest会设置NODE_ENV为test
-      if (
-        typeof globalThis !== 'undefined' &&
-        (globalThis as Record<string, unknown>).__vitest__ !== undefined
-      ) {
-        return 'test'
-      }
-
-      return 'development'
-    } catch {
-      return 'development'
+    // Check if running in test environment
+    if (
+      typeof globalThis !== 'undefined' &&
+      (globalThis as Record<string, unknown>).__vitest__ !== undefined
+    ) {
+      return 'test'
     }
+
+    // Check if in production mode (commonly set by build tools)
+    if (typeof window !== 'undefined') {
+      // @ts-expect-error - may be set by build tools
+      if (window.__ENV__ === 'production') {
+        return 'production'
+      }
+    }
+
+    return 'development'
   }
 
   private triggerWatchers(path: string, newValue: unknown, oldValue: unknown): void {
@@ -539,7 +555,7 @@ export class ConfigManagerImpl implements ConfigManager {
       if (!(key in current) || !isObject(current[key])) {
         return // 路径不存在
       }
-      current = current[key]
+      current = current[key] as Record<string, unknown>
     }
 
     delete current[keys[keys.length - 1]]
@@ -748,7 +764,7 @@ export class ConfigManagerImpl implements ConfigManager {
       keys.push(fullKey)
 
       if (isObject(obj[key])) {
-        keys.push(...this.getAllKeysFromObject(obj[key], fullKey))
+        keys.push(...this.getAllKeysFromObject(obj[key] as Record<string, unknown>, fullKey))
       }
     }
 
@@ -761,7 +777,7 @@ export class ConfigManagerImpl implements ConfigManager {
 
     for (const [key, value] of Object.entries(obj)) {
       if (isObject(value)) {
-        result += `${spaces}${key}:\n${this.toYAML(value, indent + 1)}`
+        result += `${spaces}${key}:\n${this.toYAML(value as Record<string, unknown>, indent + 1)}`
       } else if (Array.isArray(value)) {
         result += `${spaces}${key}:\n`
         value.forEach(item => {

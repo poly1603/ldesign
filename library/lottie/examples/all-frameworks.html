@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lottie 所有框架用法对比</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+
+    header h1 {
+      font-size: 42px;
+      margin-bottom: 12px;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      opacity: 0.95;
+      font-weight: 500;
+    }
+
+    .framework-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .framework-card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .framework-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+    }
+
+    .framework-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .framework-icon {
+      font-size: 36px;
+    }
+
+    .framework-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .usage-section {
+      margin-bottom: 24px;
+    }
+
+    .usage-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #667eea;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #e3f2fd;
+      color: #1976d2;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .code-block {
+      background: #2d3748;
+      color: #a0aec0;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin-bottom: 12px;
+    }
+
+    .code-block .keyword {
+      color: #c792ea;
+    }
+
+    .code-block .string {
+      color: #c3e88d;
+    }
+
+    .code-block .function {
+      color: #82aaff;
+    }
+
+    .code-block .comment {
+      color: #546e7a;
+    }
+
+    .features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .feature-check {
+      color: #48bb78;
+      font-weight: bold;
+    }
+
+    .comparison-table {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      margin-bottom: 30px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #667eea;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      font-size: 14px;
+    }
+
+    .check-mark {
+      color: #48bb78;
+      font-size: 18px;
+    }
+
+    .demo-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 30px;
+    }
+
+    .demo-link {
+      display: block;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #333;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .demo-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .demo-link-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .demo-link-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .demo-link-desc {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .highlight-box {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-top: 30px;
+    }
+
+    .highlight-box h3 {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .highlight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .highlight-item {
+      text-align: center;
+    }
+
+    .highlight-value {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .highlight-label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎬 Lottie 全框架使用指南</h1>
+      <p class="subtitle">Vue 3 · React · Web Components · Vanilla JS - 四种方式，任您选择</p>
+    </header>
+
+    <!-- 框架对比卡片 -->
+    <div class="framework-grid">
+      <!-- Vue 3 -->
+      <div class="framework-card">
+        <div class="framework-header">
+          <span class="framework-icon">💚</span>
+          <h2 class="framework-name">Vue 3</h2>
+        </div>
+
+        <div class="usage-section">
+          <div class="usage-title">
+            📦 Composable 用法
+            <span class="badge">推荐</span>
+          </div>
+          <div class="code-block"><span class="keyword">import</span> { useLottie } <span class="keyword">from</span> <span class="string">'@ldesign/lottie/vue'</span>
+
+<span class="keyword">const</span> { play, pause } = <span class="function">useLottie</span>({
+  container: <span class="function">ref</span>(<span class="keyword">null</span>),
+  path: <span class="string">'/animation.json'</span>
+})</div>
+        </div>
+
+        <div class="usage-section">
+          <div class="usage-title">🎨 组件用法</div>
+          <div class="code-block"><span class="comment">&lt;!-- LottieAnimation --&gt;</span>
+<span class="keyword">&lt;LottieAnimation</span> 
+  path=<span class="string">"/animation.json"</span>
+  :loop=<span class="string">"true"</span>
+<span class="keyword">/&gt;</span>
+
+<span class="comment">&lt;!-- LottiePlayer (带控制栏) --&gt;</span>
+<span class="keyword">&lt;LottiePlayer</span>
+  path=<span class="string">"/animation.json"</span>
+  :showControls=<span class="string">"true"</span>
+<span class="keyword">/&gt;</span></div>
+        </div>
+
+        <div class="usage-section">
+          <div class="usage-title">✨ 指令用法</div>
+          <div class="code-block"><span class="comment">&lt;!-- 基础指令 --&gt;</span>
+<span class="keyword">&lt;div</span> v-lottie=<span class="string">"/animation.json"</span> <span class="keyword">/&gt;</span>
+
+<span class="comment">&lt;!-- 悬停指令 --&gt;</span>
+<span class="keyword">&lt;div</span> v-lottie-hover=<span class="string">"/animation.json"</span> <span class="keyword">/&gt;</span>
+
+<span class="comment">&lt;!-- 滚动指令 --&gt;</span>
+<span class="keyword">&lt;div</span> v-lottie-scroll=<span class="string">"/animation.json"</span> <span class="keyword">/&gt;</span></div>
+        </div>
+
+        <div class="features-list">
+          <div class="feature-item">
+            <span class="feature-check">✓</span> 3 个 Composables
+          </div>
+          <div class="feature-item">
+            <span class="feature-check">✓</span> 3 个组件
+          </div>
+          <div class="feature-item">
+            <span class="feature-check">✓</span> 3 个指令
+          </div>
+          <div class="feature-item">
+            <span class="feature-check">✓</span> 全局插件支持
+          </div>
+        </div>
+      </div>
+
+      <!-- React -->
+      <div class="framework-card">
+        <div class="framework-header">
+          <span class="framework-icon">⚛️</span>
+          <h2 class="framework-name">React</h2>
+        </div>
+
+        <div class="usage-section">
+          <div class="usage-title">
+            🪝 Hook 用法
+            <span class="badge">推荐</span>
+          </div>
+          <div class="code-block"><span class="keyword">import</span> { useLottie } <span class="keyword">from</span> <span class="string">'@ldesign/lottie/react'</span>
+
+<span class="keyword">const</span> { containerRef, play, pause } = <span class="function">useLottie</span>({
+  path: <span class="string">'/animation.json'</span>,
+  loop: <span class="keyword">true</span>
+})
+
+<span class="keyword">return</span> <span class="keyword">&lt;div</span> ref={containerRef} <span class="keyword">/&gt;</span></div>
+        </div>
+
+        <div class="usage-section">
+          <div class="usage-title">🎨 组件用法</div>
+          <div class="code-block"><span class="comment">// LottieAnimation</span>
+<span class="keyword">&lt;LottieAnimation</span>
+  path=<span class="string">"/animation.json"</span>
+  loop={<span class="keyword">true</span>}
+  autoplay={<span class="keyword">true</span>}
+<span class="keyword">/&gt;</span>
+
+<span class="comment">// LottiePlayer (带控制栏)</span>
+<span class="keyword">&lt;LottiePlayer</span>
+  path=<span class="string">"/animation.json"</span>
+  showControls={<span class="keyword">true</span>}
+<span class="keyword">/&gt;</span></div>
+        </div>
+
+        <div class="usage-section">
+          <div class="usage-title">🔗 Context 用法</div>
+          <div class="code-block"><span class="keyword">&lt;LottieProvider&gt;</span>
+  <span class="keyword">&lt;YourApp</span> <span class="keyword">/&gt;</span>
+<span class="keyword">&lt;/LottieProvider&gt;</span>
+
+<span class="comment">// 在子组件中</span>
+<span class="keyword">const</span> { playAll, pauseAll } = <span class="function">useLottieContext</span>()</div>
+        </div>
+
+        <div class="features-list">
+          <div class="feature-item">
+            <span class="feature-check">✓</span> 4 个 Hooks
+          </div>
+          <div class="feature-item">
+            <span class="feature-check">✓</span> 3 个组件
+          </div>
+          <div class="feature-item">
+            <span class="feature-check">✓</span> Context Provider
+          </div>
+          <div class="feature-item">
+            <span class="feature-check">✓</span> TypeScript 完整支持
+          </div>
+        </div>
+      </div>
+
+      <!-- Web Components -->
+      <div class="framework-card">
+        <div class="framework-header">
+          <span class="framework-icon">🌐</span>
+          <h2 class="framework-name">Web Components</h2>
+        </div>
+
+        <div class="usage-section">
+          <div class="usage-title">
+            🏷️ 标签用法
+            <span class="badge">框架无关</span>
+          </div>
+          <div class="code-block"><span class="comment">&lt;!-- 基础组件 --&gt;</span>
+<span class="keyword">&lt;lottie-animation</span>
+  src=<span class="string">"/animation.json"</span>
+  loop=<span class="string">"true"</span>
+  autoplay=<span class="string">"true"</span>
+<span class="keyword">&gt;&lt;/lottie-animation&gt;</span>
+
+<span class="comment">&lt;!-- 播放器组件 --&gt;</span>
+<span class="keyword">&lt;lottie-player</span>
+  src=<span class="string">"/animation.json"</span>
+  controls=<span class="string">"true"</span>
+<span class="keyword">&gt;&lt;/lottie-player&gt;</span></div>
+        </div>
+
+        <div class="usage-section">
+          <div class="usage-title">⚡ JavaScript 控制</div>
+          <div class="code-block"><span class="keyword">const</span> element = document.<span class="function">getElementById</span>(<span class="string">'my-lottie'</span>)
+
+<span class="comment">// 调用方法</span>
+element.<span class="function">play</span>()
+element.<span class="function">pause</span>()
+element.<span class="function">setSpeed</span>(<span class="keyword">2</span>)
+
+<span class="comment">// 监听事件</span>
+element.<span class="function">addEventListener</span>(<span class="string">'ready'</span>, () => {
+  console.<span class="function">log</span>(<span class="string">'Ready!'</span>)
+})</div>
+        </div>
+
+        <div class="features-list">
+          <div class="feature-item">
+            <span class="feature-check">✓</span> 标准 Web API
+          </div>
+          <div class="feature-item">
+            <span class="feature-check">✓</span> 无需框架
+          </div>
+          <div class="feature-item">
+            <span class="feature-check">✓</span> Shadow DOM 隔离
+          </div>
+          <div class="feature-item">
+            <span class="feature-check">✓</span> 可在任何地方使用
+          </div>
+        </div>
+      </div>
+
+      <!-- Vanilla JS -->
+      <div class="framework-card">
+        <div class="framework-header">
+          <span class="framework-icon">⚡</span>
+          <h2 class="framework-name">Vanilla JS</h2>
+        </div>
+
+        <div class="usage-section">
+          <div class="usage-title">
+            🎯 纯 JavaScript
+            <span class="badge">最灵活</span>
+          </div>
+          <div class="code-block"><span class="keyword">import</span> { createLottie } <span class="keyword">from</span> <span class="string">'@ldesign/lottie'</span>
+
+<span class="keyword">const</span> animation = <span class="function">createLottie</span>({
+  container: <span class="string">'#lottie'</span>,
+  path: <span class="string">'/animation.json'</span>,
+  loop: <span class="keyword">true</span>,
+  autoplay: <span class="keyword">true</span>
+})
+
+animation.<span class="function">play</span>()</div>
+        </div>
+
+        <div class="usage-section">
+          <div class="usage-title">🎮 高级功能</div>
+          <div class="code-block"><span class="keyword">import</span> { 
+  AnimationSequence,
+  InteractiveController,
+  VirtualRenderer
+} <span class="keyword">from</span> <span class="string">'@ldesign/lottie'</span>
+
+<span class="comment">// 序列播放</span>
+<span class="keyword">const</span> seq = <span class="keyword">new</span> <span class="function">AnimationSequence</span>()
+
+<span class="comment">// 交互控制</span>
+<span class="keyword">new</span> <span class="function">InteractiveController</span>({ instance })</div>
+        </div>
+
+        <div class="features-list">
+          <div class="feature-item">
+            <span class="feature-check">✓</span> 完整 API 访问
+          </div>
+          <div class="feature-item">
+            <span class="feature-check">✓</span> 最大灵活性
+          </div>
+          <div class="feature-item">
+            <span class="feature-check">✓</span> 所有高级功能
+          </div>
+          <div class="feature-item">
+            <span class="feature-check">✓</span> 性能优化工具
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 功能对比表 -->
+    <div class="comparison-table">
+      <h2 style="margin-bottom: 20px; color: #667eea; font-size: 24px;">📊 功能对比</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>功能特性</th>
+            <th>Vue 3</th>
+            <th>React</th>
+            <th>Web Components</th>
+            <th>Vanilla JS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>基础使用</strong></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+          </tr>
+          <tr>
+            <td><strong>Composable/Hook</strong></td>
+            <td><span class="check-mark">✓</span> 3个</td>
+            <td><span class="check-mark">✓</span> 4个</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td><strong>组件</strong></td>
+            <td><span class="check-mark">✓</span> 3个</td>
+            <td><span class="check-mark">✓</span> 3个</td>
+            <td><span class="check-mark">✓</span> 2个</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td><strong>指令</strong></td>
+            <td><span class="check-mark">✓</span> 3个</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td><strong>全局管理</strong></td>
+            <td><span class="check-mark">✓</span> 插件</td>
+            <td><span class="check-mark">✓</span> Context</td>
+            <td>-</td>
+            <td><span class="check-mark">✓</span> Manager</td>
+          </tr>
+          <tr>
+            <td><strong>TypeScript</strong></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+          </tr>
+          <tr>
+            <td><strong>响应式</strong></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+            <td>手动</td>
+          </tr>
+          <tr>
+            <td><strong>交互控制</strong></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+          </tr>
+          <tr>
+            <td><strong>序列播放</strong></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+            <td>-</td>
+            <td><span class="check-mark">✓</span></td>
+          </tr>
+          <tr>
+            <td><strong>性能优化</strong></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+            <td><span class="check-mark">✓</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 示例链接 -->
+    <div class="comparison-table">
+      <h2 style="margin-bottom: 20px; color: #667eea; font-size: 24px;">🎨 在线示例</h2>
+      <div class="demo-links">
+        <a href="./vue/index.html" class="demo-link">
+          <div class="demo-link-icon">💚</div>
+          <div class="demo-link-title">Vue 3 示例</div>
+          <div class="demo-link-desc">9种用法演示</div>
+        </a>
+        
+        <a href="./react/index.html" class="demo-link">
+          <div class="demo-link-icon">⚛️</div>
+          <div class="demo-link-title">React 示例</div>
+          <div class="demo-link-desc">5种用法演示</div>
+        </a>
+        
+        <a href="./lit/index.html" class="demo-link">
+          <div class="demo-link-icon">🌐</div>
+          <div class="demo-link-title">Web Components</div>
+          <div class="demo-link-desc">6种用法演示</div>
+        </a>
+        
+        <a href="./vanilla/index.html" class="demo-link">
+          <div class="demo-link-icon">⚡</div>
+          <div class="demo-link-title">Vanilla JS</div>
+          <div class="demo-link-desc">基础和高级功能</div>
+        </a>
+        
+        <a href="./vanilla/advanced.html" class="demo-link">
+          <div class="demo-link-icon">🚀</div>
+          <div class="demo-link-title">高级功能</div>
+          <div class="demo-link-desc">序列、交互、手势</div>
+        </a>
+        
+        <a href="./performance-test.html" class="demo-link">
+          <div class="demo-link-icon">📊</div>
+          <div class="demo-link-title">性能测试</div>
+          <div class="demo-link-desc">性能优化演示</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- 总体统计 -->
+    <div class="highlight-box">
+      <h3>🏆 @ldesign/lottie 特性统计</h3>
+      <div class="highlight-grid">
+        <div class="highlight-item">
+          <div class="highlight-value">4</div>
+          <div class="highlight-label">支持的框架/平台</div>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-value">20+</div>
+          <div class="highlight-label">使用方式</div>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-value">15+</div>
+          <div class="highlight-label">核心功能</div>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-value">50-80%</div>
+          <div class="highlight-label">性能提升</div>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-value">100%</div>
+          <div class="highlight-label">TypeScript 支持</div>
+        </div>
+        <div class="highlight-item">
+          <div class="highlight-value">∞</div>
+          <div class="highlight-label">可能性</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 选择建议 -->
+    <div class="comparison-table">
+      <h2 style="margin-bottom: 20px; color: #667eea; font-size: 24px;">💡 如何选择？</h2>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+        <div style="padding: 20px; background: #f0f4ff; border-left: 4px solid #667eea; border-radius: 8px;">
+          <h4 style="color: #667eea; margin-bottom: 8px;">选择 Vue 3</h4>
+          <ul style="font-size: 14px; line-height: 1.8; margin-left: 20px;">
+            <li>Vue 3 项目</li>
+            <li>需要指令简化代码</li>
+            <li>喜欢 Composition API</li>
+            <li>需要全局插件管理</li>
+          </ul>
+        </div>
+        
+        <div style="padding: 20px; background: #f0f4ff; border-left: 4px solid #667eea; border-radius: 8px;">
+          <h4 style="color: #667eea; margin-bottom: 8px;">选择 React</h4>
+          <ul style="font-size: 14px; line-height: 1.8; margin-left: 20px;">
+            <li>React 项目</li>
+            <li>喜欢 Hooks 模式</li>
+            <li>需要 Context 全局管理</li>
+            <li>TypeScript + React 项目</li>
+          </ul>
+        </div>
+        
+        <div style="padding: 20px; background: #f0f4ff; border-left: 4px solid #667eea; border-radius: 8px;">
+          <h4 style="color: #667eea; margin-bottom: 8px;">选择 Web Components</h4>
+          <ul style="font-size: 14px; line-height: 1.8; margin-left: 20px;">
+            <li>多框架项目</li>
+            <li>纯 HTML 页面</li>
+            <li>需要最大兼容性</li>
+            <li>微前端架构</li>
+          </ul>
+        </div>
+        
+        <div style="padding: 20px; background: #f0f4ff; border-left: 4px solid #667eea; border-radius: 8px;">
+          <h4 style="color: #667eea; margin-bottom: 8px;">选择 Vanilla JS</h4>
+          <ul style="font-size: 14px; line-height: 1.8; margin-left: 20px;">
+            <li>需要完全控制</li>
+            <li>复杂的自定义需求</li>
+            <li>使用所有高级功能</li>
+            <li>性能极致优化</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 快速开始 -->
+    <div class="highlight-box">
+      <h3>🚀 快速开始</h3>
+      <div class="code-block" style="margin-top: 16px;">
+<span class="comment"># 安装</span>
+npm install @ldesign/lottie
+
+<span class="comment"># Vue 3</span>
+<span class="keyword">import</span> { useLottie } <span class="keyword">from</span> <span class="string">'@ldesign/lottie/vue'</span>
+
+<span class="comment"># React</span>
+<span class="keyword">import</span> { useLottie } <span class="keyword">from</span> <span class="string">'@ldesign/lottie/react'</span>
+
+<span class="comment"># Web Components</span>
+<span class="keyword">import</span> <span class="string">'@ldesign/lottie/lit'</span>
+
+<span class="comment"># Vanilla JS</span>
+<span class="keyword">import</span> { createLottie } <span class="keyword">from</span> <span class="string">'@ldesign/lottie'</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+

@@ -8,15 +8,24 @@ import { useSize } from './useSize'
 const {
   currentPreset,
   applyPreset,
-  getPresets
+  presets: presetsRef
 } = useSize()
 
-const presets = getPresets() || []
+const presets = computed(() => presetsRef.value || [])
 const isOpen = ref(false)
 const selectorRef = ref<HTMLElement>()
 
+// 开发环境日志
+if ((typeof globalThis !== 'undefined' && (globalThis as any).process?.env?.NODE_ENV === 'development') || false) {
+  console.info('[SizeSelector] 初始化', {
+    currentPreset: currentPreset.value,
+    presetsCount: presets.value.length,
+    presets: presets.value.map((p: any) => ({ name: p.name, baseSize: p.baseSize }))
+  })
+}
+
 // 如果没有预设选项，则不显示组件
-const hasPresets = presets.length > 0
+const hasPresets = computed(() => presets.value.length > 0)
 
 // 国际化 - 优先使用应用层的响应式 locale
 // 使用标准的 'locale' key
@@ -50,7 +59,7 @@ const t = computed(() => {
 })
 
 // 监听语言变化
-watch(currentLocale, (newLocale) => {
+watch(currentLocale, () => {
   // 响应式更新，无需日志
 })
 
@@ -71,8 +80,14 @@ function closePanel() {
 }
 
 function selectPreset(name: string) {
+  if ((typeof globalThis !== 'undefined' && (globalThis as any).process?.env?.NODE_ENV === 'development') || false) {
+    console.info('[SizeSelector] selectPreset 被调用:', name)
+  }
   applyPreset(name)
   closePanel()
+  if ((typeof globalThis !== 'undefined' && (globalThis as any).process?.env?.NODE_ENV === 'development') || false) {
+    console.info('[SizeSelector] selectPreset 完成')
+  }
 }
 
 // 点击外部关闭

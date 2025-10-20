@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Viewer - 原生 JavaScript 示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    .header {
+      background-color: #4285f4;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .toolbar {
+      background-color: white;
+      padding: 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .toolbar button,
+    .toolbar input[type="file"] {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      background-color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .toolbar button:hover {
+      background-color: #f5f5f5;
+    }
+
+    .toolbar button:active {
+      background-color: #e0e0e0;
+    }
+
+    #container {
+      height: calc(100vh - 150px);
+    }
+
+    .status {
+      padding: 10px 15px;
+      background-color: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      margin: 15px;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .status.error {
+      background-color: #ffebee;
+      border-left-color: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📄 Word Viewer 示例</h1>
+    <p>原生 JavaScript / TypeScript</p>
+  </div>
+
+  <div class="toolbar">
+    <input type="file" id="fileInput" accept=".docx,.doc" />
+    <button onclick="zoomIn()">放大 +</button>
+    <button onclick="zoomOut()">缩小 -</button>
+    <button onclick="toggleEdit()">切换编辑</button>
+    <button onclick="toggleTheme()">切换主题</button>
+    <button onclick="exportPDF()">导出 PDF</button>
+    <button onclick="exportHTML()">导出 HTML</button>
+    <input type="text" id="searchInput" placeholder="搜索..." style="flex: 1; min-width: 200px;" />
+    <button onclick="search()">搜索</button>
+  </div>
+
+  <div id="status" class="status"></div>
+  <div id="container"></div>
+
+  <script type="module">
+    import { WordViewer } from '../../dist/index.esm.js';
+
+    let viewer;
+    let currentTheme = 'light';
+
+    // 初始化查看器
+    viewer = new WordViewer('#container', {
+      theme: 'light',
+      editable: false,
+      showToolbar: false,
+    });
+
+    // 监听事件
+    viewer.on('loaded', (data) => {
+      showStatus('文档加载成功！', false);
+      console.log('文档已加载', data);
+    });
+
+    viewer.on('error', (error) => {
+      showStatus(`加载错误: ${error.message}`, true);
+      console.error('错误', error);
+    });
+
+    viewer.on('progress', (progress) => {
+      console.log(`加载进度: ${progress.percentage}%`);
+    });
+
+    viewer.on('changed', () => {
+      console.log('文档已修改');
+    });
+
+    viewer.on('zoom', (level) => {
+      console.log('缩放级别:', level);
+    });
+
+    // 文件选择
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        try {
+          await viewer.loadFile(file);
+        } catch (error) {
+          console.error('加载失败', error);
+        }
+      }
+    });
+
+    // 全局函数
+    window.zoomIn = () => {
+      const currentZoom = viewer.getZoom();
+      viewer.setZoom(currentZoom + 0.1);
+    };
+
+    window.zoomOut = () => {
+      const currentZoom = viewer.getZoom();
+      viewer.setZoom(currentZoom - 0.1);
+    };
+
+    window.toggleEdit = () => {
+      const state = viewer.getEditState();
+      if (state.isEditing) {
+        viewer.disableEdit();
+        showStatus('已禁用编辑模式', false);
+      } else {
+        viewer.enableEdit();
+        showStatus('已启用编辑模式', false);
+      }
+    };
+
+    window.toggleTheme = () => {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      viewer.updateOptions({ theme: currentTheme });
+      showStatus(`已切换到${currentTheme === 'light' ? '浅色' : '深色'}主题`, false);
+    };
+
+    window.exportPDF = async () => {
+      try {
+        const blob = await viewer.exportToPDF();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'document.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+        showStatus('PDF 导出成功！', false);
+      } catch (error) {
+        showStatus('导出失败: ' + error.message, true);
+      }
+    };
+
+    window.exportHTML = () => {
+      try {
+        const html = viewer.exportToHTML();
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'document.html';
+        a.click();
+        URL.revokeObjectURL(url);
+        showStatus('HTML 导出成功！', false);
+      } catch (error) {
+        showStatus('导出失败: ' + error.message, true);
+      }
+    };
+
+    window.search = () => {
+      const keyword = document.getElementById('searchInput').value;
+      if (keyword) {
+        const results = viewer.search(keyword);
+        showStatus(`找到 ${results.length} 个结果`, false);
+        console.log('搜索结果:', results);
+      }
+    };
+
+    function showStatus(message, isError) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = 'status' + (isError ? ' error' : '');
+      status.style.display = 'block';
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 3000);
+    }
+
+    // 加载示例文档（如果有）
+    // viewer.loadUrl('path/to/sample.docx');
+  </script>
+</body>
+</html>
+
+
+

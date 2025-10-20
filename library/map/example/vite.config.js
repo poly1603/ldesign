@@ -8,7 +8,8 @@ const __dirname = dirname(__filename);
 export default defineConfig({
   server: {
     port: 3000,
-    open: true
+    open: true,
+    host: true
   },
   resolve: {
     alias: {
@@ -16,6 +17,6 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ['@deck.gl/core', '@deck.gl/layers', '@deck.gl/geo-layers']
+    include: ['@deck.gl/core', '@deck.gl/layers', '@deck.gl/geo-layers', '@deck.gl/aggregation-layers']
   }
 });

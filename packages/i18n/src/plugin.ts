@@ -3,11 +3,11 @@
  * 极简、高性能的 i18n 插件实现
  */
 
-import { ref, watchEffect, inject, provide, type Ref, type App } from 'vue'
-import type { I18nConfig, I18nInstance } from './types'
+import type { I18nConfig } from './types'
+import { type App, inject, ref, type Ref, watchEffect } from 'vue'
 import { OptimizedI18n } from './core/i18n-optimized'
 
-export interface I18nPluginOptions extends I18nConfig {
+export interface I18nPluginOptions extends Omit<I18nConfig, 'locale'> {
   /**
    * 语言设置 - 支持 string 或 Ref<string>
    * 如果传入 Ref，将直接使用（共享模式）
@@ -74,10 +74,10 @@ export function createI18nPlugin(options: I18nPluginOptions = {}) {
   i18n.init().catch(console.error)
   
   // 3. 单次监听（性能优化）
-  let stopWatcher: (() => void) | null = null
+  const watchers: Array<() => void> = []
   
   const startWatcher = () => {
-    stopWatcher = watchEffect(() => {
+    const stopWatcher = watchEffect(() => {
       const currentLocale = locale.value
       if (currentLocale !== i18n.locale) {
         i18n.setLocale(currentLocale)
@@ -93,6 +93,7 @@ export function createI18nPlugin(options: I18nPluginOptions = {}) {
         }
       }
     })
+    watchers.push(stopWatcher)
   }
   
   startWatcher()
@@ -114,10 +115,9 @@ export function createI18nPlugin(options: I18nPluginOptions = {}) {
     
     // 销毁方法
     destroy: () => {
-      if (stopWatcher) {
-        stopWatcher()
-        stopWatcher = null
-      }
+      // 清理所有 watchers
+      watchers.forEach(stop => stop())
+      watchers.length = 0
       i18n.destroy()
     },
     
@@ -126,7 +126,7 @@ export function createI18nPlugin(options: I18nPluginOptions = {}) {
       // 智能共享：如果没有传入 Ref，尝试自动共享
       if (!isRef(options.locale)) {
         // 尝试从 app context 获取共享的 locale
-        const sharedLocale = app._context?.provides?.['locale'] as Ref<string> | undefined
+        const sharedLocale = app._context?.provides?.locale as Ref<string> | undefined
         
         if (sharedLocale && sharedLocale.value !== undefined) {
           // 发现共享的 locale，使用它
@@ -134,7 +134,7 @@ export function createI18nPlugin(options: I18nPluginOptions = {}) {
           this.locale = sharedLocale
           
           // 重新绑定 i18n 实例到共享的 locale
-          watchEffect(() => {
+          const stopSharedWatcher = watchEffect(() => {
             const currentLocale = sharedLocale.value
             if (currentLocale !== i18n.locale) {
               i18n.setLocale(currentLocale)
@@ -144,6 +144,7 @@ export function createI18nPlugin(options: I18nPluginOptions = {}) {
               }
             }
           })
+          watchers.push(stopSharedWatcher)
         } else {
           // 没有共享的 locale，提供自己的
           app.provide('locale', locale)

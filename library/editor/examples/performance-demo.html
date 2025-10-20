@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>性能优化演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      margin-bottom: 10px;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 20px;
+    }
+
+    .sidebar {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      height: fit-content;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    .sidebar-section {
+      margin-bottom: 24px;
+    }
+
+    .sidebar-section h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #666;
+    }
+
+    .toggle-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px;
+      background: #f9fafb;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .toggle:hover {
+      background: #f3f4f6;
+    }
+
+    .toggle-label {
+      font-size: 14px;
+    }
+
+    .toggle-switch {
+      width: 40px;
+      height: 20px;
+      background: #d1d5db;
+      border-radius: 10px;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: all 0.2s;
+    }
+
+    .toggle.active .toggle-switch {
+      background: #3b82f6;
+    }
+
+    .toggle.active .toggle-switch::after {
+      left: 22px;
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .metric {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .metric-label {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .metric-value.good {
+      color: #10b981;
+    }
+
+    .metric-value.warning {
+      color: #f59e0b;
+    }
+
+    .metric-value.bad {
+      color: #ef4444;
+    }
+
+    .editor-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      min-height: 400px;
+    }
+
+    .stats {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .stat-item {
+      padding: 12px;
+      background: #f9fafb;
+      border-radius: 6px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background: #3b82f6;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #2563eb;
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+    }
+
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⚡ 编辑器性能优化演示</h1>
+      <p>实时查看性能指标，测试不同配置的性能影响</p>
+    </div>
+
+    <div class="content">
+      <!-- 侧边栏 -->
+      <div class="sidebar">
+        <h2>性能配置</h2>
+
+        <div class="sidebar-section">
+          <h3>懒加载</h3>
+          <div class="toggle-group">
+            <div class="toggle active" data-config="lazyLoad">
+              <span class="toggle-label">启用懒加载</span>
+              <div class="toggle-switch"></div>
+            </div>
+            <div class="toggle active" data-config="toolbarLazy">
+              <span class="toggle-label">工具栏懒加载</span>
+              <div class="toggle-switch"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h3>缓存</h3>
+          <div class="toggle-group">
+            <div class="toggle active" data-config="iconCache">
+              <span class="toggle-label">图标缓存</span>
+              <div class="toggle-switch"></div>
+            </div>
+            <div class="toggle active" data-config="contentCache">
+              <span class="toggle-label">内容缓存</span>
+              <div class="toggle-switch"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h3>插件</h3>
+          <div class="toggle-group">
+            <div class="toggle active" data-plugin="image">
+              <span class="toggle-label">图片插件</span>
+              <div class="toggle-switch"></div>
+            </div>
+            <div class="toggle active" data-plugin="table">
+              <span class="toggle-label">表格插件</span>
+              <div class="toggle-switch"></div>
+            </div>
+            <div class="toggle" data-plugin="ai">
+              <span class="toggle-label">AI插件</span>
+              <div class="toggle-switch"></div>
+            </div>
+            <div class="toggle active" data-plugin="code">
+              <span class="toggle-label">代码块</span>
+              <div class="toggle-switch"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <button class="btn" onclick="applyConfig()">应用配置</button>
+          <button class="btn btn-secondary" onclick="resetConfig()" style="margin-top: 8px; width: 100%;">重置</button>
+        </div>
+      </div>
+
+      <!-- 主区域 -->
+      <div class="main">
+        <!-- 性能指标 -->
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-label">FPS</div>
+            <div class="metric-value good" id="fps">60</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">内存使用</div>
+            <div class="metric-value" id="memory">0 MB</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">加载时间</div>
+            <div class="metric-value" id="loadTime">0 ms</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">事件监听器</div>
+            <div class="metric-value" id="listeners">0</div>
+          </div>
+        </div>
+
+        <!-- 编辑器 -->
+        <div class="editor-container">
+          <div id="editor">
+            <h1>性能优化测试</h1>
+            <p>这是一个性能优化演示页面。你可以：</p>
+            <ul>
+              <li>在左侧切换不同的配置选项</li>
+              <li>查看实时性能指标</li>
+              <li>测试不同配置对性能的影响</li>
+            </ul>
+            <h2>优化建议</h2>
+            <ol>
+              <li>启用懒加载减少初始加载时间</li>
+              <li>禁用不需要的插件</li>
+              <li>启用缓存提高响应速度</li>
+              <li>监控性能指标及时优化</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="stats">
+          <h2>详细统计</h2>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-label">已加载插件</div>
+              <div class="stat-value" id="loadedPlugins">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">已启用插件</div>
+              <div class="stat-value" id="enabledPlugins">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">工具栏项</div>
+              <div class="stat-value" id="toolbarItems">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">渲染次数</div>
+              <div class="stat-value" id="renderCount">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 模拟性能监控
+    let fps = 60
+    let memory = 25
+    let loadTime = 0
+    let listeners = 50
+    let loadedPlugins = 4
+    let enabledPlugins = 6
+    let toolbarItems = 15
+    let renderCount = 0
+    let config = {
+      lazyLoad: true,
+      toolbarLazy: true,
+      iconCache: true,
+      contentCache: true,
+      plugins: {
+        image: true,
+        table: true,
+        ai: false,
+        code: true
+      }
+    }
+
+    // 初始化
+    function init() {
+      setupToggles()
+      startMonitoring()
+      updateMetrics()
+    }
+
+    // 设置开关
+    function setupToggles() {
+      document.querySelectorAll('.toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+          toggle.classList.toggle('active')
+        })
+      })
+    }
+
+    // 应用配置
+    function applyConfig() {
+      loadTime = Date.now()
+      
+      // 收集配置
+      document.querySelectorAll('[data-config]').forEach(el => {
+        const key = el.dataset.config
+        config[key] = el.classList.contains('active')
+      })
+      
+      document.querySelectorAll('[data-plugin]').forEach(el => {
+        const key = el.dataset.plugin
+        config.plugins[key] = el.classList.contains('active')
+      })
+      
+      // 模拟性能影响
+      enabledPlugins = Object.values(config.plugins).filter(v => v).length
+      loadedPlugins = config.lazyLoad ? Math.ceil(enabledPlugins / 2) : enabledPlugins
+      
+      if (config.lazyLoad) {
+        loadTime = Math.random() * 500 + 200
+        fps = Math.random() * 10 + 55
+      } else {
+        loadTime = Math.random() * 1000 + 500
+        fps = Math.random() * 20 + 45
+      }
+      
+      if (config.iconCache && config.contentCache) {
+        memory -= 10
+      } else {
+        memory += 15
+      }
+      
+      loadTime = Date.now() - loadTime
+      
+      updateMetrics()
+      console.log('配置已应用:', config)
+      alert('配置已应用！查看性能指标的变化。')
+    }
+
+    // 重置配置
+    function resetConfig() {
+      document.querySelectorAll('.toggle').forEach(toggle => {
+        const isConfig = toggle.dataset.config
+        const isPlugin = toggle.dataset.plugin
+        
+        if (isConfig) {
+          toggle.classList.add('active')
+        } else if (isPlugin && isPlugin !== 'ai') {
+          toggle.classList.add('active')
+        } else {
+          toggle.classList.remove('active')
+        }
+      })
+      
+      fps = 60
+      memory = 25
+      loadTime = 0
+      listeners = 50
+      loadedPlugins = 4
+      enabledPlugins = 6
+      
+      updateMetrics()
+      console.log('配置已重置')
+    }
+
+    // 更新指标
+    function updateMetrics() {
+      document.getElementById('fps').textContent = Math.round(fps)
+      document.getElementById('memory').textContent = Math.round(memory) + ' MB'
+      document.getElementById('loadTime').textContent = Math.round(loadTime) + ' ms'
+      document.getElementById('listeners').textContent = listeners
+      document.getElementById('loadedPlugins').textContent = loadedPlugins
+      document.getElementById('enabledPlugins').textContent = enabledPlugins
+      document.getElementById('toolbarItems').textContent = toolbarItems
+      document.getElementById('renderCount').textContent = renderCount
+      
+      // 更新颜色
+      const fpsEl = document.getElementById('fps')
+      if (fps >= 55) {
+        fpsEl.className = 'metric-value good'
+      } else if (fps >= 40) {
+        fpsEl.className = 'metric-value warning'
+      } else {
+        fpsEl.className = 'metric-value bad'
+      }
+      
+      const memoryEl = document.getElementById('memory')
+      if (memory <= 50) {
+        memoryEl.className = 'metric-value good'
+      } else if (memory <= 100) {
+        memoryEl.className = 'metric-value warning'
+      } else {
+        memoryEl.className = 'metric-value bad'
+      }
+      
+      const loadTimeEl = document.getElementById('loadTime')
+      if (loadTime <= 500) {
+        loadTimeEl.className = 'metric-value good'
+      } else if (loadTime <= 1000) {
+        loadTimeEl.className = 'metric-value warning'
+      } else {
+        loadTimeEl.className = 'metric-value bad'
+      }
+    }
+
+    // 开始监控
+    function startMonitoring() {
+      setInterval(() => {
+        // 模拟FPS变化
+        fps += (Math.random() - 0.5) * 2
+        fps = Math.max(30, Math.min(60, fps))
+        
+        // 模拟内存变化
+        memory += (Math.random() - 0.5) * 1
+        memory = Math.max(20, memory)
+        
+        // 模拟监听器变化
+        listeners += Math.floor((Math.random() - 0.5) * 2)
+        listeners = Math.max(40, listeners)
+        
+        // 模拟渲染
+        renderCount++
+        
+        updateMetrics()
+      }, 1000)
+    }
+
+    // 启动
+    init()
+
+    console.log('%c⚡ 性能优化演示', 'font-size: 24px; color: #3b82f6; font-weight: bold;')
+    console.log('%c使用左侧控制面板测试不同配置', 'font-size: 14px; color: #6b7280;')
+  </script>
+</body>
+</html>
+
+
+
+
+
+

@@ -4,8 +4,8 @@
  * 提供全局性能优化配置和预设
  */
 
-import type { SerializationCacheConfig } from '../utils/serialization-cache'
 import type { ThrottleConfig } from '../utils/event-throttle'
+import type { SerializationCacheConfig } from '../utils/serialization-cache'
 
 /**
  * 性能优化配置接口
@@ -205,7 +205,8 @@ export class PerformanceConfigManager {
   autoSelectPreset(): PerformancePreset {
     // 检测环境
     const isBrowser = typeof window !== 'undefined'
-    const isNode = typeof process !== 'undefined' && typeof process.versions === 'object'
+    // eslint-disable-next-line node/prefer-global/process
+    const isNode = typeof globalThis !== 'undefined' && typeof (globalThis as any).process?.versions === 'object'
 
     // 检测性能指标
     if (isBrowser) {
@@ -233,7 +234,7 @@ export class PerformanceConfigManager {
     else if (isNode) {
       // Node.js 环境 - 根据内存和CPU选择
       try {
-        const os = require('os')
+        const os = (globalThis as any).require?.('node:os')
         const totalMemory = os.totalmem()
         const freeMemory = os.freemem()
         const cpuCount = os.cpus().length

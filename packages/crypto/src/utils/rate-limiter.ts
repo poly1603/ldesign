@@ -345,7 +345,10 @@ export class RateLimiter {
 
     if (!limiter) {
       if (this.strategy === 'token-bucket') {
-        limiter = new TokenBucket(this.maxTokens!, this.refillRate!)
+        if (this.maxTokens === undefined || this.refillRate === undefined) {
+          throw new Error('Token bucket requires maxTokens and refillRate')
+        }
+        limiter = new TokenBucket(this.maxTokens, this.refillRate)
       } else if (this.strategy === 'sliding-window') {
         limiter = new SlidingWindow(this.maxRequests, this.windowMs)
       } else {

@@ -54,13 +54,16 @@ interface SyncQueueItem {
  * 离线管理器
  */
 export class OfflineManager {
-  private config: OfflineConfig;
+  private readonly config: OfflineConfig;
   private serviceWorkerRegistration?: ServiceWorkerRegistration;
   private syncQueue: SyncQueueItem[] = [];
   private db?: IDBDatabase;
   private isOnline = navigator.onLine;
-  private syncTimer?: NodeJS.Timer;
+  private syncTimer?: NodeJS.Timeout;
   private cacheStorage?: Cache;
+  private eventListeners: Array<{ target: EventTarget; event: string; handler: EventListener }> = [];
+  private readonly MAX_SYNC_QUEUE_SIZE = 100;
+  private swBlobUrl?: string; // 记录 blob URL 以便清理
 
   constructor(config: OfflineConfig = {}) {
     this.config = {
@@ -118,9 +121,15 @@ export class OfflineManager {
       // 生成Service Worker代码
       const swCode = this.generateServiceWorkerCode();
       const blob = new Blob([swCode], { type: 'application/javascript' });
-      const swUrl = URL.createObjectURL(blob);
+      
+      // 清理旧的 blob URL
+      if (this.swBlobUrl) {
+        URL.revokeObjectURL(this.swBlobUrl);
+      }
+      
+      this.swBlobUrl = URL.createObjectURL(blob);
 
-      this.serviceWorkerRegistration = await navigator.serviceWorker.register(swUrl, {
+      this.serviceWorkerRegistration = await navigator.serviceWorker.register(this.swBlobUrl, {
         scope: '/'
       });
 
@@ -369,33 +378,49 @@ export class OfflineManager {
    * 设置网络监听器
    */
   private setupNetworkListeners(): void {
-    window.addEventListener('online', () => {
+    const onlineHandler = () => {
       this.isOnline = true;
-      
       this.syncPendingData();
-    });
-
-    window.addEventListener('offline', () => {
+    };
+    
+    const offlineHandler = () => {
       this.isOnline = false;
-      
-    });
+    };
+    
+    window.addEventListener('online', onlineHandler);
+    window.addEventListener('offline', offlineHandler);
+    
+    // 记录事件监听器
+    this.eventListeners.push(
+      { target: window, event: 'online', handler: onlineHandler },
+      { target: window, event: 'offline', handler: offlineHandler }
+    );
   }
 
   /**
    * 设置消息通道
    */
   private setupMessageChannel(): void {
-    navigator.serviceWorker.addEventListener('message', (event) => {
+    const messageHandler = (event: MessageEvent) => {
       const { type, data } = event.data;
       
       switch (type) {
         case 'CACHE_UPDATED':
-          
+          // 处理缓存更新
           break;
         case 'SYNC_COMPLETE':
-          
+          // 处理同步完成
           break;
       }
+    };
+    
+    navigator.serviceWorker.addEventListener('message', messageHandler);
+    
+    // 记录事件监听器
+    this.eventListeners.push({
+      target: navigator.serviceWorker,
+      event: 'message',
+      handler: messageHandler as EventListener
     });
   }
 
@@ -491,6 +516,11 @@ export class OfflineManager {
    * 添加到同步队列
    */
   addToSyncQueue(item: Omit<SyncQueueItem, 'id' | 'timestamp' | 'retries'>): void {
+    // 限制同步队列大小
+    if (this.syncQueue.length >= this.MAX_SYNC_QUEUE_SIZE) {
+      this.syncQueue.shift(); // 移除最旧的项
+    }
+    
     const syncItem: SyncQueueItem = {
       ...item,
       id: `sync-${Date.now()}-${Math.random()}`,
@@ -519,7 +549,7 @@ export class OfflineManager {
   private startBackgroundSync(): void {
     // 注册后台同步
     if (this.serviceWorkerRegistration && 'sync' in this.serviceWorkerRegistration) {
-      this.serviceWorkerRegistration.sync.register('i18n-sync').catch(err => {
+      (this.serviceWorkerRegistration as any).sync.register('i18n-sync').catch((err: any) => {
         console.warn('[OfflineManager] Background sync registration failed:', err);
       });
     }
@@ -593,9 +623,10 @@ export class OfflineManager {
       
       const request = index.openCursor();
       request.onsuccess = (event) => {
-        const cursor = (event.target as IDBRequest).result;
+        const cursor = (event.target as IDBRequest).result as IDBCursorWithValue | null;
         if (cursor) {
-          if (this.isExpired(cursor.value.timestamp)) {
+          const value: any = cursor.value;
+          if (this.isExpired(value.timestamp)) {
             cursor.delete();
           }
           cursor.continue();
@@ -607,14 +638,17 @@ export class OfflineManager {
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key?.startsWith('i18n:')) {
+      if (key && key.startsWith('i18n:')) {
         try {
-          const data = JSON.parse(localStorage.getItem(key)!);
-          if (this.isExpired(data.timestamp)) {
-            keysToRemove.push(key);
+          const stored = localStorage.getItem(key);
+          if (stored) {
+            const data = JSON.parse(stored);
+            if (this.isExpired(data.timestamp)) {
+              keysToRemove.push(key);
+            }
           }
         } catch (e) {
-          keysToRemove.push(key!);
+          if (key) keysToRemove.push(key);
         }
       }
     }
@@ -659,25 +693,43 @@ export class OfflineManager {
    * 销毁
    */
   async destroy(): Promise<void> {
+    // 清理事件监听器
+    this.eventListeners.forEach(({ target, event, handler }) => {
+      target.removeEventListener(event, handler);
+    });
+    this.eventListeners = [];
+    
     // 注销Service Worker
     if (this.serviceWorkerRegistration) {
       await this.serviceWorkerRegistration.unregister();
+      this.serviceWorkerRegistration = undefined;
+    }
+    
+    // 清理 blob URL
+    if (this.swBlobUrl) {
+      URL.revokeObjectURL(this.swBlobUrl);
+      this.swBlobUrl = undefined;
     }
 
     // 关闭数据库
     if (this.db) {
       this.db.close();
+      this.db = undefined;
     }
 
     // 清理定时器
     if (this.syncTimer) {
       clearInterval(this.syncTimer);
+      this.syncTimer = undefined;
     }
 
     // 清理缓存
-    if ('caches' in window) {
-      await caches.delete(this.config?.cacheName!);
+    if ('caches' in window && this.config?.cacheName) {
+      await caches.delete(this.config.cacheName);
     }
+    
+    // 清理同步队列
+    this.syncQueue = [];
   }
 }
 

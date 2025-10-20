@@ -92,9 +92,12 @@ export class ScrollBehaviorManager {
     // 限制保存的数量
     if (this.savedPositions.size > this.options.maxSavedPositions) {
       // 删除最旧的记录
-      const oldestKey = Array.from(this.savedPositions.entries())
-        .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0]
-      this.savedPositions.delete(oldestKey)
+      const entries = Array.from(this.savedPositions.entries())
+      const sorted = entries.sort((a, b) => a[1].timestamp - b[1].timestamp)
+      const oldest = sorted[0]
+      if (oldest) {
+        this.savedPositions.delete(oldest[0])
+      }
     }
   }
   
@@ -130,7 +133,8 @@ export class ScrollBehaviorManager {
     } else if (savedPosition) {
       scrollPosition = savedPosition
     } else if (to.hash) {
-      scrollPosition = { el: to.hash, top: this.options.anchorOffset }
+      const el = typeof document !== 'undefined' ? document.querySelector(to.hash) : null
+      scrollPosition = { left: 0, top: this.options.anchorOffset || 0, el }
     } else if (this.options.savePosition) {
       const saved = this.getSavedPosition(to)
       scrollPosition = saved || { left: 0, top: 0 }
@@ -160,7 +164,7 @@ export class ScrollBehaviorManager {
     try {
       // 处理锚点滚动
       if ('el' in position && position.el) {
-        const element = document.querySelector(position.el)
+        const element = document.querySelector((position as any).selector || (position as any).el as string)
         if (element) {
           const top = element.getBoundingClientRect().top + window.scrollY + (position.top || 0)
           this.scrollTo({ left: 0, top })

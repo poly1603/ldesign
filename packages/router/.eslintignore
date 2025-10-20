@@ -1,0 +1,20 @@
+# Ignore build outputs and examples
+es/
+lib/
+dist/
+node_modules/
+coverage/
+
+# Ignore local examples and CLI tools for linting in this package
+examples/
+src/type-generator/
+scripts/
+src/data-fetching/
+src/features/
+src/micro-frontend/
+src/middleware/
+src/debug/
+src/plugins/
+
+# Misc
+*.log

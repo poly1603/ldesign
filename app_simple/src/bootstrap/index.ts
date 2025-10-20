@@ -6,6 +6,7 @@
 import { createEngineApp } from '@ldesign/engine'
 import App from '@/App.vue'
 import { createRouter } from '@/router'
+// import { createStore } from '@/store' // 暂时禁用 - store 包构建失败
 import { engineConfig } from '@/config/app.config'
 import { auth } from '@/composables/useAuth'
 import { initializePlugins } from './plugins'
@@ -24,8 +25,11 @@ export async function bootstrap() {
     // 创建路由器插件
     const routerPlugin = createRouter()
 
+    // 创建 Store 插件
+    // const storePlugin = createStore() // 暂时禁用
+
     // 初始化所有插件
-    const { i18nPlugin, colorPlugin, sizePlugin, templatePlugin, localeRef } = initializePlugins()
+    const { i18nPlugin, cachePlugin, colorPlugin, sizePlugin, templatePlugin, localeRef } = initializePlugins()
 
     // 创建应用引擎
     const engine = await createEngineApp({
@@ -36,8 +40,8 @@ export async function bootstrap() {
       // 使用配置文件
       config: engineConfig,
 
-      // 插件（路由器和国际化）
-      plugins: [routerPlugin, i18nPlugin],
+      // 插件（路由器和国际化）- cache 插件在 setupVueApp 中安装
+      plugins: [routerPlugin, i18nPlugin], // storePlugin 暂时禁用
 
       // Vue应用配置
       setupApp: async (app) => {
@@ -49,6 +53,7 @@ export async function bootstrap() {
         setupVueApp(app, {
           localeRef,
           i18nPlugin,
+          cachePlugin,
           colorPlugin,
           sizePlugin,
           templatePlugin
@@ -61,7 +66,7 @@ export async function bootstrap() {
       // 引擎就绪
       onReady: (engine) => {
         try {
-          setupEngineReady(engine, localeRef, i18nPlugin, colorPlugin, sizePlugin)
+          setupEngineReady(engine, localeRef, i18nPlugin, cachePlugin, colorPlugin, sizePlugin)
         } catch (err) {
           console.error('[index.ts] Error in onReady:', err)
         }

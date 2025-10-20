@@ -4,11 +4,11 @@
  * 提供性能监控、指标统计和分析功能
  */
 
-import type { RequestMonitor } from './utils/monitor'
-import type { PriorityQueue } from './utils/priority'
-import type { RequestPool } from './utils/pool'
-import type { ConcurrencyManager } from './utils/concurrency'
 import type { CacheManager } from './utils/cache'
+import type { ConcurrencyManager } from './utils/concurrency'
+import type { RequestMonitor } from './utils/monitor'
+import type { RequestPool } from './utils/pool'
+import type { PriorityQueue } from './utils/priority'
 
 /**
  * 监控指标接口
@@ -33,52 +33,52 @@ export interface MonitoringOperations {
   /**
    * 获取性能监控统计
    */
-  getPerformanceStats(): any
+  getPerformanceStats: () => any
 
   /**
    * 获取最近的请求指标
    */
-  getRecentMetrics(count?: number): any
+  getRecentMetrics: (count?: number) => any
 
   /**
    * 获取慢请求列表
    */
-  getSlowRequests(): any
+  getSlowRequests: () => any
 
   /**
    * 获取失败请求列表
    */
-  getFailedRequests(): any
+  getFailedRequests: () => any
 
   /**
    * 启用性能监控
    */
-  enableMonitoring(): void
+  enableMonitoring: () => void
 
   /**
    * 禁用性能监控
    */
-  disableMonitoring(): void
+  disableMonitoring: () => void
 
   /**
    * 获取优先级队列统计
    */
-  getPriorityQueueStats(): any
+  getPriorityQueueStats: () => any
 
   /**
    * 获取连接池统计
    */
-  getConnectionPoolStats(): any
+  getConnectionPoolStats: () => any
 
   /**
    * 获取连接池详情
    */
-  getConnectionDetails(): any
+  getConnectionDetails: () => any
 
   /**
    * 导出性能指标
    */
-  exportMetrics(): MonitoringMetrics
+  exportMetrics: () => MonitoringMetrics
 }
 
 /**
@@ -230,7 +230,11 @@ export class MonitoringHandler implements MonitoringOperations {
       return 0
     }
 
-    const timeSpan = (now - recentRequests[0].timestamp) / 1000
+    const firstRequest = recentRequests[0]
+    if (!firstRequest?.timestamp) {
+      return 0
+    }
+    const timeSpan = (now - firstRequest.timestamp) / 1000
     return recentRequests.length / timeSpan
   }
 
@@ -248,7 +252,8 @@ export class MonitoringHandler implements MonitoringOperations {
     const recommendations: string[] = []
 
     // 分析并生成建议
-    if (stats.averageResponseTime > 3000) {
+    const avgResponseTime = stats.averageResponseTime ?? 0
+    if (avgResponseTime > 3000) {
       recommendations.push('Average response time is high. Consider implementing caching or optimizing server endpoints.')
     }
 

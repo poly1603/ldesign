@@ -48,6 +48,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
   private weakSortedCache = new WeakMap<EventListener[], EventListener[]>()
   private maxEventStats = 1000 // 限制统计数据数量
   private cleanupInterval = 60000 // 降低到1分钟
+  private cleanupTimer: number | null = null // 存储定时器引用
 
   constructor(private logger?: Logger) {
     // 更频繁地清理统计数据
@@ -55,8 +56,13 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
   }
 
   private setupCleanupTimer(): void {
-    // 使用垃圾回收友好的设计
-    setInterval(() => {
+    // 清理旧定时器（防止重复创建）
+    if (this.cleanupTimer !== null) {
+      clearInterval(this.cleanupTimer)
+    }
+
+    // 使用 window.setInterval 获得正确类型，便于清理
+    this.cleanupTimer = window.setInterval(() => {
       this.cleanupStats()
       // 检测内存使用情况
       this.checkMemoryUsage()
@@ -131,8 +137,13 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
     // 优化：使用WeakMap缓存以避免重复排序
     let listenersToExecute = this.weakSortedCache.get(listeners)
     if (!listenersToExecute) {
-      // 只有在没有缓存时才排序
-      listenersToExecute = [...listeners].sort((a, b) => b.priority - a.priority)
+      // 只有在没有缓存时才排序 - 优化：使用更高效的排序
+      // 对于少量监听器，使用插入排序更快
+      if (listeners.length < 10) {
+        listenersToExecute = this.insertionSort([...listeners])
+      } else {
+        listenersToExecute = [...listeners].sort((a, b) => b.priority - a.priority)
+      }
       this.weakSortedCache.set(listeners, listenersToExecute)
     }
 
@@ -370,7 +381,7 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
       this.logger?.warn('High number of event listeners detected', {
         totalListeners: stats.totalListeners,
         events: Object.entries(stats.events)
-          .filter(([_, count]) => count > 20)
+          .filter(([, count]) => count > 20)
           .map(([event, count]) => `${event}: ${count}`)
       })
     }
@@ -396,6 +407,13 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
    * 销毁方法 - 确保完全清理
    */
   destroy(): void {
+    // 清理定时器
+    if (this.cleanupTimer !== null) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+
+    // 清理所有数据
     this.events.clear()
     this.sortedListenersCache.clear()
     this.eventStats.clear()
@@ -470,6 +488,22 @@ export class EventManagerImpl<TEventMap extends EventMap = EventMap>
    */
   throttle(event: string, interval: number = 300): EventThrottler {
     return new EventThrottler(this, event, interval)
+  }
+
+  /**
+   * 插入排序 - 对小数组更高效
+   */
+  private insertionSort(arr: EventListener[]): EventListener[] {
+    for (let i = 1; i < arr.length; i++) {
+      const current = arr[i]
+      let j = i - 1
+      while (j >= 0 && arr[j].priority < current.priority) {
+        arr[j + 1] = arr[j]
+        j--
+      }
+      arr[j + 1] = current
+    }
+    return arr
   }
 
   getStats(): {
@@ -573,7 +607,7 @@ export class EventNamespace {
  * 事件防抖器类 - 功能增强
  */
 export class EventDebouncer {
-  private timeoutId?: NodeJS.Timeout
+  private timeoutId?: number
   private lastArgs?: unknown
 
   constructor(
@@ -586,10 +620,10 @@ export class EventDebouncer {
     this.lastArgs = data
 
     if (this.timeoutId) {
-      clearTimeout(this.timeoutId)
+      window.clearTimeout(this.timeoutId)
     }
 
-    this.timeoutId = setTimeout(() => {
+    this.timeoutId = window.setTimeout(() => {
       this.eventManager.emit(this.event, this.lastArgs)
       this.timeoutId = undefined
     }, this.delay)
@@ -597,17 +631,22 @@ export class EventDebouncer {
 
   cancel(): void {
     if (this.timeoutId) {
-      clearTimeout(this.timeoutId)
+      window.clearTimeout(this.timeoutId)
       this.timeoutId = undefined
     }
   }
 
   flush(): void {
     if (this.timeoutId) {
-      clearTimeout(this.timeoutId)
+      window.clearTimeout(this.timeoutId)
       this.eventManager.emit(this.event, this.lastArgs)
       this.timeoutId = undefined
     }
+  }
+
+  destroy(): void {
+    this.cancel()
+    this.lastArgs = undefined
   }
 }
 
@@ -616,7 +655,7 @@ export class EventDebouncer {
  */
 export class EventThrottler {
   private lastEmitTime = 0
-  private timeoutId?: NodeJS.Timeout
+  private timeoutId?: number
   private lastArgs?: unknown
 
   constructor(
@@ -635,7 +674,7 @@ export class EventThrottler {
     } else if (!this.timeoutId) {
       // 设置延迟触发，确保最后一次调用会被执行
       const remainingTime = this.interval - (now - this.lastEmitTime)
-      this.timeoutId = setTimeout(() => {
+      this.timeoutId = window.setTimeout(() => {
         this.eventManager.emit(this.event, this.lastArgs)
         this.lastEmitTime = Date.now()
         this.timeoutId = undefined
@@ -645,14 +684,48 @@ export class EventThrottler {
 
   cancel(): void {
     if (this.timeoutId) {
-      clearTimeout(this.timeoutId)
+      window.clearTimeout(this.timeoutId)
       this.timeoutId = undefined
     }
   }
+
+  destroy(): void {
+    this.cancel()
+    this.lastArgs = undefined
+    this.lastEmitTime = 0
+  }
+}
+
+// 在 EventManagerImpl 类中添加 destroy 方法（应该在类内部，这里作为补充导出）
+export interface EventManagerWithDestroy<TEventMap extends EventMap = EventMap> extends EventManager<TEventMap> {
+  destroy: () => void;
 }
 
 export function createEventManager<TEventMap extends EventMap = EventMap>(
   logger?: Logger
-): EventManager<TEventMap> {
-  return new EventManagerImpl<TEventMap>(logger)
+): EventManagerWithDestroy<TEventMap> {
+  const manager = new EventManagerImpl<TEventMap>(logger);
+
+  // 添加 destroy 方法
+  (manager as any).destroy = function () {
+    // 清理定时器
+    if (this.cleanupTimer !== null) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+
+    // 清理所有事件监听器
+    this.events.clear()
+
+    // 清理缓存
+    this.sortedListenersCache.clear()
+
+    // 清理统计信息
+    this.eventStats.clear()
+
+    // 清理对象池
+    this.eventPool.clear()
+  };
+
+  return manager as EventManagerWithDestroy<TEventMap>;
 }

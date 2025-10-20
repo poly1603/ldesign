@@ -1,0 +1,58 @@
+{
+  "name": "条件分支流程",
+  "description": "包含条件判断的分支流程",
+  "nodes": [
+    {
+      "nodeId": "start",
+      "nodeName": "开始",
+      "nodeType": "start",
+      "next": "input"
+    },
+    {
+      "nodeId": "input",
+      "nodeName": "填写金额",
+      "nodeType": "process",
+      "next": "check_amount"
+    },
+    {
+      "nodeId": "check_amount",
+      "nodeName": "金额判断",
+      "nodeType": "condition",
+      "conditions": [
+        { "conditionName": "≤1000元", "next": "auto_pass" },
+        { "conditionName": "1000-5000元", "next": "manager_approval" },
+        { "conditionName": ">5000元", "next": "director_approval" }
+      ]
+    },
+    {
+      "nodeId": "auto_pass",
+      "nodeName": "自动通过",
+      "nodeType": "process",
+      "next": "end"
+    },
+    {
+      "nodeId": "manager_approval",
+      "nodeName": "经理审批",
+      "nodeType": "approval",
+      "actions": [
+        { "actionName": "同意", "next": "end" },
+        { "actionName": "拒绝", "next": "end" }
+      ]
+    },
+    {
+      "nodeId": "director_approval",
+      "nodeName": "总监审批",
+      "nodeType": "approval",
+      "actions": [
+        { "actionName": "同意", "next": "end" },
+        { "actionName": "拒绝", "next": "end" }
+      ]
+    },
+    {
+      "nodeId": "end",
+      "nodeName": "结束",
+      "nodeType": "end"
+    }
+  ]
+}
+

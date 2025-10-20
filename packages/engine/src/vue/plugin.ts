@@ -112,7 +112,7 @@ export function createVueEnginePlugin(options: VueEnginePluginOptions = {}): Plu
 
       // 在开发环境下暴露到全局
       if (exposeGlobal && typeof window !== 'undefined') {
-        // eslint-disable-next-line ts/no-explicit-any
+         
         ; (window as any).__LDESIGN_ENGINE__ = engine
       }
 
@@ -125,7 +125,7 @@ export function createVueEnginePlugin(options: VueEnginePluginOptions = {}): Plu
 
       // 设置Vue开发工具支持
       if (debug && typeof window !== 'undefined') {
-        // eslint-disable-next-line ts/no-explicit-any
+         
         const devtools = (window as any).__VUE_DEVTOOLS_GLOBAL_HOOK__
         if (devtools) {
           devtools.emit('app:init', app, engine)
@@ -335,7 +335,7 @@ export function setupDevtools(engine: Engine) {
     return
   }
 
-  // eslint-disable-next-line ts/no-explicit-any
+   
   const devtools = (window as any).__VUE_DEVTOOLS_GLOBAL_HOOK__
   if (!devtools) {
     return

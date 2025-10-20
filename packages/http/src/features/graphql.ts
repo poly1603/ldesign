@@ -175,9 +175,9 @@ export class GraphQLClient {
     const endpoint = config?.endpoint || this.config?.endpoint
 
     if (this.config?.debug) {
-      console.log('[GraphQL Query]', query)
+      console.debug('[GraphQL Query]', query)
       if (variables) {
-        console.log('[GraphQL Variables]', variables)
+        console.debug('[GraphQL Variables]', variables)
       }
     }
 
@@ -270,7 +270,7 @@ export class GraphQLClient {
     const endpoint = config?.endpoint || this.config?.endpoint
 
     if (this.config?.debug) {
-      console.log('[GraphQL Batch]', `Processing ${batch.length} requests`)
+      console.debug('[GraphQL Batch]', `Processing ${batch.length} requests`)
     }
 
     try {

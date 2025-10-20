@@ -110,41 +110,55 @@ abstract class BaseHistory implements RouterHistory {
   }
 
   /**
-   * 清理状态数据，确保只包含可序列化的内容
+   * 清理状态数据，确保只包含可序列化的内容（优化版）
    */
   protected sanitizeStateData(data: HistoryState): HistoryState {
-    const sanitized: HistoryState = {}
-
-    for (const [key, value] of Object.entries(data)) {
-      // 只保留基本类型和简单对象
-      if (value === null || value === undefined) {
-        sanitized[key] = value
-      }
-      else if (
-        typeof value === 'string'
-        || typeof value === 'number'
-        || typeof value === 'boolean'
-      ) {
-        sanitized[key] = value
-      }
-      else if (Array.isArray(value)) {
-        // 递归处理数组
-        sanitized[key] = value
-          .map(item =>
-            typeof item === 'object' && item !== null
-              ? this.sanitizeStateData(item)
-              : item,
-          )
-          .filter(item => item !== undefined && typeof item !== 'function')
-      }
-      else if (typeof value === 'object' && value.constructor === Object) {
-        // 递归处理普通对象
-        sanitized[key] = this.sanitizeStateData(value as HistoryState)
-      }
-      // 忽略函数、Symbol、复杂对象等不可序列化的内容
+    // 优化：对于空对象或基本类型直接返回
+    if (!data || typeof data !== 'object') {
+      return data || {}
     }
-
-    return sanitized
+    
+    // 优化：使用缓存避免重复处理
+    const cache = new WeakSet()
+    
+    const sanitize = (obj: any, depth = 0): any => {
+      // 限制递归深度，避免栈溢出
+      if (depth > 10) return undefined
+      
+      if (obj === null || obj === undefined) return obj
+      
+      const type = typeof obj
+      if (type === 'string' || type === 'number' || type === 'boolean') {
+        return obj
+      }
+      
+      if (type === 'object') {
+        // 避免循环引用
+        if (cache.has(obj)) return undefined
+        cache.add(obj)
+        
+        if (Array.isArray(obj)) {
+          return obj
+            .map(item => sanitize(item, depth + 1))
+            .filter(item => item !== undefined)
+        }
+        
+        if (obj.constructor === Object) {
+          const result: any = {}
+          for (const [key, value] of Object.entries(obj)) {
+            const sanitized = sanitize(value, depth + 1)
+            if (sanitized !== undefined) {
+              result[key] = sanitized
+            }
+          }
+          return result
+        }
+      }
+      
+      return undefined
+    }
+    
+    return sanitize(data) || {}
   }
 }
 
@@ -155,6 +169,8 @@ abstract class BaseHistory implements RouterHistory {
  */
 class HTML5History extends BaseHistory {
   private popstateListener?: (event: PopStateEvent) => void
+  private lastNavTime = 0
+  private readonly NAV_THROTTLE = 50 // 防抖时间
 
   constructor(base?: string) {
     super(base)
@@ -162,7 +178,14 @@ class HTML5History extends BaseHistory {
   }
 
   push(to: HistoryLocation, data?: HistoryState): void {
-    const from = { ...this._location }
+    // 优化：防抖处理
+    const now = Date.now()
+    if (now - this.lastNavTime < this.NAV_THROTTLE) {
+      return
+    }
+    this.lastNavTime = now
+    
+    const from = this._location
     const url = this.buildURL(to)
 
     // 确保只传递可序列化的数据到 History API
@@ -176,7 +199,7 @@ class HTML5History extends BaseHistory {
   }
 
   replace(to: HistoryLocation, data?: HistoryState): void {
-    const from = { ...this._location }
+    const from = this._location
     const url = this.buildURL(to)
 
     // 确保只传递可序列化的数据到 History API
@@ -215,17 +238,28 @@ class HTML5History extends BaseHistory {
   }
 
   private setupPopstateListener(): void {
+    let isProcessing = false
+    
     this.popstateListener = (event: PopStateEvent) => {
-      const from = { ...this._location }
+      // 防止重复处理
+      if (isProcessing) return
+      isProcessing = true
+      
+      const from = this._location
       const to = this.getCurrentLocation()
 
       this._location = to
       this._state = event.state || {}
 
       this.triggerListeners(to, from, this.createNavigationInfo('pop'))
+      
+      // 使用 requestAnimationFrame 确保在下一帧重置标志
+      requestAnimationFrame(() => {
+        isProcessing = false
+      })
     }
 
-    window.addEventListener('popstate', this.popstateListener)
+    window.addEventListener('popstate', this.popstateListener, { passive: true })
   }
 
   private buildURL(location: HistoryLocation): string {
@@ -352,6 +386,7 @@ class HashHistory extends BaseHistory {
 class MemoryHistory extends BaseHistory {
   private stack: Array<{ location: HistoryLocation, state: HistoryState }> = []
   private index: number = -1
+  private readonly MAX_STACK_SIZE = 100 // 限制历史栈大小
 
   constructor(base?: string, initialLocation?: HistoryLocation) {
     super(base)
@@ -363,10 +398,16 @@ class MemoryHistory extends BaseHistory {
   }
 
   push(to: HistoryLocation, data?: HistoryState): void {
-    const from = { ...this._location }
+    const from = this._location
 
     // 移除当前位置之后的所有历史记录
     this.stack = this.stack.slice(0, this.index + 1)
+
+    // 限制栈大小
+    if (this.stack.length >= this.MAX_STACK_SIZE) {
+      this.stack.shift() // 移除最旧的记录
+      this.index--
+    }
 
     // 添加新记录
     this.stack.push({ location: to, state: data || {} })

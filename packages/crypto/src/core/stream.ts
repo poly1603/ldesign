@@ -151,7 +151,7 @@ export class StreamCipher {
       }
     }> {
     const opts = { ...this.defaultOptions, ...options }
-    const _startTime = performance.now()
+    // const _startTime = performance.now() // 未使用
 
     // 准备数据
     const uint8Data = data instanceof ArrayBuffer ? new Uint8Array(data) : data
@@ -190,8 +190,7 @@ export class StreamCipher {
     const combinedEncrypted = encryptedChunks.join('|')
     const result = new TextEncoder().encode(combinedEncrypted)
 
-    const _endTime = performance.now()
-    // 
+    // const _endTime = performance.now() // 未使用
 
     return {
       data: result.buffer,
@@ -213,7 +212,7 @@ export class StreamCipher {
     options: StreamOptions = {},
   ): Promise<ArrayBuffer> {
     const opts = { ...this.defaultOptions, ...options }
-    const _startTime = performance.now()
+    // const _startTime = performance.now() // 未使用
 
     // 准备数据 - 将加密数据转换为字符串并分割
     const uint8Data = encryptedData instanceof ArrayBuffer
@@ -256,8 +255,7 @@ export class StreamCipher {
       resultOffset += chunk.length
     }
 
-    const _endTime = performance.now()
-    // 
+    // const _endTime = performance.now() // 未使用
 
     return result.buffer
   }
@@ -410,7 +408,7 @@ export class FileEncryptor {
         encryptedAt: number
       }
     }> {
-    const _startTime = performance.now()
+    // const _startTime = performance.now() // 未使用
 
     // 读取文件为 ArrayBuffer
     const arrayBuffer = await file.arrayBuffer()
@@ -445,8 +443,7 @@ export class FileEncryptor {
     result.set(metadataBytes, 4)
     result.set(new Uint8Array(data), 4 + metadataBytes.length)
 
-    const _endTime = performance.now()
-    // 
+    // const _endTime = performance.now() // 未使用
 
     return {
       blob: new Blob([result], { type: 'application/octet-stream' }),
@@ -472,7 +469,7 @@ export class FileEncryptor {
         encryptedAt: number
       }
     }> {
-    const _startTime = performance.now()
+    // const _startTime = performance.now() // 未使用
 
     // 读取加密数据
     const arrayBuffer = await encryptedBlob.arrayBuffer()
@@ -497,8 +494,7 @@ export class FileEncryptor {
       options,
     )
 
-    const _endTime = performance.now()
-    // 
+    // const _endTime = performance.now() // 未使用
 
     return {
       blob: new Blob([decryptedData], { type: metadata.mimeType }),

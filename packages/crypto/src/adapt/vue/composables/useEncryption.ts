@@ -51,7 +51,7 @@ export interface UseEncryptionReturn extends EncryptionState, EncryptionActions 
  *
  * const handleEncrypt = async () => {
  *   const encrypted = await encryptText('Hello World', 'mypassword')
- *    * }
+ *    }
  * </script>
  * ```
  */

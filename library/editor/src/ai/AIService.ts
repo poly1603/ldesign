@@ -13,6 +13,8 @@ import type {
 } from './types'
 import { defaultAIConfig } from './types'
 import { DeepSeekProvider } from './providers/DeepSeekProvider'
+import { OpenAIProvider } from './providers/OpenAIProvider'
+import { ClaudeProvider } from './providers/ClaudeProvider'
 
 export class AIService {
   private config: AIConfig
@@ -90,14 +92,25 @@ export class AIService {
    */
   private initializeProviders(): void {
     // 初始化 DeepSeek
-    if (this.config.providers.deepseek) {
+    if (this.config.providers.deepseek?.apiKey) {
       this.providers.set('deepseek', new DeepSeekProvider(this.config.providers.deepseek))
     }
     
-    // TODO: 添加其他提供商的初始化
-    // if (this.config.providers.openai) {
-    //   this.providers.set('openai', new OpenAIProvider(this.config.providers.openai))
-    // }
+    // 初始化 OpenAI
+    if (this.config.providers.openai?.apiKey) {
+      this.providers.set('openai', new OpenAIProvider(
+        this.config.providers.openai.apiKey,
+        this.config.providers.openai
+      ))
+    }
+    
+    // 初始化 Claude
+    if (this.config.providers.claude?.apiKey) {
+      this.providers.set('claude', new ClaudeProvider(
+        this.config.providers.claude.apiKey,
+        this.config.providers.claude
+      ))
+    }
   }
 
   /**
@@ -155,13 +168,50 @@ export class AIService {
       
       // 重新初始化该提供商
       const config = this.config.providers[provider]!
-      if (provider === 'deepseek') {
-        this.providers.set('deepseek', new DeepSeekProvider(config))
+      
+      switch (provider) {
+        case 'deepseek':
+          this.providers.set('deepseek', new DeepSeekProvider(config))
+          break
+        case 'openai':
+          this.providers.set('openai', new OpenAIProvider(apiKey, config))
+          break
+        case 'claude':
+          this.providers.set('claude', new ClaudeProvider(apiKey, config))
+          break
       }
-      // TODO: 添加其他提供商
       
       this.saveConfig()
     }
+  }
+  
+  /**
+   * 注册自定义提供商
+   */
+  registerProvider(name: string, provider: AIProviderInterface): void {
+    this.providers.set(name as AIProvider, provider)
+  }
+  
+  /**
+   * 获取可用的提供商列表
+   */
+  getAvailableProviders(): AIProvider[] {
+    return Array.from(this.providers.keys())
+  }
+  
+  /**
+   * 获取当前提供商
+   */
+  getCurrentProvider(): AIProvider | null {
+    if (!this.currentProvider) return null
+    
+    for (const [name, provider] of this.providers.entries()) {
+      if (provider === this.currentProvider) {
+        return name
+      }
+    }
+    
+    return null
   }
 
   /**

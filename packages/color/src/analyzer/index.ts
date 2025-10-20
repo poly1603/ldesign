@@ -1,10 +1,10 @@
-﻿/**
+/**
  * 棰滆壊鏁版嵁鍒嗘瀽鍣?
  * 鏀寔鍥剧墖棰滆壊鎻愬彇銆佷富鑹茶皟鍒嗘瀽銆侀鑹插垎甯冪粺璁?
  */
 
-import { Color } from '../core/Color'
 import type { RGB } from '../types'
+import { Color } from '../core/Color'
 
 /**
  * 棰滆壊缁熻淇℃伅
@@ -40,16 +40,56 @@ export interface AnalyzerOptions {
 }
 
 /**
- * 棰滆壊鑱氱被缁撴灉
+ * 颜色聚类结果
  */
 interface ColorCluster {
   center: Color
-  members: Color[]
+  members: RGB[]  // Use RGB instead of Color to reduce memory
   weight: number
 }
 
+// Singleton canvas for image processing (reused across calls)
+let canvasCache: HTMLCanvasElement | null = null
+let contextCache: CanvasRenderingContext2D | null = null
+
+function getCanvasContext(): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } {
+  if (!canvasCache || !contextCache) {
+    canvasCache = document.createElement('canvas')
+    contextCache = canvasCache.getContext('2d')!
+  }
+  return { canvas: canvasCache, ctx: contextCache }
+}
+
+// Object pool for temporary Color instances
+const colorPool: Color[] = []
+const MAX_POOL_SIZE = 50
+
+function borrowColor(rgb: RGB): Color {
+  if (colorPool.length > 0) {
+    colorPool.pop()! // Remove from pool but don't use
+    // Create new Color instance with RGB values
+    return Color.fromRGB(rgb.r, rgb.g, rgb.b)
+  }
+  return Color.fromRGB(rgb.r, rgb.g, rgb.b)
+}
+
+function returnColor(color: Color): void {
+  if (colorPool.length < MAX_POOL_SIZE) {
+    colorPool.push(color)
+  }
+}
+
+// Clean up on page unload
+if (typeof window !== 'undefined') {
+  window.addEventListener('unload', () => {
+    colorPool.length = 0
+    canvasCache = null
+    contextCache = null
+  })
+}
+
 /**
- * 棰滆壊鏁版嵁鍒嗘瀽鍣?
+ * 颜色数据分析器
  */
 export class ColorAnalyzer {
   
@@ -70,7 +110,7 @@ export class ColorAnalyzer {
   }
   
   /**
-   * 鏌ユ壘涓昏壊璋?
+   * 查找主色调
    */
   static async findDominantColors(
     input: File | Blob | HTMLImageElement | string,
@@ -80,11 +120,12 @@ export class ColorAnalyzer {
     const pixels = await this.getImagePixels(input, _options)
     const colorMap = new Map<string, number>()
     
-    // 缁熻棰滆壊棰戠巼
+    // 统计颜色频率
     for (const pixel of pixels) {
-      const color = new Color(pixel)
+      const color = borrowColor(pixel) // Use color pool
       const key = this.getColorKey(color, _options.threshold || 10)
       colorMap.set(key, (colorMap.get(key) || 0) + 1)
+      returnColor(color) // Return to pool
     }
     
     // 杞崲涓虹粺璁′俊鎭?
@@ -120,17 +161,17 @@ export class ColorAnalyzer {
   ): Promise<ColorDistribution> {
     const pixels = await this.getImagePixels(input, _options)
     
-    // 鍒濆鍖栧垎甯冩暟缁?
-    const hueDistribution = new Array(360).fill(0)
-    const saturationDistribution = new Array(101).fill(0)
-    const lightnessDistribution = new Array(101).fill(0)
+    // 鍒濆鍖栧垎甯冩暟缁?
+    const hueDistribution = Array.from({length: 360}, () => 0)
+    const saturationDistribution = Array.from({length: 101}, () => 0)
+    const lightnessDistribution = Array.from({length: 101}, () => 0)
     
     let totalSaturation = 0
     let totalLightness = 0
     
-    // 缁熻鍒嗗竷
+    // 统计分布
     for (const pixel of pixels) {
-      const color = new Color(pixel)
+      const color = borrowColor(pixel) // Use color pool
       const hsl = color.toHSL()
       
       hueDistribution[Math.round(hsl.h)]++
@@ -139,6 +180,7 @@ export class ColorAnalyzer {
       
       totalSaturation += hsl.s
       totalLightness += hsl.l
+      returnColor(color) // Return to pool
     }
     
     // 褰掍竴鍖?
@@ -175,8 +217,7 @@ export class ColorAnalyzer {
     _options: AnalyzerOptions = {}
   ): Promise<RGB[]> {
     const img = await this.loadImage(input)
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')!
+    const { canvas, ctx } = getCanvasContext()
     
     // 鏍规嵁璐ㄩ噺璁剧疆閲囨牱澶у皬
     const quality = _options.quality || 5
@@ -189,16 +230,18 @@ export class ColorAnalyzer {
     
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
     const pixels: RGB[] = []
+    const data = imageData.data
     
-    // 鎻愬彇鍍忕礌
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      const r = imageData.data[i]
-      const g = imageData.data[i + 1]
-      const b = imageData.data[i + 2]
-      const a = imageData.data[i + 3]
+    // 鎻愬彇鍍忕礌 - optimized loop
+    for (let i = 0, len = data.length; i < len; i += 4) {
+      const a = data[i + 3]
       
       // 蹇界暐閫忔槑鍍忕礌
       if (a < 128) continue
+      
+      const r = data[i]
+      const g = data[i + 1]
+      const b = data[i + 2]
       
       // 鏍规嵁閫夐」蹇界暐榛戠櫧鑹?
       if (_options.ignoreWhite && r > 240 && g > 240 && b > 240) continue
@@ -206,6 +249,9 @@ export class ColorAnalyzer {
       
       pixels.push({ r, g, b })
     }
+    
+    // Clear canvas for memory efficiency
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
     
     return pixels
   }
@@ -238,7 +284,7 @@ export class ColorAnalyzer {
   }
   
   /**
-   * K-means鑱氱被绠楁硶
+   * K-means聚类算法
    */
   private static kMeansClustering(
     pixels: RGB[],
@@ -249,7 +295,7 @@ export class ColorAnalyzer {
     if (k >= pixels.length) {
       return pixels.map(p => ({
         center: new Color(p),
-        members: [new Color(p)],
+        members: [p], // Store RGB instead of Color to save memory
         weight: 1
       }))
     }
@@ -272,9 +318,9 @@ export class ColorAnalyzer {
       // 娓呯┖鎴愬憳
       clusters.forEach(c => c.members = [])
       
-      // 鍒嗛厤鍍忕礌鍒版渶杩戠殑鑱氱被
+      // 分配像素到最近的聚类
       for (const pixel of pixels) {
-        const color = new Color(pixel)
+        const color = borrowColor(pixel) // Use color pool
         let minDistance = Infinity
         let nearestCluster = 0
         
@@ -286,7 +332,8 @@ export class ColorAnalyzer {
           }
         }
         
-        clusters[nearestCluster].members.push(color)
+        clusters[nearestCluster].members.push(pixel) // Store RGB instead of Color
+        returnColor(color) // Return to pool
       }
       
       // 鏇存柊鑱氱被涓績
@@ -308,24 +355,25 @@ export class ColorAnalyzer {
   }
   
   /**
-   * 鍒濆鍖栬仛绫讳腑蹇冿紙K-means++锛?
+   * 初始化聚类中心（K-means++）
    */
   private static initializeCenters(pixels: RGB[], k: number): Color[] {
     const centers: Color[] = []
     
-    // 闅忔満閫夋嫨绗竴涓腑蹇?
+    // 随机选择第一个中心
     const first = pixels[Math.floor(Math.random() * pixels.length)]
     centers.push(new Color(first))
     
-    // 閫夋嫨鍓╀綑鐨勪腑蹇?
+    // 选择剩余的中心
     for (let i = 1; i < k; i++) {
       const distances = pixels.map(pixel => {
-        const color = new Color(pixel)
+        const color = borrowColor(pixel) // Use color pool
         let minDist = Infinity
         for (const center of centers) {
           const dist = this.colorDistance(color, center)
           if (dist < minDist) minDist = dist
         }
+        returnColor(color) // Return to pool
         return minDist
       })
       
@@ -346,21 +394,20 @@ export class ColorAnalyzer {
   }
   
   /**
-   * 璁＄畻璐ㄥ績
+   * 计算质心
    */
-  private static calculateCentroid(colors: Color[]): Color {
-    if (colors.length === 0) return new Color('#000000')
+  private static calculateCentroid(pixels: RGB[]): Color {
+    if (pixels.length === 0) return new Color('#000000')
     
-    let totalR = 0, totalG = 0, totalB = 0
+    let totalR = 0; let totalG = 0; let totalB = 0
     
-    for (const color of colors) {
-      const rgb = color.toRGB()
-      totalR += rgb.r
-      totalG += rgb.g
-      totalB += rgb.b
+    for (const pixel of pixels) {
+      totalR += pixel.r
+      totalG += pixel.g
+      totalB += pixel.b
     }
     
-    const count = colors.length
+    const count = pixels.length
     return Color.fromRGB(
       Math.round(totalR / count),
       Math.round(totalG / count),

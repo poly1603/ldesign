@@ -2,8 +2,8 @@
  * useI18n - Main composable for Vue i18n
  */
 
-import { inject, computed, ref, readonly, watchEffect, type Ref, type ComputedRef } from 'vue';
-import type { I18nInstance, Locale, MessageKey, InterpolationParams, TranslateOptions } from '../../../types';
+import type { I18nInstance, InterpolationParams, Locale, MessageKey, TranslateOptions } from '../../../types';
+import { computed, type ComputedRef, inject, onUnmounted, ref, type Ref, watchEffect } from 'vue';
 import { I18N_SYMBOL } from '../constants';
 
 export interface UseI18nOptions {
@@ -86,18 +86,32 @@ export function useI18n(options: UseI18nOptions = {}): UseI18nReturn {
   const locale = ref(i18n.locale || 'en_us');
   const fallbackLocale = ref(i18n.fallbackLocale || 'en_us');
 
-  // Sync locale changes
-  watchEffect(() => {
+  // Sync locale changes with cleanup
+  const stopWatchLocale = watchEffect(() => {
     i18n.locale = locale.value;
   });
 
-  watchEffect(() => {
+  const stopWatchFallback = watchEffect(() => {
     i18n.fallbackLocale = fallbackLocale.value;
   });
 
   // Listen to locale changes
   const unsubscribe = i18n.on('localeChanged', ({ locale: newLocale }) => {
     locale.value = newLocale;
+  });
+  
+  // Cleanup on unmount
+  onUnmounted(() => {
+    stopWatchLocale();
+    stopWatchFallback();
+    if (unsubscribe && typeof unsubscribe === 'function') {
+      unsubscribe();
+    }
+    
+    // Clean up local instance if created
+    if (useScope === 'local' && i18n !== globalI18n && 'destroy' in i18n) {
+      i18n.destroy();
+    }
   });
 
   // Computed properties

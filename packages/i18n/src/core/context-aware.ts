@@ -3,7 +3,6 @@
  * 上下文感知翻译：根据环境智能选择最合适的翻译变体
  */
 
-import type { Locale, Messages } from '../types';
 
 /**
  * 上下文类型
@@ -100,12 +99,15 @@ export interface ContextRule {
  * 上下文感知翻译器
  */
 export class ContextAwareTranslator {
-  private variants: Map<string, TranslationVariant[]> = new Map();
-  private rules: Map<string, ContextRule> = new Map();
+  private readonly variants = new Map<string, TranslationVariant[]>();
+  private readonly rules = new Map<string, ContextRule>();
   private currentContext: TranslationContext = {};
   private contextHistory: TranslationContext[] = [];
-  private cache: Map<string, string> = new Map();
-  private performanceData: Map<string, VariantPerformance> = new Map();
+  private readonly cache = new Map<string, string>();
+  private readonly performanceData = new Map<string, VariantPerformance>();
+  private readonly MAX_HISTORY_SIZE = 50;
+  private readonly MAX_CACHE_SIZE = 500;
+  private readonly MAX_PERFORMANCE_DATA = 1000;
 
   constructor(initialContext?: TranslationContext) {
     if (initialContext) {
@@ -123,12 +125,16 @@ export class ContextAwareTranslator {
     this.contextHistory.push({ ...this.currentContext });
     
     // 限制历史记录大小
-    if (this.contextHistory.length > 100) {
+    if (this.contextHistory.length > this.MAX_HISTORY_SIZE) {
       this.contextHistory.shift();
     }
     
-    // 清理缓存
-    this.cache.clear();
+    // 清理缓存 - 只清理一半以保留热数据
+    if (this.cache.size > this.MAX_CACHE_SIZE) {
+      const halfSize = Math.floor(this.cache.size / 2);
+      const keysToDelete = Array.from(this.cache.keys()).slice(0, halfSize);
+      keysToDelete.forEach(key => this.cache.delete(key));
+    }
   }
 
   /**
@@ -222,9 +228,6 @@ export class ContextAwareTranslator {
     // 按得分排序
     scoredVariants.sort((a, b) => b.score - a.score);
 
-    // 选择最佳变体
-    const best = scoredVariants[0];
-    
     // A/B测试支持
     const selected = this.applyABTesting(scoredVariants);
     
@@ -330,7 +333,11 @@ export class ContextAwareTranslator {
                condition.value.includes(contextValue);
       
       case 'regex':
-        return new RegExp(condition.value).test(String(contextValue));
+        try {
+          return new RegExp(condition.value).test(String(contextValue));
+        } catch {
+          return false;
+        }
       
       default:
         return false;
@@ -369,6 +376,16 @@ export class ContextAwareTranslator {
    * 记录性能数据
    */
   private recordPerformance(key: string, variantId: string): void {
+    // 限制性能数据大小
+    if (this.performanceData.size >= this.MAX_PERFORMANCE_DATA && !this.performanceData.has(variantId)) {
+      // 删除最旧的项
+      const oldestKey = Array.from(this.performanceData.entries())
+        .sort((a, b) => a[1].lastUsed.getTime() - b[1].lastUsed.getTime())[0]?.[0];
+      if (oldestKey) {
+        this.performanceData.delete(oldestKey);
+      }
+    }
+    
     if (!this.performanceData.has(variantId)) {
       this.performanceData.set(variantId, {
         variantId,
@@ -434,9 +451,28 @@ export class ContextAwareTranslator {
     variants: Array<[string, TranslationVariant[]]>;
     rules: Array<[string, ContextRule]>;
   }): void {
-    this.variants = new Map(config.variants);
-    this.rules = new Map(config.rules);
+    // Reset existing collections instead of reassigning readonly fields
+    this.variants.clear();
+    for (const [k, arr] of config.variants) {
+      this.variants.set(k, arr);
+    }
+    this.rules.clear();
+    for (const [k, r] of config.rules) {
+      this.rules.set(k, r);
+    }
     this.cache.clear();
+  }
+
+  /**
+   * 清理所有内部数据，释放内存
+   */
+  destroy(): void {
+    this.variants.clear();
+    this.rules.clear();
+    this.cache.clear();
+    this.performanceData.clear();
+    this.contextHistory.length = 0;
+    this.currentContext = {} as TranslationContext;
   }
 
   // ============= 检测辅助方法 =============
@@ -532,7 +568,7 @@ export class ContextAwareTranslator {
   }
 
   private detectFontSize(): 'small' | 'normal' | 'large' | 'xlarge' {
-    const fontSize = parseFloat(
+    const fontSize = Number.parseFloat(
       window.getComputedStyle(document.body).fontSize
     );
     
@@ -546,7 +582,15 @@ export class ContextAwareTranslator {
   // ============= 工具方法 =============
 
   private getCacheKey(key: string): string {
-    return `${key}:${JSON.stringify(this.currentContext)}`;
+    // 优化缓存键生成 - 只使用关键属性
+    const contextKey = [
+      this.currentContext.userRole,
+      this.currentContext.deviceType,
+      this.currentContext.environment,
+      this.currentContext.formality
+    ].filter(Boolean).join(':');
+    
+    return `${key}:${contextKey}`;
   }
 
   private getNestedValue(obj: any, path: string): any {
@@ -622,11 +666,29 @@ interface VariantPerformance {
   lastUsed: Date;
 }
 
+// 单例模式
+let contextAwareTranslatorInstance: ContextAwareTranslator | null = null;
+
 /**
- * 创建上下文感知翻译器
+ * 创建上下文感知翻译器 - 单例模式
  */
 export function createContextAwareTranslator(
   initialContext?: TranslationContext
 ): ContextAwareTranslator {
-  return new ContextAwareTranslator(initialContext);
+  if (!contextAwareTranslatorInstance) {
+    contextAwareTranslatorInstance = new ContextAwareTranslator(initialContext);
+  } else if (initialContext) {
+    contextAwareTranslatorInstance.setContext(initialContext);
+  }
+  return contextAwareTranslatorInstance;
+}
+
+/**
+ * 清理上下文翻译器
+ */
+export function clearContextAwareTranslator(): void {
+  if (contextAwareTranslatorInstance) {
+    contextAwareTranslatorInstance.destroy();
+  }
+  contextAwareTranslatorInstance = null;
 }

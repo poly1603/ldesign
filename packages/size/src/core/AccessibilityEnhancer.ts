@@ -40,6 +40,10 @@ export interface ContrastRatio {
 export class AccessibilityEnhancer {
   private currentLevel: WCAGLevel = 'AA';
   private colorBlindnessMode: ColorBlindnessType | null = null;
+  private styleElements: HTMLStyleElement[] = [];
+  private svgElements: SVGElement[] = [];
+  private elementCache = new WeakMap<HTMLElement, { color?: string; backgroundColor?: string; contrast?: number }>();
+  private isDestroyed = false;
 
   /**
    * Check WCAG compliance
@@ -101,22 +105,30 @@ export class AccessibilityEnhancer {
     };
 
     const minSize = minSizes[level];
-    const elements = document.querySelectorAll('*');
+    // 优化：只检查有文本内容的元素
+    const elements = document.querySelectorAll('p, div, span, h1, h2, h3, h4, h5, h6, li, a, button, td, th, label');
 
-    elements.forEach(element => {
-      const styles = window.getComputedStyle(element);
-      const fontSize = Number.parseFloat(styles.fontSize);
-      
-      if (fontSize < minSize && element.textContent?.trim()) {
+    // 使用批处理减少重绘
+    const batchSize = 100;
+    const elementArray = Array.from(elements);
+    
+    for (let i = 0; i < elementArray.length; i += batchSize) {
+      const batch = elementArray.slice(i, i + batchSize);
+      batch.forEach(element => {
+        const styles = window.getComputedStyle(element);
+        const fontSize = Number.parseFloat(styles.fontSize);
+        
+        if (fontSize < minSize && element.textContent?.trim()) {
         violations.push({
           rule: 'WCAG 1.4.4 Resize Text',
           severity: 'error',
           element: element as HTMLElement,
           message: `Font size ${fontSize}px is below minimum ${minSize}px for WCAG ${level}`,
           solution: `Increase font size to at least ${minSize}px`
-        });
-      }
-    });
+          });
+        }
+      });
+    }
 
     return violations;
   }
@@ -159,12 +171,26 @@ export class AccessibilityEnhancer {
    */
   private checkContrastRatios(level: WCAGLevel): ComplianceReport['violations'] {
     const violations: ComplianceReport['violations'] = [];
-    const elements = document.querySelectorAll('*');
+    // 优化：只检查有文本的元素
+    const elements = document.querySelectorAll('p, div, span, h1, h2, h3, h4, h5, h6, li, a, button, td, th, label');
 
+    // 使用缓存减少重复计算
     elements.forEach(element => {
+      const htmlElement = element as HTMLElement;
+      
+      // 检查缓存
+      let cached = this.elementCache.get(htmlElement);
+      if (!cached) {
+        cached = {};
+        this.elementCache.set(htmlElement, cached);
+      }
+      
       const styles = window.getComputedStyle(element);
-      const color = styles.color;
-      const backgroundColor = this.getBackgroundColor(element as HTMLElement);
+      const color = cached.color || styles.color;
+      const backgroundColor = cached.backgroundColor || this.getBackgroundColor(htmlElement);
+      
+      if (!cached.color) cached.color = color;
+      if (!cached.backgroundColor) cached.backgroundColor = backgroundColor;
       
       if (color && backgroundColor && element.textContent?.trim()) {
         const contrast = this.calculateContrast(color, backgroundColor);
@@ -383,14 +409,24 @@ export class AccessibilityEnhancer {
     filter.appendChild(colorMatrix);
     svg.appendChild(filter);
     document.body.appendChild(svg);
+    this.svgElements.push(svg);
   }
 
   /**
    * Optimize focus indicators
    */
   optimizeFocusIndicators(): void {
+    if (this.isDestroyed) return;
+    
+    // 检查是否已存在
+    const existingStyle = document.getElementById('ldesign-a11y-focus');
+    if (existingStyle) {
+      return;
+    }
+    
     const style = document.createElement('style');
     style.id = 'ldesign-a11y-focus';
+    this.styleElements.push(style);
     style.textContent = `
       *:focus {
         outline: 2px solid #1890ff !important;
@@ -534,6 +570,37 @@ export class AccessibilityEnhancer {
       colorBlindnessMode: this.colorBlindnessMode,
       compliance: this.checkWCAGCompliance(this.currentLevel)
     };
+  }
+  
+  /**
+   * Destroy and clean up resources
+   */
+  destroy(): void {
+    if (this.isDestroyed) return;
+    
+    this.isDestroyed = true;
+    
+    // Reset color blindness
+    this.resetColorBlindness();
+    
+    // Remove style elements
+    this.styleElements.forEach(style => {
+      if (style.parentNode) {
+        style.parentNode.removeChild(style);
+      }
+    });
+    this.styleElements = [];
+    
+    // Remove SVG elements
+    this.svgElements.forEach(svg => {
+      if (svg.parentNode) {
+        svg.parentNode.removeChild(svg);
+      }
+    });
+    this.svgElements = [];
+    
+    // Clear cache
+    this.elementCache = new WeakMap();
   }
 }
 

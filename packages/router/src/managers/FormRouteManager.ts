@@ -1,5 +1,5 @@
-import type { Router, RouteLocationNormalized, NavigationGuardNext } from '../types'
-import { reactive, ref, computed } from 'vue'
+import type { Router } from '../types'
+import { reactive } from 'vue'
 
 export interface FormState {
   isDirty: boolean
@@ -32,8 +32,12 @@ export interface MultiStepFormConfig {
   preserveDataOnBack?: boolean
 }
 
+// 为了兼容性，导出 FormRouteConfig 别名
+export type FormRouteConfig = FormRouteOptions
+
 export class FormRouteManager {
-  private forms = new Map<string, FormState>()
+  // 改为 public 以支持外部访问
+  public forms = new Map<string, FormState>()
   private autoSaveTimers = new Map<string, NodeJS.Timeout>()
   private multiStepForms = new Map<string, MultiStepFormConfig>()
   private router: Router | null = null
@@ -233,7 +237,7 @@ export class FormRouteManager {
   private setupNavigationGuards() {
     if (!this.router) return
     
-    this.router.beforeEach((to, from, next) => {
+    this.router.beforeEach((_to, _from, next) => {
       // 检查是否有未保存的表单
       const dirtyForms = Array.from(this.forms.entries())
         .filter(([_, form]) => form.isDirty)
@@ -289,8 +293,8 @@ export class FormRouteManager {
     const currentStep = config.steps[config.currentStep!]
     
     // 验证当前步骤
-    if (currentStep.validate) {
-      const isValid = await currentStep.validate(form.data)
+    if (currentStep && currentStep.validate) {
+      const isValid = currentStep ? await currentStep.validate(form.data) : false
       if (!isValid) return false
     }
     
@@ -301,7 +305,7 @@ export class FormRouteManager {
       // 如果配置了路由，导航到新路径
       if (this.router) {
         const nextStep = config.steps[config.currentStep!]
-        await this.router.push(nextStep.path)
+        if (nextStep) await this.router.push(nextStep.path)
       }
       
       return true
@@ -330,7 +334,7 @@ export class FormRouteManager {
       // 如果配置了路由，导航到新路径
       if (this.router) {
         const previousStep = config.steps[config.currentStep!]
-        await this.router.push(previousStep.path)
+        if (previousStep) await this.router.push(previousStep.path)
       }
       
       return true
@@ -353,7 +357,7 @@ export class FormRouteManager {
       // 如果配置了路由，导航到新路径
       if (this.router) {
         const targetStep = config.steps[stepIndex]
-        await this.router.push(targetStep.path)
+        if (targetStep) await this.router.push(targetStep.path)
       }
       
       return true
@@ -382,7 +386,7 @@ export class FormRouteManager {
     return config.steps.map((step, index) => {
       if (index < config.currentStep!) return true
       if (index === config.currentStep!) {
-        return step.validate ? false : true
+        return !step.validate
       }
       return false
     })
@@ -399,7 +403,7 @@ export class FormRouteManager {
     
     // 验证最后一步
     const lastStep = config.steps[config.steps.length - 1]
-    if (lastStep.validate) {
+    if (lastStep && lastStep.validate) {
       const isValid = await lastStep.validate(form.data)
       if (!isValid) return false
     }

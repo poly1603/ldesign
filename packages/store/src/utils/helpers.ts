@@ -6,10 +6,19 @@
 import { TypeGuards } from './validation'
 
 /**
- * 深度克隆对象
+ * 深度克隆对象（优化版：优先使用原生 API）
  * 支持循环引用、Map、Set、Date、RegExp 等复杂类型
  */
 export function deepClone<T>(obj: T, seen = new WeakMap()): T {
+ // 快速路径：使用原生 structuredClone（性能最优）
+ if (typeof structuredClone !== 'undefined') {
+  try {
+    return structuredClone(obj)
+  } catch {
+    // 如果失败，继续使用自定义实现
+  }
+ }
+
  // 处理原始类型
  if (obj === null || typeof obj !== 'object') {
   return obj
@@ -30,33 +39,34 @@ export function deepClone<T>(obj: T, seen = new WeakMap()): T {
   return new RegExp(obj.source, obj.flags) as any
  }
 
- // 处理 Map
+ // 处理 Map（优化：使用 for...of 遍历）
  if (obj instanceof Map) {
   const cloned = new Map()
   seen.set(obj as any, cloned)
-  obj.forEach((value, key) => {
+  for (const [key, value] of obj) {
    cloned.set(deepClone(key, seen), deepClone(value, seen))
-  })
+  }
   return cloned as any
  }
 
- // 处理 Set
+ // 处理 Set（优化：使用 for...of 遍历）
  if (obj instanceof Set) {
   const cloned = new Set()
   seen.set(obj as any, cloned)
-  obj.forEach(value => {
+  for (const value of obj) {
    cloned.add(deepClone(value, seen))
-  })
+  }
   return cloned as any
  }
 
- // 处理数组
+ // 处理数组（优化：使用 for 循环代替 forEach）
  if (Array.isArray(obj)) {
   const cloned: any[] = []
   seen.set(obj as any, cloned)
-  obj.forEach((item, index) => {
-   cloned[index] = deepClone(item, seen)
-  })
+  const len = obj.length
+  for (let i = 0; i < len; i++) {
+   cloned[i] = deepClone(obj[i], seen)
+  }
   return cloned as any
  }
 
@@ -330,7 +340,7 @@ export async function retry<T>(
   onRetry,
  } = options
 
- let lastError: Error
+ let lastError: Error | undefined
 
  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
   try {
@@ -345,7 +355,7 @@ export async function retry<T>(
   }
  }
 
- throw lastError!
+ throw lastError || new Error('Retry failed')
 }
 
 /**
@@ -356,9 +366,21 @@ export function memoize<T extends (...args: any[]) => any>(
  resolver?: (...args: Parameters<T>) => string
 ): T {
  const cache = new Map<string, ReturnType<T>>()
+ const maxCacheSize = 100 // 限制缓存大小
+ const keys: string[] = [] // LRU 键队列
 
  return function (this: any, ...args: Parameters<T>): ReturnType<T> {
-  const key = resolver ? resolver(...args) : JSON.stringify(args)
+  // 优化：快速路径处理简单参数
+  let key: string
+  if (resolver) {
+   key = resolver(...args)
+  } else if (args.length === 0) {
+   key = 'void'
+  } else if (args.length === 1 && typeof args[0] !== 'object') {
+   key = String(args[0])
+  } else {
+   key = JSON.stringify(args)
+  }
 
   if (cache.has(key)) {
    return cache.get(key)!
@@ -366,6 +388,14 @@ export function memoize<T extends (...args: any[]) => any>(
 
   const result = fn.apply(this, args)
   cache.set(key, result)
+  keys.push(key)
+  
+  // LRU 淘汰策略
+  if (keys.length > maxCacheSize) {
+   const oldestKey = keys.shift()!
+   cache.delete(oldestKey)
+  }
+  
   return result
  } as T
 }
@@ -398,15 +428,21 @@ export async function pLimit<T>(
 ): Promise<T[]> {
  const results: T[] = []
  const executing: Promise<any>[] = []
+ const tasksLen = tasks.length
 
- for (const task of tasks) {
+ for (let i = 0; i < tasksLen; i++) {
+  const task = tasks[i]
   const p = task().then(result => {
    results.push(result)
    return result
   })
 
   const wrapped = p.then(() => {
-   executing.splice(executing.indexOf(wrapped), 1)
+   // 优化：使用索引定位替代 indexOf
+   const idx = executing.indexOf(wrapped)
+   if (idx !== -1) {
+    executing.splice(idx, 1)
+   }
   })
 
   executing.push(wrapped)
@@ -439,7 +475,7 @@ export function formatBytes(bytes: number, decimals = 2): string {
 
  const i = Math.floor(Math.log(bytes) / Math.log(k))
 
- return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+ return `${Number.parseFloat((bytes / k**i).toFixed(dm))} ${sizes[i]}`
 }
 
 /**

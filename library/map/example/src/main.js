@@ -3,505 +3,913 @@ import { MapRenderer } from '@ldesign/map-renderer';
 // 导入广州数据作为示例
 import guangzhouData from './maps/city/440100.json';
 
-// 颜色方案配置
+console.log('Map Renderer v2.0 - 完整功能演示');
+console.log('MapRenderer loaded:', MapRenderer);
+console.log('Data loaded, features:', guangzhouData.features?.length);
+
+// 全局状态
+const state = {
+  currentTab: 'colors',
+  mapInstances: {},
+  initialized: {},  // 跟踪哪些标签页已初始化
+  colorScheme: 'single',
+  selectionMode: 'none',
+  showLabels: true,
+  markerCount: 0,
+  clusterCount: 0
+};
+
+// 配色方案配置
 const colorSchemes = {
-  // 单色模式 - 所有区域使用相同颜色
   single: {
     mode: 'single',
-    color: [100, 149, 237, 180],  // 矢车菊蓝
-    opacity: 180
+    color: [100, 149, 237, 180],
+    name: '单色模式',
+    description: '所有区域使用相同的矢车菊蓝色'
   },
-  
-  // 渐变色模式 - 从蓝色渐变到橙色
   gradient: {
     mode: 'gradient',
-    startColor: [66, 165, 245],   // 蓝色
-    endColor: [255, 152, 0],      // 橙色
-    opacity: 180
+    startColor: [66, 165, 245],
+    endColor: [255, 152, 0],
+    opacity: 180,
+    name: '渐变色模式',
+    description: '从蓝色平滑过渡到橙色'
   },
-  
-  // 分类色模式 - 根据adcode分配不同颜色
   category: {
     mode: 'category',
     categoryField: 'adcode',
     colors: [
-      [26, 188, 156],   // 青绿
-      [46, 204, 113],   // 翠绿
-      [52, 152, 219],   // 蓝色
-      [155, 89, 182],   // 紫色
-      [52, 73, 94],     // 深蓝灰
-      [241, 196, 15],   // 金黄
-      [230, 126, 34],   // 橙色
-      [231, 76, 60],    // 红色
-      [149, 165, 166],  // 灰色
-      [22, 160, 133],   // 墨绿
-      [243, 156, 18]    // 橙黄
+      [26, 188, 156], [46, 204, 113], [52, 152, 219],
+      [155, 89, 182], [52, 73, 94], [241, 196, 15],
+      [230, 126, 34], [231, 76, 60], [149, 165, 166],
+      [22, 160, 133], [243, 156, 18]
     ],
-    opacity: 180
+    opacity: 180,
+    name: '分类色模式',
+    description: '根据区域代码分配不同颜色'
   },
-  
-  // 随机色模式
   random: {
     mode: 'random',
-    opacity: 180
+    opacity: 180,
+    name: '随机色模式',
+    description: '每个区域随机分配颜色'
   },
-  
-  // 数据驱动模式（使用adcode作为数据）
   data: {
     mode: 'data',
-    dataField: 'adcode',  // 使用adcode作为数据
+    dataField: 'adcode',
     colorStops: [
-      { value: 0, color: [68, 138, 255] },     // 蓝色
-      { value: 0.5, color: [255, 235, 59] },   // 黄色
-      { value: 1, color: [255, 82, 82] }       // 红色
+      { value: 0, color: [68, 138, 255] },
+      { value: 0.5, color: [255, 235, 59] },
+      { value: 1, color: [255, 82, 82] }
     ],
-    opacity: 180
+    opacity: 180,
+    name: '数据驱动模式',
+    description: '基于数据值映射颜色'
   },
-  
-  // 自定义函数模式
   custom: {
     mode: 'custom',
     customFunction: (feature, index) => {
-      // 根据区域名称的长度决定颜色
       const name = feature.properties?.name || '';
       const length = name.length;
-      
-      if (length <= 3) {
-        return [255, 107, 107, 180];  // 红色系
-      } else if (length <= 4) {
-        return [78, 205, 196, 180];   // 青色系
-      } else {
-        return [162, 155, 254, 180];  // 紫色系
-      }
+      if (length <= 3) return [255, 107, 107, 180];
+      else if (length <= 4) return [78, 205, 196, 180];
+      else return [162, 155, 254, 180];
     },
-    opacity: 180
+    opacity: 180,
+    name: '自定义函数模式',
+    description: '根据区域名称长度决定颜色'
   }
 };
 
-// 地图配置
-const mapConfigs = [
-  { containerId: 'map-single', layerId: 'single-layer', colorScheme: colorSchemes.single },
-  { containerId: 'map-gradient', layerId: 'gradient-layer', colorScheme: colorSchemes.gradient },
-  { containerId: 'map-category', layerId: 'category-layer', colorScheme: colorSchemes.category },
-  { containerId: 'map-random', layerId: 'random-layer', colorScheme: colorSchemes.random },
-  { containerId: 'map-data', layerId: 'data-layer', colorScheme: colorSchemes.data },
-  { containerId: 'map-custom', layerId: 'custom-layer', colorScheme: colorSchemes.custom }
-];
+// 工具函数：生成随机点
+function generateRandomPoints(count, bounds) {
+  const points = [];
+  for (let i = 0; i < count; i++) {
+    const lng = bounds.minLng + Math.random() * (bounds.maxLng - bounds.minLng);
+    const lat = bounds.minLat + Math.random() * (bounds.maxLat - bounds.minLat);
+    const weight = Math.random() * 100;
+    points.push({ position: [lng, lat], weight });
+  }
+  return points;
+}
 
-// 存储地图实例
-const mapInstances = {};
+// 工具函数：计算距离（Haversine公式）
+function calculateDistance(point1, point2) {
+  const R = 6371000;
+  const lat1 = (point1[1] * Math.PI) / 180;
+  const lat2 = (point2[1] * Math.PI) / 180;
+  const deltaLat = ((point2[1] - point1[1]) * Math.PI) / 180;
+  const deltaLng = ((point2[0] - point1[0]) * Math.PI) / 180;
 
-// 初始化所有地图
-function initAllMaps() {
-  console.log('Initializing all maps...');
+  const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+    Math.cos(lat1) * Math.cos(lat2) *
+    Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
 
-  mapConfigs.forEach(config => {
-    const container = document.getElementById(config.containerId);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
-    if (!container) {
-      console.error(`Container ${config.containerId} not found!`);
-      return;
-    }
+// 工具函数：格式化距离
+function formatDistance(meters) {
+  if (meters < 1000) return `${meters.toFixed(2)} m`;
+  return `${(meters / 1000).toFixed(2)} km`;
+}
 
-    try {
-      // 创建地图渲染器，启用平滑缩放，明确禁用 tooltip，启用单选
-      const mapRenderer = new MapRenderer(container, {
-        mode: '2d',
-        autoFit: true,
-        smoothZoom: true,           // 启用平滑缩放动画
-        zoomSpeed: 0.5,             // 缩放速度（0.5 = 中速）
-        transitionDuration: 300,    // 动画时长 300ms
-        inertia: true,              // 启用惯性效果
-        showTooltip: false,         // 明确禁用 tooltip（黑色弹窗）
-        selectionMode: 'single',    // 启用单选模式
-        selectionStyle: {
-          strokeColor: [255, 0, 0, 255],     // 红色描边
-          strokeWidth: 3,
-          highlightColor: [255, 0, 0, 80]    // 红色半透明高亮
-        }
-      });
+// 工具函数：计算多边形面积
+function calculatePolygonArea(polygon) {
+  if (polygon.length < 3) return 0;
+  
+  const R = 6371000;
+  const coords = [...polygon];
+  if (coords[0][0] !== coords[coords.length - 1][0] || 
+      coords[0][1] !== coords[coords.length - 1][1]) {
+    coords.push(coords[0]);
+  }
 
-      // 渲染 GeoJSON 数据
-      mapRenderer.renderGeoJSON(guangzhouData, {
-        id: config.layerId,
-        showLabels: true,
-        colorScheme: config.colorScheme,
-        labelOptions: {
-          getColor: 'auto',  // 自动计算文本颜色
-          fontSize: 14       // 基础字体大小，会根据 zoom 动态调整
-        }
-      });
+  let area = 0;
+  for (let i = 0; i < coords.length - 1; i++) {
+    const lng1 = (coords[i][0] * Math.PI) / 180;
+    const lng2 = (coords[i + 1][0] * Math.PI) / 180;
+    const lat1 = (coords[i][1] * Math.PI) / 180;
+    const lat2 = (coords[i + 1][1] * Math.PI) / 180;
+    area += (lng2 - lng1) * (2 + Math.sin(lat1) + Math.sin(lat2));
+  }
 
-      console.log(`Map ${config.containerId} initialized successfully`);
+  return Math.abs(area * R * R / 2);
+}
 
-    } catch (error) {
-      console.error(`Error initializing map ${config.containerId}:`, error);
+// 工具函数：格式化面积
+function formatArea(squareMeters) {
+  if (squareMeters < 10000) return `${squareMeters.toFixed(2)} m²`;
+  else if (squareMeters < 1000000) return `${(squareMeters / 10000).toFixed(2)} 公顷`;
+  return `${(squareMeters / 1000000).toFixed(2)} km²`;
+}
+
+// 工具函数：更新信息提示
+function updateInfo(tab, message, type = 'info') {
+  const infoEl = document.getElementById(`${tab}-info`);
+  if (infoEl) {
+    infoEl.textContent = message;
+    infoEl.className = `demo-info ${type}`;
+  }
+}
+
+// 1. 初始化配色方案演示
+function initColorsDemo() {
+  if (state.initialized.colors) return;
+  
+  console.log('初始化配色方案演示...');
+  
+  const mapRenderer = new MapRenderer('#map-colors', {
+    mode: '2d',
+    autoFit: true,
+    smoothZoom: true,
+    showTooltip: false
+  });
+
+  state.mapInstances.colors = mapRenderer;
+  state.initialized.colors = true;
+
+  // 默认加载单色模式
+  mapRenderer.renderGeoJSON(guangzhouData, {
+    id: 'colors-layer',
+    showLabels: true,
+    colorScheme: colorSchemes.single,
+    labelOptions: {
+      getColor: 'auto',
+      fontSize: 14
     }
   });
 
-  console.log('All maps initialized!');
+  updateInfo('color', `当前: ${colorSchemes.single.name} - ${colorSchemes.single.description}`);
+
+  console.log('配色方案演示初始化完成');
 }
 
-// 初始化单选模式地图
-function initSingleSelectMap() {
-  const container = document.getElementById('map-single-select');
-  const infoDiv = document.getElementById('info-single');
+// 2. 初始化区域选择演示
+function initSelectionDemo() {
+  if (state.initialized.selection) return;
   
-  if (!container || !infoDiv) {
-    console.error('Single select map container not found!');
-    return;
-  }
+  console.log('初始化区域选择演示...');
   
-  try {
-    const mapRenderer = new MapRenderer(container, {
-      mode: '2d',
-      autoFit: true,
-      smoothZoom: true,
-      zoomSpeed: 0.5,
-      transitionDuration: 300,
-      inertia: true,
-      showTooltip: false,           // 禁用 tooltip
-      selectionMode: 'single',      // 启用单选模式
-      selectionStyle: {
-        strokeColor: [255, 215, 0, 255],   // 金色描边
-        strokeWidth: 4,
-        highlightColor: [255, 215, 0, 100] // 金色高亮
-      },
-      onSelect: (selectedFeatures) => {
-        // 选择回调
-        if (selectedFeatures.length === 0) {
-          infoDiv.textContent = '未选择任何区域';
-        } else {
-          const feature = selectedFeatures[0];
-          const name = feature.properties?.name || '未知';
-          const adcode = feature.properties?.adcode || 'N/A';
-          infoDiv.textContent = `已选择：${name} (${adcode})`;
+  const mapRenderer = new MapRenderer('#map-selection', {
+    mode: '2d',
+    autoFit: true,
+    smoothZoom: true,
+    showTooltip: false,
+    selectionMode: 'none',
+    selectionStyle: {
+      strokeColor: [255, 215, 0, 255],
+      strokeWidth: 4,
+      highlightColor: [255, 215, 0, 100]
+    },
+    onSelect: (selectedFeatures) => {
+      if (selectedFeatures.length === 0) {
+        updateInfo('selection', '未选择任何区域');
+      } else if (selectedFeatures.length === 1) {
+        const name = selectedFeatures[0].properties?.name || '未知';
+        const adcode = selectedFeatures[0].properties?.adcode || 'N/A';
+        updateInfo('selection', `✓ 已选择: ${name} (${adcode})`, 'success');
+      } else {
+        const names = selectedFeatures.map(f => f.properties?.name || '未知').join('、');
+        updateInfo('selection', `✓ 已选择 ${selectedFeatures.length} 个区域: ${names}`, 'success');
+      }
+    }
+  });
+
+  state.mapInstances.selection = mapRenderer;
+  state.initialized.selection = true;
+
+  mapRenderer.renderGeoJSON(guangzhouData, {
+    id: 'selection-layer',
+    showLabels: true,
+    colorScheme: colorSchemes.gradient,
+    labelOptions: {
+      getColor: 'auto',
+      fontSize: 14
+    }
+  });
+
+  console.log('区域选择演示初始化完成');
+}
+
+// 3. 初始化标记点演示
+function initMarkersDemo() {
+  if (state.initialized.markers) return;
+  
+  console.log('初始化标记点演示...');
+  
+  const mapRenderer = new MapRenderer('#map-markers', {
+    mode: '2d',
+    autoFit: true,
+    smoothZoom: true,
+    showTooltip: false
+  });
+
+  state.mapInstances.markers = mapRenderer;
+  state.initialized.markers = true;
+
+  mapRenderer.renderGeoJSON(guangzhouData, {
+    id: 'markers-base',
+    showLabels: true,
+    colorScheme: {
+      mode: 'single',
+      color: [240, 240, 240, 100]
+    },
+    labelOptions: {
+      getColor: [150, 150, 150, 255],
+      fontSize: 12
+    }
+  });
+
+  console.log('标记点演示初始化完成');
+}
+
+// 4. 初始化热力图演示
+function initHeatmapDemo() {
+  if (state.initialized.heatmap) return;
+  
+  console.log('初始化热力图演示...');
+  
+  const mapRenderer = new MapRenderer('#map-heatmap', {
+    mode: '2d',
+    autoFit: true,
+    smoothZoom: true,
+    showTooltip: false
+  });
+
+  state.mapInstances.heatmap = mapRenderer;
+  state.initialized.heatmap = true;
+
+  mapRenderer.renderGeoJSON(guangzhouData, {
+    id: 'heatmap-base',
+    showLabels: false,
+    colorScheme: {
+      mode: 'single',
+      color: [240, 240, 240, 80]
+    }
+  });
+
+  console.log('热力图演示初始化完成');
+}
+
+// 5. 初始化聚类演示
+function initClusterDemo() {
+  if (state.initialized.cluster) return;
+  
+  console.log('初始化聚类演示...');
+  
+  const mapRenderer = new MapRenderer('#map-cluster', {
+    mode: '2d',
+    autoFit: true,
+    smoothZoom: true,
+    showTooltip: false
+  });
+
+  state.mapInstances.cluster = mapRenderer;
+  state.initialized.cluster = true;
+
+  mapRenderer.renderGeoJSON(guangzhouData, {
+    id: 'cluster-base',
+    showLabels: false,
+    colorScheme: {
+      mode: 'single',
+      color: [220, 230, 245, 100]
+    }
+  });
+
+  console.log('聚类演示初始化完成');
+}
+
+// 6. 初始化测量工具演示
+function initMeasurementDemo() {
+  if (state.initialized.measurement) return;
+  
+  console.log('初始化测量工具演示...');
+  
+  const mapRenderer = new MapRenderer('#map-measurement', {
+    mode: '2d',
+    autoFit: true,
+    smoothZoom: true,
+    showTooltip: false
+  });
+
+  state.mapInstances.measurement = mapRenderer;
+  state.initialized.measurement = true;
+
+  mapRenderer.renderGeoJSON(guangzhouData, {
+    id: 'measurement-base',
+    showLabels: true,
+    colorScheme: colorSchemes.category,
+    labelOptions: {
+      getColor: 'auto',
+      fontSize: 14
+    }
+  });
+
+  console.log('测量工具演示初始化完成');
+}
+
+// 7. 初始化地图导出演示
+function initExportDemo() {
+  if (state.initialized.export) return;
+  
+  console.log('初始化地图导出演示...');
+  
+  const mapRenderer = new MapRenderer('#map-export', {
+    mode: '2d',
+    autoFit: true,
+    smoothZoom: true,
+    showTooltip: false
+  });
+
+  state.mapInstances.export = mapRenderer;
+  state.initialized.export = true;
+
+  mapRenderer.renderGeoJSON(guangzhouData, {
+    id: 'export-base',
+    showLabels: true,
+    colorScheme: colorSchemes.data,
+    labelOptions: {
+      getColor: 'auto',
+      fontSize: 14
+    }
+  });
+
+  // 添加一些标记点
+  const landmarks = [
+    { name: '广州塔', position: [113.3241, 23.1063] },
+    { name: '珠江新城', position: [113.3210, 23.1188] },
+    { name: '白云山', position: [113.3020, 23.1756] }
+  ];
+
+  landmarks.forEach(landmark => {
+    mapRenderer.addMarker({
+      position: landmark.position,
+      style: 'star',
+      size: 15,
+      color: [255, 215, 0, 255],
+      label: {
+        text: landmark.name,
+        fontSize: 14,
+        color: [255, 255, 255, 255],
+        backgroundColor: [33, 33, 33, 230],
+        visible: true
+      }
+    });
+  });
+
+  console.log('地图导出演示初始化完成');
+}
+
+// 标签页切换和延迟初始化
+function initTabSwitching() {
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.demo-content');
+
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const tabName = button.dataset.tab;
+      
+      // 更新按钮状态
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+
+      // 更新内容显示
+      tabContents.forEach(content => content.classList.remove('active'));
+      const targetContent = document.getElementById(`tab-${tabName}`);
+      if (targetContent) {
+        targetContent.classList.add('active');
+      }
+
+      state.currentTab = tabName;
+      console.log('切换到标签页:', tabName);
+
+      // 延迟初始化对应的演示
+      setTimeout(() => {
+        initDemoByTab(tabName);
+        
+        // 调整地图尺寸
+        const mapInstance = state.mapInstances[tabName];
+        if (mapInstance && mapInstance.resize) {
+          mapInstance.resize();
         }
-      }
+      }, 100);
     });
-    
-    mapRenderer.renderGeoJSON(guangzhouData, {
-      id: 'single-select-layer',
-      showLabels: true,
-      colorScheme: colorSchemes.category,
-      labelOptions: {
-        getColor: 'auto',
-        fontSize: 14
-      }
+  });
+}
+
+// 根据标签页名称初始化对应的演示
+function initDemoByTab(tabName) {
+  switch (tabName) {
+    case 'colors':
+      initColorsDemo();
+      break;
+    case 'selection':
+      initSelectionDemo();
+      break;
+    case 'markers':
+      initMarkersDemo();
+      break;
+    case 'heatmap':
+      initHeatmapDemo();
+      break;
+    case 'cluster':
+      initClusterDemo();
+      break;
+    case 'measurement':
+      initMeasurementDemo();
+      break;
+    case 'export':
+      initExportDemo();
+      break;
+  }
+}
+
+// 设置事件监听器
+function setupEventListeners() {
+  // 配色方案事件
+  const applyColorBtn = document.getElementById('apply-color-scheme');
+  if (applyColorBtn) {
+    applyColorBtn.addEventListener('click', () => {
+      const mapRenderer = state.mapInstances.colors;
+      if (!mapRenderer) return;
+
+      const selectedScheme = document.getElementById('color-scheme-select').value;
+      state.colorScheme = selectedScheme;
+      
+      mapRenderer.clearLayers();
+      mapRenderer.renderGeoJSON(guangzhouData, {
+        id: 'colors-layer',
+        showLabels: state.showLabels,
+        colorScheme: colorSchemes[selectedScheme],
+        labelOptions: {
+          getColor: 'auto',
+          fontSize: 14
+        }
+      });
+
+      const scheme = colorSchemes[selectedScheme];
+      updateInfo('color', `✓ 已应用: ${scheme.name} - ${scheme.description}`, 'success');
     });
-    
-    mapInstances['single-select'] = mapRenderer;
-    
-    // 清除按钮
-    document.getElementById('clear-single')?.addEventListener('click', () => {
+  }
+
+  const toggleLabelsBtn = document.getElementById('toggle-labels');
+  if (toggleLabelsBtn) {
+    toggleLabelsBtn.addEventListener('click', () => {
+      const mapRenderer = state.mapInstances.colors;
+      if (!mapRenderer) return;
+
+      state.showLabels = !state.showLabels;
+      mapRenderer.toggleLabels('colors-layer', state.showLabels);
+      updateInfo('color', `标签已${state.showLabels ? '显示' : '隐藏'}`, 'success');
+    });
+  }
+
+  // 区域选择事件
+  const applySelectionBtn = document.getElementById('apply-selection-mode');
+  if (applySelectionBtn) {
+    applySelectionBtn.addEventListener('click', () => {
+      const mapRenderer = state.mapInstances.selection;
+      if (!mapRenderer) return;
+
+      const mode = document.getElementById('selection-mode-select').value;
+      state.selectionMode = mode;
+      mapRenderer.setSelectionMode(mode);
+      
+      const modeNames = { none: '禁用', single: '单选', multiple: '多选' };
+      updateInfo('selection', `✓ 已切换到${modeNames[mode]}模式`, 'success');
+    });
+  }
+
+  const clearSelectionBtn = document.getElementById('clear-selection');
+  if (clearSelectionBtn) {
+    clearSelectionBtn.addEventListener('click', () => {
+      const mapRenderer = state.mapInstances.selection;
+      if (!mapRenderer) return;
+
       mapRenderer.clearSelection();
+      updateInfo('selection', '✓ 已清除所有选择', 'success');
     });
-    
-    console.log('Single select map initialized');
-  } catch (error) {
-    console.error('Error initializing single select map:', error);
   }
-}
 
-// 初始化标记点功能地图
-function initMarkersMap() {
-  const container = document.getElementById('map-markers');
-  const infoDiv = document.getElementById('marker-info');
-  
-  if (!container || !infoDiv) {
-    console.error('Markers map container not found!');
-    return;
-  }
-  
-  try {
-    const mapRenderer = new MapRenderer(container, {
-      mode: '2d',
-      autoFit: true,
-      smoothZoom: true,
-      zoomSpeed: 0.5,
-      transitionDuration: 300,
-      inertia: true,
-      showTooltip: false,
-      longitude: 113.28,
-      latitude: 23.13,
-      zoom: 9.5  // 适当放大以看到更多细节
-    });
-    
-    // 渲染底图
-    mapRenderer.renderGeoJSON(guangzhouData, {
-      id: 'markers-base-layer',
-      showLabels: true,
-      colorScheme: {
-        mode: 'single',
-        color: [240, 240, 240, 100],
-        opacity: 100
-      },
-      labelOptions: {
-        getColor: [150, 150, 150, 255],
-        fontSize: 12
-      }
-    });
-    
-    mapInstances['markers'] = mapRenderer;
-    
-    let markersVisible = true;
-    let markerCount = 0;
-    
-    // 添加地标按钮 - 展示水波纹效果
-    document.getElementById('add-landmarks')?.addEventListener('click', () => {
+  // 标记点事件
+  const addLandmarksBtn = document.getElementById('add-landmarks');
+  if (addLandmarksBtn) {
+    addLandmarksBtn.addEventListener('click', () => {
+      const mapRenderer = state.mapInstances.markers;
+      if (!mapRenderer) return;
+
       const landmarks = [
-        { name: '广州塔', position: [113.3241, 23.1063], style: 'circle', color: [255, 59, 48, 255], size: 15, animation: 'ripple' },
-        { name: '白云山', position: [113.3020, 23.1756], style: 'circle', color: [52, 199, 89, 255], size: 14, animation: 'ripple' },
-        { name: '珠江新城', position: [113.3210, 23.1188], style: 'circle', color: [0, 122, 255, 255], size: 13, animation: 'ripple' },
-        { name: '陈家祠', position: [113.2506, 23.1253], style: 'circle', color: [175, 82, 222, 255], size: 12, animation: 'ripple' },
-        { name: '越秀公园', position: [113.2668, 23.1388], style: 'circle', color: [255, 204, 0, 255], size: 13, animation: 'ripple' },
-        { name: '海心沙', position: [113.3184, 23.1139], style: 'circle', color: [90, 200, 250, 255], size: 12, animation: 'ripple' },
-        { name: '黄埔古港', position: [113.4036, 23.0936], style: 'circle', color: [255, 149, 0, 255], size: 11, animation: 'ripple' },
-        { name: '长隆旅游度假区', position: [113.3300, 23.0050], style: 'circle', color: [255, 45, 85, 255], size: 14, animation: 'ripple' }
+        { name: '广州塔', position: [113.3241, 23.1063], color: [255, 59, 48, 255] },
+        { name: '白云山', position: [113.3020, 23.1756], color: [52, 199, 89, 255] },
+        { name: '珠江新城', position: [113.3210, 23.1188], color: [0, 122, 255, 255] },
+        { name: '陈家祠', position: [113.2506, 23.1253], color: [175, 82, 222, 255] },
+        { name: '越秀公园', position: [113.2668, 23.1388], color: [255, 204, 0, 255] }
       ];
-      
-      // 使用 addMarkers 批量添加标记
-      const markerConfigs = landmarks.map((landmark, index) => ({
-        position: landmark.position,
-        style: landmark.style || 'circle',
-        size: landmark.size,
-        color: landmark.color,
-        animation: 'ripple', // 确保水波纹动画
-        opacity: 1,
-        label: {
-          text: landmark.name,
-          offset: [0, -0.005],
-          fontSize: 15,
-          fontWeight: '600',
-          color: [255, 255, 255, 255],
-          backgroundColor: [33, 33, 33, 230],
-          backgroundPadding: [8, 4],
-          visible: true
-        },
-        data: { name: landmark.name, originalColor: landmark.color, originalSize: landmark.size },
-        onClick: (marker) => {
-          infoDiv.textContent = `点击了: ${marker.data.name} (${marker.position[0].toFixed(4)}, ${marker.position[1].toFixed(4)})`;
-        },
-        onHover: (marker) => {
-          infoDiv.textContent = `悬停: ${marker.data.name}`;
-        }
-      }));
-      
-      mapRenderer.addMarkers(markerConfigs);
-      
-      markerCount += landmarks.length;
-      infoDiv.textContent = `已添加 ${landmarks.length} 个带水波纹动画的地标，总计 ${markerCount} 个标记`;
-    });
-    
-      // 添加随机标记按钮
-    document.getElementById('add-random-markers')?.addEventListener('click', () => {
-      const styles = ['circle', 'square', 'triangle', 'diamond', 'pin'];
-      const beautifulColors = [
-        [255, 87, 34, 255],    // 深橙色
-        [33, 150, 243, 255],   // 蓝色
-        [76, 175, 80, 255],    // 绿色
-        [255, 193, 7, 255],    // 琥珀色
-        [156, 39, 176, 255],   // 紫色
-        [0, 188, 212, 255],    // 青色
-        [233, 30, 99, 255],    // 粉红色
-        [63, 81, 181, 255],    // 靛蓝色
-      ];
-      
-      // 获取当前地图的可视范围 (基于广州的实际范围)
-      const bounds = {
-        minLng: 113.0,   // 广州西部边界
-        maxLng: 113.7,   // 广州东部边界
-        minLat: 22.7,    // 广州南部边界
-        maxLat: 23.5     // 广州北部边界
-      };
-      
-      // 根据当前缩放级别调整范围
-      const viewState = mapRenderer.getDeck()?.viewState;
-      if (viewState && viewState.zoom) {
-        // 根据缩放级别计算可视区域
-        const zoomFactor = Math.pow(2, 10 - viewState.zoom);
-        const lngRange = 0.5 * zoomFactor;
-        const latRange = 0.4 * zoomFactor;
-        
-        bounds.minLng = viewState.longitude - lngRange;
-        bounds.maxLng = viewState.longitude + lngRange;
-        bounds.minLat = viewState.latitude - latRange;
-        bounds.maxLat = viewState.latitude + latRange;
-        
-        // 限制在广州大范围内
-        bounds.minLng = Math.max(bounds.minLng, 112.9);
-        bounds.maxLng = Math.min(bounds.maxLng, 113.8);
-        bounds.minLat = Math.max(bounds.minLat, 22.5);
-        bounds.maxLat = Math.min(bounds.maxLat, 23.6);
-      }
-      
-      const newMarkers = [];
-      for (let i = 0; i < 8; i++) {  // 增加到 8 个标记
-        const lng = bounds.minLng + Math.random() * (bounds.maxLng - bounds.minLng);
-        const lat = bounds.minLat + Math.random() * (bounds.maxLat - bounds.minLat);
-        const style = styles[Math.floor(Math.random() * styles.length)];
-        const isCircle = style === 'circle';
-        
-        const marker = {
-          position: [lng, lat],
-          style: style,
-          size: 12 + Math.random() * 18,
-          color: beautifulColors[Math.floor(Math.random() * beautifulColors.length)],
-          animation: isCircle && Math.random() > 0.5 ? 'ripple' : 'none',  // 50%的圆形有水波纹
+
+      landmarks.forEach(landmark => {
+        mapRenderer.addMarker({
+          position: landmark.position,
+          style: 'star',
+          size: 15,
+          color: landmark.color,
           label: {
-            text: `点 ${++markerCount}`,
-            fontSize: 12,
+            text: landmark.name,
+            fontSize: 14,
             color: [255, 255, 255, 255],
-            backgroundColor: [33, 33, 33, 180],
-            backgroundPadding: [4, 2],
-            visible: false
-          },
-          onClick: (marker) => {
-            // 点击后显示标签
-            mapRenderer.updateMarker(marker.id, {
-              label: { ...marker.label, visible: true }
-            });
-            infoDiv.textContent = `点击了: ${marker.label.text} (${marker.position[0].toFixed(4)}, ${marker.position[1].toFixed(4)})`;
-          },
-          onHover: (marker) => {
-            // 悬停时放大
-            const originalSize = marker.size;
-            mapRenderer.updateMarker(marker.id, {
-              size: originalSize * 1.2
-            });
-            setTimeout(() => {
-              mapRenderer.updateMarker(marker.id, {
-                size: originalSize
-              });
-            }, 500);
+            backgroundColor: [33, 33, 33, 230],
+            backgroundPadding: [6, 3],
+            visible: true,
+            fontWeight: 'bold'
           }
-        };
-        
-        mapRenderer.addMarker(marker);
-        newMarkers.push(marker);
-      }
-      
-      infoDiv.textContent = `已在可视范围内添加 ${newMarkers.length} 个美观标记，总计 ${markerCount} 个标记`;
+        });
+      });
+
+      state.markerCount += landmarks.length;
+      updateInfo('marker', `✓ 已添加 ${landmarks.length} 个地标，总计 ${state.markerCount} 个标记`, 'success');
     });
-    
-    // 显示/隐藏标记按钮
-    document.getElementById('toggle-markers')?.addEventListener('click', () => {
-      markersVisible = !markersVisible;
+  }
+
+  const addRandomMarkersBtn = document.getElementById('add-random-markers');
+  if (addRandomMarkersBtn) {
+    addRandomMarkersBtn.addEventListener('click', () => {
+      const mapRenderer = state.mapInstances.markers;
+      if (!mapRenderer) return;
+
+      const count = 10;
+      const styles = ['circle', 'square', 'triangle', 'diamond'];
+      const colors = [
+        [255, 87, 34, 255], [33, 150, 243, 255], [76, 175, 80, 255],
+        [255, 193, 7, 255], [156, 39, 176, 255]
+      ];
+
+      for (let i = 0; i < count; i++) {
+        const lng = 113.0 + Math.random() * 0.7;
+        const lat = 22.7 + Math.random() * 0.9;
+        
+        mapRenderer.addMarker({
+          position: [lng, lat],
+          style: styles[Math.floor(Math.random() * styles.length)],
+          size: 10 + Math.random() * 10,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+
+      state.markerCount += count;
+      updateInfo('marker', `✓ 已添加 ${count} 个随机标记，总计 ${state.markerCount} 个标记`, 'success');
+    });
+  }
+
+  const addRippleMarkersBtn = document.getElementById('add-ripple-markers');
+  if (addRippleMarkersBtn) {
+    addRippleMarkersBtn.addEventListener('click', () => {
+      const mapRenderer = state.mapInstances.markers;
+      if (!mapRenderer) return;
+
+      const rippleMarkers = [
+        { position: [113.28, 23.13], color: [255, 0, 0] },
+        { position: [113.35, 23.18], color: [0, 255, 0] },
+        { position: [113.42, 23.12], color: [0, 0, 255] }
+      ];
+
+      rippleMarkers.forEach(marker => {
+        mapRenderer.addMarker({
+          position: marker.position,
+          style: 'circle',
+          size: 15,
+          color: [...marker.color, 255],
+          animation: 'ripple'
+        });
+      });
+
+      state.markerCount += rippleMarkers.length;
+      updateInfo('marker', `✓ 已添加 ${rippleMarkers.length} 个水波纹标记，总计 ${state.markerCount} 个标记`, 'success');
+    });
+  }
+
+  let markersVisible = true;
+  const toggleMarkerBtn = document.getElementById('toggle-marker-visibility');
+  if (toggleMarkerBtn) {
+    toggleMarkerBtn.addEventListener('click', () => {
+      const mapRenderer = state.mapInstances.markers;
+      if (!mapRenderer) return;
+
       const markers = mapRenderer.getAllMarkers();
       markers.forEach(marker => {
-        mapRenderer.setMarkerVisibility(marker.id, markersVisible);
+        mapRenderer.setMarkerVisibility(marker.id, !markersVisible);
       });
-      infoDiv.textContent = markersVisible ? '标记已显示' : '标记已隐藏';
+      markersVisible = !markersVisible;
+      updateInfo('marker', `✓ 标记已${markersVisible ? '显示' : '隐藏'}`, 'success');
     });
-    
-    // 添加动画按钮
-    document.getElementById('animate-markers')?.addEventListener('click', () => {
-      const markers = mapRenderer.getAllMarkers();
-      markers.forEach((marker, index) => {
-        // 为不同标记添加不同的动画效果
-        let animation = 'none';
-        if (marker.style === 'circle') {
-          animation = 'ripple';  // 圆形使用水波纹
-        } else if (marker.style === 'pin') {
-          animation = 'bounce';  // 图钉使用弹跳
-        } else {
-          animation = 'pulse';   // 其他使用脉动
-        }
-        
-        mapRenderer.updateMarker(marker.id, {
-          animation: animation,
-          animationDuration: 2000
-        });
-      });
-      infoDiv.textContent = '已为所有标记添加美观的动画效果';
-      
-      // 5秒后停止动画
-      setTimeout(() => {
-        markers.forEach(marker => {
-          mapRenderer.updateMarker(marker.id, {
-            animation: 'none'
-          });
-        });
-        infoDiv.textContent = '动画已停止';
-      }, 5000);
-    });
-    
-    // 清除标记按钮
-    document.getElementById('clear-markers')?.addEventListener('click', () => {
+  }
+
+  const clearMarkersBtn = document.getElementById('clear-markers');
+  if (clearMarkersBtn) {
+    clearMarkersBtn.addEventListener('click', () => {
+      const mapRenderer = state.mapInstances.markers;
+      if (!mapRenderer) return;
+
       mapRenderer.clearMarkers();
-      markerCount = 0;
-      infoDiv.textContent = '所有标记已清除';
+      state.markerCount = 0;
+      markersVisible = true;
+      updateInfo('marker', '✓ 已清除所有标记', 'success');
     });
-    
-    console.log('Markers map initialized');
-  } catch (error) {
-    console.error('Error initializing markers map:', error);
+  }
+
+  // 热力图事件
+  const heatmap500Btn = document.getElementById('heatmap-add-500');
+  if (heatmap500Btn) {
+    heatmap500Btn.addEventListener('click', () => addHeatPoints(500));
+  }
+
+  const heatmap1000Btn = document.getElementById('heatmap-add-1000');
+  if (heatmap1000Btn) {
+    heatmap1000Btn.addEventListener('click', () => addHeatPoints(1000));
+  }
+
+  const heatmapClearBtn = document.getElementById('heatmap-clear');
+  if (heatmapClearBtn) {
+    heatmapClearBtn.addEventListener('click', () => {
+      const mapRenderer = state.mapInstances.heatmap;
+      if (!mapRenderer) return;
+
+      mapRenderer.clearMarkers();
+      updateInfo('heatmap', '✓ 已清除热力图', 'success');
+    });
+  }
+
+  // 聚类事件
+  const cluster1000Btn = document.getElementById('cluster-add-1000');
+  if (cluster1000Btn) {
+    cluster1000Btn.addEventListener('click', () => addClusterPoints(1000));
+  }
+
+  const cluster5000Btn = document.getElementById('cluster-add-5000');
+  if (cluster5000Btn) {
+    cluster5000Btn.addEventListener('click', () => addClusterPoints(5000));
+  }
+
+  const clusterClearBtn = document.getElementById('cluster-clear');
+  if (clusterClearBtn) {
+    clusterClearBtn.addEventListener('click', () => {
+      const mapRenderer = state.mapInstances.cluster;
+      if (!mapRenderer) return;
+
+      mapRenderer.clearMarkers();
+      state.clusterCount = 0;
+      updateInfo('cluster', '✓ 已清除所有聚类点', 'success');
+    });
+  }
+
+  // 测量工具事件
+  const measureDistanceBtn = document.getElementById('measure-test-distance');
+  if (measureDistanceBtn) {
+    measureDistanceBtn.addEventListener('click', () => testDistance());
+  }
+
+  const measureAreaBtn = document.getElementById('measure-test-area');
+  if (measureAreaBtn) {
+    measureAreaBtn.addEventListener('click', () => testArea());
+  }
+
+  // 导出事件
+  const exportInfoBtn = document.getElementById('export-info-btn');
+  if (exportInfoBtn) {
+    exportInfoBtn.addEventListener('click', () => {
+      updateInfo('export', '💡 地图导出功能需要 ExportUtil 模块，可导出为 PNG/JPEG/WebP 格式，支持高分辨率导出', 'warning');
+    });
+  }
+
+  const exportDemoBtn = document.getElementById('export-demo');
+  if (exportDemoBtn) {
+    exportDemoBtn.addEventListener('click', () => {
+      updateInfo('export', '✓ 模拟导出成功！实际使用: await ExportUtil.downloadAsImage(mapRenderer.getDeck(), { format: "png", scale: 2 })', 'success');
+    });
   }
 }
 
-// 初始化多选模式地图
-function initMultipleSelectMap() {
-  const container = document.getElementById('map-multiple-select');
-  const infoDiv = document.getElementById('info-multiple');
+// 添加热点函数
+function addHeatPoints(count) {
+  const mapRenderer = state.mapInstances.heatmap;
+  if (!mapRenderer) return;
+
+  const bounds = { minLng: 113.0, maxLng: 113.7, minLat: 22.7, maxLat: 23.6 };
+  const points = generateRandomPoints(count, bounds);
+
+  points.forEach((point, index) => {
+    const intensity = point.weight / 100;
+    const color = [
+      Math.floor(255 * intensity),
+      Math.floor(100 * (1 - intensity)),
+      Math.floor(50 * (1 - intensity)),
+      200
+    ];
+
+    mapRenderer.addMarker({
+      id: `heat-${Date.now()}-${index}`,
+      position: point.position,
+      style: 'circle',
+      size: 3 + intensity * 8,
+      color,
+      opacity: 0.7
+    });
+  });
+
+  updateInfo('heatmap', `✓ 已添加 ${count} 个热点（使用彩色标记模拟）`, 'success');
+}
+
+// 添加聚类点函数
+function addClusterPoints(count) {
+  const mapRenderer = state.mapInstances.cluster;
+  if (!mapRenderer) return;
+
+  const bounds = { minLng: 113.0, maxLng: 113.7, minLat: 22.7, maxLat: 23.6 };
+  const points = generateRandomPoints(count, bounds);
+
+  // 简单网格聚类
+  const gridSize = 0.08;
+  const grid = new Map();
+
+  points.forEach(point => {
+    const gridX = Math.floor(point.position[0] / gridSize);
+    const gridY = Math.floor(point.position[1] / gridSize);
+    const key = `${gridX},${gridY}`;
+    
+    if (!grid.has(key)) {
+      grid.set(key, []);
+    }
+    grid.get(key).push(point);
+  });
+
+  // 渲染聚类
+  let clusterIndex = 0;
+  grid.forEach(gridPoints => {
+    const avgLng = gridPoints.reduce((sum, p) => sum + p.position[0], 0) / gridPoints.length;
+    const avgLat = gridPoints.reduce((sum, p) => sum + p.position[1], 0) / gridPoints.length;
+    const pointCount = gridPoints.length;
+
+    if (pointCount > 1) {
+      mapRenderer.addMarker({
+        id: `cluster-${Date.now()}-${clusterIndex++}`,
+        position: [avgLng, avgLat],
+        style: 'circle',
+        size: Math.min(Math.sqrt(pointCount) * 4, 25),
+        color: [0, 140, 255, 220],
+        label: {
+          text: String(pointCount),
+          fontSize: 13,
+          color: [255, 255, 255, 255],
+          visible: true,
+          fontWeight: 'bold'
+        }
+      });
+    } else {
+      mapRenderer.addMarker({
+        id: `point-${Date.now()}-${clusterIndex++}`,
+        position: gridPoints[0].position,
+        style: 'circle',
+        size: 4,
+        color: [255, 100, 0, 220]
+      });
+    }
+  });
+
+  state.clusterCount += count;
+  updateInfo('cluster', `✓ 已添加 ${count} 个点，聚类成 ${grid.size} 组，总计 ${state.clusterCount} 个点`, 'success');
+}
+
+// 测试距离函数
+function testDistance() {
+  const mapRenderer = state.mapInstances.measurement;
+  if (!mapRenderer) return;
+
+  const point1 = [113.28, 23.13];
+  const point2 = [113.50, 23.25];
   
-  if (!container || !infoDiv) {
-    console.error('Multiple select map container not found!');
-    return;
-  }
+  const distance = calculateDistance(point1, point2);
+  const formatted = formatDistance(distance);
+
+  mapRenderer.clearMarkers();
+  mapRenderer.addMarker({
+    position: point1,
+    style: 'star',
+    size: 15,
+    color: [255, 0, 0, 255],
+    label: { text: '起点', fontSize: 13, color: [255, 255, 255, 255], backgroundColor: [255, 0, 0, 230], visible: true }
+  });
+  mapRenderer.addMarker({
+    position: point2,
+    style: 'star',
+    size: 15,
+    color: [0, 255, 0, 255],
+    label: { text: '终点', fontSize: 13, color: [255, 255, 255, 255], backgroundColor: [0, 255, 0, 230], visible: true }
+  });
+
+  updateInfo('measurement', `✓ 距离测量: ${formatted} (使用 Haversine 公式计算)`, 'success');
+}
+
+// 测试面积函数
+function testArea() {
+  const mapRenderer = state.mapInstances.measurement;
+  if (!mapRenderer) return;
+
+  const polygon = [
+    [113.28, 23.13],
+    [113.32, 23.13],
+    [113.32, 23.16],
+    [113.28, 23.16]
+  ];
+
+  const area = calculatePolygonArea(polygon);
+  const formatted = formatArea(area);
+
+  mapRenderer.clearMarkers();
+  polygon.forEach((point, index) => {
+    mapRenderer.addMarker({
+      position: point,
+      style: 'diamond',
+      size: 12,
+      color: [0, 122, 255, 255],
+      label: { text: `P${index + 1}`, fontSize: 12, color: [255, 255, 255, 255], backgroundColor: [0, 122, 255, 230], visible: true }
+    });
+  });
+
+  updateInfo('measurement', `✓ 面积测量: ${formatted} (使用球面三角形公式计算)`, 'success');
+}
+
+// 初始化所有功能
+function initAllDemos() {
+  console.log('=== 开始初始化所有演示 ===');
   
   try {
-    const mapRenderer = new MapRenderer(container, {
-      mode: '2d',
-      autoFit: true,
-      smoothZoom: true,
-      zoomSpeed: 0.5,
-      transitionDuration: 300,
-      inertia: true,
-      showTooltip: false,           // 禁用 tooltip
-      selectionMode: 'multiple',    // 启用多选模式
-      selectionStyle: {
-        strokeColor: [76, 175, 80, 255],   // 绿色描边
-        strokeWidth: 4,
-        highlightColor: [76, 175, 80, 100] // 绿色高亮
-      },
-      onSelect: (selectedFeatures) => {
-        // 选择回调
-        if (selectedFeatures.length === 0) {
-          infoDiv.textContent = '未选择任何区域';
-        } else {
-          const names = selectedFeatures.map(f => f.properties?.name || '未知').join('、');
-          infoDiv.textContent = `已选择 ${selectedFeatures.length} 个区域：${names}`;
-        }
-      }
-    });
+    // 初始化标签页切换
+    initTabSwitching();
     
-    mapRenderer.renderGeoJSON(guangzhouData, {
-      id: 'multiple-select-layer',
-      showLabels: true,
-      colorScheme: colorSchemes.gradient,
-      labelOptions: {
-        getColor: 'auto',
-        fontSize: 14
-      }
-    });
-    
-    mapInstances['multiple-select'] = mapRenderer;
-    
-    // 清除按钮
-    document.getElementById('clear-multiple')?.addEventListener('click', () => {
-      mapRenderer.clearSelection();
-    });
-    
-    console.log('Multiple select map initialized');
+    // 设置所有事件监听器
+    setupEventListeners();
+
+    // 只初始化第一个标签页（配色方案）
+    initColorsDemo();
+
+    console.log('=== 所有演示初始化完成 ===');
   } catch (error) {
-    console.error('Error initializing multiple select map:', error);
+    console.error('初始化失败:', error);
   }
 }
 
-// DOM加载完成后初始化所有地图
+// DOM 加载完成后初始化
 document.addEventListener('DOMContentLoaded', () => {
-  initAllMaps();
-  initSingleSelectMap();
-  initMultipleSelectMap();
-  initMarkersMap();
+  console.log('DOM 加载完成，开始初始化...');
+  initAllDemos();
 });
+
+// 导出全局状态供调试使用
+window.mapRendererDemo = {
+  state,
+  mapInstances: state.mapInstances,
+  colorSchemes,
+  initDemoByTab
+};
+
+console.log('main.js 加载完成');

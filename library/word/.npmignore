@@ -1,0 +1,29 @@
+# Source files
+src/
+examples/
+*.plan.md
+
+# Development files
+.vscode/
+.idea/
+tsconfig.json
+rollup.config.js
+
+# Documentation (keep README)
+CHANGELOG.md
+
+# Tests
+__tests__/
+*.test.ts
+*.spec.ts
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Misc
+*.log
+.DS_Store
+
+
+

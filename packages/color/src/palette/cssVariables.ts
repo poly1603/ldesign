@@ -4,7 +4,7 @@
  * Functions for generating CSS custom properties with light/dark mode support
  */
 
-import { ThemePalettes } from './darkMode';
+import type { ThemePalettes } from './darkMode';
 
 // Re-export ThemePalettes type
 export type { ThemePalettes } from './darkMode';

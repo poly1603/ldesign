@@ -85,7 +85,12 @@ export class RouteVersionControl {
   private autoSaveTimer?: number
 
   // 响应式状态
-  public state = reactive({
+  public state: {
+    versions: RouteVersion[]
+    currentVersion: RouteVersion | null
+    isDirty: boolean
+    isLoading: boolean
+  } = reactive({
     versions: [] as RouteVersion[],
     currentVersion: null as RouteVersion | null,
     isDirty: false,
@@ -586,7 +591,7 @@ export class RouteVersionControl {
     const versions = this.getVersionHistory()
     if (versions.length > 0) {
       const oldest = versions[versions.length - 1]
-      this.deleteVersion(oldest.id)
+      if (oldest) this.deleteVersion(oldest.id)
     }
   }
 

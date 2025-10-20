@@ -3,8 +3,8 @@
  * @module DataFetchingManager
  */
 
-import type { RouteLocationNormalized, NavigationGuardNext, Router } from '../types'
-import { ComponentPublicInstance, App, inject, provide, reactive, readonly } from 'vue'
+import type { App} from 'vue';
+import type { NavigationGuardNext, RouteLocationNormalized, Router } from '../types'
 
 /**
  * 数据获取函数类型

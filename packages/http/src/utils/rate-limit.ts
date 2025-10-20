@@ -147,7 +147,7 @@ export class RateLimitManager {
     if (baseWaitTime <= 0) return
 
     // 指数退避
-    const backoffTime = Math.min(baseWaitTime * Math.pow(2, attempt), 30000)
+    const backoffTime = Math.min(baseWaitTime * 2**attempt, 30000)
     await new Promise(resolve => setTimeout(resolve, backoffTime))
   }
 

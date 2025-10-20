@@ -1,5 +1,5 @@
-import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { CacheStats, StorageEngine } from '../types'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { formatBytes } from '../utils'
 
 import { useCacheManager } from './cache-provider'

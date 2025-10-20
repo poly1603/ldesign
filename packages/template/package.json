@@ -1,18 +1,7 @@
 {
   "name": "@ldesign/template",
-  "type": "module",
   "version": "0.1.0",
   "description": "🎨 多模板管理及动态渲染系统 - 为 Vue 3 而生的模板管理解决方案，支持智能预加载、懒加载、虚拟滚动等性能优化功能",
-  "author": "ldesign",
-  "license": "MIT",
-  "homepage": "https://github.com/ldesign-org/template#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign-org/template.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ldesign-org/template/issues"
-  },
   "keywords": [
     "vue",
     "vue3",
@@ -29,6 +18,17 @@
     "performance-monitor",
     "intersection-observer"
   ],
+  "author": "ldesign",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign-org/template#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign-org/template.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign-org/template/issues"
+  },
+  "type": "module",
   "exports": {
     ".": {
       "types": "./es/index.d.ts",
@@ -65,6 +65,26 @@
       "import": "./es/core/*.js",
       "require": "./lib/core/*.cjs"
     },
+    "./directives": {
+      "types": "./es/directives/index.d.ts",
+      "import": "./es/directives/index.js",
+      "require": "./lib/directives/index.cjs"
+    },
+    "./directives/*": {
+      "types": "./es/directives/*.d.ts",
+      "import": "./es/directives/*.js",
+      "require": "./lib/directives/*.cjs"
+    },
+    "./locales": {
+      "types": "./es/locales/index.d.ts",
+      "import": "./es/locales/index.js",
+      "require": "./lib/locales/index.cjs"
+    },
+    "./locales/*": {
+      "types": "./es/locales/*.d.ts",
+      "import": "./es/locales/*.js",
+      "require": "./lib/locales/*.cjs"
+    },
     "./plugin": {
       "types": "./es/plugin/index.d.ts",
       "import": "./es/plugin/index.js",
@@ -85,11 +105,27 @@
       "import": "./es/types/*.js",
       "require": "./lib/types/*.cjs"
     },
-    "./index.css": "./es/index.css",
-    "./style.css": "./es/index.css",
-    "./styles": "./es/index.css",
+    "./utils": {
+      "types": "./es/utils/index.d.ts",
+      "import": "./es/utils/index.js",
+      "require": "./lib/utils/index.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
+    },
+    "./es/components/ABTestTemplate.vue.css": "./es/components/ABTestTemplate.vue.css",
+    "./es/components/ABTestTemplate.vue2.css": "./es/components/ABTestTemplate.vue2.css",
+    "./es/components/ConditionalTemplate.vue.css": "./es/components/ConditionalTemplate.vue.css",
+    "./es/components/index.css": "./es/components/index.css",
+    "./es/components/InheritableTemplate.vue.css": "./es/components/InheritableTemplate.vue.css",
+    "./es/components/TemplateDevPanel.vue.css": "./es/components/TemplateDevPanel.vue.css",
     "./es/components/TemplateRenderer.vue.css": "./es/components/TemplateRenderer.vue.css",
+    "./es/components/TemplateRenderer.vue2.css": "./es/components/TemplateRenderer.vue2.css",
     "./es/components/TemplateSelector.vue.css": "./es/components/TemplateSelector.vue.css",
+    "./es/components/TemplateSkeleton.vue.css": "./es/components/TemplateSkeleton.vue.css",
+    "./es/components/TemplateVersion.vue.css": "./es/components/TemplateVersion.vue.css",
     "./es/index.css": "./es/index.css",
     "./es/templates/dashboard/desktop/default/index.vue.css": "./es/templates/dashboard/desktop/default/index.vue.css",
     "./es/templates/dashboard/desktop/sidebar/index.vue.css": "./es/templates/dashboard/desktop/sidebar/index.vue.css",
@@ -103,8 +139,17 @@
     "./es/templates/login/mobile/default/index.vue.css": "./es/templates/login/mobile/default/index.vue.css",
     "./es/templates/login/tablet/default/index.vue.css": "./es/templates/login/tablet/default/index.vue.css",
     "./es/templates/login/tablet/simple/index.vue.css": "./es/templates/login/tablet/simple/index.vue.css",
+    "./lib/components/ABTestTemplate.vue.css": "./lib/components/ABTestTemplate.vue.css",
+    "./lib/components/ABTestTemplate.vue2.css": "./lib/components/ABTestTemplate.vue2.css",
+    "./lib/components/ConditionalTemplate.vue.css": "./lib/components/ConditionalTemplate.vue.css",
+    "./lib/components/index.css": "./lib/components/index.css",
+    "./lib/components/InheritableTemplate.vue.css": "./lib/components/InheritableTemplate.vue.css",
+    "./lib/components/TemplateDevPanel.vue.css": "./lib/components/TemplateDevPanel.vue.css",
     "./lib/components/TemplateRenderer.vue.css": "./lib/components/TemplateRenderer.vue.css",
+    "./lib/components/TemplateRenderer.vue2.css": "./lib/components/TemplateRenderer.vue2.css",
     "./lib/components/TemplateSelector.vue.css": "./lib/components/TemplateSelector.vue.css",
+    "./lib/components/TemplateSkeleton.vue.css": "./lib/components/TemplateSkeleton.vue.css",
+    "./lib/components/TemplateVersion.vue.css": "./lib/components/TemplateVersion.vue.css",
     "./lib/index.css": "./lib/index.css",
     "./lib/templates/dashboard/desktop/default/index.vue.css": "./lib/templates/dashboard/desktop/default/index.vue.css",
     "./lib/templates/dashboard/desktop/sidebar/index.vue.css": "./lib/templates/dashboard/desktop/sidebar/index.vue.css",
@@ -123,20 +168,17 @@
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
+  "types": "./es/index.d.ts",
   "unpkg": "./dist/index.min.js",
   "jsdelivr": "./dist/index.min.js",
-  "types": "./es/index.d.ts",
   "files": [
-    "LICENSE",
     "README.md",
-    "dist",
+    "LICENSE",
+    "package.json",
     "es",
     "lib",
-    "package.json"
+    "dist"
   ],
-  "engines": {
-    "node": ">=16.0.0"
-  },
   "scripts": {
     "build": "ldesign-builder build",
     "build:watch": "ldesign-builder watch",
@@ -163,6 +205,9 @@
     "clean:all": "pnpm run clean && pnpm run clean:cache",
     "size-check": "size-limit",
     "size-check:why": "size-limit --why",
+    "perf:benchmark": "tsx scripts/performance-benchmark.ts",
+    "perf:analyze": "pnpm run build && tsx scripts/analyze-bundle.ts",
+    "quality:check": "tsx scripts/code-quality-check.ts",
     "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run",
     "prepack": "pnpm run build",
     "postpack": "echo 'Package created successfully'",
@@ -173,14 +218,6 @@
     "build:validate": "pnpm run build && tsx scripts/validate-build.ts",
     "build:dev": "ldesign-builder build --dev"
   },
-  "peerDependencies": {
-    "vue": "^3.3.0"
-  },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  },
   "dependencies": {
     "@ldesign/cache": "workspace:*",
     "@ldesign/device": "workspace:*",
@@ -189,6 +226,9 @@
     "@ldesign/webcomponent": "workspace:*",
     "@vueuse/core": "^13.7.0",
     "lucide-vue-next": "^0.544.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
@@ -221,10 +261,18 @@
     "vue": "^3.4.15",
     "vue-tsc": "^3.0.5"
   },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "size-limit": [
     {
       "path": "dist/index.js",
       "limit": "55 KB"
     }
-  ]
+  ],
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  }
 }

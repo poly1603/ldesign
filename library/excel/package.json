@@ -1,0 +1,63 @@
+{
+  "name": "@ldesign/excel-viewer",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "功能强大的 Excel 文件预览编辑插件，支持大文件、完整编辑功能",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "build:core": "rollup -c --environment BUILD:core",
+    "build:vue": "rollup -c --environment BUILD:vue",
+    "build:react": "rollup -c --environment BUILD:react",
+    "build:lit": "rollup -c --environment BUILD:lit",
+    "dev": "rollup -c -w",
+    "lint": "eslint packages --ext .ts,.tsx,.vue",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist packages/*/dist examples/*/dist",
+    "test:build": "node scripts/test-build.js",
+    "dev:vanilla": "cd examples/vanilla && npm run dev",
+    "dev:vue": "cd examples/vue-demo && npm run dev",
+    "dev:react": "cd examples/react-demo && npm run dev",
+    "dev:lit": "cd examples/lit-demo && npm run dev",
+    "build:examples": "npm run build:example:vanilla && npm run build:example:vue && npm run build:example:react && npm run build:example:lit",
+    "build:example:vanilla": "cd examples/vanilla && npm run build",
+    "build:example:vue": "cd examples/vue-demo && npm run build",
+    "build:example:react": "cd examples/react-demo && npm run build",
+    "build:example:lit": "cd examples/lit-demo && npm run build"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^20.11.5",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "eslint": "^8.56.0",
+    "postcss": "^8.4.33",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.9.6",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-vue": "^6.0.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3"
+  },
+  "keywords": [
+    "excel",
+    "viewer",
+    "spreadsheet",
+    "xlsx",
+    "excel-preview",
+    "vue",
+    "react",
+    "lit",
+    "web-components"
+  ],
+  "author": "ldesign",
+  "license": "MIT"
+}
+

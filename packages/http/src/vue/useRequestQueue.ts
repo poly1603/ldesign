@@ -121,7 +121,7 @@ export function useRequestQueue<T = any>(
   /**
    * 处理队列
    */
-  const processQueue = async () => {
+  async function processQueue() {
     while (
       !isPaused.value
       && queue.value.length > 0

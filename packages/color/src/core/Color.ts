@@ -4,33 +4,40 @@
  * The main Color class for basic color operations
  */
 
-import type { RGB, HSL, HSV, ColorInput, ColorFormat, BlendMode, HarmonyType, WCAGLevel, TextSize } from '../types';
-import { rgbToHsl, hslToRgb, rgbToHsv, hsvToRgb, rgbToHex } from './conversions';
-import { getLuminance, getContrast, isWCAGCompliant } from './analysis';
-import { mix, blend } from './manipulations';
-import { parseColorInput, validateRGB } from '../utils/validators';
-import { clamp, round } from '../utils/math';
+import type { BlendMode, ColorFormat, ColorInput, HarmonyType, HSL, HSV, RGB, TextSize, WCAGLevel } from '../types';
 import { ColorCache } from '../utils/cache';
+import { clamp, round } from '../utils/math';
+import { parseColorInput } from '../utils/validators';
+import { getContrast, getLuminance, isWCAGCompliant } from './analysis';
+import { hslToRgb, hsvToRgb, rgbToHsl, rgbToHsv } from './conversions';
+import { blend } from './manipulations';
 
 /**
- * Core Color class for color manipulation and conversion
+ * Optimized Color class with reduced memory footprint
+ * Uses 32-bit integer for RGB storage instead of object
  */
 export class Color {
-  private _rgb: RGB;
+  // Store RGB as single 32-bit integer (0xRRGGBB)
+  private _value: number;
   private _alpha: number;
-  private static cache = new ColorCache(1000);
+  // Lazy computed values - only cache hex string to save memory
+  private _hex?: string;
+  // Remove HSL/HSV cache to save memory (40 bytes each)
+  
+  // Shared cache - reduced size
+  private static cache = new ColorCache(50); // Further reduced to save memory
+  // Object pool for reuse
+  private static pool: Color[] = [];
+  private static poolSize = 10; // Further reduced to save memory
+  // RGB object pool for toRGB() reuse
+  private static rgbPool: RGB[] = [];
+  private static rgbPoolSize = 20;
 
   constructor(input: ColorInput = '#000000') {
-    try {
-      const parsed = parseColorInput(input);
-      this._rgb = parsed.rgb;
-      this._alpha = parsed.alpha ?? 1;
-    } catch (error) {
-      // 错误处理：使用默认黑色
-      console.warn(`Invalid color input: ${input}. Defaulting to black.`, error);
-      this._rgb = { r: 0, g: 0, b: 0 };
-      this._alpha = 1;
-    }
+    const parsed = parseColorInput(input);
+    // Pack RGB into single integer
+    this._value = (parsed.rgb.r << 16) | (parsed.rgb.g << 8) | parsed.rgb.b;
+    this._alpha = parsed.alpha ?? 1;
   }
 
   // ============================================
@@ -38,21 +45,23 @@ export class Color {
   // ============================================
 
   /**
-   * Create a Color from RGB values
+   * Create a Color from RGB values - Optimized with object pool
    */
   static fromRGB(r: number, g: number, b: number, a?: number): Color {
-    // 输入验证和范围修正
-    if (!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) {
-      throw new TypeError('RGB values must be finite numbers');
+    // Clamp and pack RGB
+    r = clamp(r | 0, 0, 255);
+    g = clamp(g | 0, 0, 255);
+    b = clamp(b | 0, 0, 255);
+    
+    // Try to reuse from pool
+    let color = this.pool.pop();
+    if (!color) {
+      color = new Color();
     }
     
-    const color = new Color();
-    color._rgb = { 
-      r: clamp(Math.round(r), 0, 255), 
-      g: clamp(Math.round(g), 0, 255), 
-      b: clamp(Math.round(b), 0, 255) 
-    };
+    color._value = (r << 16) | (g << 8) | b;
     color._alpha = a !== undefined ? clamp(a, 0, 1) : 1;
+    color._hex = undefined;
     return color;
   }
 
@@ -88,15 +97,15 @@ export class Color {
   // ============================================
 
   get red(): number {
-    return this._rgb.r;
+    return (this._value >> 16) & 0xFF;
   }
 
   get green(): number {
-    return this._rgb.g;
+    return (this._value >> 8) & 0xFF;
   }
 
   get blue(): number {
-    return this._rgb.b;
+    return this._value & 0xFF;
   }
 
   get alpha(): number {
@@ -124,47 +133,77 @@ export class Color {
   // ============================================
 
   /**
-   * Convert to hex string
+   * Convert to hex string - Cached and optimized
    */
   toHex(includeAlpha = false): string {
-    const hex = rgbToHex(this._rgb);
-    if (includeAlpha && this._alpha < 1) {
-      const alpha = Math.round(this._alpha * 255).toString(16).padStart(2, '0');
+    if (!includeAlpha && this._hex) {
+      return this._hex;
+    }
+    
+    // Fast hex conversion using bit operations
+    const hex = `#${  (`000000${  this._value.toString(16)}`).slice(-6).toUpperCase()}`;
+    
+    if (!includeAlpha) {
+      this._hex = hex;
+      return hex;
+    }
+    
+    if (this._alpha < 1) {
+      const alpha = (`0${  ((this._alpha * 255) | 0).toString(16)}`).slice(-2);
       return hex + alpha;
     }
     return hex;
   }
 
   /**
-   * Convert to RGB object
+   * Convert to RGB object - Use object pool to reduce allocations
    */
   toRGB(): RGB {
-    return { ...this._rgb, a: this._alpha < 1 ? this._alpha : undefined };
+    let rgb = Color.rgbPool.pop();
+    if (!rgb) {
+      rgb = {} as RGB;
+    }
+    rgb.r = (this._value >> 16) & 0xFF;
+    rgb.g = (this._value >> 8) & 0xFF;
+    rgb.b = this._value & 0xFF;
+    if (this._alpha < 1) {
+      rgb.a = this._alpha;
+    } else {
+      delete rgb.a;
+    }
+    return rgb;
+  }
+  
+  /**
+   * Return RGB object to pool
+   */
+  static returnRGB(rgb: RGB): void {
+    if (Color.rgbPool.length < Color.rgbPoolSize) {
+      Color.rgbPool.push(rgb);
+    }
   }
 
   /**
-   * Convert to RGB string
+   * Convert to RGB string - Direct from packed value
    */
   toRGBString(): string {
-    const { r, g, b } = this._rgb;
-    if (this._alpha < 1) {
-      return `rgba(${r}, ${g}, ${b}, ${this._alpha})`;
-    }
-    return `rgb(${r}, ${g}, ${b})`;
+    const r = (this._value >> 16) & 0xFF;
+    const g = (this._value >> 8) & 0xFF;
+    const b = this._value & 0xFF;
+    
+    return this._alpha < 1 
+      ? `rgba(${r}, ${g}, ${b}, ${this._alpha})`
+      : `rgb(${r}, ${g}, ${b})`;
   }
 
   /**
-   * Convert to HSL object
+   * Convert to HSL object - No caching to save memory
    */
   toHSL(): HSL {
-    const cacheKey = `hsl-${this.toHex()}`;
-    const cached = Color.cache.get(cacheKey);
-    if (cached) return cached as HSL;
-
-    const hsl = rgbToHsl(this._rgb);
+    const rgb = this.toRGB();
+    const hsl = rgbToHsl(rgb);
+    Color.returnRGB(rgb); // Return RGB to pool
     if (this._alpha < 1) hsl.a = this._alpha;
-    
-    Color.cache.set(cacheKey, hsl);
     return hsl;
   }
 
@@ -180,17 +219,13 @@ export class Color {
   }
 
   /**
-   * Convert to HSV object
+   * Convert to HSV object - No caching to save memory
    */
   toHSV(): HSV {
-    const cacheKey = `hsv-${this.toHex()}`;
-    const cached = Color.cache.get(cacheKey);
-    if (cached) return cached as HSV;
-
-    const hsv = rgbToHsv(this._rgb);
+    const rgb = this.toRGB();
+    const hsv = rgbToHsv(rgb);
+    Color.returnRGB(rgb); // Return RGB to pool
     if (this._alpha < 1) hsv.a = this._alpha;
-    
-    Color.cache.set(cacheKey, hsv);
     return hsv;
   }
 
@@ -269,12 +304,31 @@ export class Color {
    * Invert the color
    */
   invert(): Color {
-    return Color.fromRGB(
-      255 - this._rgb.r,
-      255 - this._rgb.g,
-      255 - this._rgb.b,
-      this._alpha
-    );
+    const r = 255 - ((this._value >> 16) & 0xFF);
+    const g = 255 - ((this._value >> 8) & 0xFF);
+    const b = 255 - (this._value & 0xFF);
+    return Color.fromRGB(r, g, b, this._alpha);
+  }
+
+  /**
+   * Return object to pool for reuse
+   */
+  release(): void {
+    if (Color.pool.length < Color.poolSize) {
+      // Clear cached values
+      this._hex = undefined;
+      Color.pool.push(this);
+    }
+  }
+
+
+  /**
+   * Cleanup static resources
+   */
+  static cleanup(): void {
+    this.cache.clear();
+    this.pool.length = 0;
+    this.rgbPool.length = 0;
   }
 
   /**
@@ -298,21 +352,36 @@ export class Color {
   // ============================================
 
   /**
-   * Mix with another color
+   * Mix with another color - Optimized
    */
   mix(color: ColorInput, amount = 50): Color {
-    const other = new Color(color);
-    const rgb = mix(this._rgb, other._rgb, amount / 100);
-    const alpha = this._alpha + (other._alpha - this._alpha) * (amount / 100);
-    return Color.fromRGB(rgb.r, rgb.g, rgb.b, alpha);
+    const other = color instanceof Color ? color : new Color(color);
+    const ratio = amount / 100;
+    const invRatio = 1 - ratio;
+    
+    // Direct bit manipulation
+    const r1 = (this._value >> 16) & 0xFF;
+    const g1 = (this._value >> 8) & 0xFF;
+    const b1 = this._value & 0xFF;
+    
+    const r2 = (other._value >> 16) & 0xFF;
+    const g2 = (other._value >> 8) & 0xFF;
+    const b2 = other._value & 0xFF;
+    
+    const r = (r1 * invRatio + r2 * ratio) | 0;
+    const g = (g1 * invRatio + g2 * ratio) | 0;
+    const b = (b1 * invRatio + b2 * ratio) | 0;
+    const alpha = this._alpha * invRatio + other._alpha * ratio;
+    
+    return Color.fromRGB(r, g, b, alpha);
   }
 
   /**
    * Blend with another color using a blend mode
    */
   blend(color: ColorInput, mode: BlendMode = 'normal'): Color {
-    const other = new Color(color);
-    const rgb = blend(this._rgb, other._rgb, mode);
+    const other = color instanceof Color ? color : new Color(color);
+    const rgb = blend(this.toRGB(), other.toRGB(), mode);
     return Color.fromRGB(rgb.r, rgb.g, rgb.b, this._alpha);
   }
 
@@ -324,15 +393,15 @@ export class Color {
    * Get the luminance of the color
    */
   getLuminance(): number {
-    return getLuminance(this._rgb);
+    return getLuminance(this.toRGB());
   }
 
   /**
    * Get contrast ratio with another color
    */
   contrast(color: ColorInput): number {
-    const other = new Color(color);
-    return getContrast(this._rgb, other._rgb);
+    const other = color instanceof Color ? color : new Color(color);
+    return getContrast(this.toRGB(), other.toRGB());
   }
 
   /**
@@ -357,8 +426,8 @@ export class Color {
     level: WCAGLevel = 'AA',
     size: TextSize = 'normal'
   ): boolean {
-    const bg = new Color(background);
-    return isWCAGCompliant(this._rgb, bg._rgb, level, size);
+    const bg = background instanceof Color ? background : new Color(background);
+    return isWCAGCompliant(this.toRGB(), bg.toRGB(), level, size);
   }
 
   // ============================================
@@ -434,45 +503,53 @@ export class Color {
   // ============================================
 
   /**
-   * Clone the color
+   * Clone the color - Optimized
    */
   clone(): Color {
-    return Color.fromRGB(this._rgb.r, this._rgb.g, this._rgb.b, this._alpha);
+    const color = Color.pool.pop() || new Color();
+    color._value = this._value;
+    color._alpha = this._alpha;
+    // Don't copy cached values to save memory
+    color._hex = undefined;
+    return color;
+  }
+  
+  /**
+   * Return color to pool for reuse
+   */
+  dispose(): void {
+    if (Color.pool.length < Color.poolSize) {
+      this._hex = undefined;
+      Color.pool.push(this);
+    }
   }
 
   /**
-   * Check equality with another color
+   * Check equality with another color - Fast comparison
    */
   equals(color: ColorInput): boolean {
-    const other = new Color(color);
-    return (
-      this._rgb.r === other._rgb.r &&
-      this._rgb.g === other._rgb.g &&
-      this._rgb.b === other._rgb.b &&
-      this._alpha === other._alpha
-    );
+    const other = color instanceof Color ? color : new Color(color);
+    return this._value === other._value && this._alpha === other._alpha;
   }
 
   /**
-   * Get distance to another color in RGB space
+   * Get distance to another color - Optimized
    */
   distance(color: ColorInput): number {
-    const other = new Color(color);
-    const dr = this._rgb.r - other._rgb.r;
-    const dg = this._rgb.g - other._rgb.g;
-    const db = this._rgb.b - other._rgb.b;
+    const other = color instanceof Color ? color : new Color(color);
+    const dr = ((this._value >> 16) & 0xFF) - ((other._value >> 16) & 0xFF);
+    const dg = ((this._value >> 8) & 0xFF) - ((other._value >> 8) & 0xFF);
+    const db = (this._value & 0xFF) - (other._value & 0xFF);
+    // Avoid sqrt for performance when possible
     return Math.sqrt(dr * dr + dg * dg + db * db);
   }
 
   /**
-   * Check if color is valid
+   * Check if color is valid - Simple check
    */
   isValid(): boolean {
-    return (
-      validateRGB(this._rgb) &&
-      this._alpha >= 0 &&
-      this._alpha <= 1
-    );
+    return this._value >= 0 && this._value <= 0xFFFFFF &&
+           this._alpha >= 0 && this._alpha <= 1;
   }
 
   /**
@@ -490,15 +567,25 @@ export class Color {
   }
 }
 
-// Export singleton instance for common colors
+// Export singleton instance for common colors - cached for reuse
+const BLACK = new Color('#000000');
+const WHITE = new Color('#FFFFFF');
+const RED = new Color('#FF0000');
+const GREEN = new Color('#00FF00');
+const BLUE = new Color('#0000FF');
+const YELLOW = new Color('#FFFF00');
+const CYAN = new Color('#00FFFF');
+const MAGENTA = new Color('#FF00FF');
+const TRANSPARENT = new Color('rgba(0,0,0,0)');
+
 export const Colors = {
-  black: () => new Color('#000000'),
-  white: () => new Color('#FFFFFF'),
-  red: () => new Color('#FF0000'),
-  green: () => new Color('#00FF00'),
-  blue: () => new Color('#0000FF'),
-  yellow: () => new Color('#FFFF00'),
-  cyan: () => new Color('#00FFFF'),
-  magenta: () => new Color('#FF00FF'),
-  transparent: () => new Color('rgba(0,0,0,0)')
+  black: () => BLACK.clone(),
+  white: () => WHITE.clone(),
+  red: () => RED.clone(),
+  green: () => GREEN.clone(),
+  blue: () => BLUE.clone(),
+  yellow: () => YELLOW.clone(),
+  cyan: () => CYAN.clone(),
+  magenta: () => MAGENTA.clone(),
+  transparent: () => TRANSPARENT.clone()
 };

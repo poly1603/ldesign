@@ -3,9 +3,9 @@
  * 🚀 提供简化的API，让使用更简单
  */
 
-import type { CacheConfig } from '../cache/unified-cache-manager'
+import type { CacheConfig } from '../cache/cache-manager'
 import type { LogConfig } from '../logger/logger'
-import { createUnifiedCacheManager } from '../cache/unified-cache-manager'
+import { createCacheManager } from '../cache/cache-manager'
 import { createUnifiedLogger } from '../logger/logger'
 import { createPerformanceManager } from '../performance/performance-manager'
 
@@ -35,7 +35,7 @@ export function quickCache<T = unknown>(options?: {
       : {}
   }
 
-  return createUnifiedCacheManager<T>(config)
+  return createCacheManager<T>(config)
 }
 
 /**

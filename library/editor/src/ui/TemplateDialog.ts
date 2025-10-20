@@ -362,8 +362,221 @@ export class TemplateDialog {
    * 显示模板管理对话框
    */
   private showManageDialog(): void {
-    // TODO: 实现模板管理功能
-    alert('模板管理功能开发中...')
+    const overlay = document.createElement('div')
+    overlay.className = 'template-manage-overlay'
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+    `
+    
+    const dialog = document.createElement('div')
+    dialog.className = 'template-manage-dialog'
+    dialog.style.cssText = `
+      background: white;
+      border-radius: 8px;
+      width: 700px;
+      max-height: 600px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    `
+    
+    // 头部
+    const header = document.createElement('div')
+    header.className = 'dialog-header'
+    header.style.cssText = `
+      padding: 20px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    `
+    header.innerHTML = `
+      <h2 style="margin: 0; font-size: 18px;">模板管理</h2>
+      <button class="close-btn" style="border: none; background: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+    `
+    
+    // 内容区域
+    const content = document.createElement('div')
+    content.className = 'dialog-content'
+    content.style.cssText = `
+      padding: 20px;
+      flex: 1;
+      overflow-y: auto;
+    `
+    
+    // 模板列表
+    const templates = this.templateManager.getTemplates()
+    
+    templates.forEach(template => {
+      const item = document.createElement('div')
+      item.className = 'template-item'
+      item.style.cssText = `
+        padding: 16px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      `
+      
+      const info = document.createElement('div')
+      info.innerHTML = `
+        <div style="font-weight: 600; margin-bottom: 4px;">${template.name}</div>
+        <div style="font-size: 12px; color: #666;">${template.category}</div>
+      `
+      
+      const actions = document.createElement('div')
+      actions.style.cssText = 'display: flex; gap: 8px;'
+      
+      // 编辑按钮
+      const editBtn = document.createElement('button')
+      editBtn.textContent = '编辑'
+      editBtn.style.cssText = `
+        padding: 6px 12px;
+        border: 1px solid #3b82f6;
+        background: white;
+        color: #3b82f6;
+        border-radius: 4px;
+        cursor: pointer;
+      `
+      editBtn.addEventListener('click', () => {
+        this.showEditTemplateDialog(template)
+      })
+      
+      // 删除按钮
+      const deleteBtn = document.createElement('button')
+      deleteBtn.textContent = '删除'
+      deleteBtn.style.cssText = `
+        padding: 6px 12px;
+        border: 1px solid #ef4444;
+        background: white;
+        color: #ef4444;
+        border-radius: 4px;
+        cursor: pointer;
+      `
+      deleteBtn.addEventListener('click', () => {
+        if (confirm(`确定要删除模板 "${template.name}" 吗？`)) {
+          this.templateManager.deleteTemplate(template.id)
+          item.remove()
+        }
+      })
+      
+      actions.appendChild(editBtn)
+      actions.appendChild(deleteBtn)
+      
+      item.appendChild(info)
+      item.appendChild(actions)
+      content.appendChild(item)
+    })
+    
+    // 底部按钮
+    const footer = document.createElement('div')
+    footer.style.cssText = `
+      padding: 16px 20px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+    `
+    
+    const addBtn = document.createElement('button')
+    addBtn.textContent = '+ 新建模板'
+    addBtn.style.cssText = `
+      padding: 8px 16px;
+      border: none;
+      background: #3b82f6;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    `
+    addBtn.addEventListener('click', () => {
+      this.showCreateTemplateDialog()
+    })
+    
+    const closeBtn = document.createElement('button')
+    closeBtn.textContent = '关闭'
+    closeBtn.style.cssText = `
+      padding: 8px 16px;
+      border: 1px solid #d1d5db;
+      background: white;
+      color: #374151;
+      border-radius: 6px;
+      cursor: pointer;
+    `
+    closeBtn.addEventListener('click', () => {
+      document.body.removeChild(overlay)
+    })
+    
+    footer.appendChild(addBtn)
+    footer.appendChild(closeBtn)
+    
+    dialog.appendChild(header)
+    dialog.appendChild(content)
+    dialog.appendChild(footer)
+    overlay.appendChild(dialog)
+    
+    // 关闭按钮事件
+    header.querySelector('.close-btn')?.addEventListener('click', () => {
+      document.body.removeChild(overlay)
+    })
+    
+    // 点击遮罩层关闭
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        document.body.removeChild(overlay)
+      }
+    })
+    
+    document.body.appendChild(overlay)
+  }
+  
+  /**
+   * 显示创建模板对话框
+   */
+  private showCreateTemplateDialog(): void {
+    // 简化实现，实际应该有完整的表单
+    const name = prompt('请输入模板名称:')
+    if (!name) return
+    
+    const content = prompt('请输入模板内容:')
+    if (!content) return
+    
+    this.templateManager.saveTemplate({
+      id: `custom-${Date.now()}`,
+      name,
+      content,
+      category: 'custom'
+    })
+    
+    alert('模板已创建！')
+  }
+  
+  /**
+   * 显示编辑模板对话框
+   */
+  private showEditTemplateDialog(template: any): void {
+    const name = prompt('请输入模板名称:', template.name)
+    if (!name) return
+    
+    const content = prompt('请输入模板内容:', template.content)
+    if (!content) return
+    
+    this.templateManager.saveTemplate({
+      ...template,
+      name,
+      content
+    })
+    
+    alert('模板已更新！')
   }
 
   /**

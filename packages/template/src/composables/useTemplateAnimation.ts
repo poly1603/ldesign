@@ -1,5 +1,4 @@
-import { ref, computed, onMounted, onBeforeUnmount, watch, type Ref } from 'vue'
-import type { TemplateMetadata } from '../types'
+import { computed, onBeforeUnmount, onMounted, ref, type Ref, watch } from 'vue'
 
 /**
  * 动画缓动函数类型
@@ -22,11 +21,11 @@ export const EASING_FUNCTIONS: Record<string, EasingFunction> = {
   easeInOutQuart: (t: number) => (t < 0.5 ? 8 * t * t * t * t : 1 - 8 * --t * t * t * t),
   easeInElastic: (t: number) => {
     const c4 = (2 * Math.PI) / 3
-    return t === 0 ? 0 : t === 1 ? 1 : -Math.pow(2, 10 * t - 10) * Math.sin((t * 10 - 10.75) * c4)
+    return t === 0 ? 0 : t === 1 ? 1 : -(2**(10 * t - 10)) * Math.sin((t * 10 - 10.75) * c4)
   },
   easeOutElastic: (t: number) => {
     const c4 = (2 * Math.PI) / 3
-    return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1
+    return t === 0 ? 0 : t === 1 ? 1 : 2**(-10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1
   },
   easeInBack: (t: number) => {
     const c1 = 1.70158
@@ -36,7 +35,7 @@ export const EASING_FUNCTIONS: Record<string, EasingFunction> = {
   easeOutBack: (t: number) => {
     const c1 = 1.70158
     const c3 = c1 + 1
-    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
+    return 1 + c3 * (t - 1)**3 + c1 * (t - 1)**2
   },
   easeInBounce: (t: number) => 1 - EASING_FUNCTIONS.easeOutBounce(1 - t),
   easeOutBounce: (t: number) => {
@@ -127,7 +126,7 @@ export function useTemplateAnimation(options: AnimationConfig = {}) {
       return
     }
 
-    const elapsed = pauseTime ? pauseTime : timestamp - startTime
+    const elapsed = pauseTime || timestamp - startTime
     const rawProgress = Math.min(elapsed / duration, 1)
     let adjustedProgress = easingFn(rawProgress)
 
@@ -242,7 +241,7 @@ export function useParallax(elementRef: Ref<HTMLElement | null>, config: Paralla
 
     const rect = element.getBoundingClientRect()
     const viewportHeight = window.innerHeight
-    const viewportWidth = window.innerWidth
+    // const viewportWidth = window.innerWidth // Not used currently
 
     // 计算元素在视口中的位置 (0-1)
     const elementProgress = 1 - (rect.top + rect.height / 2) / viewportHeight
@@ -296,7 +295,7 @@ export function useParallax(elementRef: Ref<HTMLElement | null>, config: Paralla
  */
 export function useGesture(elementRef: Ref<HTMLElement | null>, config: GestureConfig = {}) {
   const {
-    type = 'drag',
+    // type = 'drag', // Not used currently
     threshold = 10,
     onGestureStart,
     onGestureMove,
@@ -314,6 +313,8 @@ export function useGesture(elementRef: Ref<HTMLElement | null>, config: GestureC
   let startTime = 0
   let lastPos = { x: 0, y: 0 }
   let lastTime = 0
+  // 存储事件处理器引用，方便清理
+  let handlers: { element: HTMLElement | Window; event: string; handler: EventListener; options?: any }[] = []
 
   const getEventPos = (event: TouchEvent | MouseEvent) => {
     if ('touches' in event) {
@@ -367,29 +368,33 @@ export function useGesture(elementRef: Ref<HTMLElement | null>, config: GestureC
     onGestureEnd?.(velocity, event)
   }
 
+  const addEventHandler = (element: HTMLElement | Window, event: string, handler: EventListener, options?: any) => {
+    element.addEventListener(event, handler, options)
+    handlers.push({ element, event, handler, options })
+  }
+
+  const removeAllHandlers = () => {
+    for (const { element, event, handler } of handlers) {
+      element.removeEventListener(event, handler)
+    }
+    handlers = []
+  }
+
   onMounted(() => {
     const element = elementRef.value
     if (!element) return
 
     // 支持触摸和鼠标事件
-    element.addEventListener('touchstart', handleStart as EventListener, { passive: true })
-    element.addEventListener('touchmove', handleMove as EventListener, { passive: true })
-    element.addEventListener('touchend', handleEnd as EventListener, { passive: true })
-    element.addEventListener('mousedown', handleStart as EventListener)
-    window.addEventListener('mousemove', handleMove as EventListener)
-    window.addEventListener('mouseup', handleEnd as EventListener)
+    addEventHandler(element, 'touchstart', handleStart as EventListener, { passive: true })
+    addEventHandler(element, 'touchmove', handleMove as EventListener, { passive: true })
+    addEventHandler(element, 'touchend', handleEnd as EventListener, { passive: true })
+    addEventHandler(element, 'mousedown', handleStart as EventListener)
+    addEventHandler(window, 'mousemove', handleMove as EventListener)
+    addEventHandler(window, 'mouseup', handleEnd as EventListener)
   })
 
   onBeforeUnmount(() => {
-    const element = elementRef.value
-    if (!element) return
-
-    element.removeEventListener('touchstart', handleStart as EventListener)
-    element.removeEventListener('touchmove', handleMove as EventListener)
-    element.removeEventListener('touchend', handleEnd as EventListener)
-    element.removeEventListener('mousedown', handleStart as EventListener)
-    window.removeEventListener('mousemove', handleMove as EventListener)
-    window.removeEventListener('mouseup', handleEnd as EventListener)
+    removeAllHandlers()
   })
 
   return {
@@ -432,7 +437,7 @@ export function useSequenceAnimation(steps: SequenceStep[]) {
           // 应用动画属性
           Object.entries(step.properties).forEach(([prop, value]) => {
             if (typeof value === 'number') {
-              const startValue = parseFloat(getComputedStyle(element)[prop as any] || '0')
+              const startValue = Number.parseFloat(getComputedStyle(element)[prop as any] || '0')
               const currentValue = startValue + (value - startValue) * progress
               element.style[prop as any] = `${currentValue}px`
             } else {
@@ -508,6 +513,7 @@ export function useScrollAnimation(
   const { triggerOffset = 0.8, once = true, ...config } = animationConfig
   const hasTriggered = ref(false)
   const animation = useTemplateAnimation(config)
+  let scrollHandler: (() => void) | null = null
 
   const checkVisibility = () => {
     const element = elementRef.value
@@ -529,13 +535,25 @@ export function useScrollAnimation(
     }
   }
 
+  // 使用节流优化滚动性能
+  const throttledCheckVisibility = () => {
+    if (!scrollHandler) {
+      scrollHandler = () => {
+        checkVisibility()
+        scrollHandler = null
+      }
+      requestAnimationFrame(scrollHandler)
+    }
+  }
+
   onMounted(() => {
-    window.addEventListener('scroll', checkVisibility, { passive: true })
+    window.addEventListener('scroll', throttledCheckVisibility, { passive: true })
     checkVisibility() // 初始检查
   })
 
   onBeforeUnmount(() => {
-    window.removeEventListener('scroll', checkVisibility)
+    window.removeEventListener('scroll', throttledCheckVisibility)
+    animation.stop() // 确保停止动画
   })
 
   return {

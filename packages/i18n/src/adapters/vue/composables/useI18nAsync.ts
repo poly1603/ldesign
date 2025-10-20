@@ -2,9 +2,9 @@
  * useI18nAsync - Async loading hook
  */
 
-import { ref, onMounted, type Ref } from 'vue';
-import { useI18n } from './useI18n';
 import type { Locale } from '../../../types';
+import { onMounted, onUnmounted, ref, type Ref } from 'vue';
+import { useI18n } from './useI18n';
 
 export interface UseI18nAsyncOptions {
   loadLocale?: boolean;
@@ -24,6 +24,7 @@ export function useI18nAsync(options: UseI18nAsyncOptions = {}): UseI18nAsyncRet
   const loading = ref(false);
   const error = ref<Error | null>(null);
   const ready = ref(false);
+  let abortController: AbortController | null = null;
 
   const loadMessages = async (targetLocale: Locale) => {
     if (!options.loader) {
@@ -31,18 +32,32 @@ export function useI18nAsync(options: UseI18nAsyncOptions = {}): UseI18nAsyncRet
       return;
     }
 
+    // Cancel previous request if exists
+    if (abortController) {
+      abortController.abort();
+    }
+    
+    abortController = new AbortController();
+    
     loading.value = true;
     error.value = null;
 
     try {
       const messages = await options.loader(targetLocale);
-      mergeLocaleMessage(targetLocale, messages);
-      ready.value = true;
+      
+      // Check if request was aborted
+      if (!abortController.signal.aborted) {
+        mergeLocaleMessage(targetLocale, messages);
+        ready.value = true;
+      }
     } catch (err) {
-      error.value = err as Error;
-      console.error('[useI18nAsync] Failed to load messages:', err);
+      if ((err as any)?.name !== 'AbortError') {
+        error.value = err as Error;
+        console.error('[useI18nAsync] Failed to load messages:', err);
+      }
     } finally {
       loading.value = false;
+      abortController = null;
     }
   };
 
@@ -50,6 +65,14 @@ export function useI18nAsync(options: UseI18nAsyncOptions = {}): UseI18nAsyncRet
     if (options.loadLocale) {
       const targetLocale = options.locale || locale.value;
       loadMessages(targetLocale);
+    }
+  });
+  
+  // Cleanup on unmount
+  onUnmounted(() => {
+    if (abortController) {
+      abortController.abort();
+      abortController = null;
     }
   });
 

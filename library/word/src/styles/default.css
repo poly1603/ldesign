@@ -1,0 +1,275 @@
+/**
+ * Word Viewer 默认样式
+ */
+
+.word-viewer-container {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: #f5f5f5;
+  font-family: 'Calibri', 'Arial', sans-serif;
+}
+
+.word-viewer-container[data-theme='dark'] {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.word-viewer-viewer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  min-height: 100%;
+}
+
+.word-viewer-viewer-content {
+  width: 100%;
+  max-width: 900px;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 40px 60px;
+  min-height: 500px;
+  transition: transform 0.2s ease;
+}
+
+.word-viewer-container[data-theme='dark'] .word-viewer-viewer-content {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+}
+
+.word-viewer-viewer-content.editable {
+  outline: 2px dashed #4285f4;
+  outline-offset: 4px;
+}
+
+.word-viewer-viewer-content:focus {
+  outline: 2px solid #4285f4;
+  outline-offset: 4px;
+}
+
+/* Docx Preview 样式覆盖 */
+.docx-wrapper {
+  background: transparent !important;
+}
+
+.docx-wrapper section {
+  margin-bottom: 20px;
+  page-break-after: always;
+}
+
+.docx-wrapper p {
+  margin: 0 0 10px 0;
+  line-height: 1.6;
+}
+
+.docx-wrapper h1,
+.docx-wrapper h2,
+.docx-wrapper h3,
+.docx-wrapper h4,
+.docx-wrapper h5,
+.docx-wrapper h6 {
+  margin: 20px 0 10px 0;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.docx-wrapper h1 {
+  font-size: 2em;
+}
+
+.docx-wrapper h2 {
+  font-size: 1.5em;
+}
+
+.docx-wrapper h3 {
+  font-size: 1.3em;
+}
+
+.docx-wrapper table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.docx-wrapper table td,
+.docx-wrapper table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.docx-wrapper img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 10px 0;
+}
+
+/* Mammoth 样式覆盖 */
+.mammoth-content {
+  line-height: 1.6;
+}
+
+.mammoth-content p {
+  margin: 0 0 10px 0;
+}
+
+.mammoth-content h1,
+.mammoth-content h2,
+.mammoth-content h3 {
+  margin: 20px 0 10px 0;
+  font-weight: bold;
+}
+
+.mammoth-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.mammoth-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.mammoth-content table td,
+.mammoth-content table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+/* 错误提示 */
+.word-viewer-error-message {
+  padding: 40px;
+  text-align: center;
+  color: #d32f2f;
+}
+
+.word-viewer-error-message h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.5em;
+}
+
+.word-viewer-error-message p {
+  margin: 0;
+  color: #666;
+}
+
+/* 搜索高亮 */
+.word-viewer-highlight {
+  background-color: #ffeb3b;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+.word-viewer-container[data-theme='dark'] .word-viewer-highlight {
+  background-color: #fbc02d;
+  color: #000;
+}
+
+/* 加载动画 */
+.word-viewer-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.word-viewer-loading::after {
+  content: '';
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4285f4;
+  border-radius: 50%;
+  animation: word-viewer-spin 1s linear infinite;
+}
+
+@keyframes word-viewer-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 工具栏样式 */
+.word-viewer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background-color: white;
+  border-bottom: 1px solid #e0e0e0;
+  flex-wrap: wrap;
+}
+
+.word-viewer-container[data-theme='dark'] .word-viewer-toolbar {
+  background-color: #2d2d2d;
+  border-bottom-color: #404040;
+}
+
+.word-viewer-toolbar-button {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  background-color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.word-viewer-toolbar-button:hover {
+  background-color: #f5f5f5;
+  border-color: #4285f4;
+}
+
+.word-viewer-toolbar-button:active {
+  background-color: #e0e0e0;
+}
+
+.word-viewer-toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background-color: #e0e0e0;
+  margin: 0 4px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .word-viewer-viewer-content {
+    padding: 20px;
+    max-width: 100%;
+  }
+
+  .word-viewer-toolbar {
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .word-viewer-toolbar-button {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .word-viewer-container {
+    background-color: white;
+  }
+
+  .word-viewer-viewer-content {
+    box-shadow: none;
+    padding: 0;
+    max-width: 100%;
+  }
+
+  .word-viewer-toolbar {
+    display: none;
+  }
+}
+
+
+

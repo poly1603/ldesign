@@ -16,6 +16,8 @@
         alt="验证码"
         class="captcha-image"
         :class="{ loading: isLoading }"
+        loading="lazy"
+        decoding="async"
       />
       <div v-else class="captcha-placeholder">
         <span>点击获取验证码</span>
@@ -28,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import BaseInput from './BaseInput.vue'
 
 interface Props {
@@ -54,6 +56,7 @@ const emit = defineEmits<{
 
 const inputValue = ref(props.modelValue)
 const isLoading = ref(false)
+let loadingTimer: number | null = null
 
 const handleInput = (value: string) => {
   inputValue.value = value
@@ -66,15 +69,29 @@ const refreshCaptcha = async () => {
   isLoading.value = true
   emit('refresh')
   
+  // 清理之前的定时器
+  if (loadingTimer !== null) {
+    clearTimeout(loadingTimer)
+  }
+  
   // 模拟加载延迟
-  setTimeout(() => {
+  loadingTimer = window.setTimeout(() => {
     isLoading.value = false
+    loadingTimer = null
   }, 500)
 }
 
 onMounted(() => {
   if (props.autoLoad && !props.imageUrl) {
     refreshCaptcha()
+  }
+})
+
+onBeforeUnmount(() => {
+  // 清理定时器
+  if (loadingTimer !== null) {
+    clearTimeout(loadingTimer)
+    loadingTimer = null
   }
 })
 </script>

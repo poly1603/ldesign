@@ -4,10 +4,11 @@
  * @module cli
  */
 
+import type { RouteTypeGeneratorOptions } from './RouteTypeGenerator';
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import { program } from 'commander'
-import * as path from 'path'
-import * as fs from 'fs'
-import { RouteTypeGenerator, RouteTypeGeneratorOptions } from './RouteTypeGenerator'
+import { RouteTypeGenerator } from './RouteTypeGenerator'
 
 /**
  * CLI配置接口

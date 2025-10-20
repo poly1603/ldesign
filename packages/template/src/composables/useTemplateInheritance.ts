@@ -2,15 +2,17 @@
  * 模板继承组合式函数
  */
 
-import { ref, computed, reactive, watch, provide, inject, InjectionKey } from 'vue'
-import type { Template, TemplateConfig } from '../types'
-import {
-  TemplateInheritanceConfig,
+import type { InjectionKey } from 'vue';
+import type {
   MergeStrategy,
   TemplateBlock,
-  inheritanceManager,
+  TemplateInheritanceConfig} from '../core/inheritance';
+import type { Template } from '../types'
+import { computed, inject, provide, reactive, ref, watch } from 'vue'
+import {
   blockManager,
-  createInheritableTemplate
+  createInheritableTemplate,
+  inheritanceManager
 } from '../core/inheritance'
 
 /**

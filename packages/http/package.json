@@ -1,18 +1,7 @@
 {
   "name": "@ldesign/http",
-  "type": "module",
   "version": "0.1.0",
   "description": "一个功能强大的通用 HTTP 请求库，支持多种适配器、拦截器、缓存、重试等高级功能，完美集成 Vue 3",
-  "author": "ldesign",
-  "license": "MIT",
-  "homepage": "https://github.com/ldesign/http#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ldesign/http.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ldesign/http/issues"
-  },
   "keywords": [
     "http",
     "request",
@@ -27,6 +16,17 @@
     "retry",
     "adapter"
   ],
+  "author": "ldesign",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign/http#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign/http.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign/http/issues"
+  },
+  "type": "module",
   "exports": {
     ".": {
       "types": "./es/index.d.ts",
@@ -42,6 +42,11 @@
       "types": "./es/adapters/*.d.ts",
       "import": "./es/adapters/*.js",
       "require": "./lib/adapters/*.cjs"
+    },
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
     },
     "./devtools": {
       "types": "./es/devtools/index.d.ts",
@@ -78,6 +83,11 @@
       "import": "./es/interceptors/*.js",
       "require": "./lib/interceptors/*.cjs"
     },
+    "./tests/*": {
+      "types": "./es/tests/*.d.ts",
+      "import": "./es/tests/*.js",
+      "require": "./lib/tests/*.cjs"
+    },
     "./types": {
       "types": "./es/types/index.d.ts",
       "import": "./es/types/index.js",
@@ -111,21 +121,17 @@
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
+  "types": "./es/index.d.ts",
   "unpkg": "./dist/index.min.js",
   "jsdelivr": "./dist/index.min.js",
-  "types": "./es/index.d.ts",
   "files": [
-    "LICENSE",
     "README.md",
-    "dist",
+    "LICENSE",
+    "package.json",
     "es",
     "lib",
-    "package.json"
+    "dist"
   ],
-  "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
-  },
   "scripts": {
     "build": "ldesign-builder build -f esm,cjs,umd",
     "build:watch": "ldesign-builder build --watch",
@@ -164,17 +170,12 @@
     "validate-build": "node scripts/validate-build.js",
     "ci": "pnpm run lint:check && pnpm run type-check && pnpm run test:run && pnpm run build && pnpm run validate-build && pnpm run security-check"
   },
-  "peerDependencies": {
-    "vue": "^3.3.0"
-  },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  },
   "dependencies": {
     "alova": "^3.3.4",
     "axios": "^1.12.2"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
   },
   "devDependencies": {
     "@ldesign/builder": "workspace:*",
@@ -199,10 +200,19 @@
     "vue": "^3.4.15",
     "vue-tsc": "^3.0.5"
   },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
   "size-limit": [
     {
       "path": "dist/index.js",
       "limit": "60 KB"
     }
-  ]
+  ],
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  }
 }

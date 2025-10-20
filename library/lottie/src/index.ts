@@ -25,6 +25,20 @@ export type { AccessibilityConfig } from './core/AccessibilityManager'
 export type { PreloadItem, PreloadProgress, PreloadOptions } from './core/PreloadQueue'
 export type { GestureConfig, GestureType, GestureEvent } from './core/GestureController'
 
+// 性能优化功能
+export { WorkerManager, workerManager } from './core/WorkerManager'
+export { VirtualRenderer } from './core/VirtualRenderer'
+export { MemoryManager, memoryManager } from './core/MemoryManager'
+export { BatchRenderer, batchRenderer } from './core/BatchRenderer'
+export { AdaptiveFrameRate } from './core/AdaptiveFrameRate'
+
+// 性能优化类型
+export type { WorkerManagerConfig, WorkerTask } from './core/WorkerManager'
+export type { VirtualRendererConfig, VirtualStats } from './core/VirtualRenderer'
+export type { MemoryManagerConfig, MemoryStats, MemoryPressureEvent } from './core/MemoryManager'
+export type { BatchRendererConfig, RenderTask } from './core/BatchRenderer'
+export type { AdaptiveFrameRateConfig, FrameRateStats } from './core/AdaptiveFrameRate'
+
 // 导出设备检测工具
 export {
   DeviceDetector,

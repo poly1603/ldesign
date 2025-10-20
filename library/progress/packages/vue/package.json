@@ -1,0 +1,35 @@
+{
+  "name": "@ldesign/progress-vue",
+  "version": "1.1.0",
+  "description": "Vue 3 进度条组件封装，支持14种进度条类型",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "progress",
+    "progress-bar",
+    "vue",
+    "vue3"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "dependencies": {
+    "@ldesign/progress-core": "workspace:*"
+  },
+  "devDependencies": {
+    "vue": "^3.4.15"
+  }
+}
+
+

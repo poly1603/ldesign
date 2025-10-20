@@ -280,7 +280,7 @@ export class WarmupManager {
     for (let retry = 0; retry < maxRetries && result.failed.length > 0; retry++) {
       const failedUrls = result.failed.map(f => f.url)
 
-      console.log(`Retrying ${failedUrls.length} failed URLs...`)
+      console.info(`Retrying ${failedUrls.length} failed URLs...`)
 
       const retryResult = await this.warmup({
         ...config,
@@ -486,7 +486,8 @@ export class KeepAliveManager {
     this.connections.forEach((connection, host) => {
       const idle = now - connection.lastUsed
 
-      if (idle > this.config?.maxIdleTime! / 2) {
+      const halfIdle = (this.config?.maxIdleTime ?? 0) / 2
+      if (idle > halfIdle) {
         stats.idleConnections++
       }
       else {

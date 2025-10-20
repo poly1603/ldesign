@@ -303,7 +303,7 @@ export class PerformanceMonitor extends EventEmitter {
   }
 
   // 获取统计信息
-  getStats(metricName: string): {
+  getMetricStats(metricName: string): {
     count: number;
     min: number;
     max: number;
@@ -429,18 +429,18 @@ export class AutoPerformanceAnalyzer {
     const report = this.monitor.stopRecording();
 
     // 输出分析结果
-    
-    }ms`);
-    
+    console.log(`📊 Performance Analysis Report`);
+    console.log(`Duration: ${report.duration.toFixed(2)}ms`);
+    console.log(`Total Metrics: ${report.metrics.length}`);
 
     if (report.warnings.length > 0) {
-      
-      report.warnings.forEach(w => );
+      console.warn('⚠️ Warnings:');
+      report.warnings.forEach(w => console.warn(`  - ${w}`));
     }
 
     if (report.suggestions.length > 0) {
-      
-      report.suggestions.forEach(s => );
+      console.log('💡 Suggestions:');
+      report.suggestions.forEach(s => console.log(`  - ${s}`));
     }
 
     // 重新开始记录
@@ -448,7 +448,7 @@ export class AutoPerformanceAnalyzer {
   }
 
   // 建议优化
-  private suggestOptimization(operation: string, duration: number): void {
+  private suggestOptimization(operation: string, _duration: number): void {
     const suggestions = [
       'Consider using memoization for expensive computations',
       'Batch multiple operations together',
@@ -458,16 +458,16 @@ export class AutoPerformanceAnalyzer {
     ];
 
     const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
-    
+    console.log(`💡 Suggestion for ${operation}: ${randomSuggestion}`);
   }
 
   // 尝试内存清理
   private attemptMemoryCleanup(): void {
     if ((globalThis as any).gc) {
-      
+      console.log('🧹 Attempting garbage collection...');
       (globalThis as any).gc();
     } else {
-      
+      console.warn('⚠️ Manual garbage collection not available. Run Node with --expose-gc flag.');
     }
   }
 
@@ -508,5 +508,5 @@ export function recordMetric(metric: PerformanceMetric): void {
 }
 
 export function getPerformanceStats(metricName: string) {
-  return getDefaultMonitor().getStats(metricName);
+  return getDefaultMonitor().getMetricStats(metricName);
 }

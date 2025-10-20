@@ -3,51 +3,59 @@
  */
 
 /**
- * 深拷贝对象
+ * 深拷贝对象 - 优化版，避免循环引用，限制深度防止堆栈溢出
  */
-export function deepClone<T>(obj: T): T {
+export function deepClone<T>(obj: T, cache = new WeakMap(), depth = 0, maxDepth = 100): T {
+  // 基本类型直接返回
   if (obj === null || typeof obj !== 'object') {
     return obj
   }
 
+  // 防止过深的嵌套
+  if (depth > maxDepth) {
+    console.warn('deepClone: Maximum depth exceeded')
+    return obj
+  }
+
+  // 检查循环引用
+  if (cache.has(obj)) {
+    return cache.get(obj)
+  }
+
+  let cloned: any
+
+  // 处理特殊对象类型
   if (obj instanceof Date) {
-    return new Date(obj.getTime()) as any
-  }
-
-  if (obj instanceof Array) {
-    return obj.map(item => deepClone(item)) as any
-  }
-
-  if (obj instanceof Set) {
-    const clonedSet = new Set()
-    obj.forEach(value => {
-      clonedSet.add(deepClone(value))
-    })
-    return clonedSet as any
-  }
-
-  if (obj instanceof Map) {
-    const clonedMap = new Map()
-    obj.forEach((value, key) => {
-      clonedMap.set(deepClone(key), deepClone(value))
-    })
-    return clonedMap as any
-  }
-
-  // 处理正则表达式
-  if (obj instanceof RegExp) {
-    return new RegExp(obj.source, obj.flags) as any
-  }
-
-  // 处理普通对象
-  const clonedObj = {} as any
-  for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      clonedObj[key] = deepClone(obj[key])
+    cloned = new Date(obj.getTime())
+  } else if (obj instanceof RegExp) {
+    cloned = new RegExp(obj.source, obj.flags)
+  } else if (obj instanceof Set) {
+    cloned = new Set()
+    cache.set(obj, cloned)
+    obj.forEach(value => cloned.add(deepClone(value, cache, depth + 1, maxDepth)))
+  } else if (obj instanceof Map) {
+    cloned = new Map()
+    cache.set(obj, cloned)
+    obj.forEach((value, key) => cloned.set(deepClone(key, cache, depth + 1, maxDepth), deepClone(value, cache, depth + 1, maxDepth)))
+  } else if (Array.isArray(obj)) {
+    cloned = []
+    cache.set(obj, cloned)
+    for (let i = 0; i < obj.length; i++) {
+      cloned[i] = deepClone(obj[i], cache, depth + 1, maxDepth)
+    }
+  } else {
+    // 普通对象 - 使用Object.create保持原型链
+    cloned = Object.create(Object.getPrototypeOf(obj))
+    cache.set(obj, cloned)
+    // 优化：使用 Object.keys() 代替 for...in，性能更好且无需 hasOwnProperty 检查
+    const keys = Object.keys(obj)
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i]
+      cloned[key] = deepClone((obj as any)[key], cache, depth + 1, maxDepth)
     }
   }
 
-  return clonedObj
+  return cloned as T
 }
 
 /**
@@ -67,7 +75,7 @@ export function deepMerge<T extends Record<string, any>>(
     const targetValue = target[key]
 
     if (isObject(sourceValue) && isObject(targetValue)) {
-      target[key] = deepMerge(targetValue, sourceValue)
+      target[key] = deepMerge(targetValue, sourceValue) as any
     } else if (Array.isArray(sourceValue)) {
       target[key] = [...sourceValue] as any
     } else if (sourceValue !== undefined) {
@@ -81,14 +89,14 @@ export function deepMerge<T extends Record<string, any>>(
 /**
  * 判断是否为对象
  */
-export function isObject(obj: any): obj is Record<string, any> {
+export function isObject(obj: unknown): obj is Record<string, unknown> {
   return obj !== null && typeof obj === 'object' && !Array.isArray(obj)
 }
 
 /**
  * 判断是否为空对象
  */
-export function isEmpty(obj: any): boolean {
+export function isEmpty(obj: unknown): boolean {
   if (obj == null) return true
   if (Array.isArray(obj) || typeof obj === 'string') return obj.length === 0
   if (obj instanceof Set || obj instanceof Map) return obj.size === 0
@@ -97,55 +105,108 @@ export function isEmpty(obj: any): boolean {
 }
 
 /**
- * 防抖函数
+ * 防抖函数 - 增强版，支持取消和立即执行
  */
 export function debounce<T extends (...args: any[]) => any>(
   fn: T,
-  delay: number
-): (...args: Parameters<T>) => void {
+  delay: number,
+  options?: { leading?: boolean; trailing?: boolean }
+): (...args: Parameters<T>) => void & { cancel: () => void; flush: () => void } {
   let timeoutId: ReturnType<typeof setTimeout> | null = null
+  let lastArgs: Parameters<T> | null = null
+  let lastCallTime: number | null = null
+  const { leading = false, trailing = true } = options || {}
 
-  return function (this: any, ...args: Parameters<T>) {
+  const invokeFunc = () => {
+if (lastArgs) {
+      fn(...lastArgs)
+      lastArgs = null
+    }
+  }
+
+  const cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+      timeoutId = null
+    }
+    lastArgs = null
+    lastCallTime = null
+  }
+
+  const flush = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+      invokeFunc()
+    }
+  }
+
+const debounced = function (...args: Parameters<T>) {
+    const now = Date.now()
+    const isFirstCall = !lastCallTime
+    lastCallTime = now
+    lastArgs = args
+
     if (timeoutId) {
       clearTimeout(timeoutId)
     }
 
-    timeoutId = setTimeout(() => {
-      fn.apply(this, args)
-      timeoutId = null
-    }, delay)
+    if (isFirstCall && leading) {
+      invokeFunc()
+    } else if (trailing) {
+      timeoutId = setTimeout(() => {
+        invokeFunc()
+        timeoutId = null
+        lastCallTime = null
+      }, delay)
+    }
   }
+
+  debounced.cancel = cancel
+  debounced.flush = flush
+
+  return debounced as any
 }
 
 /**
- * 节流函数
+ * 节流函数 - 增强版，支持取消
  */
 export function throttle<T extends (...args: any[]) => any>(
   fn: T,
   limit: number
-): (...args: Parameters<T>) => void {
+): (...args: Parameters<T>) => void & { cancel: () => void } {
   let inThrottle = false
   let lastArgs: Parameters<T> | null = null
-  let lastThis: any = null
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
 
-  return function (this: any, ...args: Parameters<T>) {
+  const cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+      timeoutId = null
+    }
+    inThrottle = false
+    lastArgs = null
+  }
+
+const throttled = function (...args: Parameters<T>) {
     if (!inThrottle) {
-      fn.apply(this, args)
+fn(...args)
       inThrottle = true
       
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         inThrottle = false
+        timeoutId = null
         if (lastArgs !== null) {
-          fn.apply(lastThis, lastArgs)
+          fn(...lastArgs)
           lastArgs = null
-          lastThis = null
         }
       }, limit)
     } else {
       lastArgs = args
-      lastThis = this
     }
   }
+  
+  throttled.cancel = cancel
+  return throttled as any
 }
 
 /**
@@ -158,18 +219,22 @@ export function generateId(prefix: string = 'id'): string {
 }
 
 /**
- * 格式化字节大小
+ * 格式化字节大小 - 优化版，缓存计算结果
  */
+const LOG_1024 = Math.log(1024) // 缓存常量计算
+const SIZE_UNITS = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'] as const
+
 export function formatBytes(bytes: number, decimals: number = 2): string {
   if (bytes === 0) return '0 Bytes'
+  if (bytes < 0) return 'Invalid size'
 
-  const k = 1024
-  const dm = decimals < 0 ? 0 : decimals
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+  const dm = Math.max(0, decimals)
+  const i = Math.min(
+    Math.floor(Math.log(bytes) / LOG_1024),
+    SIZE_UNITS.length - 1
+  )
 
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
+  return `${Number.parseFloat((bytes / (1024 ** i)).toFixed(dm))  } ${  SIZE_UNITS[i]}`
 }
 
 /**
@@ -198,7 +263,7 @@ export async function retry<T>(
     onError
   } = options
 
-  let lastError: Error
+  let lastError: Error | undefined
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -211,22 +276,40 @@ export async function retry<T>(
       }
 
       if (attempt < maxAttempts) {
-        const waitTime = delay * Math.pow(backoff, attempt - 1)
+        const waitTime = delay * backoff**(attempt - 1)
         await sleep(waitTime)
       }
     }
   }
 
-  throw lastError!
+  if (lastError) throw lastError
+  throw new Error('Unknown error')
 }
 
 /**
- * 获取对象路径值
+ * 获取对象路径值 - 优化版，缓存路径解析
  */
-export function get(obj: any, path: string, defaultValue?: any): any {
-  const keys = path.split('.')
-  let result = obj
+const pathCache = new Map<string, string[]>()
+const MAX_PATH_CACHE = 500
 
+export function get<T = unknown>(obj: unknown, path: string, defaultValue?: T): T | undefined {
+  if (!obj || typeof obj !== 'object') return defaultValue
+  
+  // 使用缓存的路径解析结果
+  let keys = pathCache.get(path)
+  if (!keys) {
+    keys = path.split('.')
+    // 限制缓存大小
+    if (pathCache.size >= MAX_PATH_CACHE) {
+      const firstKey = pathCache.keys().next().value
+      if (firstKey) {
+        pathCache.delete(firstKey)
+      }
+    }
+    pathCache.set(path, keys)
+  }
+  
+  let result = obj
   for (const key of keys) {
     result = result?.[key]
     if (result === undefined) {
@@ -238,14 +321,31 @@ export function get(obj: any, path: string, defaultValue?: any): any {
 }
 
 /**
- * 设置对象路径值
+ * 设置对象路径值 - 优化版，复用路径缓存
  */
-export function set(obj: any, path: string, value: any): void {
-  const keys = path.split('.')
-  const lastKey = keys.pop()!
+export function set(obj: unknown, path: string, value: unknown): void {
+  if (!obj || typeof obj !== 'object') return
   
+  // 复用get函数的路径缓存
+  let keys = pathCache.get(path)
+  if (!keys) {
+    keys = path.split('.')
+    if (pathCache.size >= MAX_PATH_CACHE) {
+      const firstKey = pathCache.keys().next().value
+      if (firstKey) {
+        pathCache.delete(firstKey)
+      }
+    }
+    pathCache.set(path, keys)
+  }
+  
+  if (keys.length === 0) return
+  
+  const lastKey = keys[keys.length - 1]
   let current = obj
-  for (const key of keys) {
+  
+  for (let i = 0; i < keys.length - 1; i++) {
+    const key = keys[i]
     if (!(key in current) || !isObject(current[key])) {
       current[key] = {}
     }
@@ -258,7 +358,7 @@ export function set(obj: any, path: string, value: any): void {
 /**
  * 删除对象路径值
  */
-export function unset(obj: any, path: string): void {
+export function unset(obj: Record<string, unknown>, path: string): void {
   const keys = path.split('.')
   const lastKey = keys.pop()!
   
@@ -308,13 +408,13 @@ export function omit<T extends Record<string, any>, K extends keyof T>(
 }
 
 /**
- * 将数组转换为对象
+ * 将数组转换为对象 - 优化版，使用Object.create(null)避免原型污染
  */
 export function arrayToObject<T>(
   array: T[],
   keyFn: (item: T) => string
 ): Record<string, T> {
-  const result: Record<string, T> = {}
+  const result: Record<string, T> = Object.create(null)
   
   for (const item of array) {
     const key = keyFn(item)
@@ -325,20 +425,28 @@ export function arrayToObject<T>(
 }
 
 /**
- * 分组数组元素
+ * 分组数组元素 - 优化版，使用Map提升性能
  */
 export function groupBy<T>(
   array: T[],
   keyFn: (item: T) => string
 ): Record<string, T[]> {
-  const result: Record<string, T[]> = {}
+  const map = new Map<string, T[]>()
   
   for (const item of array) {
     const key = keyFn(item)
-    if (!result[key]) {
-      result[key] = []
+    const group = map.get(key)
+    if (group) {
+      group.push(item)
+    } else {
+      map.set(key, [item])
     }
-    result[key].push(item)
+  }
+  
+  // 转换为普通对象
+  const result: Record<string, T[]> = Object.create(null)
+  for (const [key, value] of map) {
+    result[key] = value
   }
   
   return result

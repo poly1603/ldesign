@@ -128,13 +128,15 @@ export class DeduplicationKeyGenerator {
   }
 
   /**
-   * 缓存字符串键（LRU）
+   * 缓存字符串键（LRU优化版）
    */
   private cacheStringKey(key: string): void {
-    // 如果缓存已满，删除最旧的项
+    // 如果缓存已满，删除最旧的项（优化：只在需要时删除）
     if (this.stringKeyCache.size >= this.maxCacheSize) {
-      const firstKey = this.stringKeyCache.keys().next().value
-      if (firstKey) {
+      // 使用迭代器直接获取第一个键
+      const iterator = this.stringKeyCache.keys()
+      const firstKey = iterator.next().value
+      if (firstKey !== undefined) {
         this.stringKeyCache.delete(firstKey)
       }
     }
@@ -149,16 +151,23 @@ export class DeduplicationKeyGenerator {
   }
 
   /**
-   * 序列化参数（优化版 - 减少对象创建）
+   * 序列化参数（极致优化版 - 使用数组预分配）
    */
   private serializeParams(params: Record<string, any>): string {
     try {
       const keys = Object.keys(params).sort()
-      // 直接构建字符串，避免创建中间对象
-      const parts: string[] = []
-      for (const key of keys) {
-        parts.push(`${key}:${JSON.stringify(params[key])}`)
+      const len = keys.length
+      
+      if (len === 0) return ''
+      
+      // 预分配数组大小
+      const parts: string[] = Array.from({ length: len }, () => '')
+      
+      for (let i = 0; i < len; i++) {
+        const key = keys[i]!
+        parts[i] = `${key}:${JSON.stringify(params[key])}`
       }
+      
       return parts.join(',')
     }
     catch {

@@ -1,3 +1,6 @@
+import type { DownloadConfig, DownloadResult } from '../utils/download'
+import type { UploadConfig, UploadResult } from '../utils/upload'
+
 /**
  * HTTP 请求方法类型
  */
@@ -265,14 +268,14 @@ export interface HttpClient {
   cancelQueue: (reason?: string) => void
 
   /** 上传文件 */
-  upload: <T = unknown>(
+  upload?: <T = unknown>(
     url: string,
     file: File | File[],
-    config?: RequestConfig
-  ) => Promise<ResponseData<T>>
+    config?: UploadConfig
+  ) => Promise<UploadResult<T>>
 
   /** 下载文件 */
-  download: <T = unknown>(url: string, config?: RequestConfig) => Promise<ResponseData<T>>
+  download?: (url: string, config?: DownloadConfig) => Promise<DownloadResult>
 
   /** 添加请求拦截器 */
   addRequestInterceptor: (
@@ -296,7 +299,7 @@ export interface HttpClient {
 /**
  * 严格类型的 HTTP 客户端接口
  */
-export interface TypedHttpClient<TBaseResponse = unknown> extends HttpClient {
+export interface TypedHttpClient<TBaseResponse = unknown> extends Omit<HttpClient, 'upload' | 'download'> {
   request: <T = TBaseResponse>(config: RequestConfig) => Promise<ResponseData<T>>
   get: <T = TBaseResponse>(
     url: string,
@@ -331,14 +334,14 @@ export interface TypedHttpClient<TBaseResponse = unknown> extends HttpClient {
   ) => Promise<ResponseData<T>>
 
   /** 上传文件 */
-  upload: <T = TBaseResponse>(
+  upload?: <T = TBaseResponse>(
     url: string,
     file: File | File[],
-    config?: RequestConfig
-  ) => Promise<ResponseData<T>>
+    config?: UploadConfig
+  ) => Promise<UploadResult<T>>
 
   /** 下载文件 */
-  download: <T = TBaseResponse>(url: string, config?: RequestConfig) => Promise<ResponseData<T>>
+  download?: (url: string, config?: DownloadConfig) => Promise<DownloadResult>
 }
 
 /**
@@ -563,7 +566,7 @@ export type DeepPartial<T> = {
  * 类型守卫：检查是否为 HTTP 错误
  */
 export function isHttpError(error: unknown): error is HttpError {
-  return error && typeof error === 'object' && 'config' in error
+  return Boolean(error && typeof error === 'object' && 'config' in error)
 }
 
 /**

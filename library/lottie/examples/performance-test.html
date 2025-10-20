@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lottie Performance Test - 性能优化测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 32px;
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 16px;
+    }
+
+    .controls {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .btn-danger {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 4px;
+    }
+
+    .stat-unit {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status.healthy { background: #d4edda; color: #155724; }
+    .status.warning { background: #fff3cd; color: #856404; }
+    .status.danger { background: #f8d7da; color: #721c24; }
+    .status.critical { background: #f5c6cb; color: #491217; }
+
+    .animations-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .animation-item {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .animation-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .lottie-container {
+      width: 100%;
+      height: 150px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    .animation-info {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .log {
+      background: #2d3748;
+      color: #a0aec0;
+      padding: 20px;
+      border-radius: 12px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 13px;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .log-entry {
+      margin-bottom: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .log-entry.success { color: #48bb78; }
+    .log-entry.warning { color: #ed8936; }
+    .log-entry.error { color: #f56565; }
+    .log-entry.info { color: #4299e1; }
+
+    .chart-container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .loader {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 12px;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🚀 Lottie 性能优化测试</h1>
+      <p class="subtitle">测试 Web Worker、虚拟化渲染、内存管理、批量渲染等核心优化功能</p>
+    </header>
+
+    <div class="controls">
+      <button class="btn btn-primary" onclick="loadAnimations(10)">
+        加载 10 个动画
+      </button>
+      <button class="btn btn-primary" onclick="loadAnimations(50)">
+        加载 50 个动画
+      </button>
+      <button class="btn btn-primary" onclick="loadAnimations(100)">
+        加载 100 个动画
+      </button>
+      <button class="btn btn-secondary" onclick="playAll()">
+        全部播放
+      </button>
+      <button class="btn btn-secondary" onclick="pauseAll()">
+        全部暂停
+      </button>
+      <button class="btn btn-danger" onclick="destroyAll()">
+        销毁全部
+      </button>
+      <button class="btn btn-secondary" onclick="forceCleanup()">
+        强制清理
+      </button>
+    </div>
+
+    <h2 class="section-title">
+      📊 性能统计 
+      <span class="badge">实时更新</span>
+    </h2>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">动画总数</div>
+        <div class="stat-value" id="total-animations">0</div>
+        <div class="stat-unit">个实例</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">可见动画</div>
+        <div class="stat-value" id="visible-animations">0</div>
+        <div class="stat-unit">
+          / <span id="hidden-animations">0</span> 隐藏
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">内存使用</div>
+        <div class="stat-value" id="memory-used">0</div>
+        <div class="stat-unit">
+          MB / <span id="memory-limit">200</span> MB
+          <span id="memory-status" class="status healthy">healthy</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">平均帧率</div>
+        <div class="stat-value" id="average-fps">60</div>
+        <div class="stat-unit">FPS</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Worker 状态</div>
+        <div class="stat-value" id="worker-count">0</div>
+        <div class="stat-unit">
+          <span id="worker-tasks">0</span> 任务队列
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">节省内存</div>
+        <div class="stat-value" id="memory-saved">0</div>
+        <div class="stat-unit">MB (虚拟化)</div>
+      </div>
+    </div>
+
+    <h2 class="section-title">
+      🎬 动画实例 
+      <span class="badge" id="animation-count">0</span>
+    </h2>
+    
+    <div class="animations-container" id="animations-container">
+      <!-- 动画实例将动态添加到这里 -->
+    </div>
+
+    <h2 class="section-title">📝 性能日志</h2>
+    
+    <div class="log" id="performance-log">
+      <div class="log-entry info">等待加载动画...</div>
+    </div>
+  </div>
+
+  <!-- 模拟 Lottie 功能（实际项目中应该导入真实的库） -->
+  <script type="module">
+    // 性能测试应用
+    class LottiePerformanceTest {
+      constructor() {
+        this.animations = new Map()
+        this.stats = {
+          total: 0,
+          visible: 0,
+          hidden: 0,
+          memory: 0,
+          fps: 60
+        }
+
+        this.init()
+      }
+
+      init() {
+        this.log('✅ 性能测试应用初始化完成', 'success')
+        this.log('💡 提示：点击上方按钮开始加载动画', 'info')
+        
+        // 启动统计更新
+        this.startStatsUpdate()
+      }
+
+      async loadAnimations(count) {
+        this.log(`🚀 开始加载 ${count} 个动画实例...`, 'info')
+        const startTime = performance.now()
+
+        const container = document.getElementById('animations-container')
+        
+        for (let i = 0; i < count; i++) {
+          // 创建动画容器
+          const itemEl = document.createElement('div')
+          itemEl.className = 'animation-item'
+          itemEl.innerHTML = `
+            <div class="lottie-container" id="lottie-${this.animations.size}"></div>
+            <div class="animation-info">
+              <div>ID: ${this.animations.size}</div>
+              <div>Status: <span class="status healthy">Active</span></div>
+            </div>
+          `
+          container.appendChild(itemEl)
+
+          // 模拟创建动画实例
+          const animation = {
+            id: this.animations.size.toString(),
+            container: itemEl.querySelector('.lottie-container'),
+            state: 'playing',
+            visible: true
+          }
+
+          this.animations.set(animation.id, animation)
+          
+          // 模拟异步加载
+          await new Promise(resolve => setTimeout(resolve, 10))
+        }
+
+        const loadTime = (performance.now() - startTime).toFixed(2)
+        this.log(`✅ 成功加载 ${count} 个动画，耗时 ${loadTime}ms`, 'success')
+        this.log(`⚡ 平均加载时间: ${(parseFloat(loadTime) / count).toFixed(2)}ms/个`, 'info')
+
+        this.updateStats()
+      }
+
+      playAll() {
+        this.animations.forEach(anim => {
+          anim.state = 'playing'
+        })
+        this.log('▶️ 所有动画开始播放', 'info')
+      }
+
+      pauseAll() {
+        this.animations.forEach(anim => {
+          anim.state = 'paused'
+        })
+        this.log('⏸️ 所有动画已暂停', 'info')
+      }
+
+      destroyAll() {
+        const count = this.animations.size
+        this.animations.clear()
+        
+        const container = document.getElementById('animations-container')
+        container.innerHTML = ''
+
+        this.log(`🗑️ 已销毁 ${count} 个动画实例`, 'warning')
+        this.updateStats()
+      }
+
+      forceCleanup() {
+        // 模拟强制清理
+        const before = this.stats.memory
+        this.stats.memory = Math.max(10, this.stats.memory * 0.5)
+        const saved = (before - this.stats.memory).toFixed(1)
+        
+        this.log(`🧹 执行强制清理，释放 ${saved}MB 内存`, 'success')
+        this.updateStats()
+      }
+
+      updateStats() {
+        this.stats.total = this.animations.size
+        
+        // 模拟虚拟化渲染统计
+        const visibleCount = Math.ceil(this.animations.size * 0.3)
+        this.stats.visible = Math.min(visibleCount, this.animations.size)
+        this.stats.hidden = this.animations.size - this.stats.visible
+
+        // 模拟内存使用（每个实例约 5-8MB）
+        this.stats.memory = Math.round(this.animations.size * 6.5 * 100) / 100
+
+        // 模拟 FPS（实例越多，FPS 越低）
+        if (this.animations.size > 50) {
+          this.stats.fps = Math.max(30, 60 - this.animations.size * 0.2)
+        } else {
+          this.stats.fps = 60
+        }
+
+        // 更新 UI
+        document.getElementById('total-animations').textContent = this.stats.total
+        document.getElementById('visible-animations').textContent = this.stats.visible
+        document.getElementById('hidden-animations').textContent = this.stats.hidden
+        document.getElementById('memory-used').textContent = this.stats.memory
+        document.getElementById('average-fps').textContent = Math.round(this.stats.fps)
+        document.getElementById('animation-count').textContent = this.stats.total
+
+        // 节省的内存（虚拟化效果）
+        const memorySaved = Math.round(this.stats.hidden * 7.5 * 100) / 100
+        document.getElementById('memory-saved').textContent = memorySaved
+
+        // 内存状态
+        const memoryPercentage = this.stats.memory / 200
+        let status = 'healthy'
+        if (memoryPercentage > 0.85) status = 'critical'
+        else if (memoryPercentage > 0.7) status = 'danger'
+        else if (memoryPercentage > 0.5) status = 'warning'
+
+        const statusEl = document.getElementById('memory-status')
+        statusEl.className = `status ${status}`
+        statusEl.textContent = status
+
+        // Worker 统计（模拟）
+        document.getElementById('worker-count').textContent = navigator.hardwareConcurrency || 4
+        document.getElementById('worker-tasks').textContent = Math.max(0, Math.floor(Math.random() * 5))
+      }
+
+      startStatsUpdate() {
+        setInterval(() => {
+          this.updateStats()
+          
+          // 模拟性能波动
+          if (this.animations.size > 0) {
+            const variation = (Math.random() - 0.5) * 5
+            this.stats.fps = Math.max(15, Math.min(60, this.stats.fps + variation))
+          }
+        }, 1000)
+      }
+
+      log(message, type = 'info') {
+        const logEl = document.getElementById('performance-log')
+        const timestamp = new Date().toLocaleTimeString()
+        const entry = document.createElement('div')
+        entry.className = `log-entry ${type}`
+        entry.textContent = `[${timestamp}] ${message}`
+        
+        // 添加到日志顶部
+        if (logEl.firstChild && logEl.firstChild.textContent.includes('等待加载')) {
+          logEl.firstChild.remove()
+        }
+        
+        logEl.insertBefore(entry, logEl.firstChild)
+
+        // 限制日志条数
+        while (logEl.children.length > 50) {
+          logEl.lastChild.remove()
+        }
+      }
+    }
+
+    // 创建全局实例
+    window.perfTest = new LottiePerformanceTest()
+
+    // 导出控制函数
+    window.loadAnimations = (count) => window.perfTest.loadAnimations(count)
+    window.playAll = () => window.perfTest.playAll()
+    window.pauseAll = () => window.perfTest.pauseAll()
+    window.destroyAll = () => window.perfTest.destroyAll()
+    window.forceCleanup = () => window.perfTest.forceCleanup()
+
+    // 性能提示
+    setTimeout(() => {
+      window.perfTest.log('💡 提示：使用虚拟化渲染，只有可见动画会实际渲染', 'info')
+      window.perfTest.log('💡 提示：内存管理器会在内存压力大时自动清理', 'info')
+      window.perfTest.log('💡 提示：自适应帧率会根据设备性能自动调整', 'info')
+    }, 2000)
+  </script>
+</body>
+</html>
+
+

@@ -5,15 +5,15 @@
  */
 
 export {
-  createStoreEnginePlugin,
+  createDebugStoreEnginePlugin,
   createDefaultStoreEnginePlugin,
   createPerformanceStoreEnginePlugin,
-  createDebugStoreEnginePlugin
+  createStoreEnginePlugin
 } from './plugin'
 
 export type {
-  StoreEnginePluginOptions,
-  EnginePluginContext
+  EnginePluginContext,
+  StoreEnginePluginOptions
 } from './plugin'
 
 // 默认导出主要的插件创建函数

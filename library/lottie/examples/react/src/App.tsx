@@ -1,207 +1,236 @@
-import { useState, useEffect } from 'react'
-import { useLottie, Lottie, LottieProvider, useLottieManager } from '../../../src/adapters/react'
+/**
+ * React 完整示例
+ * 展示所有用法：Hook、组件、Context
+ */
+
+import React, { useState, useRef } from 'react'
+import {
+  useLottie,
+  LottieAnimation,
+  LottiePlayer,
+  LottieSequence,
+  LottieProvider,
+  useLottieContext
+} from '@ldesign/lottie/react'
 import './App.css'
 
-// Example 1: Using useLottie Hook
-function HookExample() {
-  const { containerRef, state, isLoaded, isPlaying, play, pause, stop, reset } = useLottie({
-    path: '/loading-spinner.json',
-    loop: true,
-    autoplay: false,
-  })
-
-  return (
-    <div className="card">
-      <h2>useLottie Hook</h2>
-      <div ref={containerRef as any} className="lottie-container" />
-      <div className="controls">
-        <button onClick={play}>Play</button>
-        <button onClick={pause}>Pause</button>
-        <button onClick={stop}>Stop</button>
-        <button onClick={reset}>Reset</button>
-      </div>
-      <div className="info">
-        <p><strong>State:</strong> {state}</p>
-        <p><strong>Loaded:</strong> {isLoaded.toString()}</p>
-        <p><strong>Playing:</strong> {isPlaying.toString()}</p>
-      </div>
-    </div>
-  )
-}
-
-// Example 2: Using Lottie Component
-function ComponentExample() {
-  return (
-    <div className="card">
-      <h2>Lottie Component</h2>
-      <Lottie
-        path="/success-checkmark.json"
-        loop={false}
-        autoplay={true}
-        className="lottie-container"
-        onLoad={() => console.log('✅ Animation loaded')}
-        onComplete={() => console.log('✅ Animation completed')}
-      />
-      <div className="info">
-        <p>This uses the Lottie component</p>
-        <p>Success animation plays once</p>
-      </div>
-    </div>
-  )
-}
-
-// Example 3: Speed Control
-function SpeedControlExample() {
-  const [speed, setSpeed] = useState(1)
-  const { containerRef, play, pause, setSpeed: updateSpeed } = useLottie({
-    path: '/heart-beat.json',
-    loop: true,
-    autoplay: false,
-    speed,
-  })
-
-  const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newSpeed = parseFloat(e.target.value)
-    setSpeed(newSpeed)
-    updateSpeed(newSpeed)
-  }
-
-  return (
-    <div className="card">
-      <h2>Speed Control</h2>
-      <div ref={containerRef as any} className="lottie-container" />
-      <div className="speed-control">
-        <label>Speed: {speed}x</label>
-        <input
-          type="range"
-          min="0.1"
-          max="3"
-          step="0.1"
-          value={speed}
-          onChange={handleSpeedChange}
-        />
-      </div>
-      <div className="controls">
-        <button onClick={play}>Play</button>
-        <button onClick={pause}>Pause</button>
-      </div>
-    </div>
-  )
-}
-
-// Example 4: Rocket Animation
-function RocketExample() {
-  const { containerRef, play, stop } = useLottie({
-    path: '/rocket.json',
-    loop: false,
-    autoplay: false,
-  })
-
-  return (
-    <div className="card">
-      <h2>🚀 Rocket Launch</h2>
-      <div ref={containerRef as any} className="lottie-container" />
-      <div className="controls">
-        <button onClick={play}>Launch</button>
-        <button onClick={stop}>Reset</button>
-      </div>
-      <div className="info">
-        <p>Rocket animation</p>
-        <p>Perfect for startup actions</p>
-      </div>
-    </div>
-  )
-}
-
-// Example 5: Confetti Animation
-function ConfettiExample() {
-  const { containerRef, play, stop } = useLottie({
-    path: '/confetti.json',
-    loop: false,
-    autoplay: false,
-  })
-
-  return (
-    <div className="card">
-      <h2>🎉 Celebration</h2>
-      <div ref={containerRef as any} className="lottie-container" />
-      <div className="controls">
-        <button onClick={play}>Celebrate</button>
-        <button onClick={stop}>Reset</button>
-      </div>
-      <div className="info">
-        <p>Confetti animation</p>
-        <p>Great for achievements!</p>
-      </div>
-    </div>
-  )
-}
-
-// Global Stats
-function GlobalStats() {
-  const manager = useLottieManager()
-  const [stats, setStats] = useState({
-    totalInstances: 0,
-    activeInstances: 0,
-    averageFps: 0,
-    cacheHitRate: 0,
-  })
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const globalStats = manager.getGlobalStats()
-      setStats(globalStats)
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [manager])
-
-  return (
-    <div className="stats">
-      <h2>📊 Global Statistics</h2>
-      <div className="stats-grid">
-        <div className="stat-item">
-          <div className="stat-value">{stats.totalInstances}</div>
-          <div className="stat-label">Total Instances</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-value">{stats.activeInstances}</div>
-          <div className="stat-label">Active Instances</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-value">{stats.averageFps}</div>
-          <div className="stat-label">Average FPS</div>
-        </div>
-        <div className="stat-item">
-          <div className="stat-value">{Math.round(stats.cacheHitRate * 100)}%</div>
-          <div className="stat-label">Cache Hit Rate</div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Main App
 function App() {
   return (
     <LottieProvider>
       <div className="app">
-        <header>
-          <h1>🎨 Lottie React Example</h1>
-          <p>Powerful Lottie animations in React</p>
+        <header className="header">
+          <h1>🎬 Lottie React 完整示例</h1>
+          <p className="subtitle">展示所有用法：Hook、组件、Context</p>
         </header>
 
-        <div className="grid">
+        <div className="container">
           <HookExample />
           <ComponentExample />
-          <SpeedControlExample />
-          <RocketExample />
-          <ConfettiExample />
+          <PlayerExample />
+          <SequenceExample />
+          <ContextExample />
+          <EventLog />
         </div>
-
-        <GlobalStats />
       </div>
     </LottieProvider>
+  )
+}
+
+// 1. Hook 用法
+function HookExample() {
+  const [speed, setSpeed] = useState(1)
+  
+  const {
+    containerRef,
+    state,
+    isPlaying,
+    play,
+    pause,
+    stop,
+    reset,
+    setSpeed: setAnimSpeed
+  } = useLottie({
+    path: '../assets/loading.json',
+    loop: true,
+    autoplay: true
+  })
+
+  const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value)
+    setSpeed(value)
+    setAnimSpeed(value)
+  }
+
+  return (
+    <section className="section">
+      <h2>1️⃣ Hook 用法 (useLottie)</h2>
+      <div className="demo-box">
+        <div ref={containerRef} className="lottie-box" />
+        <div className="controls">
+          <button onClick={play} className="btn btn-primary">播放</button>
+          <button onClick={pause} className="btn btn-secondary">暂停</button>
+          <button onClick={stop} className="btn btn-secondary">停止</button>
+          <button onClick={reset} className="btn btn-secondary">重置</button>
+          <label className="speed-control">
+            速度: 
+            <input 
+              type="range" 
+              min="0.1" 
+              max="3" 
+              step="0.1"
+              value={speed}
+              onChange={handleSpeedChange}
+            />
+            <span>{speed.toFixed(1)}x</span>
+          </label>
+        </div>
+        <div className="info">
+          状态: <span className={`badge ${state}`}>{state}</span>
+          &nbsp; 播放中: {isPlaying ? '是' : '否'}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// 2. 组件用法
+function ComponentExample() {
+  const [speed, setSpeed] = useState(1)
+  const animRef = useRef<any>(null)
+
+  return (
+    <section className="section">
+      <h2>2️⃣ 基础组件 (LottieAnimation)</h2>
+      <div className="demo-box">
+        <LottieAnimation
+          ref={animRef}
+          path="../assets/heart.json"
+          loop={true}
+          autoplay={true}
+          speed={speed}
+          style={{ width: '300px', height: '300px', margin: '0 auto' }}
+          onReady={() => console.log('组件动画加载完成')}
+          onComplete={() => console.log('组件动画播放完成')}
+        />
+        <div className="controls">
+          <button onClick={() => animRef.current?.play()} className="btn btn-primary">
+            播放
+          </button>
+          <button onClick={() => animRef.current?.pause()} className="btn btn-secondary">
+            暂停
+          </button>
+          <label className="speed-control">
+            速度: 
+            <input 
+              type="range" 
+              min="0.1" 
+              max="3" 
+              step="0.1"
+              value={speed}
+              onChange={(e) => setSpeed(parseFloat(e.target.value))}
+            />
+            <span>{speed.toFixed(1)}x</span>
+          </label>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// 3. 播放器组件
+function PlayerExample() {
+  return (
+    <section className="section">
+      <h2>3️⃣ 播放器组件 (LottiePlayer)</h2>
+      <div className="demo-box">
+        <LottiePlayer
+          path="../assets/success.json"
+          loop={true}
+          autoplay={false}
+          showControls={true}
+          height="350px"
+          style={{ maxWidth: '600px', margin: '0 auto' }}
+          onReady={() => console.log('播放器加载完成')}
+        />
+      </div>
+    </section>
+  )
+}
+
+// 4. 序列组件
+function SequenceExample() {
+  const items = [
+    {
+      config: { path: '../assets/loading.json' },
+      delay: 0
+    },
+    {
+      config: { path: '../assets/success.json' },
+      delay: 300
+    },
+    {
+      config: { path: '../assets/heart.json' },
+      delay: 300
+    }
+  ]
+
+  return (
+    <section className="section">
+      <h2>4️⃣ 序列组件 (LottieSequence)</h2>
+      <div className="demo-box">
+        <LottieSequence
+          items={items}
+          loop={false}
+          autoplay={false}
+          showControls={true}
+        />
+      </div>
+    </section>
+  )
+}
+
+// 5. Context 用法
+function ContextExample() {
+  const context = useLottieContext()
+
+  return (
+    <section className="section">
+      <h2>5️⃣ Context 用法 (LottieProvider)</h2>
+      <div className="demo-box">
+        <div className="info">
+          当前实例数: {context.instances.size}
+        </div>
+        <div className="controls">
+          <button onClick={context.playAll} className="btn btn-primary">
+            播放全部
+          </button>
+          <button onClick={context.pauseAll} className="btn btn-secondary">
+            暂停全部
+          </button>
+          <button onClick={context.stopAll} className="btn btn-danger">
+            停止全部
+          </button>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// 6. 事件日志
+function EventLog() {
+  const [logs, setLogs] = useState<string[]>([
+    '等待用户操作...'
+  ])
+
+  return (
+    <section className="section">
+      <h2>📝 事件日志</h2>
+      <div className="log">
+        {logs.map((entry, index) => (
+          <div key={index} className="log-entry">{entry}</div>
+        ))}
+      </div>
+    </section>
   )
 }
 

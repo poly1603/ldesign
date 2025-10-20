@@ -2,18 +2,20 @@
  * 模板版本控制组合式函数
  */
 
-import { ref, computed, reactive, watch, Ref } from 'vue'
-import type { Template } from '../types'
-import {
-  TemplateVersion,
-  VersionedTemplate,
+import type { Ref } from 'vue';
+import type {
   ChangeLog,
   Migration,
   MigrationOptions,
+  TemplateVersion,
   VersionComparison,
-  versionManager,
+  VersionedTemplate} from '../core/version';
+import type { Template } from '../types'
+import { computed, reactive, ref, watch } from 'vue'
+import {
+  createMigration,
   createVersionedTemplate,
-  createMigration
+  versionManager
 } from '../core/version'
 
 /**
@@ -104,7 +106,7 @@ export function useTemplateVersion(
   
   // 响应式模板
   const templateRef = ref(template)
-  const currentTemplate = computed(() => 
+  const currentTemplate = computed<Template>(() => 
     'value' in templateRef.value ? templateRef.value.value : templateRef.value
   )
   
@@ -157,7 +159,7 @@ export function useTemplateVersion(
   }
   
   // 更新版本状态
-  const updateVersionState = () => {
+  function updateVersionState() {
     const templateId = currentTemplate.value.id
     if (!templateId) return
     
@@ -247,11 +249,11 @@ export function useTemplateVersion(
   /**
    * 执行迁移
    */
-  const migrate = async (
+  async function migrate(
     from: string,
     to: string,
     migrationOptions?: MigrationOptions
-  ): Promise<VersionedTemplate | null> => {
+  ): Promise<VersionedTemplate | null> {
     const templateId = currentTemplate.value.id
     if (!templateId) return null
     

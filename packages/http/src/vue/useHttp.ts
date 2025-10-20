@@ -236,7 +236,7 @@ export function usePagination<T = any>(
     total: number
     page: number
     pageSize: number
-  }>(queryKey, config, {
+  }>(queryKey, config.value, {
     onSuccess: (data: {
       data: T[]
       total: number

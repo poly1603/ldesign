@@ -500,7 +500,7 @@ export class AccessibilityEnhancer {
   private validateFocusIndicators(
     element: HTMLElement,
     issues: AccessibilityValidation['issues'],
-    level: WCAGLevel
+    _level: WCAGLevel
   ): void {
     const focusableElements = element.querySelectorAll(
       'a, button, input, select, textarea, [tabindex]'
@@ -529,7 +529,7 @@ export class AccessibilityEnhancer {
   private validateSemantics(
     element: HTMLElement,
     issues: AccessibilityValidation['issues'],
-    level: WCAGLevel
+    _level: WCAGLevel
   ): void {
     // Check for missing alt text on images
     const images = element.querySelectorAll('img');
@@ -567,7 +567,7 @@ export class AccessibilityEnhancer {
   /**
    * Calculate contrast ratio between two colors
    */
-  private calculateContrastRatio(color1: string, color2: string): number {
+  private calculateContrastRatio(_color1: string, _color2: string): number {
     // Simplified contrast calculation
     // In production, use a proper color library
     return 4.5; // Placeholder
@@ -645,8 +645,8 @@ export class AccessibilityEnhancer {
     if (validation.issues.length > 0) {
       report.push('Details:');
       report.push('--------');
-      validation.issues.forEach((issue, index) => {
-        report.push(`${index + 1}. [${issue.severity.toUpperCase()}] ${issue.element}`);
+      validation.issues.forEach((issue, _index) => {
+        report.push(`${_index + 1}. [${issue.severity.toUpperCase()}] ${issue.element}`);
         report.push(`   Issue: ${issue.issue}`);
         report.push(`   WCAG: ${issue.wcagCriteria}`);
         report.push(`   Fix: ${issue.recommendation}`);

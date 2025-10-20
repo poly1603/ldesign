@@ -52,7 +52,7 @@ export function createAuthMiddlewaresPlugin(options: AuthMiddlewaresOptions = {}
 
   const getAccessToken = options.getAccessToken ?? (() => defaultGet('access_token'))
   const setAccessToken = options.setAccessToken ?? (v => defaultSet('access_token', v ?? undefined))
-  const getRefreshToken = options.getRefreshToken ?? (() => defaultGet('refresh_token'))
+  const _getRefreshToken = options.getRefreshToken ?? (() => defaultGet('refresh_token'))
   const setRefreshToken = options.setRefreshToken ?? (v => defaultSet('refresh_token', v ?? undefined))
 
   return {

@@ -183,7 +183,7 @@ export class VersionManager {
     for (let i = 0; i < 10; i++) {
       let found = false
 
-      for (const [key, migration] of this.migrations) {
+    for (const [_key, migration] of this.migrations) {
         if (migration.from === current) {
           path.push(migration)
           current = migration.to

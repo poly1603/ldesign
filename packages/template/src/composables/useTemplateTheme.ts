@@ -4,8 +4,8 @@
  * 支持多主题切换、自定义主题、主题继承等功能
  */
 
-import { ref, computed, watch, inject, provide, reactive, readonly } from 'vue'
-import type { Ref, ComputedRef, InjectionKey } from 'vue'
+import type { InjectionKey, Ref } from 'vue'
+import { computed, inject, provide, readonly, ref } from 'vue'
 
 /**
  * 主题配置
@@ -370,16 +370,26 @@ export function createThemeManager(defaultTheme: string = 'light') {
   }
   
   // 监听系统主题变化
+  let darkModeQuery: MediaQueryList | null = null
+  let handleSystemThemeChange: ((e: MediaQueryListEvent) => void) | null = null
+  
   if (typeof window !== 'undefined' && window.matchMedia) {
-    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)')
     
-    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+    handleSystemThemeChange = (e: MediaQueryListEvent) => {
       if (currentTheme.value === 'auto') {
         setTheme(e.matches ? 'dark' : 'light')
       }
     }
     
     darkModeQuery.addEventListener('change', handleSystemThemeChange)
+  }
+  
+  // 清理函数
+  const cleanup = () => {
+    if (darkModeQuery && handleSystemThemeChange) {
+      darkModeQuery.removeEventListener('change', handleSystemThemeChange)
+    }
   }
   
   return {
@@ -391,7 +401,8 @@ export function createThemeManager(defaultTheme: string = 'light') {
     applyTheme,
     getTheme,
     removeTheme,
-    appliedTheme: readonly(appliedTheme)
+    appliedTheme: readonly(appliedTheme),
+    cleanup
   }
 }
 
@@ -399,7 +410,7 @@ export function createThemeManager(defaultTheme: string = 'light') {
  * 使用模板主题
  */
 export function useTemplateTheme() {
-  let context = inject<ThemeContext>(ThemeContextKey, null)
+  let context = inject<ThemeContext | undefined>(ThemeContextKey, undefined)
   
   if (!context) {
     // 创建默认主题管理器

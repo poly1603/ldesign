@@ -6,8 +6,8 @@ import { BaseAdapter } from './base'
  */
 export class AlovaAdapter extends BaseAdapter {
   name = 'alova'
-  private alova: any
-  private alovaInstance: any
+  private alova: any // alova库，保持any避免依赖alova类型
+  private alovaInstance: any // alova实例，保持any避免依赖alova类型
 
   constructor(alovaInstance?: any) {
     super()
@@ -36,7 +36,7 @@ export class AlovaAdapter extends BaseAdapter {
   /**
    * 发送请求
    */
-  async request<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
+  async request<T = unknown>(config: RequestConfig): Promise<ResponseData<T>> {
     if (!this.isSupported()) {
       throw new Error(
         'Alova is not available. Please install alova: npm install alova',

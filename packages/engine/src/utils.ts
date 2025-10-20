@@ -54,3 +54,15 @@ export {
   quickSetup,
   type QuickSetupResult
 } from './utils/quick-setup'
+
+// 懒加载工具
+export {
+  clearCache as clearLazyCache,
+  getCacheStats as getLazyCacheStats,
+  lazyComponent,
+  lazyLoad,
+  preload,
+  preloadBatch,
+  smartPreloader,
+  SmartPreloader
+} from './utils/lazy-loader'

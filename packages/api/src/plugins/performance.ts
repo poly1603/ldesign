@@ -246,7 +246,7 @@ export function createPerformancePlugin(config: PerformancePluginConfig = {}): A
         // 输出调优建议
         if (recommendations.length > 0) {
           console.group('🔧 Auto-tuning Recommendations')
-          recommendations.forEach(rec => )
+          recommendations.forEach(rec => console.log(rec))
           console.groupEnd()
         }
       }

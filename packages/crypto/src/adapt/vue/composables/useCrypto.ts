@@ -1,4 +1,3 @@
-import { type Ref, ref } from 'vue'
 import type {
   AESOptions,
   DecryptResult,
@@ -6,6 +5,7 @@ import type {
   RSAKeyPair,
   RSAOptions,
 } from '../../../types'
+import { type Ref, ref } from 'vue'
 import { decrypt, encrypt, keyGenerator } from '../../../core'
 
 /**
@@ -107,7 +107,10 @@ export function useCrypto(): UseCryptoReturn {
       loadingRef.value = true
       lastError.value = null
       const result = operation()
-      lastResult.value = result as any
+      // 仅在结果为加/解密结果时记录到 lastResult
+      if (typeof result === 'object' && result !== null && 'success' in (result as Record<string, unknown>)) {
+        lastResult.value = result as unknown as EncryptResult | DecryptResult
+      }
       return result
     } catch (error) {
       handleError(error)

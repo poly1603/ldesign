@@ -4,8 +4,9 @@
  */
 
 import type { StoreDefinition } from 'pinia';
-import { computed, ref, reactive, watch, watchEffect } from 'vue'
 import type { Ref, UnwrapRef } from 'vue'
+import { defineStore } from 'pinia';
+import { computed, reactive, ref, watch, watchEffect } from 'vue'
 import { batchUpdate } from './ReactiveSystem'
 
 /**
@@ -14,9 +15,9 @@ import { batchUpdate } from './ReactiveSystem'
  */
 export class StoreBuilder<
   Id extends string = string,
-  S extends Record<string, any> = {},
-  G extends Record<string, any> = {},
-  A extends Record<string, any> = {}
+  S extends Record<string, any> = Record<string, never>,
+  G extends Record<string, any> = Record<string, never>,
+  A extends Record<string, any> = Record<string, never>
 > {
   private id: Id
   private state: S = {} as S
@@ -179,9 +180,9 @@ export interface StorePlugin {
  * 简化的Store接口
  */
 export interface SimpleStore<
-  S extends Record<string, any> = {},
-  G extends Record<string, any> = {},
-  A extends Record<string, any> = {}
+  S extends Record<string, any> = Record<string, never>,
+  G extends Record<string, any> = Record<string, never>,
+  A extends Record<string, any> = Record<string, never>
 > {
   // 状态
   state: UnwrapRef<S>
@@ -193,30 +194,30 @@ export interface SimpleStore<
   actions: A
 
   // 工具方法
-  $reset(): void
-  $patch(patch: Partial<S> | ((state: S) => void)): void
-  $subscribe(callback: (mutation: any, state: S) => void): () => void
-  $onAction(callback: (action: any) => void): () => void
-  $dispose(): void
+  $reset: () => void
+  $patch: (patch: Partial<S> | ((state: S) => void)) => void
+  $subscribe: (callback: (mutation: any, state: S) => void) => () => void
+  $onAction: (callback: (action: any) => void) => () => void
+  $dispose: () => void
 
   // 快捷方法
-  get<K extends keyof S>(key: K): S[K]
-  set<K extends keyof S>(key: K, value: S[K]): void
-  update<K extends keyof S>(key: K, updater: (value: S[K]) => S[K]): void
-  watch<T>(source: () => T, callback: (value: T) => void): () => void
-  watchAll(callback: (state: S) => void): () => void
+  get: <K extends keyof S>(key: K) => S[K]
+  set: <K extends keyof S>(key: K, value: S[K]) => void
+  update: <K extends keyof S>(key: K, updater: (value: S[K]) => S[K]) => void
+  watch: <T>(source: () => T, callback: (value: T) => void) => () => void
+  watchAll: (callback: (state: S) => void) => () => void
 
   // 批量操作
-  batch(updater: () => void): void
-  transaction(updater: () => void | Promise<void>): Promise<void>
+  batch: (updater: () => void) => void
+  transaction: (updater: () => void | Promise<void>) => Promise<void>
 
   // 状态快照
-  snapshot(): S
-  restore(snapshot: S): void
+  snapshot: () => S
+  restore: (snapshot: S) => void
 
   // 导出/导入
-  export(): string
-  import(data: string): void
+  export: () => string
+  import: (data: string) => void
 }
 
 /**
@@ -269,8 +270,8 @@ export function createSimpleStore<
   }
 
   // 订阅管理
-  const subscriptions = new Set<Function>()
-  const actionSubscriptions = new Set<Function>()
+  const subscriptions = new Set<(...args: any[]) => any>()
+  const actionSubscriptions = new Set<(...args: any[]) => any>()
 
   // Store 实例
   const store: SimpleStore<S, G, A> = {
@@ -501,7 +502,7 @@ function applyPersistence(store: any, options: PersistOptions): void {
 /**
  * 应用开发工具
  */
-function applyDevtools(store: any, options: DevToolsOptions): void {
+function applyDevtools(_store: any, _options: DevToolsOptions): void {
   if (typeof window !== 'undefined' && (window as any).__VUE_DEVTOOLS_GLOBAL_HOOK__) {
     // 集成 Vue DevTools
     
@@ -522,7 +523,7 @@ export function defineSimpleStore<Id extends string, S extends Record<string, an
   id: Id,
   setup: () => { state: S; getters?: G; actions?: A }
 ): StoreDefinition<Id, S, G, A> {
-  return piniaDefineStore(id, setup) as any
+  return defineStore(id, setup) as any
 }
 
 /**
@@ -592,10 +593,10 @@ export interface CombinedStore<T extends Record<string, SimpleStore<any, any, an
   state: {
     [K in keyof T]: T[K] extends SimpleStore<infer S, any, any> ? S : never
   }
-  resetAll(): void
-  batch(updater: () => void): void
-  snapshot(): any
-  restore(snapshot: any): void
+  resetAll: () => void
+  batch: (updater: () => void) => void
+  snapshot: () => any
+  restore: (snapshot: any) => void
 }
 
 /**

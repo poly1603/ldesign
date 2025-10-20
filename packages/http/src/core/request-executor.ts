@@ -6,17 +6,17 @@
 
 import type {
   HttpAdapter,
-  HttpError,
   RequestConfig,
   ResponseData,
+  RetryConfig,
 } from '../types'
 import type { CacheManager } from '../utils/cache'
 import type { ConcurrencyManager } from '../utils/concurrency'
 import type { RetryManager } from '../utils/error'
 import type { RequestMonitor } from '../utils/monitor'
 import type { PriorityQueue } from '../utils/priority'
-import { determinePriority } from '../utils/priority'
 import { generateId } from '../utils'
+import { determinePriority } from '../utils/priority'
 
 /**
  * 请求执行器配置
@@ -136,7 +136,8 @@ export class RequestExecutor {
     },
   ): Promise<ResponseData<T>> {
     // 如果启用了重试且未跳过
-    if (!options?.skipRetry && config.retry?.retries && config.retry.retries > 0) {
+    const retryConfig = config.retry as RetryConfig | undefined
+    if (!options?.skipRetry && retryConfig?.retries && retryConfig.retries > 0) {
       return this.config.retryManager.executeWithRetry(
         () => {
           this.config.monitor.recordRetry(requestId)
@@ -286,11 +287,11 @@ export class RequestExecutor {
     return {
       concurrency: this.config.concurrencyManager.getStatus(),
       cache: {
-        size: this.config.cacheManager.getSize?.() || 0,
+        size: (this.config.cacheManager as any).getSize?.() || 0,
         hits: this.config.cacheManager.getStats?.()?.hits || 0,
         misses: this.config.cacheManager.getStats?.()?.misses || 0,
       },
-      monitor: this.config.monitor.getMetrics(),
+      monitor: this.config.monitor.getMetrics?.() || [],
     }
   }
 
@@ -306,7 +307,7 @@ export class RequestExecutor {
     
     // 清理优先级队列
     if (this.config.priorityQueue) {
-      this.config.priorityQueue.clear()
+      (this.config.priorityQueue as any).clear?.()
     }
   }
 }

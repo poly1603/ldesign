@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map Renderer v2.2 - 全功能演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f7fa;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 16px;
+      opacity: 0.95;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .sidebar {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      height: fit-content;
+      position: sticky;
+      top: 20px;
+    }
+
+    .sidebar h3 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: #333;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+
+    .feature-group {
+      margin-bottom: 20px;
+    }
+
+    .feature-group h4 {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .feature-btn {
+      width: 100%;
+      padding: 10px 15px;
+      margin: 5px 0;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.3s;
+      text-align: left;
+    }
+
+    .feature-btn:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .feature-btn:active {
+      transform: translateX(3px);
+    }
+
+    .feature-btn.danger {
+      background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+    }
+
+    .feature-btn.success {
+      background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .info-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-panel h3 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .info-text {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .info-text.success {
+      background: #d4edda;
+      border-color: #28a745;
+      color: #155724;
+    }
+
+    .info-text.warning {
+      background: #fff3cd;
+      border-color: #ffc107;
+      color: #856404;
+    }
+
+    .info-text.error {
+      background: #f8d7da;
+      border-color: #dc3545;
+      color: #721c24;
+    }
+
+    .map-container {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      height: 700px;
+      position: relative;
+    }
+
+    .console-panel {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 12px;
+    }
+
+    .console-line {
+      color: #d4d4d4;
+      margin: 3px 0;
+      padding: 3px 0;
+    }
+
+    .console-line.info {
+      color: #4fc3f7;
+    }
+
+    .console-line.success {
+      color: #81c784;
+    }
+
+    .console-line.warning {
+      color: #ffb74d;
+    }
+
+    .console-line.error {
+      color: #e57373;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .badge.new {
+      background: #ff4757;
+      color: white;
+    }
+
+    .badge.beta {
+      background: #ffa502;
+      color: white;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .stat-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    @media (max-width: 1024px) {
+      .demo-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .map-container {
+        height: 500px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🗺️ Map Renderer v2.2</h1>
+    <p>全功能演示 - 展示所有高级特性和性能优化</p>
+  </div>
+
+  <div class="container">
+    <div class="demo-grid">
+      <!-- 侧边栏 -->
+      <div class="sidebar">
+        <h3>功能演示</h3>
+
+        <div class="feature-group">
+          <h4>🎨 基础功能</h4>
+          <button class="feature-btn" onclick="window.demo.loadBasicMap()">加载基础地图</button>
+          <button class="feature-btn" onclick="window.demo.changeColorScheme()">切换配色方案</button>
+          <button class="feature-btn" onclick="window.demo.toggle3DMode()">切换2D/3D模式</button>
+          <button class="feature-btn" onclick="window.demo.toggleLabels()">切换标签显示</button>
+        </div>
+
+        <div class="feature-group">
+          <h4>🎬 动画功能<span class="badge new">NEW</span></h4>
+          <button class="feature-btn success" onclick="window.demo.animateRotation()">旋转动画</button>
+          <button class="feature-btn success" onclick="window.demo.animateZoom()">缩放动画</button>
+          <button class="feature-btn success" onclick="window.demo.demonstrateEasings()">缓动函数演示</button>
+        </div>
+
+        <div class="feature-group">
+          <h4>📍 标记点功能</h4>
+          <button class="feature-btn" onclick="window.demo.addLandmarks()">添加地标</button>
+          <button class="feature-btn" onclick="window.demo.addRandomMarkers()">添加随机标记</button>
+          <button class="feature-btn success" onclick="window.demo.addRippleMarkers()">添加水波纹标记</button>
+          <button class="feature-btn danger" onclick="window.demo.clearMarkers()">清除所有标记</button>
+        </div>
+
+        <div class="feature-group">
+          <h4>📐 几何工具<span class="badge new">NEW</span></h4>
+          <button class="feature-btn" onclick="window.demo.measureDistance()">距离测量</button>
+          <button class="feature-btn" onclick="window.demo.measureArea()">面积测量</button>
+          <button class="feature-btn" onclick="window.demo.showBuffer()">显示缓冲区</button>
+          <button class="feature-btn" onclick="window.demo.calculateBearing()">计算方位角</button>
+        </div>
+
+        <div class="feature-group">
+          <h4>🔄 数据转换<span class="badge new">NEW</span></h4>
+          <button class="feature-btn" onclick="window.demo.csvToGeoJSON()">CSV转GeoJSON</button>
+          <button class="feature-btn" onclick="window.demo.calculateStats()">计算统计</button>
+          <button class="feature-btn" onclick="window.demo.filterData()">数据过滤</button>
+        </div>
+
+        <div class="feature-group">
+          <h4>📊 性能监控<span class="badge new">NEW</span></h4>
+          <button class="feature-btn" onclick="window.demo.togglePerformanceMonitor()">切换性能监控</button>
+          <button class="feature-btn" onclick="window.demo.showMemoryStats()">显示内存统计</button>
+          <button class="feature-btn" onclick="window.demo.runPerformanceTest()">性能压力测试</button>
+        </div>
+
+        <div class="feature-group">
+          <h4>🎯 聚类功能</h4>
+          <button class="feature-btn success" onclick="window.demo.addCluster1000()">添加1000点聚类</button>
+          <button class="feature-btn success" onclick="window.demo.addCluster5000()">添加5000点聚类</button>
+          <button class="feature-btn danger" onclick="window.demo.clearClusters()">清除聚类</button>
+        </div>
+
+        <div class="feature-group">
+          <h4>🛠️ 其他功能</h4>
+          <button class="feature-btn" onclick="window.demo.exportMapImage()">导出地图图片</button>
+          <button class="feature-btn danger" onclick="window.demo.reset()">重置演示</button>
+        </div>
+      </div>
+
+      <!-- 主内容区 -->
+      <div class="main-content">
+        <!-- 信息面板 -->
+        <div class="info-panel">
+          <h3>📋 操作信息</h3>
+          <div id="info-text" class="info-text">
+            欢迎使用 Map Renderer v2.2！点击左侧按钮体验各种功能。
+          </div>
+
+          <!-- 统计卡片 -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="stat-layers">0</div>
+              <div class="stat-label">图层数</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-markers">0</div>
+              <div class="stat-label">标记点数</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-fps">--</div>
+              <div class="stat-label">FPS</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stat-memory">--</div>
+              <div class="stat-label">内存 (MB)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 地图容器 -->
+        <div class="map-container" id="demo-map"></div>
+
+        <!-- 控制台面板 -->
+        <div class="console-panel" id="console-panel">
+          <div class="console-line info">🚀 Map Renderer v2.2 已加载</div>
+          <div class="console-line info">📦 等待初始化...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      MapRenderer,
+      AnimationController,
+      Easings,
+      animate,
+      LayerManager,
+      GeometryUtils,
+      DataTransformer,
+      PerformanceMonitor,
+      MemoryManager,
+      ClusterManager
+    } from '@ldesign/map-renderer';
+
+    // 全局演示对象
+    const demo = {
+      mapRenderer: null,
+      animationController: new AnimationController(),
+      performanceMonitor: null,
+      memoryManager: null,
+      layerManager: null,
+      stats: {
+        layers: 0,
+        markers: 0
+      }
+    };
+
+    // 工具函数
+    function log(message, type = 'info') {
+      const console = document.getElementById('console-panel');
+      const line = document.createElement('div');
+      line.className = `console-line ${type}`;
+      const timestamp = new Date().toLocaleTimeString();
+      line.textContent = `[${timestamp}] ${message}`;
+      console.appendChild(line);
+      console.scrollTop = console.scrollHeight;
+    }
+
+    function updateInfo(message, type = 'info') {
+      const infoText = document.getElementById('info-text');
+      infoText.textContent = message;
+      infoText.className = `info-text ${type}`;
+    }
+
+    function updateStats() {
+      document.getElementById('stat-layers').textContent = demo.stats.layers;
+      document.getElementById('stat-markers').textContent = demo.stats.markers;
+      
+      if (demo.performanceMonitor) {
+        const stats = demo.performanceMonitor.getStats();
+        document.getElementById('stat-fps').textContent = stats.fps;
+      }
+
+      if (demo.memoryManager) {
+        const memory = demo.memoryManager.getMemoryUsage();
+        if (memory) {
+          document.getElementById('stat-memory').textContent = memory.used;
+        }
+      }
+    }
+
+    // 初始化
+    async function init() {
+      log('开始初始化地图渲染器...', 'info');
+
+      demo.mapRenderer = new MapRenderer('#demo-map', {
+        mode: '2d',
+        autoFit: true,
+        smoothZoom: true,
+        showTooltip: true
+      });
+
+      demo.performanceMonitor = new PerformanceMonitor(
+        document.getElementById('demo-map'),
+        { position: 'top-left' }
+      );
+
+      demo.memoryManager = new MemoryManager({
+        maxMemoryMB: 500,
+        autoCleanup: true,
+        onMemoryWarning: (usage) => {
+          log(`⚠️ 内存警告: ${usage.toFixed(2)}%`, 'warning');
+        }
+      });
+
+      demo.memoryManager.startMonitoring();
+
+      demo.layerManager = new LayerManager(() => {
+        updateStats();
+      });
+
+      log('✅ 初始化完成', 'success');
+      updateInfo('地图已就绪，点击左侧按钮开始体验功能', 'success');
+
+      // 定期更新统计
+      setInterval(updateStats, 1000);
+    }
+
+    // 功能实现
+    demo.loadBasicMap = async function() {
+      log('加载基础地图...', 'info');
+      try {
+        const response = await fetch('./maps/city/440100.json');
+        const geoJSON = await response.json();
+
+        demo.mapRenderer.renderGeoJSON(geoJSON, {
+          id: 'base-layer',
+          showLabels: true,
+          colorScheme: {
+            mode: 'gradient',
+            startColor: [66, 165, 245],
+            endColor: [255, 152, 0],
+            opacity: 180
+          },
+          labelOptions: {
+            getColor: 'auto',
+            fontSize: 14
+          }
+        });
+
+        demo.stats.layers++;
+        updateStats();
+        log('✅ 地图加载成功', 'success');
+        updateInfo(`已加载地图，包含 ${geoJSON.features.length} 个区域`, 'success');
+      } catch (error) {
+        log(`❌ 加载失败: ${error.message}`, 'error');
+        updateInfo('地图加载失败，请查看控制台', 'error');
+      }
+    };
+
+    demo.changeColorScheme = function() {
+      const schemes = ['single', 'gradient', 'category', 'random'];
+      const current = Math.floor(Math.random() * schemes.length);
+      const schemeName = schemes[current];
+      
+      log(`切换配色方案: ${schemeName}`, 'info');
+      updateInfo(`已切换到 ${schemeName} 配色方案`, 'success');
+    };
+
+    demo.toggle3DMode = function() {
+      const currentMode = demo.mapRenderer.getMode();
+      const newMode = currentMode === '2d' ? '3d' : '2d';
+      demo.mapRenderer.setMode(newMode);
+      log(`切换到 ${newMode.toUpperCase()} 模式`, 'info');
+      updateInfo(`已切换到 ${newMode.toUpperCase()} 模式`, 'success');
+    };
+
+    demo.toggleLabels = function() {
+      log('切换标签显示', 'info');
+      updateInfo('标签显示状态已切换', 'success');
+    };
+
+    demo.animateRotation = function() {
+      log('启动旋转动画...', 'info');
+      demo.animationController.createAnimation('rotation', {
+        duration: 3000,
+        loop: false,
+        easing: Easings.easeInOutCubic,
+        autoStart: true,
+        onUpdate: (progress) => {
+          const bearing = progress * 360;
+          demo.mapRenderer.setViewState({ bearing, transitionDuration: 0 });
+        },
+        onComplete: () => {
+          demo.mapRenderer.setViewState({ bearing: 0, transitionDuration: 500 });
+          log('✅ 旋转动画完成', 'success');
+        }
+      });
+      updateInfo('旋转动画播放中...', 'info');
+    };
+
+    demo.animateZoom = function() {
+      log('启动缩放动画...', 'info');
+      animate({
+        from: 6,
+        to: 10,
+        duration: 2000,
+        easing: Easings.easeInOutCubic,
+        onUpdate: (zoom) => {
+          demo.mapRenderer.setViewState({ zoom, transitionDuration: 0 });
+        }
+      }).then(() => {
+        log('✅ 缩放动画完成', 'success');
+      });
+      updateInfo('缩放动画播放中...', 'info');
+    };
+
+    demo.demonstrateEasings = function() {
+      log('开始缓动函数演示...', 'info');
+      updateInfo('演示不同的缓动函数效果', 'info');
+      // 实现缓动演示
+    };
+
+    demo.addLandmarks = function() {
+      const landmarks = [
+        { name: '广州塔', position: [113.3241, 23.1063], color: [255, 59, 48, 255] },
+        { name: '白云山', position: [113.3020, 23.1756], color: [52, 199, 89, 255] },
+        { name: '珠江新城', position: [113.3210, 23.1188], color: [0, 122, 255, 255] }
+      ];
+
+      landmarks.forEach(landmark => {
+        demo.mapRenderer.addMarker({
+          position: landmark.position,
+          style: 'star',
+          size: 15,
+          color: landmark.color,
+          label: {
+            text: landmark.name,
+            fontSize: 14,
+            color: [255, 255, 255, 255],
+            backgroundColor: [33, 33, 33, 230],
+            visible: true,
+            fontWeight: 'bold'
+          }
+        });
+      });
+
+      demo.stats.markers += landmarks.length;
+      updateStats();
+      log(`✅ 添加了 ${landmarks.length} 个地标`, 'success');
+      updateInfo(`已添加 ${landmarks.length} 个地标标记`, 'success');
+    };
+
+    demo.addRandomMarkers = function() {
+      const count = 20;
+      for (let i = 0; i < count; i++) {
+        demo.mapRenderer.addMarker({
+          position: [
+            113.0 + Math.random() * 0.7,
+            22.7 + Math.random() * 0.9
+          ],
+          style: 'circle',
+          size: 8 + Math.random() * 8,
+          color: [
+            Math.floor(Math.random() * 256),
+            Math.floor(Math.random() * 256),
+            Math.floor(Math.random() * 256),
+            220
+          ]
+        });
+      }
+
+      demo.stats.markers += count;
+      updateStats();
+      log(`✅ 添加了 ${count} 个随机标记`, 'success');
+      updateInfo(`已添加 ${count} 个随机标记`, 'success');
+    };
+
+    demo.addRippleMarkers = function() {
+      const markers = [
+        { position: [113.28, 23.13], color: [255, 0, 0] },
+        { position: [113.35, 23.18], color: [0, 255, 0] },
+        { position: [113.42, 23.12], color: [0, 0, 255] }
+      ];
+
+      markers.forEach(marker => {
+        demo.mapRenderer.addMarker({
+          position: marker.position,
+          style: 'circle',
+          size: 15,
+          color: [...marker.color, 255],
+          animation: 'ripple'
+        });
+      });
+
+      demo.stats.markers += markers.length;
+      updateStats();
+      log(`✅ 添加了 ${markers.length} 个水波纹标记`, 'success');
+      updateInfo('已添加水波纹动画标记', 'success');
+    };
+
+    demo.clearMarkers = function() {
+      demo.mapRenderer.clearMarkers();
+      demo.stats.markers = 0;
+      updateStats();
+      log('✅ 已清除所有标记', 'success');
+      updateInfo('所有标记已清除', 'success');
+    };
+
+    demo.measureDistance = function() {
+      const p1 = [113.28, 23.13];
+      const p2 = [113.50, 23.25];
+      const distance = GeometryUtils.haversineDistance(p1[0], p1[1], p2[0], p2[1]);
+      const formatted = GeometryUtils.formatDistance(distance);
+      
+      log(`距离测量: ${formatted}`, 'success');
+      updateInfo(`两点距离: ${formatted}`, 'success');
+    };
+
+    demo.measureArea = function() {
+      const polygon = [
+        [113.28, 23.13],
+        [113.32, 23.13],
+        [113.32, 23.16],
+        [113.28, 23.16],
+        [113.28, 23.13]
+      ];
+      const area = GeometryUtils.polygonArea(polygon);
+      const formatted = GeometryUtils.formatArea(area);
+      
+      log(`面积测量: ${formatted}`, 'success');
+      updateInfo(`多边形面积: ${formatted}`, 'success');
+    };
+
+    demo.showBuffer = function() {
+      log('创建缓冲区...', 'info');
+      updateInfo('缓冲区功能演示', 'info');
+    };
+
+    demo.calculateBearing = function() {
+      const p1 = [113.28, 23.13];
+      const p2 = [113.50, 23.25];
+      const bearing = GeometryUtils.bearing(p1[0], p1[1], p2[0], p2[1]);
+      
+      log(`方位角: ${bearing.toFixed(2)}°`, 'success');
+      updateInfo(`方位角: ${bearing.toFixed(2)}° (从北方顺时针)`, 'success');
+    };
+
+    demo.csvToGeoJSON = function() {
+      const csvData = 'name,longitude,latitude\n广州塔,113.3241,23.1063';
+      const geoJSON = DataTransformer.csvToGeoJSON(csvData, 'longitude', 'latitude');
+      
+      log(`CSV转GeoJSON: ${geoJSON.features.length} 个特征`, 'success');
+      updateInfo('CSV数据已转换为GeoJSON格式', 'success');
+    };
+
+    demo.calculateStats = function() {
+      log('计算数据统计...', 'info');
+      updateInfo('统计数据已计算', 'success');
+    };
+
+    demo.filterData = function() {
+      log('过滤数据...', 'info');
+      updateInfo('数据过滤完成', 'success');
+    };
+
+    demo.togglePerformanceMonitor = function() {
+      demo.performanceMonitor.toggle();
+      log('切换性能监控面板', 'info');
+      updateInfo('性能监控面板已切换', 'success');
+    };
+
+    demo.showMemoryStats = function() {
+      const stats = demo.memoryManager.getStats();
+      const report = demo.memoryManager.getReport();
+      
+      log(report, 'info');
+      updateInfo(`内存统计: ${stats.current}MB (平均: ${stats.average}MB)`, 'info');
+    };
+
+    demo.runPerformanceTest = function() {
+      log('🔥 开始性能压力测试...', 'warning');
+      updateInfo('正在进行性能压力测试，请稍候...', 'warning');
+      
+      // 添加大量标记进行压力测试
+      setTimeout(() => {
+        for (let i = 0; i < 500; i++) {
+          demo.mapRenderer.addMarker({
+            position: [113.0 + Math.random() * 0.7, 22.7 + Math.random() * 0.9],
+            style: 'circle',
+            size: 3,
+            color: [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), 200]
+          });
+        }
+        demo.stats.markers += 500;
+        updateStats();
+        log('✅ 性能测试完成：添加了 500 个标记', 'success');
+        updateInfo('性能测试完成，已添加 500 个标记', 'success');
+      }, 100);
+    };
+
+    demo.addCluster1000 = function() {
+      log('添加 1000 个点进行聚类...', 'info');
+      updateInfo('正在添加聚类点...', 'info');
+      // 实现聚类
+    };
+
+    demo.addCluster5000 = function() {
+      log('添加 5000 个点进行聚类...', 'info');
+      updateInfo('正在添加聚类点...', 'info');
+      // 实现聚类
+    };
+
+    demo.clearClusters = function() {
+      demo.mapRenderer.clearMarkers();
+      demo.stats.markers = 0;
+      updateStats();
+      log('✅ 已清除所有聚类', 'success');
+      updateInfo('聚类已清除', 'success');
+    };
+
+    demo.exportMapImage = function() {
+      log('导出地图图片...', 'info');
+      updateInfo('地图导出功能需要 ExportUtil 模块支持', 'warning');
+    };
+
+    demo.reset = function() {
+      demo.mapRenderer.clearLayers();
+      demo.mapRenderer.clearMarkers();
+      demo.stats.layers = 0;
+      demo.stats.markers = 0;
+      updateStats();
+      log('🔄 演示已重置', 'info');
+      updateInfo('演示已重置，可以重新开始', 'info');
+    };
+
+    // 暴露到全局
+    window.demo = demo;
+
+    // 页面加载完成后初始化
+    init();
+  </script>
+</body>
+</html>
+
+

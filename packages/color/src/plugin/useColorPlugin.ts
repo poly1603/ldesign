@@ -5,7 +5,7 @@
  */
 
 import { inject } from 'vue'
-import { ColorPluginSymbol, type ColorPlugin } from './index'
+import { type ColorPlugin, ColorPluginSymbol } from './index'
 
 /**
  * Use color plugin

@@ -317,7 +317,6 @@ export class CacheWarmer<K = string, V = any> {
    */
   async warmupConcurrent(keys?: K[], concurrency = 5): Promise<void> {
     const keysToWarm = keys || Array.from(this.warmupTasks.keys())
-    const results: Promise<void>[] = []
     
     for (let i = 0; i < keysToWarm.length; i += concurrency) {
       const batch = keysToWarm.slice(i, i + concurrency)

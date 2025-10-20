@@ -33,6 +33,11 @@ export class DeviceDetector {
   private listeners: Set<(viewport: Viewport) => void> = new Set();
   private resizeObserver: ResizeObserver | null = null;
   private mediaQueries: Map<string, MediaQueryList> = new Map();
+  private mediaQueryHandlers: Map<string, (e: MediaQueryListEvent) => void> = new Map();
+  private resizeHandler: (() => void) | null = null;
+  private isDestroyed = false;
+  private resizeTimeout: ReturnType<typeof setTimeout> | null = null;
+  private observerTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(breakpoints: ResponsiveBreakpoints = DEFAULT_BREAKPOINTS) {
     this.breakpoints = breakpoints;
@@ -117,18 +122,64 @@ export class DeviceDetector {
    * Setup viewport change listeners
    */
   private setupListeners(): void {
-    // Window resize listener
-    const handleResize = this.debounce(() => {
-      this.updateViewport();
-    }, 150);
+    // 优化的resize处理
+    let lastWidth = window.innerWidth;
+    let lastHeight = window.innerHeight;
+    let rafId: number | null = null;
+    
+    this.resizeHandler = () => {
+      // 快速检查是否真正改变
+      const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
+      
+      if (newWidth === lastWidth && newHeight === lastHeight) {
+        return; // 没有实际变化
+      }
+      
+      lastWidth = newWidth;
+      lastHeight = newHeight;
+      
+      // 取消之前的timeout
+      if (this.resizeTimeout) {
+        clearTimeout(this.resizeTimeout);
+        this.resizeTimeout = null;
+      }
+      
+      // 取消之前的 RAF
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      
+      // 使用 requestAnimationFrame 获得更好的性能
+      rafId = requestAnimationFrame(() => {
+        this.resizeTimeout = setTimeout(() => {
+          if (!this.isDestroyed) {
+            this.updateViewport();
+          }
+          this.resizeTimeout = null;
+          rafId = null;
+        }, 100);
+      });
+    };
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
+    window.addEventListener('resize', this.resizeHandler, { passive: true });
+    window.addEventListener('orientationchange', this.resizeHandler, { passive: true });
 
     // ResizeObserver for more accurate detection
     if ('ResizeObserver' in window) {
       this.resizeObserver = new ResizeObserver(() => {
-        this.updateViewport();
+        // 防止过于频繁的触发
+        if (this.observerTimeout) {
+          clearTimeout(this.observerTimeout);
+        }
+        
+        this.observerTimeout = setTimeout(() => {
+          if (!this.isDestroyed) {
+            this.updateViewport();
+          }
+          this.observerTimeout = null;
+        }, 50);
       });
       this.resizeObserver.observe(document.documentElement);
     }
@@ -153,10 +204,11 @@ export class DeviceDetector {
       if (query) {
         const mql = window.matchMedia(query);
         this.mediaQueries.set(key, mql);
-        
-        mql.addEventListener('change', () => {
+        const handler = () => {
           this.updateViewport();
-        });
+        };
+        this.mediaQueryHandlers.set(key, handler);
+        mql.addEventListener('change', handler);
       }
     });
   }
@@ -167,15 +219,16 @@ export class DeviceDetector {
   private updateViewport(): void {
     const newViewport = this.detectViewport();
     
-    // Check if viewport has actually changed
-    if (
-      this.viewport.width !== newViewport.width ||
-      this.viewport.height !== newViewport.height ||
-      this.viewport.device !== newViewport.device ||
-      this.viewport.orientation !== newViewport.orientation
-    ) {
+    // 优化比较逻辑
+    const hasChanged = this.viewport.width !== newViewport.width ||
+                      this.viewport.height !== newViewport.height ||
+                      this.viewport.device !== newViewport.device ||
+                      this.viewport.orientation !== newViewport.orientation;
+    
+    if (hasChanged) {
       this.viewport = newViewport;
-      this.notifyListeners();
+      // 使用微任务异步通知监听器
+      queueMicrotask(() => this.notifyListeners());
     }
   }
 
@@ -183,28 +236,21 @@ export class DeviceDetector {
    * Notify listeners of viewport changes
    */
   private notifyListeners(): void {
-    this.listeners.forEach(listener => listener(this.viewport));
+    if (this.isDestroyed) return;
+    
+    // 使用数组复制避免迭代时修改
+    const listenersArray = Array.from(this.listeners);
+    
+    for (const listener of listenersArray) {
+      try {
+        listener(this.viewport);
+      } catch (error) {
+        console.error('[DeviceDetector] Listener error:', error);
+      }
+    }
   }
 
-  /**
-   * Debounce utility
-   */
-  private debounce<T extends (...args: any[]) => any>(
-    func: T,
-    wait: number
-  ): T {
-    let timeout: ReturnType<typeof setTimeout> | null;
-    
-    return function (this: any, ...args: Parameters<T>) {
-      const later = () => {
-        timeout = null;
-        func.apply(this, args);
-      };
-      
-      if (timeout) clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    } as T;
-  }
+  // 删除不再使用的debounce方法，直接在setupListeners中处理
 
   // ============================================
   // Public API
@@ -303,9 +349,16 @@ export class DeviceDetector {
    * Subscribe to viewport changes
    */
   onChange(listener: (viewport: Viewport) => void): () => void {
+    if (this.isDestroyed) {
+      console.warn('DeviceDetector is destroyed');
+      return () => {};
+    }
+    
     this.listeners.add(listener);
     return () => {
-      this.listeners.delete(listener);
+      if (!this.isDestroyed) {
+        this.listeners.delete(listener);
+      }
     };
   }
 
@@ -364,12 +417,47 @@ export class DeviceDetector {
    * Destroy detector
    */
   destroy(): void {
+    if (this.isDestroyed) return;
+    
+    this.isDestroyed = true;
+    
+    // 清理定时器
+    if (this.resizeTimeout) {
+      clearTimeout(this.resizeTimeout);
+      this.resizeTimeout = null;
+    }
+    
+    if (this.observerTimeout) {
+      clearTimeout(this.observerTimeout);
+      this.observerTimeout = null;
+    }
+    
+    // 清理 ResizeObserver
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
       this.resizeObserver = null;
     }
     
+    // 清理事件监听器
+    if (this.resizeHandler && typeof window !== 'undefined') {
+      window.removeEventListener('resize', this.resizeHandler);
+      window.removeEventListener('orientationchange', this.resizeHandler);
+      this.resizeHandler = null;
+    }
+    
+    // 清理 MediaQuery 监听器
+    this.mediaQueryHandlers.forEach((handler, key) => {
+      const mql = this.mediaQueries.get(key);
+      if (mql) {
+        try {
+          mql.removeEventListener('change', handler);
+        } catch {}
+      }
+    });
+    this.mediaQueryHandlers.clear();
     this.mediaQueries.clear();
+    
+    // 清理观察者
     this.listeners.clear();
   }
 }
@@ -385,6 +473,17 @@ export function getDeviceDetector(): DeviceDetector {
     detector = new DeviceDetector();
   }
   return detector;
+}
+
+/**
+ * Destroy device detector instance
+ * Should be called when app is unmounted
+ */
+export function destroyDeviceDetector(): void {
+  if (detector) {
+    detector.destroy();
+    detector = null;
+  }
 }
 
 /**

@@ -59,17 +59,27 @@ export class ResizeDirective extends DirectiveBase {
     const observer = directiveUtils.getData(el, 'resize-observer') as ResizeObserver
     const timer = directiveUtils.getData(el, 'resize-timer') as number
 
+    // 清理定时器
     if (timer) {
       clearTimeout(timer)
       directiveUtils.removeData(el, 'resize-timer')
     }
 
+    // 断开并清理 ResizeObserver
     if (observer) {
-      observer.disconnect()
+      observer.unobserve(el) // 先取消观察
+      observer.disconnect()   // 再断开连接
       directiveUtils.removeData(el, 'resize-observer')
     }
 
+    // 清理配置数据
     directiveUtils.removeData(el, 'resize-config')
+    
+    // 清理元素引用
+    if (el && typeof el === 'object') {
+      (el as any).__resizeObserver = null
+    }
+    
     this.log('Resize observer detached', el)
   }
 

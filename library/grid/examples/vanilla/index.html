@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@ldesign/grid Vanilla JS Example</title>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <h1>@ldesign/grid Vanilla JS Example</h1>
+      <div class="controls">
+        <button id="saveBtn">Save Layout</button>
+        <button id="loadBtn">Load Layout</button>
+        <button id="clearBtn">Clear Grid</button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <!-- Widget Toolbar -->
+      <aside class="sidebar">
+        <h3>Widgets</h3>
+        <p class="hint">Drag widgets to the grid</p>
+        
+        <div class="widget-list" id="widgetList">
+          <!-- Widgets will be dynamically added here -->
+        </div>
+      </aside>
+
+      <!-- Grid Container -->
+      <main class="grid-container">
+        <div class="grid-stack" id="grid">
+          <!-- Grid items will be dynamically added here -->
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
+
+
+
+

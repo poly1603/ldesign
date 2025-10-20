@@ -76,7 +76,7 @@ export class WorkerPool<T = unknown, R = unknown> {
   private idleCheckInterval?: NodeJS.Timeout
   private metricsInterval?: NodeJS.Timeout
   private isTerminated = false
-  
+
   // 性能指标
   private metrics = {
     totalTasks: 0,
@@ -99,10 +99,10 @@ export class WorkerPool<T = unknown, R = unknown> {
       idleTimeout: config.idleTimeout || 60000,
       maxRetries: config.maxRetries || 3,
       enableSharedArrayBuffer: config.enableSharedArrayBuffer || false,
-      onError: config.onError || (() => {}),
-      onSuccess: config.onSuccess || (() => {})
+      onError: config.onError || (() => { }),
+      onSuccess: config.onSuccess || (() => { })
     }
-    
+
     this.initialize()
   }
 
@@ -114,17 +114,17 @@ export class WorkerPool<T = unknown, R = unknown> {
     for (let i = 0; i < this.config.minWorkers; i++) {
       this.createWorker()
     }
-    
+
     // 启动空闲检查
     this.idleCheckInterval = setInterval(() => {
       this.checkIdleWorkers()
     }, 10000)
-    
+
     // 启动指标收集
     this.metricsInterval = setInterval(() => {
       this.updateMetrics()
     }, 5000)
-    
+
     this.logger?.info('Worker pool initialized', {
       minWorkers: this.config.minWorkers,
       maxWorkers: this.config.maxWorkers
@@ -138,9 +138,9 @@ export class WorkerPool<T = unknown, R = unknown> {
     if (this.workers.size >= this.config.maxWorkers) {
       return null
     }
-    
+
     const workerId = `worker-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    
+
     let worker: Worker
     if (typeof this.config.workerScript === 'function') {
       worker = this.config.workerScript()
@@ -149,7 +149,7 @@ export class WorkerPool<T = unknown, R = unknown> {
     } else {
       worker = this.createDefaultWorker()
     }
-    
+
     const state: WorkerState = {
       id: workerId,
       worker,
@@ -159,25 +159,25 @@ export class WorkerPool<T = unknown, R = unknown> {
       createdAt: Date.now(),
       lastUsedAt: Date.now()
     }
-    
+
     // 设置 Worker 消息处理
     worker.onmessage = (event) => {
       this.handleWorkerMessage(workerId, event.data)
     }
-    
+
     worker.onerror = (error) => {
       this.handleWorkerError(workerId, error)
     }
-    
+
     this.workers.set(workerId, state)
-    
+
     // 更新峰值
     if (this.workers.size > this.metrics.peakWorkers) {
       this.metrics.peakWorkers = this.workers.size
     }
-    
+
     this.logger?.debug(`Worker ${workerId} created`)
-    
+
     return state
   }
 
@@ -185,6 +185,12 @@ export class WorkerPool<T = unknown, R = unknown> {
    * 创建默认 Worker 脚本
    */
   private createDefaultWorker(): Worker {
+    // 清理之前的 blob URL
+    if ((this as any).__workerBlobUrl) {
+      URL.revokeObjectURL((this as any).__workerBlobUrl)
+      delete (this as any).__workerBlobUrl
+    }
+
     const workerScript = `
       self.onmessage = async function(e) {
         const { id, type, data } = e.data;
@@ -243,9 +249,13 @@ export class WorkerPool<T = unknown, R = unknown> {
         };
       }
     `
-    
+
     const blob = new Blob([workerScript], { type: 'application/javascript' })
     const url = URL.createObjectURL(blob)
+
+    // 存储 URL 以便后续清理
+    ;(this as any).__workerBlobUrl = url
+
     return new Worker(url)
   }
 
@@ -256,24 +266,25 @@ export class WorkerPool<T = unknown, R = unknown> {
     if (this.isTerminated) {
       throw new Error('Worker pool has been terminated')
     }
-    
+
     this.metrics.totalTasks++
-    
+
     return new Promise((resolve, reject) => {
+      const taskId = task.id || this.generateTaskId()
       const queuedTask: QueuedTask<T, R> = {
         task: {
           ...task,
-          id: task.id || this.generateTaskId(),
-          priority: task.priority || 0,
-          timeout: task.timeout || this.config.taskTimeout,
-          retries: task.retries || this.config.maxRetries
+          id: taskId,
+          priority: task.priority ?? 0,
+          timeout: task.timeout ?? this.config.taskTimeout,
+          retries: task.retries ?? this.config.maxRetries
         },
         resolve,
         reject,
         addedAt: Date.now(),
         attempts: 0
       }
-      
+
       // 尝试立即执行或加入队列
       if (!this.tryExecuteTask(queuedTask)) {
         this.enqueueTask(queuedTask)
@@ -298,15 +309,15 @@ export class WorkerPool<T = unknown, R = unknown> {
   ): Promise<R> {
     const tasks = data.map((item, index) => mapper(item, index))
     const results = await this.executeBatch(tasks)
-    
+
     const successResults = results
       .filter(r => r.success)
       .map(r => r.data as TR)
-    
+
     if (reducer) {
       return reducer(successResults) as R
     }
-    
+
     return successResults as unknown as R
   }
 
@@ -316,7 +327,7 @@ export class WorkerPool<T = unknown, R = unknown> {
   private tryExecuteTask(queuedTask: QueuedTask<T, R>): boolean {
     // 查找空闲的 worker
     let worker = this.findIdleWorker()
-    
+
     // 如果没有空闲 worker，尝试创建新的
     if (!worker && this.workers.size < this.config.maxWorkers) {
       const newWorker = this.createWorker()
@@ -324,22 +335,22 @@ export class WorkerPool<T = unknown, R = unknown> {
         worker = newWorker
       }
     }
-    
+
     if (!worker) {
       return false
     }
-    
+
     // 标记为忙碌并执行任务
     worker.busy = true
     worker.currentTask = queuedTask.task
     worker.lastUsedAt = Date.now()
     queuedTask.attempts++
-    
+
     // 设置超时
     const timeoutId = setTimeout(() => {
       this.handleTaskTimeout(worker.id, queuedTask)
     }, queuedTask.task.timeout!)
-    
+
     // 存储待处理任务
     this.pendingTasks.set(queuedTask.task.id, {
       ...queuedTask,
@@ -352,7 +363,7 @@ export class WorkerPool<T = unknown, R = unknown> {
         queuedTask.reject(error)
       }
     })
-    
+
     // 发送任务到 worker
     try {
       if (queuedTask.task.transferable) {
@@ -360,7 +371,7 @@ export class WorkerPool<T = unknown, R = unknown> {
       } else {
         worker.worker.postMessage(queuedTask.task)
       }
-      
+
       this.logger?.debug(`Task ${queuedTask.task.id} assigned to worker ${worker.id}`)
       return true
     } catch (error) {
@@ -377,15 +388,15 @@ export class WorkerPool<T = unknown, R = unknown> {
     const insertIndex = this.taskQueue.findIndex(
       t => (t.task.priority || 0) < (task.task.priority || 0)
     )
-    
+
     if (insertIndex === -1) {
       this.taskQueue.push(task)
     } else {
       this.taskQueue.splice(insertIndex, 0, task)
     }
-    
+
     this.metrics.currentQueueSize = this.taskQueue.length
-    
+
     this.logger?.debug(`Task ${task.task.id} queued`, {
       queueSize: this.taskQueue.length,
       priority: task.task.priority
@@ -398,18 +409,18 @@ export class WorkerPool<T = unknown, R = unknown> {
   private handleWorkerMessage(workerId: string, message: WorkerResult): void {
     const worker = this.workers.get(workerId)
     if (!worker) return
-    
+
     const task = this.pendingTasks.get(message.id)
     if (!task) return
-    
+
     // 清理待处理任务
     this.pendingTasks.delete(message.id)
-    
+
     // 更新 worker 状态
     worker.busy = false
     worker.currentTask = undefined
     worker.tasksCompleted++
-    
+
     // 处理结果
     const duration = Date.now() - task.addedAt
     const result: WorkerResult<R> = {
@@ -419,12 +430,12 @@ export class WorkerPool<T = unknown, R = unknown> {
       error: message.error,
       duration
     }
-    
+
     if (message.success) {
       this.metrics.completedTasks++
       this.config.onSuccess(result)
       task.resolve(result)
-      
+
       this.logger?.debug(`Task ${message.id} completed`, { duration })
     } else {
       // 重试逻辑
@@ -433,18 +444,20 @@ export class WorkerPool<T = unknown, R = unknown> {
           attempt: task.attempts,
           maxRetries: task.task.retries
         })
-        
-        this.tryExecuteTask(task) || this.enqueueTask(task)
+
+        if (!this.tryExecuteTask(task)) {
+          this.enqueueTask(task)
+        }
       } else {
         this.metrics.failedTasks++
         const error = new Error(message.error || 'Task failed')
         this.config.onError(error, task.task)
         task.reject(error)
-        
+
         this.logger?.error(`Task ${message.id} failed`, { error: message.error })
       }
     }
-    
+
     // 处理队列中的下一个任务
     this.processQueue()
   }
@@ -455,23 +468,25 @@ export class WorkerPool<T = unknown, R = unknown> {
   private handleWorkerError(workerId: string, error: Error | ErrorEvent): void {
     const worker = this.workers.get(workerId)
     if (!worker) return
-    
+
     worker.errors++
-    
+
     this.logger?.error(`Worker ${workerId} error`, error)
-    
+
     // 如果错误太多，终止并重建 worker
     if (worker.errors > 3) {
       this.terminateWorker(workerId)
       this.createWorker()
     }
-    
+
     // 重新分配当前任务
     if (worker.currentTask) {
       const task = this.pendingTasks.get(worker.currentTask.id)
       if (task) {
         this.pendingTasks.delete(worker.currentTask.id)
-        this.tryExecuteTask(task) || this.enqueueTask(task)
+        if (!this.tryExecuteTask(task)) {
+          this.enqueueTask(task)
+        }
       }
     }
   }
@@ -481,18 +496,29 @@ export class WorkerPool<T = unknown, R = unknown> {
    */
   private handleTaskTimeout(workerId: string, task: QueuedTask<T, R>): void {
     this.logger?.warn(`Task ${task.task.id} timeout on worker ${workerId}`)
-    
-    // 终止 worker
-    this.terminateWorker(workerId)
-    
-    // 创建新 worker
-    this.createWorker()
-    
-    // 重试任务
+
+    // 清理待处理任务
     this.pendingTasks.delete(task.task.id)
-    
+
+    // 重置 worker 状态而不是终止（避免频繁创建/销毁）
+    const worker = this.workers.get(workerId)
+    if (worker) {
+      worker.busy = false
+      worker.currentTask = undefined
+      worker.errors++
+
+      // 只有在错误过多时才终止
+      if (worker.errors > 3) {
+        this.terminateWorker(workerId)
+        this.createWorker()
+      }
+    }
+
+    // 重试任务
     if (task.attempts < (task.task.retries || 0)) {
-      this.tryExecuteTask(task) || this.enqueueTask(task)
+      if (!this.tryExecuteTask(task)) {
+        this.enqueueTask(task)
+      }
     } else {
       task.reject(new Error('Task timeout'))
     }
@@ -504,7 +530,7 @@ export class WorkerPool<T = unknown, R = unknown> {
   private processQueue(): void {
     while (this.taskQueue.length > 0) {
       const task = this.taskQueue[0]
-      
+
       if (this.tryExecuteTask(task)) {
         this.taskQueue.shift()
         this.metrics.currentQueueSize = this.taskQueue.length
@@ -532,15 +558,15 @@ export class WorkerPool<T = unknown, R = unknown> {
   private checkIdleWorkers(): void {
     const now = Date.now()
     const toTerminate: string[] = []
-    
+
     for (const [id, worker] of this.workers) {
-      if (!worker.busy && 
-          this.workers.size > this.config.minWorkers &&
-          now - worker.lastUsedAt > this.config.idleTimeout) {
+      if (!worker.busy &&
+        this.workers.size > this.config.minWorkers &&
+        now - worker.lastUsedAt > this.config.idleTimeout) {
         toTerminate.push(id)
       }
     }
-    
+
     toTerminate.forEach(id => this.terminateWorker(id))
   }
 
@@ -550,10 +576,23 @@ export class WorkerPool<T = unknown, R = unknown> {
   private terminateWorker(workerId: string): void {
     const worker = this.workers.get(workerId)
     if (!worker) return
-    
+
+    // 清理当前任务的待处理项
+    if (worker.currentTask) {
+      const pendingTask = this.pendingTasks.get(worker.currentTask.id)
+      if (pendingTask) {
+        this.pendingTasks.delete(worker.currentTask.id)
+        pendingTask.reject(new Error('Worker terminated'))
+      }
+    }
+
+    // 清理事件监听器
+    worker.worker.onmessage = null
+    worker.worker.onerror = null
+
     worker.worker.terminate()
     this.workers.delete(workerId)
-    
+
     this.logger?.debug(`Worker ${workerId} terminated`)
   }
 
@@ -562,18 +601,18 @@ export class WorkerPool<T = unknown, R = unknown> {
    */
   private updateMetrics(): void {
     const times: number[] = []
-    
+
     for (const worker of this.workers.values()) {
       if (worker.tasksCompleted > 0) {
         const avgTime = (Date.now() - worker.createdAt) / worker.tasksCompleted
         times.push(avgTime)
       }
     }
-    
+
     if (times.length > 0) {
       this.metrics.averageTime = times.reduce((a, b) => a + b, 0) / times.length
     }
-    
+
     this.logger?.debug('Worker pool metrics', this.metrics)
   }
 
@@ -597,7 +636,7 @@ export class WorkerPool<T = unknown, R = unknown> {
     for (const worker of this.workers.values()) {
       if (worker.busy) busyWorkers++
     }
-    
+
     return {
       workers: this.workers.size,
       busyWorkers,
@@ -613,29 +652,29 @@ export class WorkerPool<T = unknown, R = unknown> {
     if (minWorkers !== undefined) {
       this.config.minWorkers = minWorkers
     }
-    
+
     if (maxWorkers !== undefined) {
       this.config.maxWorkers = maxWorkers
     }
-    
+
     // 确保最小数量的 workers
     while (this.workers.size < this.config.minWorkers) {
       this.createWorker()
     }
-    
+
     // 如果超过最大数量，终止多余的空闲 workers
     if (this.workers.size > this.config.maxWorkers) {
       const toTerminate: string[] = []
-      
+
       for (const [id, worker] of this.workers) {
         if (!worker.busy && this.workers.size - toTerminate.length > this.config.maxWorkers) {
           toTerminate.push(id)
         }
       }
-      
+
       toTerminate.forEach(id => this.terminateWorker(id))
     }
-    
+
     this.logger?.info('Worker pool resized', {
       minWorkers: this.config.minWorkers,
       maxWorkers: this.config.maxWorkers,
@@ -644,40 +683,75 @@ export class WorkerPool<T = unknown, R = unknown> {
   }
 
   /**
+   * 初始化统计数据
+   */
+  private initStats() {
+    return {
+      totalTasks: 0,
+      completedTasks: 0,
+      failedTasks: 0,
+      averageTime: 0,
+      peakWorkers: 0,
+      currentQueueSize: 0
+    }
+  }
+
+  /**
    * 终止所有 Workers 和清理资源
    */
   terminate(): void {
     this.isTerminated = true
-    
+
     // 清理定时器
     if (this.idleCheckInterval) {
       clearInterval(this.idleCheckInterval)
+      this.idleCheckInterval = undefined
     }
-    
+
     if (this.metricsInterval) {
       clearInterval(this.metricsInterval)
+      this.metricsInterval = undefined
     }
-    
+
     // 终止所有 workers
     for (const worker of this.workers.values()) {
+      // 清理事件监听器
+      worker.worker.onmessage = null
+      worker.worker.onerror = null
       worker.worker.terminate()
     }
-    
+
     this.workers.clear()
-    
+
     // 拒绝所有待处理任务
     for (const task of this.pendingTasks.values()) {
       task.reject(new Error('Worker pool terminated'))
     }
-    
+
     for (const task of this.taskQueue) {
       task.reject(new Error('Worker pool terminated'))
     }
-    
+
     this.pendingTasks.clear()
-    this.taskQueue = []
-    
+    this.taskQueue.length = 0 // 更高效的清空数组
+
+    // 清理 blob URLs（可能有多个）
+    if ((this as any).__workerBlobUrl) {
+      URL.revokeObjectURL((this as any).__workerBlobUrl)
+      delete (this as any).__workerBlobUrl
+    }
+
+    // 清理所有统计数据
+    this.metrics = this.initStats()
+
     this.logger?.info('Worker pool terminated')
+  }
+
+  /**
+   * 别名方法 - 用于统一接口
+   */
+  destroy(): void {
+    this.terminate()
   }
 }
 
@@ -702,7 +776,7 @@ export function InWorker<T = unknown, R = unknown>(poolConfig?: WorkerPoolConfig
   ) {
     const originalMethod = descriptor.value
     const pool = createWorkerPool<T, R>(poolConfig)
-    
+
     descriptor.value = async function (...args: any[]) {
       const task: WorkerTask<T> = {
         id: `${propertyName}-${Date.now()}`,
@@ -712,16 +786,16 @@ export function InWorker<T = unknown, R = unknown>(poolConfig?: WorkerPoolConfig
           args
         } as T
       }
-      
+
       const result = await pool.execute(task)
-      
+
       if (result.success) {
         return result.data
       } else {
         throw new Error(result.error)
       }
     }
-    
+
     return descriptor
   }
 }

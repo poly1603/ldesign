@@ -17,8 +17,28 @@ export class PluginManagerImpl implements PluginManager {
   private loadOrder: string[] = []
   private engine?: Engine
 
+  // 内存优化：限制插件数量
+  private readonly MAX_PLUGINS = 100
+
+  // 缓存优化：使用 WeakMap 避免内存泄漏
+  private dependencyCache = new WeakMap<Plugin, string[]>()
+  
+  // 性能优化：缓存依赖图和查询结果
+  private dependencyGraphCache?: Record<string, string[]>
+  private dependentsCache = new Map<string, string[]>()
+  private cacheInvalidated = true
+
   constructor(engine?: Engine) {
     this.engine = engine
+  }
+  
+  /**
+   * 使缓存失效
+   */
+  private invalidateCache(): void {
+    this.cacheInvalidated = true
+    this.dependencyGraphCache = undefined
+    this.dependentsCache.clear()
   }
 
   /**
@@ -30,6 +50,11 @@ export class PluginManagerImpl implements PluginManager {
   async register(plugin: Plugin): Promise<void> {
     if (this.plugins.has(plugin.name)) {
       throw new Error(`Plugin "${plugin.name}" is already registered`)
+    }
+
+    // 检查插件数量限制
+    if (this.plugins.size >= this.MAX_PLUGINS) {
+      throw new Error(`Maximum plugin limit (${this.MAX_PLUGINS}) reached`)
     }
 
     // 检查依赖 - 提前验证所有依赖，一次性处理
@@ -46,6 +71,9 @@ export class PluginManagerImpl implements PluginManager {
       // 注册插件
       this.plugins.set(plugin.name, plugin)
       this.loadOrder.push(plugin.name)
+      
+      // 使缓存失效
+      this.invalidateCache()
 
       // 安装插件
       if (this.engine) {
@@ -110,6 +138,9 @@ export class PluginManagerImpl implements PluginManager {
       if (index > -1) {
         this.loadOrder.splice(index, 1)
       }
+      
+      // 使缓存失效
+      this.invalidateCache()
 
       if (this.engine?.logger) {
         this.engine.logger.info(`Plugin "${name}" unregistered successfully`)
@@ -173,15 +204,24 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   /**
-   * 获取依赖指定插件的插件列表。
+   * 获取依赖指定插件的插件列表 - 使用缓存优化
    */
   private getDependents(pluginName: string): string[] {
+    // 检查缓存
+    if (!this.cacheInvalidated && this.dependentsCache.has(pluginName)) {
+      return this.dependentsCache.get(pluginName)!
+    }
+    
     const dependents: string[] = []
     for (const [name, plugin] of this.plugins) {
       if (plugin.dependencies?.includes(pluginName)) {
         dependents.push(name)
       }
     }
+    
+    // 更新缓存
+    this.dependentsCache.set(pluginName, dependents)
+    
     return dependents
   }
 
@@ -194,14 +234,24 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   /**
-   * 获取当前插件依赖图。
+   * 获取当前插件依赖图 - 使用缓存优化
    */
   getDependencyGraph(): Record<string, string[]> {
+    // 检查缓存
+    if (!this.cacheInvalidated && this.dependencyGraphCache) {
+      return { ...this.dependencyGraphCache }
+    }
+    
     const graph: Record<string, string[]> = {}
     for (const [name, plugin] of this.plugins) {
       graph[name] = plugin.dependencies ? [...plugin.dependencies] : []
     }
-    return graph
+    
+    // 更新缓存
+    this.dependencyGraphCache = graph
+    this.cacheInvalidated = false
+    
+    return { ...graph }
   }
 
   /**
@@ -298,13 +348,20 @@ export class PluginManagerImpl implements PluginManager {
 
   // 按关键词查找插件
   /**
-   * 按关键字搜索插件（基于名称与描述）。
+   * 按关键字搜索插件（基于名称与描述）- 优化版
    */
   findByKeyword(keyword: string): Plugin[] {
-    return Array.from(this.plugins.values()).filter(
-      plugin =>
-        plugin.description?.includes(keyword) || plugin.name.includes(keyword)
-    )
+    const lowerKeyword = keyword.toLowerCase()
+    const results: Plugin[] = []
+    
+    for (const plugin of this.plugins.values()) {
+      if (plugin.name.toLowerCase().includes(lowerKeyword) ||
+          plugin.description?.toLowerCase().includes(lowerKeyword)) {
+        results.push(plugin)
+      }
+    }
+    
+    return results
   }
 
   // 按作者查找插件
@@ -328,9 +385,11 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   destroy(): void {
-    // 卸载所有插件
-    for (const plugin of this.plugins.values()) {
-      if (plugin.uninstall && this.engine) {
+    // 卸载所有插件（倒序卸载，与注册顺序相反）
+    const reversedOrder = [...this.loadOrder].reverse()
+    for (const pluginName of reversedOrder) {
+      const plugin = this.plugins.get(pluginName)
+      if (plugin && plugin.uninstall && this.engine) {
         try {
           plugin.uninstall({
             engine: this.engine,
@@ -343,15 +402,24 @@ export class PluginManagerImpl implements PluginManager {
         }
       }
     }
+
+    // 清理数据结构
     this.plugins.clear()
-    this.loadOrder = []
+    this.loadOrder.length = 0
+
+    // 清理缓存
     this.clearCaches()
+
+    // 清理引擎引用
+    this.engine = undefined
   }
 
-  // 清理缓存
+  // 清理缓存 - 增强版
   private clearCaches(): void {
-    // 清理插件相关的缓存
-    // 这里可以添加具体的缓存清理逻辑
+    this.dependencyCache = new WeakMap()
+    this.dependencyGraphCache = undefined
+    this.dependentsCache.clear()
+    this.cacheInvalidated = true
   }
 
   // 实现接口需要的额外方法
@@ -372,8 +440,8 @@ export class PluginManagerImpl implements PluginManager {
   }
 
   async initializeAll(): Promise<void> {
-    // 初始化所有已注册的插件
-    for (const plugin of this.plugins.values()) {
+    // 优化：并发初始化所有插件，提高启动速度
+    const initPromises = Array.from(this.plugins.values()).map(async (plugin) => {
       try {
         if (this.engine && plugin.install) {
           const context = this.createPluginContext()
@@ -382,7 +450,9 @@ export class PluginManagerImpl implements PluginManager {
       } catch (error) {
         this.engine?.logger?.error(`Failed to initialize plugin ${plugin.name}:`, error)
       }
-    }
+    })
+
+    await Promise.all(initPromises)
   }
 
   // 新增的辅助方法

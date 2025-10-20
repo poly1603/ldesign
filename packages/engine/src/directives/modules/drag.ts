@@ -210,7 +210,19 @@ export class DragDirective extends DirectiveBase {
       handleEnd: EventListener
     } | undefined
     const handle = directiveUtils.getData(el, 'drag-handle') as HTMLElement
+    const state = directiveUtils.getData(el, 'drag-state') as DragState | undefined
 
+    // 如果正在拖拽，重置状态
+    if (state && state.isDragging) {
+      state.isDragging = false
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+      if (el) {
+        el.style.cursor = ''
+      }
+    }
+
+    // 移除所有事件监听器
     if (handlers && handle) {
       handle.removeEventListener('mousedown', handlers.handleStart)
       handle.removeEventListener('touchstart', handlers.handleStart)
@@ -222,9 +234,16 @@ export class DragDirective extends DirectiveBase {
       document.removeEventListener('touchend', handlers.handleEnd)
     }
 
+    // 清理存储的数据
     directiveUtils.removeData(el, 'drag-handlers')
     directiveUtils.removeData(el, 'drag-state')
     directiveUtils.removeData(el, 'drag-handle')
+    
+    // 清理元素引用
+    if (el && typeof el === 'object') {
+      ;(el as any).__dragState = null
+      ;(el as any).__dragHandlers = null
+    }
   }
 
   private getHandle(el: HTMLElement, handle?: string | HTMLElement): HTMLElement {

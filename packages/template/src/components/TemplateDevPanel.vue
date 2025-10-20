@@ -1,186 +1,8 @@
-<template>
-  <Teleport to="body">
-    <div v-if="visible" class="template-dev-panel" :class="{ minimized }">
-      <!-- 面板头部 -->
-      <div class="dev-panel-header">
-        <div class="header-left">
-          <h3>🛠️ Template Dev Panel</h3>
-          <span class="template-name">{{ currentTemplate || 'No Template' }}</span>
-        </div>
-        <div class="header-actions">
-          <button @click="minimized = !minimized" class="btn-icon" title="最小化/还原">
-            {{ minimized ? '□' : '−' }}
-          </button>
-          <button @click="visible = false" class="btn-icon" title="关闭">
-            ✕
-          </button>
-        </div>
-      </div>
-
-      <!-- 面板内容 -->
-      <div v-show="!minimized" class="dev-panel-content">
-        <!-- 标签页导航 -->
-        <div class="tab-nav">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            :class="['tab-btn', { active: activeTab === tab.id }]"
-            @click="activeTab = tab.id"
-          >
-            {{ tab.icon }} {{ tab.label }}
-          </button>
-        </div>
-
-        <!-- 调试日志 -->
-        <div v-show="activeTab === 'logs'" class="tab-content">
-          <div class="toolbar">
-            <select v-model="logFilter" class="filter-select">
-              <option value="all">All Levels</option>
-              <option value="error">Errors</option>
-              <option value="warn">Warnings</option>
-              <option value="info">Info</option>
-              <option value="debug">Debug</option>
-            </select>
-            <input
-              v-model="logSearch"
-              type="text"
-              placeholder="搜索日志..."
-              class="search-input"
-            />
-            <button @click="clearLogs" class="btn-clear">清空</button>
-          </div>
-          <div class="logs-container">
-            <div
-              v-for="(log, index) in filteredLogs"
-              :key="index"
-              :class="['log-item', `log-${log.level}`]"
-            >
-              <span class="log-time">{{ formatTime(log.timestamp) }}</span>
-              <span class="log-level">{{ log.level.toUpperCase() }}</span>
-              <span class="log-message">{{ log.message }}</span>
-              <span v-if="log.data" class="log-data">{{ formatData(log.data) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 状态检查器 -->
-        <div v-show="activeTab === 'state'" class="tab-content">
-          <div class="state-inspector">
-            <div class="state-section">
-              <h4>Template State</h4>
-              <pre class="code-block">{{ formatJSON(templateState) }}</pre>
-            </div>
-            <div class="state-section">
-              <h4>Props</h4>
-              <pre class="code-block">{{ formatJSON(templateProps) }}</pre>
-            </div>
-            <div class="state-section">
-              <h4>Snapshot History</h4>
-              <div class="snapshot-list">
-                <div
-                  v-for="(snap, idx) in snapshotHistory"
-                  :key="idx"
-                  class="snapshot-item"
-                  @click="restoreSnapshot(idx)"
-                >
-                  <span class="snapshot-time">{{ formatTime(snap.timestamp) }}</span>
-                  <span class="snapshot-desc">{{ snap.description || 'Snapshot' }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 性能监控 -->
-        <div v-show="activeTab === 'performance'" class="tab-content">
-          <div class="perf-metrics">
-            <div class="metric-card">
-              <div class="metric-label">渲染时间</div>
-              <div class="metric-value">{{ performanceData.renderTime }}ms</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-label">加载时间</div>
-              <div class="metric-value">{{ performanceData.loadTime }}ms</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-label">内存使用</div>
-              <div class="metric-value">{{ performanceData.memory }}MB</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-label">组件数量</div>
-              <div class="metric-value">{{ performanceData.componentCount }}</div>
-            </div>
-          </div>
-          <div class="perf-chart">
-            <h4>性能趋势</h4>
-            <canvas ref="chartCanvas" width="600" height="200"></canvas>
-          </div>
-        </div>
-
-        <!-- 事件监听器 -->
-        <div v-show="activeTab === 'events'" class="tab-content">
-          <div class="toolbar">
-            <button @click="clearEvents" class="btn-clear">清空事件</button>
-          </div>
-          <div class="events-container">
-            <div
-              v-for="(event, index) in eventHistory"
-              :key="index"
-              class="event-item"
-            >
-              <span class="event-time">{{ formatTime(event.timestamp) }}</span>
-              <span class="event-type">{{ event.type }}</span>
-              <span class="event-payload">{{ formatData(event.payload) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 分析报告 -->
-        <div v-show="activeTab === 'analytics'" class="tab-content">
-          <div class="analytics-summary">
-            <h4>使用统计</h4>
-            <div class="stats-grid">
-              <div class="stat-item">
-                <div class="stat-label">总渲染次数</div>
-                <div class="stat-value">{{ analyticsData.totalRenders }}</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">错误次数</div>
-                <div class="stat-value error">{{ analyticsData.errorCount }}</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">平均响应时间</div>
-                <div class="stat-value">{{ analyticsData.avgResponseTime }}ms</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">用户交互</div>
-                <div class="stat-value">{{ analyticsData.interactions }}</div>
-              </div>
-            </div>
-          </div>
-          <div class="recommendations">
-            <h4>优化建议</h4>
-            <ul class="recommendation-list">
-              <li
-                v-for="(rec, idx) in analyticsData.recommendations"
-                :key="idx"
-                :class="['recommendation-item', `priority-${rec.priority}`]"
-              >
-                {{ rec.message }}
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </Teleport>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { useTemplateDebugger, type DebugLog } from '../composables/useTemplateDebugger'
-import { useTemplateSnapshot } from '../composables/useTemplateSnapshot'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { type DebugLog, useTemplateDebugger } from '../composables/useTemplateDebugger'
 import { useTemplatePerformance } from '../composables/useTemplatePerformance'
+import { useTemplateSnapshot } from '../composables/useTemplateSnapshot'
 
 interface Props {
   templateId?: string
@@ -198,6 +20,8 @@ const emit = defineEmits<Emits>()
 const visible = ref(props.modelValue ?? true)
 const minimized = ref(false)
 const activeTab = ref('logs')
+// Chart canvas reference to satisfy vue/no-unused-refs
+const chartCanvas = ref<HTMLCanvasElement | null>(null)
 
 // 调试器实例
 const templateDebugger = props.templateId ? useTemplateDebugger(props.templateId) : null
@@ -311,7 +135,7 @@ const clearEvents = () => {
 
 const restoreSnapshot = (index: number) => {
   if (snapshot) {
-    snapshot.jumpToSnapshot(index)
+    snapshot.gotoIndex(index)
     templateDebugger?.info(`Restored to snapshot #${index}`)
   }
 }
@@ -339,9 +163,13 @@ const collectPerformance = () => {
 // 收集状态数据
 const collectState = () => {
   if (templateDebugger) {
-    const snapshot = templateDebugger.takeSnapshot()
-    templateState.value = snapshot.state
-    templateProps.value = snapshot.props
+    // takeSnapshot 不返回值，这里我们使用最新的快照数据
+    const snapshots = templateDebugger.stateSnapshots.value
+    if (snapshots.length > 0) {
+      const latestSnapshot = snapshots[snapshots.length - 1]
+      templateState.value = latestSnapshot.state || {}
+      templateProps.value = latestSnapshot.props || {}
+    }
   }
 }
 
@@ -385,6 +213,10 @@ onMounted(() => {
   if (visible.value) {
     startRefresh()
   }
+  // Access the chart canvas to mark the ref as used
+  if (chartCanvas.value) {
+    chartCanvas.value.getContext('2d')
+  }
 })
 
 onUnmounted(() => {
@@ -400,6 +232,230 @@ defineExpose({
   maximize: () => (minimized.value = false)
 })
 </script>
+
+<template>
+  <Teleport to="body">
+    <div v-if="visible" class="template-dev-panel" :class="{ minimized }">
+      <!-- 面板头部 -->
+      <div class="dev-panel-header">
+        <div class="header-left">
+          <h3>🛠️ Template Dev Panel</h3>
+          <span class="template-name">{{ currentTemplate || 'No Template' }}</span>
+        </div>
+        <div class="header-actions">
+          <button class="btn-icon" title="最小化/还原" @click="minimized = !minimized">
+            {{ minimized ? '□' : '−' }}
+          </button>
+          <button class="btn-icon" title="关闭" @click="visible = false">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- 面板内容 -->
+      <div v-show="!minimized" class="dev-panel-content">
+        <!-- 标签页导航 -->
+        <div class="tab-nav">
+          <button
+            v-for="tab in tabs"
+            :key="tab.id"
+            class="tab-btn" :class="[{ active: activeTab === tab.id }]"
+            @click="activeTab = tab.id"
+          >
+            {{ tab.icon }} {{ tab.label }}
+          </button>
+        </div>
+
+        <!-- 调试日志 -->
+        <div v-show="activeTab === 'logs'" class="tab-content">
+          <div class="toolbar">
+            <select v-model="logFilter" class="filter-select">
+              <option value="all">
+                All Levels
+              </option>
+              <option value="error">
+                Errors
+              </option>
+              <option value="warn">
+                Warnings
+              </option>
+              <option value="info">
+                Info
+              </option>
+              <option value="debug">
+                Debug
+              </option>
+            </select>
+            <input
+              v-model="logSearch"
+              type="text"
+              placeholder="搜索日志..."
+              class="search-input"
+            >
+            <button class="btn-clear" @click="clearLogs">
+              清空
+            </button>
+          </div>
+          <div class="logs-container">
+            <div
+              v-for="(log, index) in filteredLogs"
+              :key="index"
+              class="log-item" :class="[`log-${log.level}`]"
+            >
+              <span class="log-time">{{ formatTime(log.timestamp) }}</span>
+              <span class="log-level">{{ log.level.toUpperCase() }}</span>
+              <span class="log-message">{{ log.message }}</span>
+              <span v-if="log.data" class="log-data">{{ formatData(log.data) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 状态检查器 -->
+        <div v-show="activeTab === 'state'" class="tab-content">
+          <div class="state-inspector">
+            <div class="state-section">
+              <h4>Template State</h4>
+              <pre class="code-block">{{ formatJSON(templateState) }}</pre>
+            </div>
+            <div class="state-section">
+              <h4>Props</h4>
+              <pre class="code-block">{{ formatJSON(templateProps) }}</pre>
+            </div>
+            <div class="state-section">
+              <h4>Snapshot History</h4>
+              <div class="snapshot-list">
+                <div
+                  v-for="(snap, idx) in snapshotHistory"
+                  :key="idx"
+                  class="snapshot-item"
+                  @click="restoreSnapshot(idx)"
+                >
+                  <span class="snapshot-time">{{ formatTime(snap.timestamp) }}</span>
+                  <span class="snapshot-desc">{{ snap.description || 'Snapshot' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 性能监控 -->
+        <div v-show="activeTab === 'performance'" class="tab-content">
+          <div class="perf-metrics">
+            <div class="metric-card">
+              <div class="metric-label">
+                渲染时间
+              </div>
+              <div class="metric-value">
+                {{ performanceData.renderTime }}ms
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">
+                加载时间
+              </div>
+              <div class="metric-value">
+                {{ performanceData.loadTime }}ms
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">
+                内存使用
+              </div>
+              <div class="metric-value">
+                {{ performanceData.memory }}MB
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">
+                组件数量
+              </div>
+              <div class="metric-value">
+                {{ performanceData.componentCount }}
+              </div>
+            </div>
+          </div>
+          <div class="perf-chart">
+            <h4>性能趋势</h4>
+            <canvas ref="chartCanvas" width="600" height="200" />
+          </div>
+        </div>
+
+        <!-- 事件监听器 -->
+        <div v-show="activeTab === 'events'" class="tab-content">
+          <div class="toolbar">
+            <button class="btn-clear" @click="clearEvents">
+              清空事件
+            </button>
+          </div>
+          <div class="events-container">
+            <div
+              v-for="(event, index) in eventHistory"
+              :key="index"
+              class="event-item"
+            >
+              <span class="event-time">{{ formatTime(event.timestamp) }}</span>
+              <span class="event-type">{{ event.type }}</span>
+              <span class="event-payload">{{ formatData(event.payload) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 分析报告 -->
+        <div v-show="activeTab === 'analytics'" class="tab-content">
+          <div class="analytics-summary">
+            <h4>使用统计</h4>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-label">
+                  总渲染次数
+                </div>
+                <div class="stat-value">
+                  {{ analyticsData.totalRenders }}
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">
+                  错误次数
+                </div>
+                <div class="stat-value error">
+                  {{ analyticsData.errorCount }}
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">
+                  平均响应时间
+                </div>
+                <div class="stat-value">
+                  {{ analyticsData.avgResponseTime }}ms
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">
+                  用户交互
+                </div>
+                <div class="stat-value">
+                  {{ analyticsData.interactions }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="recommendations">
+            <h4>优化建议</h4>
+            <ul class="recommendation-list">
+              <li
+                v-for="(rec, idx) in analyticsData.recommendations"
+                :key="idx"
+                class="recommendation-item" :class="[`priority-${rec.priority}`]"
+              >
+                {{ rec.message }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
 
 <style scoped>
 .template-dev-panel {

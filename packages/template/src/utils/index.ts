@@ -3,60 +3,60 @@
  */
 
 export {
-  TemplateError,
-  TemplateErrorType,
-  ErrorRecoveryManager,
-  GlobalTemplateErrorHandler,
   createErrorBoundary,
   defaultRecoveryStrategies,
+  ErrorRecoveryManager,
+  type ErrorRecoveryStrategy,
   globalErrorHandler,
-  type ErrorRecoveryStrategy
+  GlobalTemplateErrorHandler,
+  TemplateError,
+  TemplateErrorType
 } from './errorHandler'
 
 export {
-  TemplateTypeGenerator,
-  typeGenerator,
-  inferTypeFromComponent,
-  generateTypeScriptInterface,
-  generateTypeDeclarationFile,
-  validateComponentProps,
-  generateTypeGuard,
-  generateJSONSchema,
-  type TemplateTypeDefinition,
-  type PropTypeDefinition,
-  type EmitTypeDefinition,
-  type SlotTypeDefinition,
-  type TypeGeneratorOptions
-} from './typeGenerator'
+  arrayToObject,
+  debounce,
+  deepClone,
+  deepMerge,
+  formatBytes,
+  generateId,
+  get,
+  groupBy,
+  isEmpty,
+  isObject,
+  omit,
+  pick,
+  retry,
+  set,
+  sleep,
+  throttle,
+  unset
+} from './helpers'
 
 export {
-  TemplateAnalytics,
-  globalAnalytics,
-  useTemplateAnalytics,
-  withPerformanceTracking,
-  type TemplateUsage,
-  type PerformanceMetrics,
-  type InteractionEvent,
+  type AnalyticsConfig,
   type AnalyticsReport,
-  type AnalyticsConfig
+  globalAnalytics,
+  type InteractionEvent,
+  type PerformanceMetrics,
+  TemplateAnalytics,
+  type TemplateUsage,
+  useTemplateAnalytics,
+  withPerformanceTracking
 } from './templateAnalytics'
 
 export {
-  deepClone,
-  deepMerge,
-  isObject,
-  isEmpty,
-  debounce,
-  throttle,
-  generateId,
-  formatBytes,
-  sleep,
-  retry,
-  get,
-  set,
-  unset,
-  pick,
-  omit,
-  arrayToObject,
-  groupBy
-} from './helpers'
+  type EmitTypeDefinition,
+  generateJSONSchema,
+  generateTypeDeclarationFile,
+  generateTypeGuard,
+  generateTypeScriptInterface,
+  inferTypeFromComponent,
+  type PropTypeDefinition,
+  type SlotTypeDefinition,
+  type TemplateTypeDefinition,
+  TemplateTypeGenerator,
+  typeGenerator,
+  type TypeGeneratorOptions,
+  validateComponentProps
+} from './typeGenerator'

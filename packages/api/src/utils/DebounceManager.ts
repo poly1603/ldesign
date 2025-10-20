@@ -27,6 +27,17 @@ interface DebounceItem {
 export class DebounceManagerImpl implements DebounceManager {
   /** 防抖项映射 */
   private debounceItems = new Map<string, DebounceItem>()
+  
+  /** 最大防抖项数量 */
+  private readonly maxItems = 1000
+  
+  /** 自动清理定时器 */
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null
+  
+  constructor() {
+    // 启动自动清理，每分60秒清理一次过期项
+    this.startAutoCleanup()
+  }
 
   /**
    * 执行防抖函数
@@ -36,6 +47,12 @@ export class DebounceManagerImpl implements DebounceManager {
     fn: () => Promise<T>,
     delay: number,
   ): Promise<T> {
+    // 检查是否超过最大限制
+    if (this.debounceItems.size >= this.maxItems) {
+      // 清理最早的项
+      this.cleanupOldest()
+    }
+    
     return new Promise<T>((resolve, reject) => {
       // 取消之前的防抖
       this.cancel(key)
@@ -190,6 +207,7 @@ export class DebounceManagerImpl implements DebounceManager {
     this.debounceItems.forEach((item, key) => {
       if (now - item.createdAt > maxAge) {
         clearTimeout(item.timerId)
+        item.reject(new Error('Debounce timeout'))
         toDelete.push(key)
       }
     })
@@ -197,6 +215,45 @@ export class DebounceManagerImpl implements DebounceManager {
     toDelete.forEach((key) => {
       this.debounceItems.delete(key)
     })
+  }
+  
+  /**
+   * 清理最早的防抖项
+   */
+  private cleanupOldest(): void {
+    let oldestKey: string | null = null
+    let oldestTime = Date.now()
+    
+    for (const [key, item] of this.debounceItems) {
+      if (item.createdAt < oldestTime) {
+        oldestTime = item.createdAt
+        oldestKey = key
+      }
+    }
+    
+    if (oldestKey) {
+      this.cancel(oldestKey)
+    }
+  }
+  
+  /**
+   * 启动自动清理
+   */
+  private startAutoCleanup(): void {
+    this.cleanupTimer = globalThis.setInterval(() => {
+      this.cleanup()
+    }, 60000) // 每分钟清理一次
+  }
+  
+  /**
+   * 销毁管理器
+   */
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+    this.clear()
   }
 }
 

@@ -4,9 +4,9 @@
  * Advanced composable hooks for template lifecycle management
  */
 
-import type { Component, Ref, ComputedRef, WatchStopHandle } from 'vue'
-import { ref, computed, watch, watchEffect, onMounted, onUnmounted, shallowRef, triggerRef } from 'vue'
-import type { DeviceType, TemplateMetadata, TemplateLoadOptions } from '../types'
+import type { Component, ComputedRef, Ref, WatchStopHandle } from 'vue'
+import type { DeviceType, TemplateLoadOptions, TemplateMetadata } from '../types'
+import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { getManager } from '../core/manager'
 
 /**
@@ -75,7 +75,7 @@ export function useTemplateLifecycle(
   /**
    * Load template with lifecycle hooks
    */
-  const loadTemplate = async () => {
+  async function loadTemplate() {
     try {
       loading.value = true
       error.value = null
@@ -124,12 +124,12 @@ export function useTemplateLifecycle(
   /**
    * Retry loading with exponential backoff
    */
-  const retry = async () => {
+  async function retry() {
     retryCount.value++
     lifecycle?.onRetry?.(retryCount.value)
     
     // Exponential backoff: 1s, 2s, 4s, 8s, max 8s
-    const delay = Math.min(1000 * Math.pow(2, retryCount.value - 1), 8000)
+    const delay = Math.min(1000 * 2**(retryCount.value - 1), 8000)
     
     await new Promise(resolve => setTimeout(resolve, delay))
     await loadTemplate()
@@ -239,7 +239,7 @@ export function useTemplatePrefetch(
   const {
     strategy = 'smart',
     delay = 0,
-    priority = 'normal',
+    // priority = 'normal', // Not used currently
     maxConcurrent = 3
   } = options
   
@@ -282,7 +282,7 @@ export function useTemplatePrefetch(
           }
           break
           
-        case 'smart':
+        case 'smart': {
           // Load in batches
           const batches = []
           for (let i = 0; i < templates.length; i += maxConcurrent) {
@@ -304,6 +304,7 @@ export function useTemplatePrefetch(
             }
           }
           break
+        }
           
         case 'idle':
           // Use requestIdleCallback if available

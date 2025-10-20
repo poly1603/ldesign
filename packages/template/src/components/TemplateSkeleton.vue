@@ -57,57 +57,57 @@ const skeletonClass = computed(() => {
   <div :class="skeletonClass">
     <!-- Default skeleton -->
     <div v-if="type === 'default'" class="skeleton-default">
-      <div class="skeleton-header" v-if="title">
-        <div class="skeleton-line skeleton-title"></div>
+      <div v-if="title" class="skeleton-header">
+        <div class="skeleton-line skeleton-title" />
       </div>
       <div class="skeleton-content">
-        <div v-for="i in rows" :key="i" class="skeleton-line" :style="{ width: `${100 - i * 10}%` }"></div>
+        <div v-for="i in rows" :key="i" class="skeleton-line" :style="{ width: `${100 - i * 10}%` }" />
       </div>
     </div>
 
     <!-- Card skeleton -->
     <div v-else-if="type === 'card'" class="skeleton-card">
-      <div class="skeleton-card-image"></div>
+      <div class="skeleton-card-image" />
       <div class="skeleton-card-body">
-        <div class="skeleton-line skeleton-title"></div>
-        <div class="skeleton-line skeleton-subtitle"></div>
-        <div class="skeleton-line skeleton-text"></div>
-        <div class="skeleton-line skeleton-text" style="width: 60%"></div>
+        <div class="skeleton-line skeleton-title" />
+        <div class="skeleton-line skeleton-subtitle" />
+        <div class="skeleton-line skeleton-text" />
+        <div class="skeleton-line skeleton-text" style="width: 60%" />
       </div>
     </div>
 
     <!-- List skeleton -->
     <div v-else-if="type === 'list'" class="skeleton-list">
       <div v-for="i in rows" :key="i" class="skeleton-list-item">
-        <div v-if="avatar" class="skeleton-avatar"></div>
+        <div v-if="avatar" class="skeleton-avatar" />
         <div class="skeleton-list-content">
-          <div class="skeleton-line skeleton-title"></div>
-          <div class="skeleton-line skeleton-text"></div>
+          <div class="skeleton-line skeleton-title" />
+          <div class="skeleton-line skeleton-text" />
         </div>
       </div>
     </div>
 
     <!-- Article skeleton -->
     <div v-else-if="type === 'article'" class="skeleton-article">
-      <div class="skeleton-line skeleton-h1"></div>
-      <div class="skeleton-line skeleton-meta"></div>
+      <div class="skeleton-line skeleton-h1" />
+      <div class="skeleton-line skeleton-meta" />
       <div class="skeleton-paragraph">
-        <div v-for="i in 5" :key="`p1-${i}`" class="skeleton-line"></div>
+        <div v-for="i in 5" :key="`p1-${i}`" class="skeleton-line" />
       </div>
       <div class="skeleton-paragraph">
-        <div v-for="i in 4" :key="`p2-${i}`" class="skeleton-line"></div>
+        <div v-for="i in 4" :key="`p2-${i}`" class="skeleton-line" />
       </div>
     </div>
 
     <!-- Form skeleton -->
     <div v-else-if="type === 'form'" class="skeleton-form">
       <div v-for="i in rows" :key="i" class="skeleton-form-group">
-        <div class="skeleton-line skeleton-label"></div>
-        <div class="skeleton-line skeleton-input"></div>
+        <div class="skeleton-line skeleton-label" />
+        <div class="skeleton-line skeleton-input" />
       </div>
       <div class="skeleton-form-actions">
-        <div class="skeleton-button"></div>
-        <div class="skeleton-button skeleton-button-secondary"></div>
+        <div class="skeleton-button" />
+        <div class="skeleton-button skeleton-button-secondary" />
       </div>
     </div>
 

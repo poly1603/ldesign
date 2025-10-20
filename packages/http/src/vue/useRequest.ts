@@ -57,7 +57,7 @@ export function useRequest<T = any>(
 
       // 转换数据
       let responseData = response.data
-      if (options.transform) {
+      if (typeof options.transform === 'function') {
         responseData = options.transform(response.data)
       }
 
@@ -66,7 +66,7 @@ export function useRequest<T = any>(
       finished.value = true
 
       // 调用成功回调
-      if (options.onSuccess) {
+      if (typeof options.onSuccess === 'function') {
         options.onSuccess(responseData, response)
       }
 
@@ -81,9 +81,9 @@ export function useRequest<T = any>(
         finished.value = true
 
         // 调用错误回调
-        if (options.onError) {
-          options.onError(httpError)
-        }
+      if (typeof options.onError === 'function') {
+        options.onError(httpError)
+      }
       }
 
       throw httpError
@@ -92,7 +92,7 @@ export function useRequest<T = any>(
       loading.value = false
 
       // 调用完成回调
-      if (options.onFinally) {
+      if (typeof options.onFinally === 'function') {
         options.onFinally()
       }
     }
@@ -118,7 +118,7 @@ export function useRequest<T = any>(
    * 重置状态
    */
   const reset = (): void => {
-    data.value = options.initialData ?? null
+    data.value = (options.initialData as T | null) ?? null
     loading.value = false
     error.value = null
     finished.value = false
@@ -163,7 +163,7 @@ export function useAsyncRequest<T = any>(
   requestFn: () => Promise<ResponseData<T>>,
   options: Omit<UseRequestOptions<T>, 'immediate'> = {},
 ): UseRequestReturn<T> {
-  const data = ref<T | null>(options.initialData ?? null)
+  const data = ref<T | null>((options.initialData as T | null) ?? null)
   const loading = ref<boolean>(false)
   const error = ref<HttpError | null>(null)
   const finished = ref<boolean>(false)
@@ -183,14 +183,14 @@ export function useAsyncRequest<T = any>(
       const response = await requestFn()
 
       let responseData = response.data
-      if (options.transform) {
+      if (typeof options.transform === 'function') {
         responseData = options.transform(response.data)
       }
 
       data.value = responseData
       finished.value = true
 
-      if (options.onSuccess) {
+      if (typeof options.onSuccess === 'function') {
         options.onSuccess(responseData, response)
       }
 
@@ -203,7 +203,7 @@ export function useAsyncRequest<T = any>(
         error.value = httpError
         finished.value = true
 
-        if (options.onError) {
+        if (typeof options.onError === 'function') {
           options.onError(httpError)
         }
       }
@@ -213,7 +213,7 @@ export function useAsyncRequest<T = any>(
     finally {
       loading.value = false
 
-      if (options.onFinally) {
+      if (typeof options.onFinally === 'function') {
         options.onFinally()
       }
     }
@@ -227,7 +227,7 @@ export function useAsyncRequest<T = any>(
   }
 
   const reset = (): void => {
-    data.value = options.initialData ?? null
+    data.value = (options.initialData as T | null) ?? null
     loading.value = false
     error.value = null
     finished.value = false

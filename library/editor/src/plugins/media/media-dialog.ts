@@ -14,6 +14,7 @@ class MediaDialog {
   private overlay: HTMLDivElement | null = null
   private callback: ((url: string, file?: File) => void) | null = null
   private uploadHandler: UploadHandler | null = null
+  private activeProgresses: Map<string, any> = new Map()
   
   /**
    * Set upload handler
@@ -171,8 +172,8 @@ class MediaDialog {
           ${type === 'image' ? `
           <div style="margin-top: 16px; padding: 12px; background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 6px;">
             <p style="margin: 0 0 8px 0; font-size: 12px; color: #1e40af; font-weight: 500;">支持的图片格式：</p>
-            <p style="margin: 0; font-size: 12px; color: #3730a3;">�?直接链接：JPG, PNG, GIF, SVG, WebP</p>
-            <p style="margin: 0; font-size: 12px; color: #3730a3;">�?图床服务：Imgur, 图床�?/p>
+            <p style="margin: 0; font-size: 12px; color: #3730a3;">�?直接链接：JPG, PNG, GIF, SVG, WebP</p>
+            <p style="margin: 0; font-size: 12px; color: #3730a3;">�?图床服务：Imgur, 图床�?/p>
           </div>
           ` : ''}
         </div>
@@ -325,12 +326,12 @@ class MediaDialog {
     fileInput.addEventListener('change', (e) => {
       const files = (e.target as HTMLInputElement).files
       if (files && files.length > 0) {
-        // 支持多文件选择，自动插�?
+        // 支持多文件选择，自动插�?
         handleMultipleFiles(files)
       }
     })
     
-    // 处理多个文件，自动插�?
+    // 处理多个文件，自动插�?
     const handleMultipleFiles = async (files: FileList) => {
       const cb = this.callback
       if (!cb) {
@@ -340,7 +341,7 @@ class MediaDialog {
       
       console.log(`[MediaDialog] Processing ${files.length} file(s) for auto-insertion`)
       
-      // 关闭对话�?
+      // 关闭对话�?
       this.close()
       
       // 处理每个文件
@@ -351,14 +352,27 @@ class MediaDialog {
           if (this.uploadHandler) {
             console.log(`[MediaDialog] Uploading file ${i + 1}/${files.length}: ${file.name}`)
             
-            // 显示上传进度（可选）
-            const url = await this.uploadHandler(file, (progress) => {
-              console.log(`[MediaDialog] Upload progress for ${file.name}: ${progress.percent}%`)
-              // TODO: 可以在这里显示进度条
-            })
+            // 创建并显示上传进度条
+            const progressUI = this.createUploadProgress(file.name, file.size)
             
-            console.log(`[MediaDialog] File uploaded successfully: ${url}`)
-            cb(url, file)
+            try {
+              const url = await this.uploadHandler(file, (progress) => {
+                console.log(`[MediaDialog] Upload progress for ${file.name}: ${progress.percent}%`)
+                // 更新进度条
+                progressUI.updateProgress(
+                  progress.percent, 
+                  `上传中... ${progress.loaded} / ${progress.total}`
+                )
+              })
+              
+              console.log(`[MediaDialog] File uploaded successfully: ${url}`)
+              progressUI.success('上传完成！')
+              cb(url, file)
+            } catch (err) {
+              console.error(`[MediaDialog] Upload failed for ${file.name}:`, err)
+              progressUI.error('上传失败')
+              throw err
+            }
           } else {
             // 没有上传处理器，使用 data URL
             const reader = new FileReader()
@@ -373,7 +387,7 @@ class MediaDialog {
           }
         } catch (err) {
           console.error(`[MediaDialog] Error processing file ${file.name}:`, err)
-          // 继续处理下一个文�?
+          // 继续处理下一个文�?
         }
       }
     }
@@ -487,6 +501,93 @@ class MediaDialog {
   
   private updateInsertButton: (() => void) | null = null
   private escHandler: ((e: KeyboardEvent) => void) | null = null
+  
+  /**
+   * 创建上传进度条
+   */
+  private createUploadProgress(fileName: string, fileSize: number): any {
+    const progressId = `progress-${Date.now()}`
+    
+    const container = document.createElement('div')
+    container.className = 'upload-progress'
+    container.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 320px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      padding: 16px;
+      z-index: 10000;
+    `
+    
+    container.innerHTML = `
+      <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+        <div style="flex: 1;">
+          <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">${fileName}</div>
+          <div class="status" style="font-size: 12px; color: #6b7280;">准备上传...</div>
+        </div>
+      </div>
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+          <span class="percent">0%</span>
+          <span>${this.formatFileSize(fileSize)}</span>
+        </div>
+        <div style="height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden;">
+          <div class="progress-fill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #3b82f6, #10b981); transition: width 0.3s;"></div>
+        </div>
+      </div>
+    `
+    
+    document.body.appendChild(container)
+    
+    const progressBar = container.querySelector('.progress-fill') as HTMLElement
+    const percentText = container.querySelector('.percent') as HTMLElement
+    const statusText = container.querySelector('.status') as HTMLElement
+    
+    const progressAPI = {
+      updateProgress: (percent: number, status?: string) => {
+        progressBar.style.width = `${percent}%`
+        percentText.textContent = `${Math.round(percent)}%`
+        if (status) {
+          statusText.textContent = status
+        }
+      },
+      success: (message: string = '上传完成！') => {
+        progressBar.style.background = '#10b981'
+        statusText.textContent = message
+        statusText.style.color = '#10b981'
+        setTimeout(() => {
+          container.remove()
+          this.activeProgresses.delete(progressId)
+        }, 2000)
+      },
+      error: (message: string = '上传失败') => {
+        progressBar.style.background = '#ef4444'
+        statusText.textContent = message
+        statusText.style.color = '#ef4444'
+        setTimeout(() => {
+          container.remove()
+          this.activeProgresses.delete(progressId)
+        }, 3000)
+      }
+    }
+    
+    this.activeProgresses.set(progressId, progressAPI)
+    return progressAPI
+  }
+  
+  /**
+   * 格式化文件大小
+   */
+  private formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 B'
+    const units = ['B', 'KB', 'MB', 'GB']
+    const k = 1024
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return `${(bytes / Math.pow(k, i)).toFixed(2)} ${units[i]}`
+  }
   
   /**
    * Close the dialog

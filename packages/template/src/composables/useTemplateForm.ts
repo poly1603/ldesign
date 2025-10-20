@@ -4,8 +4,7 @@
  * 提供双向数据绑定、表单验证、自动保存等功能
  */
 
-import { ref, computed, reactive, watch, toRefs, unref, isRef } from 'vue'
-import type { Ref, UnwrapRef, ComputedRef } from 'vue'
+import { computed, onUnmounted, reactive, readonly, ref, watch } from 'vue'
 
 /**
  * 验证规则类型
@@ -91,13 +90,13 @@ const validators = {
   min: (value: any, rule: ValidationRule): boolean | string => {
     if (rule.min === undefined) return true
     const num = Number(value)
-    return !isNaN(num) && num >= rule.min
+    return !Number.isNaN(num) && num >= rule.min
   },
   
   max: (value: any, rule: ValidationRule): boolean | string => {
     if (rule.max === undefined) return true
     const num = Number(value)
-    return !isNaN(num) && num <= rule.max
+    return !Number.isNaN(num) && num <= rule.max
   },
   
   minLength: (value: any, rule: ValidationRule): boolean | string => {
@@ -119,15 +118,15 @@ const validators = {
   
   email: (value: any, rule: ValidationRule): boolean | string => {
     if (!rule.email) return true
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
     return emailRegex.test(String(value))
   },
   
   url: (value: any, rule: ValidationRule): boolean | string => {
     if (!rule.url) return true
     try {
-      new URL(String(value))
-      return true
+      const _url = new URL(String(value))
+      return !!_url
     } catch {
       return false
     }
@@ -203,9 +202,9 @@ export function useTemplateForm<T extends Record<string, any>>(
   options: FormOptions<T> = {}
 ) {
   // 表单数据
-  const formData = reactive<T>(
+  const formData = reactive(
     (options.initialValues || {}) as T
-  )
+  ) as T
   
   // 表单状态
   const errors = reactive(new Map<keyof T, string>())
@@ -218,18 +217,74 @@ export function useTemplateForm<T extends Record<string, any>>(
   let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
   
   /**
+   * 保存表单
+   */
+  const saveForm = async () => {
+    if (!dirty.value) return
+    
+    try {
+      await options.onSave?.(formData)
+      dirty.value = false
+    } catch (error) {
+      console.error('Auto-save failed:', error)
+    }
+  }
+  
+  /**
+   * 调度自动保存
+   */
+  const scheduleAutoSave = () => {
+    if (autoSaveTimer) {
+      clearTimeout(autoSaveTimer)
+    }
+    
+    autoSaveTimer = setTimeout(() => {
+      saveForm()
+    }, options.autoSaveDelay || 1000)
+  }
+  
+  /**
+   * 验证单个字段
+   */
+  const validateSingleField = async <K extends keyof T>(field: K) => {
+    const value = (formData as T)[field]
+    const rules = options.rules?.[field]
+    
+    if (!rules) {
+      errors.delete(field)
+      return true
+    }
+    
+    validating.value = true
+    
+    try {
+    const error = await validateField(field, value, rules, formData as T)
+      
+      if (error) {
+        errors.set(field, error)
+        return false
+      } else {
+        errors.delete(field)
+        return true
+      }
+    } finally {
+      validating.value = false
+    }
+  }
+  
+  /**
    * 设置字段值
    */
   const setFieldValue = <K extends keyof T>(field: K, value: T[K]) => {
-    formData[field] = value
+    (formData as T)[field] = value
     dirty.value = true
     
     // 标记为已触摸
-    touched.add(field)
+    touched.add(field as any)
     
     // 验证字段
     if (options.validateOnChange) {
-      validateSingleField(field)
+      validateSingleField(field as any)
     }
     
     // 触发自动保存
@@ -248,7 +303,7 @@ export function useTemplateForm<T extends Record<string, any>>(
     // 验证所有更改的字段
     if (options.validateOnChange) {
       Object.keys(values).forEach(field => {
-        validateSingleField(field as keyof T)
+        validateSingleField(field as any)
       })
     }
     
@@ -262,37 +317,9 @@ export function useTemplateForm<T extends Record<string, any>>(
    * 获取字段值
    */
   const getFieldValue = <K extends keyof T>(field: K): T[K] => {
-    return formData[field]
+    return (formData as T)[field]
   }
   
-  /**
-   * 验证单个字段
-   */
-  const validateSingleField = async <K extends keyof T>(field: K) => {
-    const value = formData[field]
-    const rules = options.rules?.[field]
-    
-    if (!rules) {
-      errors.delete(field)
-      return true
-    }
-    
-    validating.value = true
-    
-    try {
-      const error = await validateField(field, value, rules, formData)
-      
-      if (error) {
-        errors.set(field, error)
-        return false
-      } else {
-        errors.delete(field)
-        return true
-      }
-    } finally {
-      validating.value = false
-    }
-  }
   
   /**
    * 验证所有字段
@@ -306,8 +333,8 @@ export function useTemplateForm<T extends Record<string, any>>(
     try {
       const validationResults = await Promise.all(
         Object.entries(options.rules).map(async ([field, rules]) => {
-          const value = formData[field as keyof T]
-          const error = await validateField(field as keyof T, value, rules, formData)
+          const value = (formData as T)[field as keyof T]
+          const error = await validateField(field as keyof T, value, rules, formData as T)
           
           if (error) {
             errors.set(field as keyof T, error)
@@ -377,32 +404,6 @@ export function useTemplateForm<T extends Record<string, any>>(
     }
   }
   
-  /**
-   * 调度自动保存
-   */
-  const scheduleAutoSave = () => {
-    if (autoSaveTimer) {
-      clearTimeout(autoSaveTimer)
-    }
-    
-    autoSaveTimer = setTimeout(() => {
-      saveForm()
-    }, options.autoSaveDelay || 1000)
-  }
-  
-  /**
-   * 保存表单
-   */
-  const saveForm = async () => {
-    if (!dirty.value) return
-    
-    try {
-      await options.onSave?.(formData)
-      dirty.value = false
-    } catch (error) {
-      console.error('Auto-save failed:', error)
-    }
-  }
   
   /**
    * 字段处理器
@@ -412,12 +413,12 @@ export function useTemplateForm<T extends Record<string, any>>(
       get: () => formData[field],
       set: (value) => setFieldValue(field, value)
     }),
-    error: computed(() => errors.get(field)),
-    touched: computed(() => touched.has(field)),
+    error: computed(() => errors.get(field as any)),
+    touched: computed(() => touched.has(field as any)),
     onBlur: () => {
-      touched.add(field)
+      touched.add(field as any)
       if (options.validateOnBlur) {
-        validateSingleField(field)
+        validateSingleField(field as any)
       }
     },
     onChange: (value: T[K]) => {
@@ -436,13 +437,25 @@ export function useTemplateForm<T extends Record<string, any>>(
   const hasErrors = computed(() => errors.size > 0)
   
   // 监听数据变化
-  watch(
+  const stopWatching = watch(
     () => formData,
     () => {
       dirty.value = true
     },
     { deep: true }
   )
+  
+  // 清理函数
+  const cleanup = () => {
+    if (autoSaveTimer) {
+      clearTimeout(autoSaveTimer)
+      autoSaveTimer = null
+    }
+    stopWatching()
+  }
+  
+  // 组件卸载时清理
+  onUnmounted(cleanup)
   
   return {
     // 数据
@@ -505,7 +518,7 @@ export function useTemplateModel<T extends Record<string, any>>(
   let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
   
   // 监听变化
-  watch(model, (newValue) => {
+  const stopWatching = watch(model, (newValue) => {
     options?.onChange?.(newValue)
     
     if (options?.autoSave) {
@@ -519,6 +532,15 @@ export function useTemplateModel<T extends Record<string, any>>(
       }, options.autoSaveDelay || 1000)
     }
   }, { deep: true })
+  
+  // 组件卸载时清理
+  onUnmounted(() => {
+    if (autoSaveTimer) {
+      clearTimeout(autoSaveTimer)
+      autoSaveTimer = null
+    }
+    stopWatching()
+  })
   
   const reset = () => {
     model.value = { ...original.value }

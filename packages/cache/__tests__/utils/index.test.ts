@@ -194,7 +194,7 @@ describe('utils', () => {
 
     it('should throttle function calls', () => {
       const fn = vi.fn()
-      const throttledFn = throttle(fn, 100)
+    const throttledFn = throttle(fn, { flushInterval: 100 })
 
       // 第一次调用应该立即执行
       throttledFn('arg1')

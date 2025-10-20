@@ -61,7 +61,7 @@ export function createHttpEnginePlugin(
     name = 'http',
     version = '1.0.0',
     clientConfig = {},
-    globalInjection: _globalInjection = true,
+    // globalInjection is currently unused
     globalPropertyName = '$http',
     client: providedClient,
     globalConfig,

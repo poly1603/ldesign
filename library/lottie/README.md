@@ -10,12 +10,13 @@ A powerful, feature-rich Lottie animation manager for any framework.
 
 ## ✨ Features
 
-- 🎯 **Framework Agnostic** - Works with Vanilla JS, Vue, React, and more
-- ⚡️ **High Performance** - Built-in instance pooling and caching
-- 🎨 **Rich Features** - Extensive configuration and event system
-- 📦 **Small Bundle** - Tree-shakeable, optimized builds
-- 🔧 **Developer Friendly** - Full TypeScript support
-- 📊 **Performance Monitoring** - Real-time metrics tracking
+- 🎯 **Framework Agnostic** - Vue 3, React, Web Components, Vanilla JS
+- 🎨 **16种使用方式** - Composable, Hook, 组件, 指令, Web Components
+- ⚡️ **极致性能** - Web Worker, 虚拟化渲染, 批量渲染, 自适应帧率
+- 💾 **智能内存管理** - 自动监控, 压力检测, 自动清理
+- 📦 **Tree-shakeable** - 按需加载, 优化包体积
+- 🔧 **TypeScript** - 完整类型定义, 智能提示
+- 📊 **Performance Monitoring** - 实时性能追踪和优化建议
 
 ## 📦 Installation
 
@@ -40,40 +41,51 @@ const animation = createLottie({
 animation.play()
 ```
 
-### Vue 3
+### Vue 3 (9种用法)
 
 ```vue
+<!-- Composable -->
 <script setup>
 import { useLottie } from '@ldesign/lottie/vue'
-
-const { play, pause, isPlaying } = useLottie({
-  container: ref(null),
-  path: 'animation.json',
-  loop: true
-})
+const { play, pause } = useLottie({ container: ref(null), path: 'animation.json' })
 </script>
 
-<template>
-  <div ref="container" />
-  <button @click="play">Play</button>
-</template>
+<!-- 组件 -->
+<LottieAnimation path="animation.json" :loop="true" :autoplay="true" />
+<LottiePlayer path="animation.json" :showControls="true" />
+
+<!-- 指令 -->
+<div v-lottie="'animation.json'" />
+<div v-lottie-hover="'animation.json'" />
+<div v-lottie-scroll="'animation.json'" />
 ```
 
-### React
+### React (5种用法)
 
 ```tsx
-import { Lottie } from '@ldesign/lottie/react'
+// Hook
+import { useLottie } from '@ldesign/lottie/react'
+const { containerRef, play, pause } = useLottie({ path: 'animation.json' })
 
-function App() {
-  return (
-    <Lottie
-      path="animation.json"
-      loop
-      autoplay
-      style={{ width: 300, height: 300 }}
-    />
-  )
-}
+// 组件
+import { LottieAnimation, LottiePlayer } from '@ldesign/lottie/react'
+<LottieAnimation path="animation.json" loop autoplay />
+<LottiePlayer path="animation.json" showControls />
+
+// Context
+import { LottieProvider, useLottieContext } from '@ldesign/lottie/react'
+```
+
+### Web Components (框架无关)
+
+```html
+<!-- 可在任何框架中使用 -->
+<lottie-animation src="animation.json" loop="true" autoplay="true"></lottie-animation>
+<lottie-player src="animation.json" controls="true"></lottie-player>
+
+<script>
+  document.querySelector('lottie-animation').play()
+</script>
 ```
 
 ## 📚 Documentation

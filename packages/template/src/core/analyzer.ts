@@ -2,8 +2,8 @@
  * 模板分析工具
  */
 
-import type { Template, TemplateConfig } from '../types'
-import { ref, reactive, computed } from 'vue'
+import type { Template } from '../types'
+import { reactive, ref } from 'vue'
 
 /**
  * 模板使用统计
@@ -72,56 +72,80 @@ export interface ComplexityMetrics {
 /**
  * 模板统计分析器
  */
+// 公共工具函数
+const createStatsEntry = (): TemplateUsageStats => ({
+  templateId: '',
+  templateName: '',
+  usageCount: 0,
+  lastUsed: 0,
+  firstUsed: 0,
+  averageRenderTime: 0,
+  errorCount: 0,
+  successRate: 100,
+  userPreference: 0
+})
+
+const calculateAverage = (numbers: number[]): number => {
+  if (numbers.length === 0) return 0
+  const sum = numbers.reduce((a, b) => a + b, 0)
+  return sum / numbers.length
+}
+
+const limitArraySize = <T>(arr: T[], maxSize: number): T[] => {
+  while (arr.length > maxSize) {
+    arr.shift()
+  }
+  return arr
+}
+
 export class TemplateStatisticsAnalyzer {
   private usageStats: Map<string, TemplateUsageStats> = new Map()
   private performanceData: Map<string, number[]> = new Map()
   private errorLogs: Map<string, any[]> = new Map()
+  private readonly MAX_PERFORMANCE_ENTRIES = 1000
+  private readonly MAX_ERROR_LOGS = 100
+  private readonly MAX_STATS_ENTRIES = 500
+  private cleanupTimer: ReturnType<typeof setTimeout> | null = null
   
   /**
    * 记录模板使用
    */
   recordUsage(templateId: string, templateName: string) {
     const now = Date.now()
+    let stats = this.usageStats.get(templateId)
     
-    if (!this.usageStats.has(templateId)) {
-      this.usageStats.set(templateId, {
-        templateId,
-        templateName,
-        usageCount: 0,
-        lastUsed: now,
-        firstUsed: now,
-        averageRenderTime: 0,
-        errorCount: 0,
-        successRate: 100,
-        userPreference: 0
-      })
+    if (!stats) {
+      stats = createStatsEntry()
+      stats.templateId = templateId
+      stats.templateName = templateName
+      stats.firstUsed = now
+      this.usageStats.set(templateId, stats)
     }
     
-    const stats = this.usageStats.get(templateId)!
     stats.usageCount++
     stats.lastUsed = now
+    
+    // 触发定期清理
+    this.scheduleCleanup()
   }
   
   /**
    * 记录渲染时间
    */
   recordRenderTime(templateId: string, time: number) {
-    if (!this.performanceData.has(templateId)) {
-      this.performanceData.set(templateId, [])
+    let times = this.performanceData.get(templateId)
+    if (!times) {
+      times = []
+      this.performanceData.set(templateId, times)
     }
     
-    const times = this.performanceData.get(templateId)!
     times.push(time)
-    
-    // 限制存储数量
-    if (times.length > 1000) {
-      times.shift()
-    }
+    limitArraySize(times, this.MAX_PERFORMANCE_ENTRIES)
     
     // 更新平均渲染时间
     const stats = this.usageStats.get(templateId)
     if (stats) {
-      stats.averageRenderTime = times.reduce((a, b) => a + b, 0) / times.length
+      stats.averageRenderTime = calculateAverage(times)
     }
   }
   
@@ -139,6 +163,9 @@ export class TemplateStatisticsAnalyzer {
       error: error.message || String(error),
       stack: error.stack
     })
+    
+    // 限制错误日志大小
+    limitArraySize(errors, this.MAX_ERROR_LOGS)
     
     // 更新错误统计
     const stats = this.usageStats.get(templateId)
@@ -223,6 +250,33 @@ export class TemplateStatisticsAnalyzer {
       this.performanceData.clear()
       this.errorLogs.clear()
     }
+    
+    if (this.cleanupTimer) {
+      clearTimeout(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+  }
+  
+  /**
+   * 定期清理调度
+   */
+  private scheduleCleanup(): void {
+    if (this.cleanupTimer) return
+    
+    this.cleanupTimer = setTimeout(() => {
+      // 清理过旧的统计数据
+      if (this.usageStats.size > this.MAX_STATS_ENTRIES) {
+        const sortedStats = Array.from(this.usageStats.entries())
+          .sort((a, b) => b[1].lastUsed - a[1].lastUsed)
+        
+        // 保留最近使用的
+        const toKeep = sortedStats.slice(0, this.MAX_STATS_ENTRIES)
+        this.usageStats.clear()
+        toKeep.forEach(([id, stats]) => this.usageStats.set(id, stats))
+      }
+      
+      this.cleanupTimer = null
+    }, 60000) // 60秒后执行
   }
 }
 
@@ -232,6 +286,8 @@ export class TemplateStatisticsAnalyzer {
 export class TemplateDependencyAnalyzer {
   private dependencies: Map<string, Set<string>> = new Map()
   private dependents: Map<string, Set<string>> = new Map()
+  private readonly MAX_DEPENDENCIES = 1000
+  private cleanupTimer: ReturnType<typeof setTimeout> | null = null
   
   /**
    * 添加依赖关系
@@ -248,6 +304,9 @@ export class TemplateDependencyAnalyzer {
       this.dependents.set(dependsOn, new Set())
     }
     this.dependents.get(dependsOn)!.add(templateId)
+    
+    // 触发定期清理
+    this.scheduleCleanup()
   }
   
   /**
@@ -388,6 +447,51 @@ export class TemplateDependencyAnalyzer {
     buildChain(templateId)
     return chain
   }
+  
+  /**
+   * 清空依赖数据
+   */
+  clearDependencies(templateId?: string) {
+    if (templateId) {
+      // 清理特定模板的依赖
+      this.dependencies.delete(templateId)
+      // 从被依赖中移除
+      this.dependents.forEach((depts) => depts.delete(templateId))
+      // 清理空的被依赖集合
+      Array.from(this.dependents.entries()).forEach(([id, depts]) => {
+        if (depts.size === 0) this.dependents.delete(id)
+      })
+    } else {
+      this.dependencies.clear()
+      this.dependents.clear()
+    }
+    
+    if (this.cleanupTimer) {
+      clearTimeout(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+  }
+  
+  /**
+   * 定期清理旧依赖
+   */
+  private scheduleCleanup(): void {
+    if (this.cleanupTimer) return
+    
+    this.cleanupTimer = setTimeout(() => {
+      // 限制依赖图大小
+      if (this.dependencies.size > this.MAX_DEPENDENCIES) {
+        const entries = Array.from(this.dependencies.entries())
+        const toRemove = entries.slice(this.MAX_DEPENDENCIES)
+        
+        toRemove.forEach(([id]) => {
+          this.clearDependencies(id)
+        })
+      }
+      
+      this.cleanupTimer = null
+    }, 90000) // 90秒后执行
+  }
 }
 
 /**
@@ -398,6 +502,8 @@ export class TemplatePerformanceAnalyzer {
   private metricsCollector: Map<string, any[]> = new Map()
   private recording = ref(false)
   private startTime: number = 0
+  private readonly MAX_REPORTS = 50
+  private readonly MAX_METRICS_PER_TEMPLATE = 100
   
   /**
    * 开始记录
@@ -453,8 +559,8 @@ export class TemplatePerformanceAnalyzer {
     this.performanceReports.push(report)
     
     // 限制报告数量
-    if (this.performanceReports.length > 100) {
-      this.performanceReports.shift()
+    if (this.performanceReports.length > this.MAX_REPORTS) {
+      this.performanceReports.splice(0, this.performanceReports.length - this.MAX_REPORTS)
     }
     
     return report
@@ -464,16 +570,19 @@ export class TemplatePerformanceAnalyzer {
    * 收集指标
    */
   collectMetrics(templateId: string, metrics: any) {
-    if (!this.recording.value) return
-    
     if (!this.metricsCollector.has(templateId)) {
       this.metricsCollector.set(templateId, [])
     }
-    
-    this.metricsCollector.get(templateId)!.push({
-      ...metrics,
-      timestamp: performance.now() - this.startTime
+    const templateMetrics = this.metricsCollector.get(templateId)!
+    templateMetrics.push({
+      timestamp: Date.now(),
+      ...metrics
     })
+    
+    // 限制每个模板的指标数量
+    if (templateMetrics.length > this.MAX_METRICS_PER_TEMPLATE) {
+      templateMetrics.splice(0, templateMetrics.length - this.MAX_METRICS_PER_TEMPLATE)
+    }
   }
   
   /**
@@ -596,7 +705,7 @@ export class TemplateComplexityAnalyzer {
     // 简化的圈复杂度计算
     let complexity = 1
     
-    const code = template.render?.toString() || ''
+    const code = template.component?.toString() || ''
     
     // 统计条件语句
     complexity += (code.match(/if\s*\(/g) || []).length
@@ -616,7 +725,7 @@ export class TemplateComplexityAnalyzer {
   calculateCognitiveComplexity(template: Template): number {
     // 简化的认知复杂度计算
     let complexity = 0
-    const code = template.render?.toString() || ''
+    const code = template.component?.toString() || ''
     
     // 嵌套深度影响
     let nestingLevel = 0
@@ -638,7 +747,7 @@ export class TemplateComplexityAnalyzer {
    * 计算嵌套深度
    */
   calculateNestingDepth(template: Template): number {
-    const code = template.render?.toString() || ''
+    const code = template.component?.toString() || ''
     let maxDepth = 0
     let currentDepth = 0
     
@@ -658,14 +767,14 @@ export class TemplateComplexityAnalyzer {
    * 计算参数数量
    */
   calculateParameterCount(template: Template): number {
-    return Object.keys(template.props || {}).length
+    return Object.keys(template.config || {}).length
   }
   
   /**
    * 计算代码行数
    */
   calculateLineCount(template: Template): number {
-    const code = template.render?.toString() || ''
+    const code = template.component?.toString() || ''
     return code.split('\n').length
   }
   

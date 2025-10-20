@@ -5,8 +5,8 @@
  */
 
 import type { RouteRecordRaw } from '../../types'
-import { writeFileSync, mkdirSync, existsSync } from 'fs'
-import { join, dirname } from 'path'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 
 // ==================== 类型定义 ====================
 
@@ -136,7 +136,7 @@ export class RouteTypeGenerator {
    */
   private extractParams(path: string): string[] {
     const params: string[] = []
-    const regex = /:([^\/\?]+)/g
+    const regex = /:([^/?]+)/g
     let match: RegExpExecArray | null
     
     while ((match = regex.exec(path)) !== null) {
@@ -489,7 +489,7 @@ export class RouteTypeGenerator {
       const outputPath = join(this.options.outputDir, this.options.filename)
       
       try {
-        const existingContent = require('fs').readFileSync(outputPath, 'utf-8')
+        const existingContent = require('node:fs').readFileSync(outputPath, 'utf-8')
         if (existingContent !== newContent) {
           this.write()
         }
@@ -518,7 +518,7 @@ export function generateRouteTypes(
 // ==================== Vite 插件 ====================
 
 export function vitePluginRouteTypes(options?: TypeGeneratorOptions) {
-  let routes: RouteRecordRaw[] = []
+  const routes: RouteRecordRaw[] = []
   
   return {
     name: 'vite-plugin-route-types',

@@ -3,10 +3,10 @@
  * 提供请求取消、超时自动取消等功能
  */
 import type { ApiPlugin, RequestMiddleware } from '../types'
+import type { RequestCancellationManager } from '../utils/RequestCancellation'
 import {
   CancellationToken,
   createRequestCancellationManager,
-  type RequestCancellationManager,
 } from '../utils/RequestCancellation'
 
 /**
@@ -50,7 +50,7 @@ export function createCancellationPlugin(
 
     // 为每个请求创建取消令牌
     const key = `${ctx.methodName}:${Date.now()}`
-    const token = cancellationManager.createToken()
+    const token = cancellationManager.createToken(key)
 
     requestTokens.set(key, token)
 
@@ -69,7 +69,7 @@ export function createCancellationPlugin(
     }
 
     // 监听取消事件
-    token.onCancelled(() => {
+    token.onCancel(() => {
       requestTokens.delete(key)
     })
 

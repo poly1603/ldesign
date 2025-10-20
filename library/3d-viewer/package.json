@@ -1,0 +1,34 @@
+{
+  "name": "3d-panorama-viewer-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A cross-framework 3D panorama image viewer library",
+  "scripts": {
+    "build": "pnpm -r --filter './packages/*' run build",
+    "build:core": "pnpm --filter @panorama-viewer/core build",
+    "build:vue": "pnpm --filter @panorama-viewer/vue build",
+    "build:react": "pnpm --filter @panorama-viewer/react build",
+    "build:lit": "pnpm --filter @panorama-viewer/lit build",
+    "dev": "pnpm -r --parallel run dev",
+    "dev:vue": "pnpm --filter vue-demo dev",
+    "dev:react": "pnpm --filter react-demo dev",
+    "dev:lit": "pnpm --filter lit-demo dev",
+    "clean": "pnpm -r run clean"
+  },
+  "keywords": [
+    "panorama",
+    "3d",
+    "viewer",
+    "threejs",
+    "vue",
+    "react",
+    "lit"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  }
+}
+

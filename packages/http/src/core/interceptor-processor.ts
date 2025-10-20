@@ -71,7 +71,7 @@ export class InterceptorProcessor {
    * 处理响应拦截器
    */
   async processResponse<T>(response: ResponseData<T>): Promise<ResponseData<T>> {
-    let processedResponse = response
+    let processedResponse = response as ResponseData<unknown>
 
     const interceptors = (
       this.responseInterceptors as InterceptorManagerImpl<ResponseInterceptor>
@@ -88,7 +88,7 @@ export class InterceptorProcessor {
       }
     }
 
-    return processedResponse
+    return processedResponse as ResponseData<T>
   }
 
   /**
@@ -129,7 +129,7 @@ export class InterceptorProcessor {
     fulfilled: (response: ResponseData<T>) => ResponseData<T> | Promise<ResponseData<T>>,
     rejected?: (error: HttpError) => HttpError | Promise<HttpError>,
   ): number {
-    return this.responseInterceptors.use(fulfilled, rejected)
+    return this.responseInterceptors.use(fulfilled as ResponseInterceptor, rejected)
   }
 
   /**
@@ -222,30 +222,32 @@ export class InterceptorProcessor {
     request: RequestConfig,
     adapter: (config: RequestConfig) => Promise<ResponseData<T>>,
   ): Promise<ResponseData<T>> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        // 处理请求拦截器
-        const processedConfig = await this.processRequest(request)
-
-        // 执行适配器请求
-        let response: ResponseData<T>
+    return new Promise((resolve, reject) => {
+      void (async () => {
         try {
-          response = await adapter(processedConfig)
+          // 处理请求拦截器
+          const processedConfig = await this.processRequest(request)
+
+          // 执行适配器请求
+          let response: ResponseData<T>
+          try {
+            response = await adapter(processedConfig)
+          } catch (error) {
+            // 处理错误拦截器
+            const processedError = await this.processError(error as HttpError)
+            reject(processedError)
+            return
+          }
+
+          // 处理响应拦截器
+          const processedResponse = await this.processResponse(response)
+          resolve(processedResponse)
         } catch (error) {
-          // 处理错误拦截器
+          // 处理任何拦截器中的错误
           const processedError = await this.processError(error as HttpError)
           reject(processedError)
-          return
         }
-
-        // 处理响应拦截器
-        const processedResponse = await this.processResponse(response)
-        resolve(processedResponse)
-      } catch (error) {
-        // 处理任何拦截器中的错误
-        const processedError = await this.processError(error as HttpError)
-        reject(processedError)
-      }
+      })()
     })
   }
 
@@ -380,14 +382,14 @@ export function createRetryInterceptor(
     }
     
     // 获取或初始化重试计数
-    const retryCount = (config.retryCount ?? 0) + 1
+    const retryCount = ((config as any).retryCount ?? 0) + 1
     
     if (retryCount > maxRetries) {
       throw error
     }
     
     // 更新重试计数
-    config.retryCount = retryCount
+    (config as any).retryCount = retryCount
     
     // 等待一段时间后重试
     await new Promise(resolve => setTimeout(resolve, retryDelay * retryCount))

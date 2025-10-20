@@ -66,6 +66,14 @@ const defaultConfig: Partial<CryptoEnginePluginOptions> = {
 /**
  * 创建全局 Crypto 实例
  */
+interface EngineLike {
+  logger?: { info?: (...args: unknown[]) => void; error?: (...args: unknown[]) => void }
+  events?: { once?: (event: string, cb: () => void) => void; emit?: (event: string, payload?: unknown) => void }
+  getApp?: () => unknown
+  state?: { set?: (k: string, v: unknown) => void; delete?: (k: string) => void }
+  performance?: { mark?: (label: string) => void }
+}
+
 function createGlobalCryptoInstance(options?: CryptoEnginePluginOptions) {
   return {
     // 核心功能
@@ -125,7 +133,7 @@ export function createCryptoEnginePlugin(
   const {
     name = 'crypto',
     version = '1.0.0',
-    description: _description = 'LDesign Crypto Engine Plugin',
+    // description = 'LDesign Crypto Engine Plugin', // 未使用
     dependencies = [],
     autoInstall = true,
     enablePerformanceMonitoring = false,
@@ -133,7 +141,7 @@ export function createCryptoEnginePlugin(
   } = config
 
   if (debug) {
-    /* eslint-disable-next-line no-console */
+     
     console.info('[Crypto Plugin] createCryptoEnginePlugin called with options:', options)
   }
 
@@ -142,18 +150,18 @@ export function createCryptoEnginePlugin(
     version,
     dependencies,
 
-    async install(context: any) {
+    async install(context: EngineLike | { engine?: EngineLike }) {
       try {
         if (debug) {
-          /* eslint-disable-next-line no-console */
+           
           console.info('[Crypto Plugin] install method called with context:', context)
         }
 
         // 从上下文中获取引擎实例
-        const engine = context.engine || context
+        const engine = (context as { engine?: EngineLike }).engine || (context as EngineLike)
 
         if (debug) {
-          /* eslint-disable-next-line no-console */
+           
           console.info('[Crypto Plugin] engine instance:', !!engine)
         }
 
@@ -196,7 +204,7 @@ export function createCryptoEnginePlugin(
             })
 
             if (debug) {
-              /* eslint-disable-next-line no-console */
+               
               console.info('[Crypto Plugin] Vue plugin installed successfully')
             }
           } else {
@@ -259,9 +267,9 @@ export function createCryptoEnginePlugin(
       }
     },
 
-    async uninstall(context: any) {
+    async uninstall(context: EngineLike | { engine?: EngineLike }) {
       try {
-        const engine = context.engine || context
+        const engine = (context as { engine?: EngineLike }).engine || (context as EngineLike)
 
         engine.logger?.info(`Uninstalling ${name} plugin...`)
 

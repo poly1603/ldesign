@@ -1,7 +1,7 @@
 {
   "name": "@ldesign/editor",
-  "version": "1.0.0",
-  "description": "A powerful and extensible rich text editor with framework adapters",
+  "version": "1.2.0",
+  "description": "An ultra-fast, highly customizable rich text editor with on-demand loading, feature flags, and simplified APIs - from 100 lines to 1 line",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

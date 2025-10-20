@@ -11,6 +11,7 @@ const Home = () => import('@/views/Home.vue')
 const Login = () => import('@/views/Login.vue')
 const Dashboard = () => import('@/views/Dashboard.vue')
 const About = () => import('@/views/About.vue')
+const CryptoDemo = () => import('@/views/CryptoDemo.vue')
 
 /**
  * 公开路由
@@ -43,6 +44,16 @@ export const publicRoutes: RouteRecordRaw[] = [
         component: About,
         meta: {
           titleKey: 'nav.about',
+          requiresAuth: false,
+          layout: 'default'
+        }
+      },
+      {
+        path: 'crypto',
+        name: 'CryptoDemo',
+        component: CryptoDemo,
+        meta: {
+          titleKey: 'nav.crypto',
           requiresAuth: false,
           layout: 'default'
         }
@@ -95,7 +106,7 @@ export const errorRoutes: RouteRecordRaw[] = [
 ]
 
 /**
- * 所有路由
+ * 所有路由  
  */
 export const routes: RouteRecordRaw[] = [
   ...publicRoutes,

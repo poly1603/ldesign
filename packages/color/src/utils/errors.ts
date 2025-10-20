@@ -37,50 +37,99 @@ export interface RecoverySuggestion {
 }
 
 /**
- * 基础颜色错误类
+ * Optimized base color error class with object pooling
  */
 export class ColorError extends Error {
-  public readonly severity: ErrorSeverity;
-  public readonly category: ErrorCategory;
-  public readonly timestamp: Date;
-  public readonly context?: any;
-  public readonly suggestions: RecoverySuggestion[];
+  public severity!: ErrorSeverity;
+  public category!: ErrorCategory;
+  public timestamp!: number; // Use timestamp number instead of Date object
+  public context?: any;
+  public suggestions?: RecoverySuggestion[];
+  
+  // Object pool for error reuse
+  private static pool: ColorError[] = [];
+  private static poolSize = 20;
   
   constructor(
-    message: string,
-    category: ErrorCategory = ErrorCategory.SYSTEM,
-    severity: ErrorSeverity = ErrorSeverity.MEDIUM,
-    suggestions: RecoverySuggestion[] = [],
+    message?: string,
+    category?: ErrorCategory,
+    severity?: ErrorSeverity,
+    suggestions?: RecoverySuggestion[],
     context?: any
   ) {
     super(message);
+    if (message) {
+      this.init(message, category, severity, suggestions, context);
+    }
+  }
+  
+  private init(
+    message: string,
+    category = ErrorCategory.SYSTEM,
+    severity = ErrorSeverity.MEDIUM,
+    suggestions?: RecoverySuggestion[],
+    context?: any
+  ): void {
+    this.message = message;
     this.name = 'ColorError';
     this.severity = severity;
     this.category = category;
-    this.timestamp = new Date();
+    this.timestamp = Date.now();
     this.context = context;
     this.suggestions = suggestions;
-    
-    // 保持原型链
-    Object.setPrototypeOf(this, ColorError.prototype);
+  }
+  
+  static create(
+    message: string,
+    category = ErrorCategory.SYSTEM,
+    severity = ErrorSeverity.MEDIUM,
+    suggestions?: RecoverySuggestion[],
+    context?: any
+  ): ColorError {
+    let error = this.pool.pop();
+    if (!error) {
+      error = new ColorError();
+    }
+    error.init(message, category, severity, suggestions, context);
+    return error;
+  }
+  
+  dispose(): void {
+    if (ColorError.pool.length < ColorError.poolSize) {
+      this.context = undefined;
+      this.suggestions = undefined;
+      this.stack = undefined;
+      ColorError.pool.push(this);
+    }
   }
   
   /**
-   * 获取格式化的错误信息
+   * 获取格式化的错误信息 - Optimized
    */
   toDetailedString(): string {
-    return `
-[${this.name}] ${this.message}
-Severity: ${this.severity}
-Category: ${this.category}
-Timestamp: ${this.timestamp.toISOString()}
-${this.context ? `Context: ${JSON.stringify(this.context, null, 2)}` : ''}
-${this.suggestions.length > 0 ? `
-Recovery Suggestions:
-${this.suggestions.map(s => `- ${s.action}: ${s.description}`).join('\n')}
-` : ''}
-Stack: ${this.stack}
-    `.trim();
+    const parts = [
+      `[${this.name}] ${this.message}`,
+      `Severity: ${this.severity}`,
+      `Category: ${this.category}`,
+      `Timestamp: ${new Date(this.timestamp).toISOString()}`
+    ];
+    
+    if (this.context) {
+      parts.push(`Context: ${JSON.stringify(this.context)}`);
+    }
+    
+    if (this.suggestions?.length) {
+      parts.push('Recovery Suggestions:');
+      for (const s of this.suggestions) {
+        parts.push(`- ${s.action}: ${s.description}`);
+      }
+    }
+    
+    if (this.stack) {
+      parts.push(`Stack: ${this.stack}`);
+    }
+    
+    return parts.join('\n');
   }
 }
 
@@ -222,30 +271,42 @@ export class ThemeOperationError extends ColorError {
 }
 
 /**
- * 错误日志管理器
+ * Optimized error logger with circular buffer
  */
 export class ErrorLogger {
   private static errors: ColorError[] = [];
-  private static maxErrors = 100;
+  private static maxErrors = 50; // Reduced max size
+  private static errorIndex = 0;
   private static errorHandlers: ((error: ColorError) => void)[] = [];
+  private static initialized = false;
+  
+  private static init(): void {
+    if (!this.initialized) {
+      // Pre-allocate array for better memory management
+      this.errors = Array.from({ length: this.maxErrors });
+      this.initialized = true;
+    }
+  }
   
   /**
-   * 记录错误
+   * Log error using circular buffer
    */
   static log(error: ColorError): void {
-    this.errors.push(error);
+    this.init();
     
-    // 限制错误日志大小
-    if (this.errors.length > this.maxErrors) {
-      this.errors.shift();
+    // Dispose old error if exists
+    const oldError = this.errors[this.errorIndex];
+    if (oldError && 'dispose' in oldError) {
+      (oldError as ColorError).dispose();
     }
     
-    // 触发错误处理器
-    this.errorHandlers.forEach(handler => handler(error));
+    // Add new error to circular buffer
+    this.errors[this.errorIndex] = error;
+    this.errorIndex = (this.errorIndex + 1) % this.maxErrors;
     
-    // 开发环境下输出到控制台
-    if (process.env.NODE_ENV === 'development') {
-      console.error(error.toDetailedString());
+    // Trigger handlers
+    for (const handler of this.errorHandlers) {
+      handler(error);
     }
   }
   
@@ -269,7 +330,11 @@ export class ErrorLogger {
         filtered = filtered.filter(e => e.severity === filter.severity);
       }
       if (filter.since) {
-        filtered = filtered.filter(e => e.timestamp >= filter.since!);
+        filtered = filtered.filter(e => {
+          // timestamp is always a number (Date.now())
+          const sinceTime = filter.since!.getTime();
+          return e.timestamp >= sinceTime;
+        });
       }
     }
     

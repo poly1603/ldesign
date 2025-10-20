@@ -32,6 +32,7 @@ export class NotificationManagerImpl implements NotificationManager {
   private styleManager: NotificationStyleManager
   private logger?: Logger
   private cleanupInterval?: number
+  private themeUnsubscribe?: () => void
   private defaultOptions: Partial<NotificationOptions> = {
     position: 'top-right',
     duration: 4000,
@@ -47,6 +48,9 @@ export class NotificationManagerImpl implements NotificationManager {
     this.initializeContainers()
     this.setupThemeWatcher()
     this.injectStyles()
+    
+    // 设置定期清理
+    this.startCleanup()
   }
 
   /**
@@ -98,7 +102,7 @@ export class NotificationManagerImpl implements NotificationManager {
    */
   private setupThemeWatcher(): void {
     if (this.defaultTheme === 'auto') {
-      this.styleManager.watchSystemTheme(systemTheme => {
+      this.themeUnsubscribe = this.styleManager.watchSystemTheme(systemTheme => {
         this.styleManager.setTheme(systemTheme)
         this.updateAllNotificationStyles()
       })
@@ -240,7 +244,10 @@ export class NotificationManagerImpl implements NotificationManager {
     this.clear()
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval)
+      this.cleanupInterval = undefined
     }
+    // 清理主题监听器
+    this.cleanupThemeWatcher()
     // 调用内部销毁流程
     void this.destroyInternal()
   }
@@ -473,7 +480,7 @@ export class NotificationManagerImpl implements NotificationManager {
     // 添加点击事件
     if (notification.onClick) {
       element.style.cursor = 'pointer'
-      element.addEventListener('click', e => {
+      const clickHandler = (e: MouseEvent) => {
         // 避免关闭按钮和操作按钮触发
         if (
           (e.target as HTMLElement).closest(
@@ -489,7 +496,10 @@ export class NotificationManagerImpl implements NotificationManager {
             this.logger?.error('Error in notification onClick callback', error)
           }
         }
-      })
+      }
+      element.addEventListener('click', clickHandler)
+      // 存储处理器以便清理
+      ;(element as any).__clickHandler = clickHandler
     }
 
     element.appendChild(content)
@@ -597,7 +607,7 @@ export class NotificationManagerImpl implements NotificationManager {
         button.textContent = '...'
       }
 
-      button.addEventListener('click', async e => {
+      const actionHandler = async (e: MouseEvent) => {
         e.stopPropagation()
 
         try {
@@ -614,7 +624,10 @@ export class NotificationManagerImpl implements NotificationManager {
           button.disabled = false
           button.textContent = action.label
         }
-      })
+      }
+      button.addEventListener('click', actionHandler)
+      // 存储处理器以便清理
+      ;(button as any).__actionHandler = actionHandler
 
       container.appendChild(button)
     })
@@ -637,19 +650,25 @@ export class NotificationManagerImpl implements NotificationManager {
     )
     this.styleManager.applyStyles(button, styles.closeButton)
 
-    button.addEventListener('click', e => {
+    const closeHandler = (e: MouseEvent) => {
       e.stopPropagation()
       this.hide(notification.id)
-    })
-
-    // 悬停效果
-    button.addEventListener('mouseenter', () => {
+    }
+    
+    const enterHandler = () => {
       button.style.opacity = '0.8'
-    })
-
-    button.addEventListener('mouseleave', () => {
+    }
+    
+    const leaveHandler = () => {
       button.style.opacity = '0.5'
-    })
+    }
+    
+    button.addEventListener('click', closeHandler)
+    button.addEventListener('mouseenter', enterHandler)
+    button.addEventListener('mouseleave', leaveHandler)
+    
+    // 存储处理器以便清理
+    ;(button as any).__handlers = { closeHandler, enterHandler, leaveHandler }
 
     return button
   }
@@ -1015,6 +1034,9 @@ export class NotificationManagerImpl implements NotificationManager {
 
     // 清理所有容器
     this.containers.forEach(container => {
+      // 清理容器内的所有元素事件监听器
+      const elements = container.querySelectorAll('.engine-notification')
+      elements.forEach(el => this.cleanupElement(el as HTMLElement))
       container.remove()
     })
     this.containers.clear()
@@ -1023,9 +1045,20 @@ export class NotificationManagerImpl implements NotificationManager {
     this.notifications.forEach(notification => {
       if (notification.timeoutId) {
         clearTimeout(notification.timeoutId)
+        notification.timeoutId = undefined
+      }
+      if (notification.element) {
+        this.cleanupElement(notification.element)
+        notification.element = undefined
       }
     })
     this.notifications.clear()
+    
+    // 清理注入的样式
+    const styleElement = document.getElementById('notification-animations')
+    if (styleElement) {
+      styleElement.remove()
+    }
   }
 
   // 添加缺失的方法
@@ -1067,6 +1100,89 @@ export class NotificationManagerImpl implements NotificationManager {
 
   clear(): void {
     this.hideAll()
+  }
+  
+  /**
+   * 启动定期清理
+   */
+  private startCleanup(): void {
+    // 每分钟清理一次过期通知
+    this.cleanupInterval = window.setInterval(() => {
+      this.cleanupExpiredNotifications()
+    }, 60000)
+  }
+  
+  /**
+   * 清理过期通知
+   */
+  private cleanupExpiredNotifications(): void {
+    const now = Date.now()
+    const expiredNotifications: string[] = []
+    
+    this.notifications.forEach((notification, id) => {
+      // 清理超过10分钟的隐藏通知
+      if (!notification.visible && (now - notification.createdAt > 600000)) {
+        expiredNotifications.push(id)
+      }
+    })
+    
+    expiredNotifications.forEach(id => {
+      const notification = this.notifications.get(id)
+      if (notification?.element) {
+        this.cleanupElement(notification.element)
+      }
+      this.notifications.delete(id)
+    })
+  }
+  
+  /**
+   * 清理元素的事件监听器
+   */
+  private cleanupElement(element: HTMLElement): void {
+    if (!element) return
+    
+    // 清理点击处理器
+    const clickHandler = (element as any).__clickHandler
+    if (clickHandler) {
+      element.removeEventListener('click', clickHandler)
+      delete (element as any).__clickHandler
+    }
+    
+    // 清理按钮处理器
+    const buttons = element.querySelectorAll('button')
+    buttons.forEach(button => {
+      const handlers = (button as any).__handlers
+      if (handlers) {
+        button.removeEventListener('click', handlers.closeHandler || handlers.actionHandler)
+        button.removeEventListener('mouseenter', handlers.enterHandler)
+        button.removeEventListener('mouseleave', handlers.leaveHandler)
+        delete (button as any).__handlers
+      }
+      const actionHandler = (button as any).__actionHandler
+      if (actionHandler) {
+        button.removeEventListener('click', actionHandler)
+        delete (button as any).__actionHandler
+      }
+    })
+    
+    // 清理子元素
+    element.innerHTML = ''
+  }
+  
+  /**
+   * 清理主题监听器
+   */
+  private cleanupThemeWatcher(): void {
+    // 取消系统主题监听
+    if (this.themeUnsubscribe) {
+      try { this.themeUnsubscribe() } catch { /* ignore */ }
+      this.themeUnsubscribe = undefined
+    }
+
+    // 如果styleManager有清理方法，调用它
+    if (this.styleManager && typeof (this.styleManager as any).cleanup === 'function') {
+      (this.styleManager as any).cleanup()
+    }
   }
 
   setDefaultOptions(options: Partial<NotificationOptions>): void {

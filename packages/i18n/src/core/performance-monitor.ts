@@ -3,7 +3,6 @@
  * 性能监控系统，实时跟踪和优化翻译性能
  */
 
-import type { I18nInstance } from '../types';
 
 /**
  * 性能指标
@@ -84,16 +83,18 @@ export interface MonitorConfig {
  * 性能监控器
  */
 export class PerformanceMonitor {
-  private config: MonitorConfig;
+  private readonly config: MonitorConfig;
   private metrics: PerformanceMetrics;
   private events: PerformanceEvent[] = [];
-  private observers: Map<string, PerformanceObserver> = new Map();
-  private timers: Map<string, number> = new Map();
-  private reportTimer?: NodeJS.Timer;
+  private readonly observers = new Map<string, PerformanceObserver>();
+  private readonly timers = new Map<string, number>();
+  private reportTimer?: NodeJS.Timeout;
+  private memoryCheckTimer?: NodeJS.Timeout;
   private rafId?: number;
   private lastFrameTime = 0;
   private frameCount = 0;
   private jankCount = 0;
+  private isDestroyed = false;
 
   constructor(config: MonitorConfig = {}) {
     this.config = {
@@ -134,16 +135,32 @@ export class PerformanceMonitor {
    * 停止监控
    */
   stop(): void {
+    this.isDestroyed = true;
+    
+    // 清理观察器
     this.observers.forEach(observer => observer.disconnect());
     this.observers.clear();
     
+    // 清理定时器
     if (this.reportTimer) {
       clearInterval(this.reportTimer);
+      this.reportTimer = undefined;
     }
     
+    if (this.memoryCheckTimer) {
+      clearInterval(this.memoryCheckTimer);
+      this.memoryCheckTimer = undefined;
+    }
+    
+    // 清理动画帧
     if (this.rafId) {
       cancelAnimationFrame(this.rafId);
+      this.rafId = undefined;
     }
+    
+    // 清理其他资源
+    this.timers.clear();
+    this.events = [];
   }
 
   /**
@@ -417,6 +434,8 @@ export class PerformanceMonitor {
    */
   private startMemoryMonitoring(): void {
     const checkMemory = () => {
+      if (this.isDestroyed) return;
+      
       if (typeof performance !== 'undefined' && (performance as any).memory) {
         const memory = (performance as any).memory;
         this.recordMemoryUsage(memory.usedJSHeapSize);
@@ -429,7 +448,11 @@ export class PerformanceMonitor {
       }
     };
 
-    setInterval(checkMemory, 10000); // 每10秒检查一次
+    this.memoryCheckTimer = setInterval(checkMemory, 10000); // 每10秒检查一次
+    // In Node.js, avoid keeping the event loop alive
+    if (typeof (this.memoryCheckTimer as any)?.unref === 'function') {
+      (this.memoryCheckTimer as any).unref();
+    }
   }
 
   /**
@@ -437,6 +460,8 @@ export class PerformanceMonitor {
    */
   private startFrameMonitoring(): void {
     const measureFrame = (timestamp: number) => {
+      if (this.isDestroyed) return;
+      
       if (this.lastFrameTime) {
         const delta = timestamp - this.lastFrameTime;
         
@@ -457,7 +482,10 @@ export class PerformanceMonitor {
       }
 
       this.lastFrameTime = timestamp;
-      this.rafId = requestAnimationFrame(measureFrame);
+      
+      if (!this.isDestroyed) {
+        this.rafId = requestAnimationFrame(measureFrame);
+      }
     };
 
     this.rafId = requestAnimationFrame(measureFrame);
@@ -468,14 +496,22 @@ export class PerformanceMonitor {
    */
   private startReporting(): void {
     this.reportTimer = setInterval(() => {
-      const report = this.getReport();
+      if (this.isDestroyed) {
+        clearInterval(this.reportTimer!);
+        return;
+      }
       
+      const report = this.getReport();
       
       // 触发自定义事件
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('i18n:performance', { detail: report }));
       }
     }, this.config?.reportInterval!);
+    // In Node.js, avoid keeping the event loop alive
+    if (typeof (this.reportTimer as any)?.unref === 'function') {
+      (this.reportTimer as any).unref();
+    }
   }
 
   /**
@@ -492,12 +528,12 @@ export class PerformanceMonitor {
    * 添加事件
    */
   private addEvent(event: PerformanceEvent): void {
-    this.events.push(event);
-    
     // 限制事件数量
-    if (this.events.length > this.config?.maxEvents!) {
+    if (this.events.length >= this.config?.maxEvents!) {
       this.events.shift();
     }
+    
+    this.events.push(event);
   }
 
   /**

@@ -3,10 +3,11 @@
  * 提供类似 Vue 3 Composition API 的 Store 定义方式
  */
 
-import type { Ref, ComputedRef, UnwrapNestedRefs } from 'vue'
 import type { Store, StoreDefinition } from 'pinia'
-import type { PersistOptions, CacheOptions } from '../types'
-import { ref, computed, reactive, watch, onUnmounted } from 'vue'
+import type { ComputedRef, Ref, UnwrapNestedRefs } from 'vue'
+import type { CacheOptions, PersistOptions } from '../types'
+import { defineStore } from 'pinia'
+import { computed, onUnmounted, reactive, ref, watch } from 'vue'
 import { PerformanceOptimizer } from './PerformanceOptimizer'
 
 /**
@@ -67,29 +68,28 @@ export interface CompositionStoreInstance<T = any> {
   readonly $state: T
 
   // 状态管理方法
-  $reset(): void
-  $patch(partialState: Partial<T>): void
-  $patch(mutator: (state: T) => void): void
+  $reset: () => void
+  $patch: ((partialState: Partial<T>) => void) & ((mutator: (state: T) => void) => void)
 
   // 订阅方法
-  $subscribe(callback: (mutation: any, state: T) => void, options?: { detached?: boolean }): () => void
-  $onAction(callback: (context: any) => void): () => void
+  $subscribe: (callback: (mutation: any, state: T) => void, options?: { detached?: boolean }) => () => void
+  $onAction: (callback: (context: any) => void) => () => void
 
   // 生命周期方法
-  $dispose(): void
+  $dispose: () => void
 
   // 性能优化方法
-  $persist(): void
-  $hydrate(): void
-  $clearPersisted(): void
-  $getCache(key: string): any
-  $setCache(key: string, value: any, ttl?: number): void
-  $deleteCache(key: string): boolean
-  $clearCache(): void
+  $persist: () => void
+  $hydrate: () => void
+  $clearPersisted: () => void
+  $getCache: (key: string) => any
+  $setCache: (key: string, value: any, ttl?: number) => void
+  $deleteCache: (key: string) => boolean
+  $clearCache: () => void
 
   // 工具方法
-  getStore(): Store<string, any, any, any>
-  getStoreDefinition(): StoreDefinition<string, any, any, any>
+  getStore: () => Store<string, any, any, any>
+  getStoreDefinition: () => StoreDefinition<string, any, any, any>
 }
 
 /**
@@ -105,13 +105,13 @@ export function createCompositionStore<T = any>(
     persistence: typeof options.persist === 'object' ? options.persist : undefined,
   })
 
-  // 存储初始状态工厂函数，用于 $reset 功能
-  let initialStateFactory: (() => any) | undefined
-  // 缓存 setup 函数返回的状态，用于 $state 访问
-  let cachedSetupState: T | null = null
+  // 使用WeakMap存储状态，避免内存泄漏
+  const stateCache = new WeakMap<any, { initial: any; current: T }>()
+  // 存储初始状态的副本，而不是工厂函数
+  let initialStateCopy: any = null
 
   // 创建 Pinia Store 定义，使用 setup 语法
-  const storeDefinition = piniaDefineStore(options.id, () => {
+  const storeDefinition = defineStore(options.id, () => {
     // 存储清理函数，用于组件卸载时清理资源
     const cleanupFunctions: (() => void)[] = []
 
@@ -164,15 +164,13 @@ export function createCompositionStore<T = any>(
     // 执行设置函数
     const storeState = setup(context)
 
-    // 保存初始状态工厂函数（用于 $reset）
-    if (!initialStateFactory) {
-      initialStateFactory = () => setup(context)
+    // 保存初始状态的深拷贝（用于 $reset）
+    if (!initialStateCopy && typeof storeState === 'object' && storeState !== null) {
+      initialStateCopy = JSON.parse(JSON.stringify(storeState))
     }
 
-    // 缓存 setup 状态
-    if (!cachedSetupState) {
-      cachedSetupState = storeState
-    }
+    // 使用WeakMap缓存状态
+    stateCache.set(storeDefinition, { initial: initialStateCopy, current: storeState })
 
     // 如果启用持久化，自动恢复状态
     if (options.persist) {
@@ -194,30 +192,34 @@ export function createCompositionStore<T = any>(
       $id: options.id,
 
       get $state() {
-        return cachedSetupState as T
+        const cached = stateCache.get(storeDefinition)
+        return cached?.current || ({} as T)
       },
 
       $reset() {
-        if (initialStateFactory) {
-          const initialState = initialStateFactory()
-          if (typeof initialState === 'object' && initialState !== null) {
-            Object.assign(store.$state, initialState)
-          }
+        const cached = stateCache.get(storeDefinition)
+        if (cached?.initial && typeof cached.initial === 'object') {
+          // 深拷贝初始状态来重置
+          const resetState = JSON.parse(JSON.stringify(cached.initial))
+          Object.assign(store.$state, resetState)
+          // 更新缓存的当前状态
+          cached.current = resetState
         }
       },
 
       $patch(partialStateOrMutator: any) {
+        const cached = stateCache.get(storeDefinition)
         if (typeof partialStateOrMutator === 'function') {
           ; (store as any).$patch(partialStateOrMutator)
           // 更新缓存状态
-          if (cachedSetupState) {
-            partialStateOrMutator(cachedSetupState)
+          if (cached?.current) {
+            partialStateOrMutator(cached.current)
           }
         } else {
           ; (store as any).$patch(partialStateOrMutator)
           // 更新缓存状态
-          if (cachedSetupState) {
-            Object.assign(cachedSetupState, partialStateOrMutator)
+          if (cached?.current && typeof cached.current === 'object') {
+            Object.assign(cached.current, partialStateOrMutator)
           }
         }
       },

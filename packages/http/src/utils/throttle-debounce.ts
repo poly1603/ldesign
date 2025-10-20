@@ -64,8 +64,9 @@ export function debounce<T extends (...args: any[]) => any>(
     lastArgs = null
     lastThis = null
     lastInvokeTime = time
-    result = fn.apply(thisArg, args)
-    return result
+    const r = fn.apply(thisArg, args) as ReturnType<T>
+    result = r
+    return r
   }
 
   function leadingEdge(time: number): void {
@@ -147,12 +148,13 @@ export function debounce<T extends (...args: any[]) => any>(
     return timeoutId !== null
   }
 
-  function debounced(this: any, ...args: Parameters<T>): ReturnType<T> | undefined {
+  function debounced(...args: Parameters<T>): ReturnType<T> | undefined {
     const time = Date.now()
     const isInvoking = shouldInvoke(time)
+    const context = debounced
 
     lastArgs = args
-    lastThis = this
+    lastThis = context
     lastCallTime = time
 
     if (isInvoking) {

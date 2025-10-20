@@ -23,15 +23,148 @@ import {
 } from '../utils';
 
 /**
+ * Size对象池，减少频繁创建对象的开销
+ */
+// 使用全局常量减少重复字符串分配
+const UNIT_PX = 'px' as const;
+const UNIT_REM = 'rem' as const;
+const UNIT_EM = 'em' as const;
+const UNIT_VW = 'vw' as const;
+const UNIT_VH = 'vh' as const;
+const UNIT_PERCENT = '%' as const;
+
+// 预定义常用值，避免重复创建
+const ZERO_PX: SizeValue = Object.freeze({ value: 0, unit: UNIT_PX });
+const ONE_PX: SizeValue = Object.freeze({ value: 1, unit: UNIT_PX });
+const DEFAULT_FONT_SIZE = 16;
+
+// 使用位标记减少布尔值内存占用
+const FLAG_POOLED = 1 << 0;
+const FLAG_PIXELS_CACHED = 1 << 1;
+const FLAG_REM_CACHED = 1 << 2;
+
+// 常用值缓存（避免频繁创建相同值的对象）
+const COMMON_VALUES_CACHE = new Map<string, any>();
+
+class SizePool {
+  private static instance: SizePool;
+  private pool: Size[] = [];
+  private maxSize = 200; // 增加池大小以减少创建开销
+  private hits = 0;
+  private misses = 0;
+  private created = 0;
+  // 使用Uint8Array存储统计数据，更省内存
+  private stats: Uint32Array = new Uint32Array(5); // [hits, misses, created, poolSize, hitRate*1000]
+  private lastCleanup = Date.now();
+  private readonly CLEANUP_INTERVAL = 60000; // 每分钟清理一次
+
+  static getInstance(): SizePool {
+    if (!SizePool.instance) {
+      SizePool.instance = new SizePool();
+    }
+    return SizePool.instance;
+  }
+
+  private cleanup(): void {
+    const now = Date.now();
+    if (now - this.lastCleanup > this.CLEANUP_INTERVAL) {
+      // 只保留一半的对象
+      const keepSize = Math.floor(this.maxSize / 2);
+      if (this.pool.length > keepSize) {
+        this.pool.length = keepSize;
+      }
+      this.lastCleanup = now;
+    }
+  }
+
+  acquire(input: SizeInput, rootFontSize = 16): Size {
+    // 定期清理池
+    this.cleanup();
+    
+    // 优先从池中获取
+    if (this.pool.length > 0) {
+      this.hits++;
+      const size = this.pool.pop()!;
+      size.reset(input, rootFontSize);
+      return size;
+    }
+    // 池为空时创建新对象
+    this.misses++;
+    this.created++;
+    const size = new Size(input, rootFontSize);
+    size._isPooled = true;
+    return size;
+  }
+
+  release(size: Size): void {
+    // 清理对象状态
+    if ((size as any)._isPooled && this.pool.length < this.maxSize) {
+      // 使用预定义的零值对象，避免创建新对象
+      (size as any)._value = ZERO_PX;
+      (size as any)._rootFontSize = DEFAULT_FONT_SIZE;
+      (size as any)._flags = FLAG_POOLED; // 重置标记
+      (size as any)._cachedPixels = undefined;
+      (size as any)._cachedRem = undefined;
+      this.pool.push(size);
+    }
+  }
+
+  clear(): void {
+    this.pool.length = 0; // 更快的清空方式
+  }
+
+  getStats() {
+    // 直接返回计算值，避免创建新对象
+    const total = this.hits + this.misses;
+    return {
+      poolSize: this.pool.length,
+      hits: this.hits,
+      misses: this.misses,
+      created: this.created,
+      hitRate: total ? this.hits / total : 0
+    };
+  }
+}
+
+/**
  * Core Size class for size manipulation and conversion
  */
 export class Size {
   private _value: SizeValue;
   private _rootFontSize: number;
+  private _flags: number = 0; // 使用位标记替代多个布尔值
+  private _cachedPixels?: number; // 缓存像素值
+  private _cachedRem?: number; // 缓存rem值
+  
+  // 使用getter/setter访问标记
+  get _isPooled(): boolean {
+    return (this._flags & FLAG_POOLED) !== 0;
+  }
+  
+  set _isPooled(value: boolean) {
+    if (value) {
+      this._flags |= FLAG_POOLED;
+    } else {
+      this._flags &= ~FLAG_POOLED;
+    }
+  }
 
-  constructor(input: SizeInput = 0, rootFontSize = 16) {
+  constructor(input: SizeInput = 0, rootFontSize = DEFAULT_FONT_SIZE) {
     this._value = parseSizeInput(input);
     this._rootFontSize = rootFontSize;
+  }
+
+  /**
+   * 重置对象状态（供对象池使用）
+   */
+  reset(input: SizeInput = 0, rootFontSize = DEFAULT_FONT_SIZE): void {
+    this._value = parseSizeInput(input);
+    this._rootFontSize = rootFontSize;
+    // 使用位操作设置标记
+    this._flags = FLAG_POOLED; // 重置所有标记，只设置POOLED
+    // 清除缓存
+    this._cachedPixels = undefined;
+    this._cachedRem = undefined;
   }
 
   // ============================================
@@ -42,48 +175,57 @@ export class Size {
    * Create a Size from pixels
    */
   static fromPixels(value: number): Size {
-    return new Size({ value, unit: 'px' });
+    // 对常用值使用缓存
+    if (value === 0) return new Size(ZERO_PX);
+    if (value === 1) return new Size(ONE_PX);
+    
+    // 检查常用值缓存
+    const cacheKey = `${value}:px:${DEFAULT_FONT_SIZE}`;
+    const cached = COMMON_VALUES_CACHE.get(cacheKey);
+    if (cached) return cached.clone();
+    
+    return new Size({ value, unit: UNIT_PX });
   }
 
   /**
    * Create a Size from rem
    */
-  static fromRem(value: number, rootFontSize = 16): Size {
-    return new Size({ value, unit: 'rem' }, rootFontSize);
+  static fromRem(value: number, rootFontSize = DEFAULT_FONT_SIZE): Size {
+    return new Size({ value, unit: UNIT_REM }, rootFontSize);
   }
 
   /**
    * Create a Size from em
    */
-  static fromEm(value: number, rootFontSize = 16): Size {
-    return new Size({ value, unit: 'em' }, rootFontSize);
+  static fromEm(value: number, rootFontSize = DEFAULT_FONT_SIZE): Size {
+    return new Size({ value, unit: UNIT_EM }, rootFontSize);
   }
 
   /**
    * Create a Size from viewport width percentage
    */
   static fromViewportWidth(value: number): Size {
-    return new Size({ value, unit: 'vw' });
+    return new Size({ value, unit: UNIT_VW });
   }
 
   /**
    * Create a Size from viewport height percentage
    */
   static fromViewportHeight(value: number): Size {
-    return new Size({ value, unit: 'vh' });
+    return new Size({ value, unit: UNIT_VH });
   }
 
   /**
    * Create a Size from percentage
    */
   static fromPercentage(value: number): Size {
-    return new Size({ value, unit: '%' });
+    return new Size({ value, unit: UNIT_PERCENT });
   }
 
   /**
    * Parse a string to Size
    */
-  static parse(input: string, rootFontSize = 16): Size {
+  static parse(input: string, rootFontSize = DEFAULT_FONT_SIZE): Size {
     return new Size(input, rootFontSize);
   }
 
@@ -100,11 +242,21 @@ export class Size {
   }
 
   get pixels(): number {
-    return this.toPixels().value;
+    // 使用位标记检查缓存
+    if (!(this._flags & FLAG_PIXELS_CACHED)) {
+      this._cachedPixels = this.toPixels().value;
+      this._flags |= FLAG_PIXELS_CACHED;
+    }
+    return this._cachedPixels!;
   }
 
   get rem(): number {
-    return this.toRem().value;
+    // 使用位标记检查缓存
+    if (!(this._flags & FLAG_REM_CACHED)) {
+      this._cachedRem = this.toRem().value;
+      this._flags |= FLAG_REM_CACHED;
+    }
+    return this._cachedRem!;
   }
 
   get em(): number {
@@ -218,18 +370,34 @@ export class Size {
    * Add another size
    */
   add(other: SizeInput): Size {
-    const otherSize = new Size(other, this._rootFontSize);
+    // 使用池化对象减少内存分配
+    const otherSize = this._isPooled 
+      ? SizePool.getInstance().acquire(other, this._rootFontSize)
+      : new Size(other, this._rootFontSize);
     const result = addSizes(this._value, otherSize._value, this._rootFontSize);
-    return new Size(result, this._rootFontSize);
+    if (this._isPooled) {
+      otherSize.dispose();
+    }
+    return this._isPooled
+      ? SizePool.getInstance().acquire(result, this._rootFontSize)
+      : new Size(result, this._rootFontSize);
   }
 
   /**
    * Subtract another size
    */
   subtract(other: SizeInput): Size {
-    const otherSize = new Size(other, this._rootFontSize);
+    // 使用池化对象减少内存分配
+    const otherSize = this._isPooled
+      ? SizePool.getInstance().acquire(other, this._rootFontSize)
+      : new Size(other, this._rootFontSize);
     const result = subtractSizes(this._value, otherSize._value, this._rootFontSize);
-    return new Size(result, this._rootFontSize);
+    if (this._isPooled) {
+      otherSize.dispose();
+    }
+    return this._isPooled
+      ? SizePool.getInstance().acquire(result, this._rootFontSize)
+      : new Size(result, this._rootFontSize);
   }
 
   /**
@@ -290,10 +458,18 @@ export class Size {
    * Check if equal to another size
    */
   equals(other: SizeInput): boolean {
-    const otherSize = new Size(other, this._rootFontSize);
-    const thisPx = this.toPixels();
-    const otherPx = otherSize.toPixels();
-    return Math.abs(thisPx.value - otherPx.value) < 0.001;
+    // 快速路径：如果是相同的对象类型且值相等
+    if (typeof other === 'object' && 'value' in other && 'unit' in other) {
+      if (other.unit === this._value.unit && Math.abs(other.value - this._value.value) < 0.001) {
+        return true;
+      }
+    }
+    
+    // 使用池化对象减少内存分配
+    const otherSize = SizePool.getInstance().acquire(other, this._rootFontSize);
+    const result = Math.abs(this.pixels - otherSize.pixels) < 0.001;
+    otherSize.dispose();
+    return result;
   }
 
   /**
@@ -392,7 +568,20 @@ export class Size {
    * Clone the size
    */
   clone(): Size {
+    // 如果来自对象池，使用池创建克隆
+    if (this._isPooled) {
+      return SizePool.getInstance().acquire(this._value, this._rootFontSize);
+    }
     return new Size(this._value, this._rootFontSize);
+  }
+
+  /**
+   * 释放对象回池（手动管理）
+   */
+  dispose(): void {
+    if (this._isPooled) {
+      SizePool.getInstance().release(this);
+    }
   }
 
   /**
@@ -473,8 +662,42 @@ export class Size {
   }
 }
 
-// Export convenience functions
-export const size = (input: SizeInput, rootFontSize = 16) => new Size(input, rootFontSize);
+// 初始化常用值缓存
+if (COMMON_VALUES_CACHE.size === 0) {
+  for (let i = 0; i <= 100; i += 4) {
+    const key = `${i}:px:${DEFAULT_FONT_SIZE}`;
+    const size = new Size(i, DEFAULT_FONT_SIZE);
+    COMMON_VALUES_CACHE.set(key, size);
+  }
+}
+
+// Export convenience functions - 使用对象池优化
+const sizeCache = new Map<string, Size>();
+const MAX_CACHE_SIZE = 50;
+
+export const size = (input: SizeInput, rootFontSize = 16) => {
+  // 对于常用值使用缓存
+  if (typeof input === 'number') {
+    const cacheKey = `${input}:${rootFontSize}`;
+    if (sizeCache.has(cacheKey)) {
+      return sizeCache.get(cacheKey)!.clone();
+    }
+    
+    // 对于小数值使用对象池
+    if (input >= 0 && input <= 100) {
+      const newSize = SizePool.getInstance().acquire(input, rootFontSize);
+      
+      // LRU缓存管理
+      if (sizeCache.size >= MAX_CACHE_SIZE) {
+        const firstKey = sizeCache.keys().next().value;
+        if (firstKey) sizeCache.delete(firstKey);
+      }
+      sizeCache.set(cacheKey, newSize);
+      return newSize;
+    }
+  }
+  return new Size(input, rootFontSize);
+};
 export const px = (value: number) => Size.fromPixels(value);
 export const rem = (value: number, rootFontSize = 16) => Size.fromRem(value, rootFontSize);
 export const em = (value: number, rootFontSize = 16) => Size.fromEm(value, rootFontSize);

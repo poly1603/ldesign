@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>流程图主题色配置演示</title>
+  <link rel="stylesheet" href="../src/styles/edge.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .color-picker {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .color-picker label {
+      font-size: 16px;
+      color: #555;
+      margin-right: 10px;
+    }
+    
+    .color-input {
+      padding: 5px 10px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+    
+    .color-preview {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      vertical-align: middle;
+      border: 2px solid #ddd;
+      margin-right: 10px;
+    }
+    
+    .preset-colors {
+      margin-top: 15px;
+    }
+    
+    .preset-colors button {
+      margin: 5px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
+    
+    .preset-colors button:hover {
+      transform: translateY(-2px);
+    }
+    
+    .flowchart-container {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    
+    .flowchart-demo {
+      width: 100%;
+      height: 400px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+    }
+    
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    
+    .demo-card {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .demo-card h3 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .demo-svg {
+      width: 100%;
+      height: 150px;
+      background: #fafafa;
+      border-radius: 4px;
+    }
+    
+    .code-block {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 14px;
+      margin-top: 20px;
+    }
+    
+    .code-block pre {
+      margin: 0;
+    }
+    
+    .feature-note {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    
+    .feature-note h4 {
+      margin-top: 0;
+      color: #1976d2;
+    }
+    
+    .feature-note p {
+      color: #555;
+      line-height: 1.6;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 流程图主题色配置</h1>
+    
+    <!-- 颜色选择器 -->
+    <div class="color-picker">
+      <label for="primaryColor">选择主题色：</label>
+      <input type="color" id="primaryColor" class="color-input" value="#2196f3">
+      <span class="color-preview" id="colorPreview" style="background: #2196f3;"></span>
+      <input type="text" id="colorText" class="color-input" value="#2196f3" placeholder="#2196f3">
+      
+      <div class="preset-colors">
+        <button style="background: #2196f3;" onclick="setColor('#2196f3')">蓝色</button>
+        <button style="background: #4caf50;" onclick="setColor('#4caf50')">绿色</button>
+        <button style="background: #ff9800;" onclick="setColor('#ff9800')">橙色</button>
+        <button style="background: #f44336;" onclick="setColor('#f44336')">红色</button>
+        <button style="background: #9c27b0;" onclick="setColor('#9c27b0')">紫色</button>
+        <button style="background: #00bcd4;" onclick="setColor('#00bcd4')">青色</button>
+        <button style="background: #795548;" onclick="setColor('#795548')">棕色</button>
+        <button style="background: #607d8b;" onclick="setColor('#607d8b')">灰蓝</button>
+      </div>
+    </div>
+    
+    <!-- 功能说明 -->
+    <div class="feature-note">
+      <h4>✨ 主题色功能说明</h4>
+      <p>• 主题色会在鼠标悬停时应用到边线上，让交互更加统一</p>
+      <p>• 边线和箭头会变为主题色，并显示对应的发光效果</p>
+      <p>• 标签不会缩放移动，只会加粗文字，保持稳定的用户体验</p>
+      <p>• 支持任意颜色值（HEX、RGB、HSL等格式）</p>
+    </div>
+    
+    <!-- 流程图演示 -->
+    <div class="flowchart-container">
+      <h3>主流程图示例</h3>
+      <svg class="flowchart-demo" id="mainFlowchart" style="--flowchart-primary-color: #2196f3;">
+        <!-- 节点 -->
+        <g>
+          <!-- 开始节点 -->
+          <rect x="450" y="20" width="100" height="40" rx="20" fill="#4caf50" stroke="#388e3c" stroke-width="2"/>
+          <text x="500" y="40" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="14">开始</text>
+          
+          <!-- 处理节点 -->
+          <rect x="425" y="100" width="150" height="50" rx="4" fill="#2196f3" stroke="#1976d2" stroke-width="2"/>
+          <text x="500" y="125" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="14">数据处理</text>
+          
+          <!-- 判断节点 -->
+          <polygon points="500,200 550,225 500,250 450,225" fill="#ff9800" stroke="#f57c00" stroke-width="2"/>
+          <text x="500" y="225" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="14">判断</text>
+          
+          <!-- 输出节点1 -->
+          <rect x="300" y="300" width="120" height="50" rx="4" fill="#9c27b0" stroke="#7b1fa2" stroke-width="2"/>
+          <text x="360" y="325" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="14">处理A</text>
+          
+          <!-- 输出节点2 -->
+          <rect x="580" y="300" width="120" height="50" rx="4" fill="#00bcd4" stroke="#0097a7" stroke-width="2"/>
+          <text x="640" y="325" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="14">处理B</text>
+          
+          <!-- 结束节点 -->
+          <rect x="450" y="400" width="100" height="40" rx="20" fill="#f44336" stroke="#d32f2f" stroke-width="2"/>
+          <text x="500" y="420" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="14">结束</text>
+        </g>
+        
+        <!-- 边 -->
+        <g>
+          <!-- 开始到处理 -->
+          <g class="flow-edge">
+            <path class="edge-path" d="M 500,60 L 500,100" stroke="#666" stroke-width="2" fill="none"/>
+            <path d="M 500,60 L 500,100" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="500,100 495,90 505,90" fill="#666"/>
+          </g>
+          
+          <!-- 处理到判断 -->
+          <g class="flow-edge">
+            <path class="edge-path" d="M 500,150 L 500,200" stroke="#666" stroke-width="2" fill="none"/>
+            <path d="M 500,150 L 500,200" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="500,200 495,190 505,190" fill="#666"/>
+          </g>
+          
+          <!-- 判断到处理A -->
+          <g class="flow-edge">
+            <path class="edge-path" d="M 450,225 L 360,225 L 360,300" stroke="#666" stroke-width="2" fill="none"/>
+            <path d="M 450,225 L 360,225 L 360,300" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="360,300 355,290 365,290" fill="#666"/>
+            <g class="edge-label" transform="translate(400, 225)" style="pointer-events: none;">
+              <rect x="-15" y="-10" width="30" height="20" fill="white" stroke="#e0e0e0" rx="3"/>
+              <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" fill="#333" font-size="12">是</text>
+            </g>
+          </g>
+          
+          <!-- 判断到处理B -->
+          <g class="flow-edge">
+            <path class="edge-path" d="M 550,225 L 640,225 L 640,300" stroke="#666" stroke-width="2" fill="none"/>
+            <path d="M 550,225 L 640,225 L 640,300" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="640,300 635,290 645,290" fill="#666"/>
+            <g class="edge-label" transform="translate(600, 225)" style="pointer-events: none;">
+              <rect x="-15" y="-10" width="30" height="20" fill="white" stroke="#e0e0e0" rx="3"/>
+              <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" fill="#333" font-size="12">否</text>
+            </g>
+          </g>
+          
+          <!-- 处理A到结束 -->
+          <g class="flow-edge">
+            <path class="edge-path" d="M 360,350 L 360,380 L 500,380 L 500,400" stroke="#666" stroke-width="2" fill="none"/>
+            <path d="M 360,350 L 360,380 L 500,380 L 500,400" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="500,400 495,390 505,390" fill="#666"/>
+          </g>
+          
+          <!-- 处理B到结束 -->
+          <g class="flow-edge">
+            <path class="edge-path" d="M 640,350 L 640,380 L 500,380 L 500,400" stroke="#666" stroke-width="2" fill="none"/>
+            <path d="M 640,350 L 640,380 L 500,380 L 500,400" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="500,400 495,390 505,390" fill="#666"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+    
+    <!-- 小示例网格 -->
+    <div class="demo-grid">
+      <div class="demo-card">
+        <h3>直线边效果</h3>
+        <svg class="demo-svg" style="--flowchart-primary-color: #2196f3;">
+          <g class="flow-edge">
+            <path class="edge-path" d="M 30,75 L 270,75" stroke="#666" stroke-width="2" fill="none"/>
+            <path d="M 30,75 L 270,75" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="270,75 260,70 260,80" fill="#666"/>
+            <text x="150" y="70" text-anchor="middle" fill="#666" font-size="12">鼠标移上来试试</text>
+          </g>
+        </svg>
+      </div>
+      
+      <div class="demo-card">
+        <h3>曲线边效果</h3>
+        <svg class="demo-svg" style="--flowchart-primary-color: #2196f3;">
+          <g class="flow-edge">
+            <path class="edge-path" d="M 30,75 Q 150,25 270,75" stroke="#666" stroke-width="2" fill="none"/>
+            <path d="M 30,75 Q 150,25 270,75" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="270,75 260,70 260,80" fill="#666"/>
+            <text x="150" y="40" text-anchor="middle" fill="#666" font-size="12">曲线动画</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+    
+    <!-- 代码示例 -->
+    <div class="code-block">
+      <pre>// 创建流程图时配置主题色
+const flowChart = new FlowChart({
+  container: '#flowchart',
+  width: 800,
+  height: 600,
+  primaryColor: '#2196f3',  // 设置主题色
+  enableZoom: true,
+  enablePan: true
+});
+
+// 动态修改主题色
+function changePrimaryColor(color) {
+  const container = document.querySelector('#flowchart');
+  container.style.setProperty('--flowchart-primary-color', color);
+}
+
+// 主题色会应用到：
+// - 边线hover时的颜色
+// - 箭头hover时的颜色
+// - 发光效果的颜色</pre>
+    </div>
+  </div>
+  
+  <script>
+    // 颜色选择器事件
+    const colorInput = document.getElementById('primaryColor');
+    const colorText = document.getElementById('colorText');
+    const colorPreview = document.getElementById('colorPreview');
+    const mainFlowchart = document.getElementById('mainFlowchart');
+    const demoCards = document.querySelectorAll('.demo-svg');
+    
+    colorInput.addEventListener('change', function() {
+      const color = this.value;
+      updateColor(color);
+    });
+    
+    colorText.addEventListener('input', function() {
+      const color = this.value;
+      if (isValidColor(color)) {
+        updateColor(color);
+      }
+    });
+    
+    function setColor(color) {
+      updateColor(color);
+    }
+    
+    function updateColor(color) {
+      colorInput.value = color;
+      colorText.value = color;
+      colorPreview.style.background = color;
+      
+      // 更新所有流程图的主题色
+      mainFlowchart.style.setProperty('--flowchart-primary-color', color);
+      demoCards.forEach(svg => {
+        svg.style.setProperty('--flowchart-primary-color', color);
+      });
+    }
+    
+    function isValidColor(color) {
+      const s = new Option().style;
+      s.color = color;
+      return s.color !== '';
+    }
+  </script>
+</body>
+</html>

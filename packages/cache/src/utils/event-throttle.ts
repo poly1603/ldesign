@@ -1,3 +1,5 @@
+import { BATCH_CONFIG, TIME_INTERVALS } from '../constants/performance'
+
 /**
  * 事件节流优化工具
  * 
@@ -78,8 +80,8 @@ export class ThrottledEventEmitter<EventMap extends Record<string, unknown> = Re
     this.queues = new Map()
     this.timers = new Map()
     this.config = {
-      batchSize: config.batchSize ?? 10,
-      flushInterval: config.flushInterval ?? 100,
+      batchSize: config.batchSize ?? BATCH_CONFIG.DEFAULT_SIZE,
+      flushInterval: config.flushInterval ?? TIME_INTERVALS.EVENT_FLUSH_DEFAULT,
       enabled: config.enabled ?? true,
     }
   }
@@ -401,8 +403,8 @@ export function throttle<T>(
 ): (item: T) => void {
   const queue: T[] = []
   let timer: NodeJS.Timeout | null = null
-  const batchSize = options.batchSize ?? 10
-  const flushInterval = options.flushInterval ?? 100
+  const batchSize = options.batchSize ?? BATCH_CONFIG.DEFAULT_SIZE
+  const flushInterval = options.flushInterval ?? TIME_INTERVALS.EVENT_FLUSH_DEFAULT
 
   const flush = (): void => {
     if (queue.length === 0) {

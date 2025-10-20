@@ -1,12 +1,58 @@
 import type { Component } from 'vue'
 import type { ErrorHandler, ErrorInfo, ErrorManager, Logger } from '../types'
+import type { Engine } from '../types/engine'
+
+// ==================== 接口定义 ====================
 
 // 错误恢复策略接口
 export interface RecoveryStrategy {
-  canRecover: (error: ErrorInfo) => boolean
-  recover: (error: ErrorInfo) => Promise<boolean>
+  name?: string
+  canRecover: (error: ErrorInfo | Error) => boolean
+  recover: (error: ErrorInfo | Error, context?: ErrorContext) => Promise<boolean>
   priority: number
+  maxAttempts?: number
 }
+
+// 错误上下文
+export interface ErrorContext {
+  component?: string | Component | unknown
+  module?: string
+  action?: string
+  user?: string
+  timestamp?: number
+  environment?: Record<string, unknown>
+  stack?: string
+  data?: unknown
+  info?: string
+}
+
+// 错误报告
+export interface ErrorReport {
+  id: string
+  error: Error | ErrorInfo
+  context: ErrorContext
+  handled: boolean
+  recovered: boolean
+  attempts: number
+  timestamp: number
+  fingerprint: string
+}
+
+// 错误统计
+export interface ErrorStatistics {
+  total: number
+  handled: number
+  recovered: number
+  byType: Map<string, number>
+  byModule: Map<string, number>
+  byCategory: Map<string, number>
+  timeline: Array<{ time: number; count: number }>
+  recent24h: number
+  recentHour: number
+}
+
+// 错误过滤器
+export type ErrorFilter = (error: Error | ErrorInfo) => boolean
 
 // 错误分类枚举
 export enum ErrorCategory {
@@ -20,16 +66,54 @@ export enum ErrorCategory {
 }
 
 export class ErrorManagerImpl implements ErrorManager {
+  // 基础属性
   private errorHandlers = new Set<ErrorHandler>()
   private errors: ErrorInfo[] = []
+  private errorReports = new Map<string, ErrorReport>()
   private maxErrors = 100
+  private maxReports = 50
+  private maxErrorCounts = 200
+  private maxErrorTypes = 100
+
+  // 统计和分析
   private errorCounts = new Map<string, number>()
+  private statistics: ErrorStatistics
+
+  // 恢复和过滤
   private recoveryStrategies = new Map<string, RecoveryStrategy>()
+  private filters = new Set<ErrorFilter>()
+
+  // 错误爆发检测
   private lastErrorTime = 0
   private errorBurst = 0
 
-  constructor(private logger?: Logger) {
+  // 上报和批处理
+  private reportingEndpoint?: string
+  private errorQueue: ErrorReport[] = []
+  private isReporting = false
+  private batchReportInterval = 5000
+
+  // 内存管理
+  private cleanupTimer: NodeJS.Timeout | null = null
+  private globalErrorHandler: ((event: ErrorEvent) => void) | null = null
+  private unhandledRejectionHandler: ((event: PromiseRejectionEvent) => void) | null = null
+
+  private engine?: Engine
+  private logger?: Logger
+
+  constructor(engineOrLogger?: Engine | Logger) {
+    // 兼容两种构造方式
+    if (engineOrLogger && 'logger' in engineOrLogger) {
+      this.engine = engineOrLogger as Engine
+      this.logger = this.engine.logger
+    } else {
+      this.logger = engineOrLogger as Logger
+    }
+
+    this.statistics = this.initStatistics()
     this.setupDefaultRecoveryStrategies()
+    this.setupGlobalHandlers()
+    this.startCleanupTimer()
   }
 
   onError(handler: ErrorHandler): void {
@@ -76,6 +160,30 @@ export class ErrorManagerImpl implements ErrorManager {
     if (this.errors.length > this.maxErrors) {
       this.errors = this.errors.slice(0, this.maxErrors)
     }
+
+    // 创建错误报告并限制数量
+    const fingerprint = this.generateErrorFingerprint(errorInfo)
+    if (!this.errorReports.has(fingerprint)) {
+      const report: ErrorReport = {
+        id: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        error: errorInfo,
+        context: { timestamp: errorInfo.timestamp },
+        handled: true,
+        recovered: false,
+        attempts: 0,
+        timestamp: Date.now(),
+        fingerprint
+      }
+      this.errorReports.set(fingerprint, report)
+
+      // 限制报告数量
+      if (this.errorReports.size > this.maxReports) {
+        const firstKey = this.errorReports.keys().next().value
+        if (firstKey) {
+          this.errorReports.delete(firstKey)
+        }
+      }
+    }
   }
 
   private notifyHandlers(errorInfo: ErrorInfo): void {
@@ -98,6 +206,10 @@ export class ErrorManagerImpl implements ErrorManager {
 
   clearErrors(): void {
     this.errors = []
+    this.errorCounts.clear()
+    this.errorReports.clear()
+    this.errorBurst = 0
+    this.statistics = this.initStatistics()
   }
 
   // 处理错误（兼容方法）
@@ -232,6 +344,45 @@ export class ErrorManagerImpl implements ErrorManager {
     }
   }
 
+  // 初始化统计信息
+  private initStatistics(): ErrorStatistics {
+    return {
+      total: 0,
+      handled: 0,
+      recovered: 0,
+      byType: new Map(),
+      byModule: new Map(),
+      byCategory: new Map(),
+      timeline: [],
+      recent24h: 0,
+      recentHour: 0
+    }
+  }
+
+  // 设置全局错误处理器
+  private setupGlobalHandlers(): void {
+    if (typeof window !== 'undefined') {
+      this.globalErrorHandler = (event) => {
+        this.captureError(
+          new Error(event.message),
+          undefined,
+          `${event.filename}:${event.lineno}:${event.colno}`
+        )
+      }
+
+      this.unhandledRejectionHandler = (event) => {
+        this.captureError(
+          new Error(event.reason),
+          undefined,
+          'Unhandled Promise Rejection'
+        )
+      }
+
+      window.addEventListener('error', this.globalErrorHandler)
+      window.addEventListener('unhandledrejection', this.unhandledRejectionHandler)
+    }
+  }
+
   // 设置默认恢复策略
   private setupDefaultRecoveryStrategies(): void {
     // 网络错误恢复策略
@@ -248,7 +399,7 @@ export class ErrorManagerImpl implements ErrorManager {
 
     // 组件错误恢复策略
     this.recoveryStrategies.set('component', {
-      canRecover: error => !!error.component,
+      canRecover: error => !!(error as ErrorInfo).component,
       recover: async error => {
         this.logger?.info('Attempting component error recovery', error)
         // 组件重新渲染逻辑
@@ -325,6 +476,15 @@ export class ErrorManagerImpl implements ErrorManager {
     const count = this.errorCounts.get(key) || 0
     this.errorCounts.set(key, count + 1)
 
+    // 限制错误类型数量
+    if (this.errorCounts.size > this.maxErrorCounts) {
+      // 删除最旧的条目
+      const firstKey = this.errorCounts.keys().next().value
+      if (firstKey) {
+        this.errorCounts.delete(firstKey)
+      }
+    }
+
     // 如果同一错误频繁出现，记录警告
     if (count > 5) {
       this.logger?.warn('Frequent error detected', {
@@ -332,6 +492,18 @@ export class ErrorManagerImpl implements ErrorManager {
         message: error.message,
         count: count + 1,
       })
+    }
+
+    // 更新统计信息
+    this.statistics.total++
+    const typeCount = this.statistics.byCategory.get(category) || 0
+    this.statistics.byCategory.set(category, typeCount + 1)
+
+    // 限制统计时间线数据
+    const now = Date.now()
+    this.statistics.timeline.push({ time: now, count: 1 })
+    if (this.statistics.timeline.length > 200) {
+      this.statistics.timeline = this.statistics.timeline.slice(-200)
     }
   }
 
@@ -373,13 +545,106 @@ export class ErrorManagerImpl implements ErrorManager {
 
     return stats
   }
+
+  // 生成错误指纹
+  private generateErrorFingerprint(error: ErrorInfo): string {
+    try {
+      const message = typeof error.message === 'string' ? error.message : JSON.stringify(error.message) || ''
+      const component = typeof error.component === 'string' ? error.component : 'unknown'
+      const stack = typeof error.stack === 'string' ? error.stack.split('\n')[0] || '' : ''
+
+      const parts = [message, component, stack]
+      return parts.join('|').substring(0, 100)
+    } catch (e) {
+      // 如果生成指纹失败，返回一个基于时间戳的唯一标识
+      return `error_${Date.now()}`
+    }
+  }
+
+  // 启动定期清理计时器
+  private startCleanupTimer(): void {
+    // 每5分钟清理一次过期数据
+    this.cleanupTimer = setInterval(() => {
+      this.cleanupOldData()
+    }, 5 * 60 * 1000)
+  }
+
+  // 停止清理计时器
+  private stopCleanupTimer(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+  }
+
+  // 清理过期数据
+  private cleanupOldData(): void {
+    const now = Date.now()
+    const maxAge = 24 * 60 * 60 * 1000 // 24小时
+
+    // 清理过期错误
+    this.errors = this.errors.filter(
+      error => now - error.timestamp < maxAge
+    )
+
+    // 清理过期报告
+    for (const [key, report] of this.errorReports.entries()) {
+      if (now - report.timestamp > maxAge) {
+        this.errorReports.delete(key)
+      }
+    }
+
+    // 清理过期统计时间线
+    this.statistics.timeline = this.statistics.timeline.filter(
+      item => now - item.time < maxAge
+    )
+
+    // 限制错误计数Map的大小
+    if (this.errorCounts.size > this.maxErrorCounts) {
+      const entries = Array.from(this.errorCounts.entries())
+      const toKeep = entries.slice(-this.maxErrorCounts)
+      this.errorCounts = new Map(toKeep)
+    }
+
+    this.logger?.debug('Error manager cleanup completed', {
+      errorsRemaining: this.errors.length,
+      reportsRemaining: this.errorReports.size,
+      countsRemaining: this.errorCounts.size
+    })
+  }
+
+  // 移除全局错误处理器
+  private removeGlobalHandlers(): void {
+    if (typeof window !== 'undefined') {
+      if (this.globalErrorHandler) {
+        window.removeEventListener('error', this.globalErrorHandler)
+        this.globalErrorHandler = null
+      }
+      if (this.unhandledRejectionHandler) {
+        window.removeEventListener('unhandledrejection', this.unhandledRejectionHandler)
+        this.unhandledRejectionHandler = null
+      }
+    }
+  }
+
+  // 销毁方法
+  destroy(): void {
+    this.clearErrors()
+    this.errorHandlers.clear()
+    this.recoveryStrategies.clear()
+    this.filters.clear()
+    this.errorQueue = []
+    this.stopCleanupTimer()
+    this.removeGlobalHandlers()
+    this.logger?.debug('Error manager destroyed')
+  }
 }
 
 export function createErrorManager(logger?: Logger): ErrorManager {
   return new ErrorManagerImpl(logger)
 }
 
-  // 预定义的错误处理器
+// 预定义的错误处理器
 export const errorHandlers = {
   // 控制台错误处理器
   console: (errorInfo: ErrorInfo) => {

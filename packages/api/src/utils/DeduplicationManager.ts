@@ -44,6 +44,11 @@ export class DeduplicationManagerImpl implements DeduplicationManager {
       return existingItem.promise as Promise<T>
     }
 
+    // 检查是否超过最大限制
+    if (this.deduplicationItems.size >= 500) {
+      this.cleanupStale()
+    }
+
     // 创建新的请求
     const promise = this.createDeduplicatedPromise(key, fn)
 
@@ -223,6 +228,22 @@ export class DeduplicationManagerImpl implements DeduplicationManager {
     toDelete.forEach((key) => {
       this.deduplicationItems.delete(key)
     })
+  }
+  
+  /**
+   * 清理过早的去重项
+   */
+  private cleanupStale(): void {
+    const items = Array.from(this.deduplicationItems.entries())
+    
+    // 按创建时间排序
+    items.sort((a, b) => a[1].createdAt - b[1].createdAt)
+    
+    // 删除前20%的项
+    const removeCount = Math.ceil(items.length * 0.2)
+    for (let i = 0; i < removeCount; i++) {
+      this.deduplicationItems.delete(items[i][0])
+    }
   }
 }
 

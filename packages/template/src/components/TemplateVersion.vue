@@ -1,226 +1,7 @@
-<template>
-  <div class="template-version">
-    <!-- 版本信息头部 -->
-    <div class="version-header">
-      <div class="version-info">
-        <span class="version-label">当前版本:</span>
-        <span class="version-number">{{ versionState.current }}</span>
-        <template v-if="versionState.isDeprecated">
-          <span class="deprecated-badge">已废弃</span>
-        </template>
-        <template v-if="versionState.hasUpdate">
-          <span class="update-badge">有新版本</span>
-        </template>
-      </div>
-      
-      <div class="version-actions">
-        <button @click="showVersionHistory = !showVersionHistory">
-          版本历史
-        </button>
-        <button @click="showCreateVersion = true" v-if="!readonly">
-          创建新版本
-        </button>
-      </div>
-    </div>
-    
-    <!-- 版本历史面板 -->
-    <transition name="slide">
-      <div v-if="showVersionHistory" class="version-history">
-        <h3>版本历史</h3>
-        <div class="version-list">
-          <div 
-            v-for="version in versionHistory" 
-            :key="version.version.version"
-            class="version-item"
-            :class="{ 
-              active: version.version.version === versionState.current,
-              deprecated: version.version.deprecated
-            }"
-          >
-            <div class="version-item-header">
-              <span class="version-num">{{ version.version.version }}</span>
-              <span class="version-date">{{ formatDate(version.version.createdAt) }}</span>
-            </div>
-            
-            <div v-if="version.version.description" class="version-desc">
-              {{ version.version.description }}
-            </div>
-            
-            <div class="version-item-actions">
-              <button 
-                @click="handleSwitchVersion(version.version.version)"
-                :disabled="version.version.version === versionState.current"
-              >
-                切换到此版本
-              </button>
-              <button 
-                v-if="!readonly && !version.version.deprecated"
-                @click="handleDeprecateVersion(version.version.version)"
-              >
-                废弃
-              </button>
-              <button 
-                @click="showVersionDetails(version)"
-              >
-                详情
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
-    
-    <!-- 创建新版本对话框 -->
-    <transition name="fade">
-      <div v-if="showCreateVersion" class="version-dialog-overlay" @click.self="showCreateVersion = false">
-        <div class="version-dialog">
-          <h3>创建新版本</h3>
-          
-          <div class="form-group">
-            <label>版本号:</label>
-            <input 
-              v-model="newVersion.version" 
-              placeholder="例如: 1.1.0"
-              @input="validateVersion"
-            />
-            <span v-if="versionError" class="error">{{ versionError }}</span>
-          </div>
-          
-          <div class="form-group">
-            <label>描述:</label>
-            <textarea 
-              v-model="newVersion.description" 
-              placeholder="版本更新说明..."
-              rows="4"
-            />
-          </div>
-          
-          <div class="form-group">
-            <label>变更类型:</label>
-            <select v-model="newVersion.changeType">
-              <option value="major">主要版本 (不兼容的变更)</option>
-              <option value="minor">次要版本 (新功能)</option>
-              <option value="patch">补丁版本 (Bug修复)</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label>
-              <input type="checkbox" v-model="newVersion.autoMigrate" />
-              启用自动迁移
-            </label>
-          </div>
-          
-          <div v-if="newVersion.autoMigrate" class="form-group">
-            <label>迁移说明:</label>
-            <textarea 
-              v-model="newVersion.migrationNotes" 
-              placeholder="迁移注意事项..."
-              rows="3"
-            />
-          </div>
-          
-          <div class="dialog-actions">
-            <button @click="showCreateVersion = false">取消</button>
-            <button 
-              @click="handleCreateVersion" 
-              :disabled="!!versionError || !newVersion.version"
-              class="primary"
-            >
-              创建版本
-            </button>
-          </div>
-        </div>
-      </div>
-    </transition>
-    
-    <!-- 版本详情对话框 -->
-    <transition name="fade">
-      <div v-if="selectedVersion" class="version-dialog-overlay" @click.self="selectedVersion = null">
-        <div class="version-dialog version-details">
-          <h3>版本详情 - {{ selectedVersion.version.version }}</h3>
-          
-          <div class="detail-section">
-            <h4>基本信息</h4>
-            <dl>
-              <dt>版本号:</dt>
-              <dd>{{ selectedVersion.version.version }}</dd>
-              
-              <dt>创建时间:</dt>
-              <dd>{{ formatDate(selectedVersion.version.createdAt) }}</dd>
-              
-              <dt>作者:</dt>
-              <dd>{{ selectedVersion.version.author || '未知' }}</dd>
-              
-              <dt>状态:</dt>
-              <dd>
-                <span v-if="selectedVersion.version.published" class="status-published">已发布</span>
-                <span v-else-if="selectedVersion.version.deprecated" class="status-deprecated">已废弃</span>
-                <span v-else class="status-draft">草稿</span>
-              </dd>
-            </dl>
-          </div>
-          
-          <div v-if="selectedVersion.version.description" class="detail-section">
-            <h4>描述</h4>
-            <p>{{ selectedVersion.version.description }}</p>
-          </div>
-          
-          <div v-if="selectedVersion.version.changes" class="detail-section">
-            <h4>变更内容</h4>
-            <pre>{{ JSON.stringify(selectedVersion.version.changes, null, 2) }}</pre>
-          </div>
-          
-          <div class="dialog-actions">
-            <button @click="selectedVersion = null">关闭</button>
-            <button 
-              v-if="canRestoreVersion(selectedVersion)"
-              @click="handleRestoreVersion(selectedVersion)"
-              class="primary"
-            >
-              恢复此版本
-            </button>
-          </div>
-        </div>
-      </div>
-    </transition>
-    
-    <!-- 迁移进度 -->
-    <transition name="fade">
-      <div v-if="isMigrating" class="migration-progress">
-        <div class="progress-content">
-          <h4>正在迁移版本...</h4>
-          <div class="progress-bar">
-            <div 
-              class="progress-fill" 
-              :style="{ width: migrationProgress + '%' }"
-            ></div>
-          </div>
-          <p>{{ migrationMessage }}</p>
-        </div>
-      </div>
-    </transition>
-    
-    <!-- 变更日志 -->
-    <div v-if="showChangelog && changelog.length > 0" class="changelog">
-      <h3>变更日志</h3>
-      <div class="changelog-list">
-        <div v-for="log in changelog" :key="log.id" class="changelog-item">
-          <div class="changelog-header">
-            <span class="changelog-version">{{ log.version }}</span>
-            <span class="changelog-date">{{ formatDate(log.date) }}</span>
-          </div>
-          <div class="changelog-content">{{ log.content }}</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script lang="ts" setup>
-import { ref, computed, watch } from 'vue'
-import type { Template } from '../types'
 import type { VersionedTemplate } from '../core/version'
+import type { Template } from '../types'
+import { ref, watch } from 'vue'
 import { useTemplateVersion } from '../composables/useTemplateVersion'
 
 interface Props {
@@ -258,17 +39,16 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'version-created': [version: VersionedTemplate]
-  'version-switched': [version: string]
-  'version-migrated': [from: string, to: string]
-  'version-deprecated': [version: string]
+  'versionCreated': [version: VersionedTemplate]
+  'versionSwitched': [version: string]
+  'versionMigrated': [from: string, to: string]
+  'versionDeprecated': [version: string]
 }>()
 
 // 使用版本控制
 const {
   versionState,
-  versionedTemplate,
-  changelog,
+  // versionedTemplate, // Removing unused variable
   isMigrating,
   createVersion,
   switchVersion,
@@ -287,6 +67,7 @@ const selectedVersion = ref<VersionedTemplate | null>(null)
 const versionHistory = ref<VersionedTemplate[]>([])
 const migrationProgress = ref(0)
 const migrationMessage = ref('')
+const changelog = ref<Array<{id: string; version: string; date: string; content: string}>>([])
 
 // 新版本表单
 const newVersion = ref({
@@ -341,7 +122,7 @@ const handleCreateVersion = () => {
   )
   
   if (created) {
-    emit('version-created', created)
+    emit('versionCreated', created)
     showCreateVersion.value = false
     loadVersionHistory()
     
@@ -360,25 +141,27 @@ const handleCreateVersion = () => {
 const handleSwitchVersion = async (version: string) => {
   const success = await switchVersion(version)
   if (success) {
-    emit('version-switched', version)
+    emit('versionSwitched', version)
     loadVersionHistory()
   }
 }
 
 // 废弃版本
 const handleDeprecateVersion = (version: string) => {
-  const reason = prompt('请输入废弃原因:')
+  // eslint-disable-next-line no-alert
+  const reason = window.prompt('请输入废弃原因:')
   if (!reason) return
   
-  const alternative = prompt('推荐的替代版本 (可选):')
+  // eslint-disable-next-line no-alert
+  const alternative = window.prompt('推荐的替代版本 (可选):')
   
   deprecate(version, reason, alternative || undefined)
-  emit('version-deprecated', version)
+  emit('versionDeprecated', version)
   loadVersionHistory()
 }
 
 // 恢复版本
-const handleRestoreVersion = (version: VersionedTemplate) => {
+const handleRestoreVersion = (_version: VersionedTemplate) => {
   const restored = restoreBackup()
   if (restored) {
     loadVersionHistory()
@@ -433,6 +216,237 @@ watch(isMigrating, (migrating) => {
 // 初始化
 loadVersionHistory()
 </script>
+
+<template>
+  <div class="template-version">
+    <!-- 版本信息头部 -->
+    <div class="version-header">
+      <div class="version-info">
+        <span class="version-label">当前版本:</span>
+        <span class="version-number">{{ versionState.current }}</span>
+        <template v-if="versionState.isDeprecated">
+          <span class="deprecated-badge">已废弃</span>
+        </template>
+        <template v-if="versionState.hasUpdate">
+          <span class="update-badge">有新版本</span>
+        </template>
+      </div>
+      
+      <div class="version-actions">
+        <button @click="showVersionHistory = !showVersionHistory">
+          版本历史
+        </button>
+        <button v-if="!readonly" @click="showCreateVersion = true">
+          创建新版本
+        </button>
+      </div>
+    </div>
+    
+    <!-- 版本历史面板 -->
+    <transition name="slide">
+      <div v-if="showVersionHistory" class="version-history">
+        <h3>版本历史</h3>
+        <div class="version-list">
+          <div 
+            v-for="version in versionHistory" 
+            :key="version.version.version"
+            class="version-item"
+            :class="{ 
+              active: version.version.version === versionState.current,
+              deprecated: version.version.deprecated
+            }"
+          >
+            <div class="version-item-header">
+              <span class="version-num">{{ version.version.version }}</span>
+              <span class="version-date">{{ formatDate(version.version.createdAt) }}</span>
+            </div>
+            
+            <div v-if="version.version.description" class="version-desc">
+              {{ version.version.description }}
+            </div>
+            
+            <div class="version-item-actions">
+              <button 
+                :disabled="version.version.version === versionState.current"
+                @click="handleSwitchVersion(version.version.version)"
+              >
+                切换到此版本
+              </button>
+              <button 
+                v-if="!readonly && !version.version.deprecated"
+                @click="handleDeprecateVersion(version.version.version)"
+              >
+                废弃
+              </button>
+              <button 
+                @click="showVersionDetails(version)"
+              >
+                详情
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+    
+    <!-- 创建新版本对话框 -->
+    <transition name="fade">
+      <div v-if="showCreateVersion" class="version-dialog-overlay" @click.self="showCreateVersion = false">
+        <div class="version-dialog">
+          <h3>创建新版本</h3>
+          
+          <div class="form-group">
+            <label>版本号:</label>
+            <input 
+              v-model="newVersion.version" 
+              placeholder="例如: 1.1.0"
+              @input="validateVersion"
+            >
+            <span v-if="versionError" class="error">{{ versionError }}</span>
+          </div>
+          
+          <div class="form-group">
+            <label>描述:</label>
+            <textarea 
+              v-model="newVersion.description" 
+              placeholder="版本更新说明..."
+              rows="4"
+            />
+          </div>
+          
+          <div class="form-group">
+            <label>变更类型:</label>
+            <select v-model="newVersion.changeType">
+              <option value="major">
+                主要版本 (不兼容的变更)
+              </option>
+              <option value="minor">
+                次要版本 (新功能)
+              </option>
+              <option value="patch">
+                补丁版本 (Bug修复)
+              </option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>
+              <input v-model="newVersion.autoMigrate" type="checkbox">
+              启用自动迁移
+            </label>
+          </div>
+          
+          <div v-if="newVersion.autoMigrate" class="form-group">
+            <label>迁移说明:</label>
+            <textarea 
+              v-model="newVersion.migrationNotes" 
+              placeholder="迁移注意事项..."
+              rows="3"
+            />
+          </div>
+          
+          <div class="dialog-actions">
+            <button @click="showCreateVersion = false">
+              取消
+            </button>
+            <button 
+              :disabled="!!versionError || !newVersion.version" 
+              class="primary"
+              @click="handleCreateVersion"
+            >
+              创建版本
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+    
+    <!-- 版本详情对话框 -->
+    <transition name="fade">
+      <div v-if="selectedVersion" class="version-dialog-overlay" @click.self="selectedVersion = null">
+        <div class="version-dialog version-details">
+          <h3>版本详情 - {{ selectedVersion.version.version }}</h3>
+          
+          <div class="detail-section">
+            <h4>基本信息</h4>
+            <dl>
+              <dt>版本号:</dt>
+              <dd>{{ selectedVersion.version.version }}</dd>
+              
+              <dt>创建时间:</dt>
+              <dd>{{ formatDate(selectedVersion.version.createdAt) }}</dd>
+              
+              <dt>作者:</dt>
+              <dd>{{ selectedVersion.version.author || '未知' }}</dd>
+              
+              <dt>状态:</dt>
+              <dd>
+                <span v-if="selectedVersion.version.published" class="status-published">已发布</span>
+                <span v-else-if="selectedVersion.version.deprecated" class="status-deprecated">已废弃</span>
+                <span v-else class="status-draft">草稿</span>
+              </dd>
+            </dl>
+          </div>
+          
+          <div v-if="selectedVersion.version.description" class="detail-section">
+            <h4>描述</h4>
+            <p>{{ selectedVersion.version.description }}</p>
+          </div>
+          
+          <div v-if="selectedVersion.changelog && selectedVersion.changelog.length > 0" class="detail-section">
+            <h4>变更内容</h4>
+            <pre>{{ JSON.stringify(selectedVersion.changelog[0].changes, null, 2) }}</pre>
+          </div>
+          
+          <div class="dialog-actions">
+            <button @click="selectedVersion = null">
+              关闭
+            </button>
+            <button 
+              v-if="canRestoreVersion(selectedVersion)"
+              class="primary"
+              @click="handleRestoreVersion(selectedVersion)"
+            >
+              恢复此版本
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+    
+    <!-- 迁移进度 -->
+    <transition name="fade">
+      <div v-if="isMigrating" class="migration-progress">
+        <div class="progress-content">
+          <h4>正在迁移版本...</h4>
+          <div class="progress-bar">
+            <div 
+              class="progress-fill" 
+              :style="{ width: `${migrationProgress }%` }"
+            />
+          </div>
+          <p>{{ migrationMessage }}</p>
+        </div>
+      </div>
+    </transition>
+    
+    <!-- 变更日志 -->
+    <div v-if="showChangelog && changelog.length > 0" class="changelog">
+      <h3>变更日志</h3>
+      <div class="changelog-list">
+        <div v-for="log in changelog" :key="log.id" class="changelog-item">
+          <div class="changelog-header">
+            <span class="changelog-version">{{ log.version }}</span>
+            <span class="changelog-date">{{ formatDate(log.date) }}</span>
+          </div>
+          <div class="changelog-content">
+            {{ log.content }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .template-version {

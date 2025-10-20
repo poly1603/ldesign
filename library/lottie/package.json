@@ -13,14 +13,19 @@
       "require": "./dist/index.cjs"
     },
     "./vue": {
-      "types": "./dist/adapters/vue.d.ts",
-      "import": "./dist/adapters/vue.js",
-      "require": "./dist/adapters/vue.cjs"
+      "types": "./dist/adapters/vue/index.d.ts",
+      "import": "./dist/adapters/vue/index.js",
+      "require": "./dist/adapters/vue/index.cjs"
     },
     "./react": {
-      "types": "./dist/adapters/react.d.ts",
-      "import": "./dist/adapters/react.js",
-      "require": "./dist/adapters/react.cjs"
+      "types": "./dist/adapters/react/index.d.ts",
+      "import": "./dist/adapters/react/index.js",
+      "require": "./dist/adapters/react/index.cjs"
+    },
+    "./lit": {
+      "types": "./dist/adapters/lit/index.d.ts",
+      "import": "./dist/adapters/lit/index.js",
+      "require": "./dist/adapters/lit/index.cjs"
     }
   },
   "files": [
@@ -35,7 +40,9 @@
     "docs:preview": "vitepress preview docs",
     "example:vanilla": "vite examples/vanilla",
     "example:vue": "vite examples/vue",
-    "example:react": "vite examples/react"
+    "example:react": "vite examples/react",
+    "example:lit": "vite examples/lit",
+    "example:all": "vite examples"
   },
   "keywords": [
     "lottie",

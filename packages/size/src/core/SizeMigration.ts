@@ -34,9 +34,24 @@ export interface MigrationMapping {
   description?: string;
 }
 
-// Framework-specific mappings
-const FRAMEWORK_MAPPINGS: Record<Framework, MigrationMapping[]> = {
-  bootstrap: [
+// Framework-specific mappings - 使用懒加载以减少内存占用
+const FRAMEWORK_MAPPINGS_LOADER = new Map<Framework, () => MigrationMapping[]>();
+
+// 懒加载获取映射
+function getFrameworkMappings(framework: Framework): MigrationMapping[] {
+  if (!FRAMEWORK_MAPPINGS_LOADER.has(framework)) {
+    initializeMappings();
+  }
+  const loader = FRAMEWORK_MAPPINGS_LOADER.get(framework);
+  return loader ? loader() : [];
+}
+
+// 延迟初始化映射，只在需要时加载
+function initializeMappings(): void {
+  if (FRAMEWORK_MAPPINGS_LOADER.size > 0) return;
+  
+  // Bootstrap mappings
+  FRAMEWORK_MAPPINGS_LOADER.set('bootstrap', () => [
     // Spacing utilities
     { pattern: /\bp-0\b/g, replacement: 'p-none' },
     { pattern: /\bp-1\b/g, replacement: 'p-tiny' },
@@ -75,9 +90,10 @@ const FRAMEWORK_MAPPINGS: Record<Framework, MigrationMapping[]> = {
     { pattern: /\brounded-3\b/g, replacement: 'rounded-large' },
     { pattern: /\brounded-circle\b/g, replacement: 'rounded-circle' },
     { pattern: /\brounded-pill\b/g, replacement: 'rounded-full' }
-  ],
-  
-  tailwind: [
+  ]);
+
+  // Tailwind mappings
+  FRAMEWORK_MAPPINGS_LOADER.set('tailwind', () => [
     // Spacing (Tailwind uses 0.25rem = 4px units)
     { pattern: /\bp-0\b/g, replacement: 'p-none' },
     { pattern: /\bp-1\b/g, replacement: 'p-tiny' },
@@ -126,20 +142,20 @@ const FRAMEWORK_MAPPINGS: Record<Framework, MigrationMapping[]> = {
     { pattern: /\brounded-lg\b/g, replacement: 'rounded-large' },
     { pattern: /\brounded-xl\b/g, replacement: 'rounded-huge' },
     { pattern: /\brounded-full\b/g, replacement: 'rounded-full' }
-  ],
-  
-  antd: [
-    // Ant Design specific mappings
+  ]);
+
+  // Ant Design mappings
+  FRAMEWORK_MAPPINGS_LOADER.set('antd', () => [
     { pattern: /\bant-typography-title\b/g, replacement: 'text-h1' },
     { pattern: /\bant-btn-sm\b/g, replacement: 'btn-small' },
     { pattern: /\bant-btn-lg\b/g, replacement: 'btn-large' },
     { pattern: /\bant-space-compact\b/g, replacement: 'spacing-compact' },
     { pattern: /\bant-input-sm\b/g, replacement: 'input-small' },
     { pattern: /\bant-input-lg\b/g, replacement: 'input-large' }
-  ],
-  
-  'material-ui': [
-    // Material UI mappings
+  ]);
+
+  // Material UI mappings
+  FRAMEWORK_MAPPINGS_LOADER.set('material-ui', () => [
     { pattern: /\bMuiButton-sizeSmall\b/g, replacement: 'btn-small' },
     { pattern: /\bMuiButton-sizeMedium\b/g, replacement: 'btn-medium' },
     { pattern: /\bMuiButton-sizeLarge\b/g, replacement: 'btn-large' },
@@ -147,10 +163,10 @@ const FRAMEWORK_MAPPINGS: Record<Framework, MigrationMapping[]> = {
     { pattern: /\bMuiTypography-h2\b/g, replacement: 'text-h2' },
     { pattern: /\bMuiTypography-body1\b/g, replacement: 'text-base' },
     { pattern: /\bMuiTypography-caption\b/g, replacement: 'text-caption' }
-  ],
-  
-  bulma: [
-    // Bulma framework mappings
+  ]);
+
+  // Bulma mappings
+  FRAMEWORK_MAPPINGS_LOADER.set('bulma', () => [
     { pattern: /\bis-size-1\b/g, replacement: 'text-4xl' },
     { pattern: /\bis-size-2\b/g, replacement: 'text-3xl' },
     { pattern: /\bis-size-3\b/g, replacement: 'text-2xl' },
@@ -162,10 +178,11 @@ const FRAMEWORK_MAPPINGS: Record<Framework, MigrationMapping[]> = {
     { pattern: /\bbutton.is-normal\b/g, replacement: 'btn-medium' },
     { pattern: /\bbutton.is-medium\b/g, replacement: 'btn-medium' },
     { pattern: /\bbutton.is-large\b/g, replacement: 'btn-large' }
-  ],
-  
-  custom: []
-};
+  ]);
+
+  // Custom mappings (empty)
+  FRAMEWORK_MAPPINGS_LOADER.set('custom', () => []);
+}
 
 // CSS property mappings
 const CSS_PROPERTY_MAPPINGS: Record<string, (value: string) => string> = {
@@ -257,8 +274,9 @@ const CSS_PROPERTY_MAPPINGS: Record<string, (value: string) => string> = {
 
 export class SizeMigration {
   private config: MigrationConfig;
-  private rollbackData: string | null = null;
+  private rollbackData: { deref: () => string | undefined } | null = null; // 兼容性处理
   private report: MigrationReport | null = null;
+  private mappingsCache: MigrationMapping[] | null = null; // 缓存映射
 
   constructor(config: MigrationConfig) {
     this.config = {
@@ -277,8 +295,12 @@ export class SizeMigration {
     const usedMappings: Record<string, string> = {};
     const unmapped: Set<string> = new Set();
     
-    // Store original for rollback
-    this.rollbackData = html;
+    // Store original for rollback - 兼容性处理
+    if (typeof globalThis !== 'undefined' && typeof (globalThis as any).WeakRef !== 'undefined') {
+      this.rollbackData = new ((globalThis as any).WeakRef)(html);
+    } else {
+      this.rollbackData = { deref: () => html };
+    }
     
     // Apply mappings
     mappings.forEach(mapping => {
@@ -296,14 +318,15 @@ export class SizeMigration {
     
     // Find unmapped classes
     const classPattern = /class="([^"]*)"/g;
-    let match;
-    while ((match = classPattern.exec(html)) !== null) {
+    let match = classPattern.exec(html);
+    while (match !== null) {
       const classes = match[1].split(' ');
       classes.forEach(cls => {
         if (!Object.keys(usedMappings).includes(cls) && cls.trim()) {
           unmapped.add(cls);
         }
       });
+      match = classPattern.exec(html);
     }
     
     // Generate report
@@ -317,7 +340,7 @@ export class SizeMigration {
         warnings: this.generateWarnings(unmapped)
       },
       mappings: usedMappings,
-      rollbackData: this.rollbackData
+      rollbackData: this.rollbackData?.deref() || undefined
     };
     
     return migratedHTML;
@@ -329,8 +352,12 @@ export class SizeMigration {
   migrateCSS(css: string): string {
     let migratedCSS = css;
     
-    // Store original for rollback
-    this.rollbackData = css;
+    // Store original for rollback - 兼容性处理
+    if (typeof globalThis !== 'undefined' && typeof (globalThis as any).WeakRef !== 'undefined') {
+      this.rollbackData = new ((globalThis as any).WeakRef)(css);
+    } else {
+      this.rollbackData = { deref: () => css };
+    }
     
     // Migrate property values
     Object.entries(CSS_PROPERTY_MAPPINGS).forEach(([property, mapper]) => {
@@ -391,18 +418,24 @@ export class SizeMigration {
       return null;
     }
     
-    const data = this.rollbackData;
+    const data = this.rollbackData.deref();
     this.rollbackData = null;
     this.report = null;
+    this.mappingsCache = null; // 清理缓存
     
-    return data;
+    return data || null;
   }
 
   /**
    * Get framework mappings
    */
   private getMappings(): MigrationMapping[] {
-    const baseMappings = FRAMEWORK_MAPPINGS[this.config.from] || [];
+    // 使用缓存避免重复创建
+    if (this.mappingsCache) {
+      return this.mappingsCache;
+    }
+    
+    const baseMappings = getFrameworkMappings(this.config.from);
     
     // Add custom mappings if provided
     if (this.config.customMappings) {
@@ -410,10 +443,12 @@ export class SizeMigration {
         pattern: new RegExp(pattern, 'g'),
         replacement
       }));
-      return [...baseMappings, ...customMappings];
+      this.mappingsCache = [...baseMappings, ...customMappings];
+    } else {
+      this.mappingsCache = baseMappings;
     }
     
-    return baseMappings;
+    return this.mappingsCache;
   }
 
   /**
@@ -512,8 +547,11 @@ export class SizeMigration {
     let detectedFramework: Framework | null = null;
     let maxMatches = 0;
     
-    // Check each framework's patterns
-    Object.entries(FRAMEWORK_MAPPINGS).forEach(([framework, mappings]) => {
+    // Check each framework's patterns - 优化内存使用
+    const frameworks: Framework[] = ['bootstrap', 'tailwind', 'antd', 'material-ui', 'bulma'];
+    
+    for (const framework of frameworks) {
+      const mappings = getFrameworkMappings(framework);
       let matches = 0;
       const foundPatterns: string[] = [];
       
@@ -531,7 +569,7 @@ export class SizeMigration {
         patterns.length = 0;
         patterns.push(...foundPatterns);
       }
-    });
+    }
     
     const confidence = maxMatches > 0 ? Math.min(100, (maxMatches / 10) * 100) : 0;
     

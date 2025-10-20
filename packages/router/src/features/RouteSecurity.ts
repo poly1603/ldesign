@@ -117,7 +117,7 @@ export class AuthManager {
   // Cookie操作
   private getCookie(name: string): string | null {
     const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`))
-    return match ? match[2] : null
+    return match ? (match[2] || null) : null
   }
 
   private setCookie(name: string, value: string, days = 7): void {
@@ -657,7 +657,7 @@ export class XSSProtection {
       '=': '&#x3D;',
     }
 
-    return String(value).replace(/[&<>"'`=/]/g, s => entityMap[s])
+    return String(value).replace(/[&<>"'`=/]/g, (s: string) => entityMap[s as keyof typeof entityMap] || s)
   }
 
   // 清理值

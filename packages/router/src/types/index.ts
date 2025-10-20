@@ -136,6 +136,14 @@ export interface RouteLocationNormalized<
 }
 
 /**
+ * 加载后的路由位置（用于组件内访问）
+ */
+export interface RouteLocationNormalizedLoaded extends RouteLocationNormalized {
+  /** 匹配的路由记录 */
+  matched: RouteRecordNormalized[]
+}
+
+/**
  * 类型安全的路由位置（基于路径推导）
  */
 export type TypedRouteLocation<T extends string> = RouteLocationNormalized<
@@ -187,6 +195,11 @@ export interface RouteLocationNamedRaw<
  * 路由组件类型
  */
 export type RouteComponent = Component | (() => Promise<Component>)
+
+/**
+ * 路由记录类型别名（为了兼容性）
+ */
+export type RouteRecord = RouteRecordRaw
 
 /**
  * 路由记录原始配置
@@ -296,7 +309,11 @@ export interface NavigationGuardNext {
  * 导航后置钩子
  */
 export interface NavigationHookAfter {
-  (to: RouteLocationNormalized, from: RouteLocationNormalized): void
+  (
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized,
+    failure?: NavigationFailure | void | undefined
+  ): void
 }
 
 // ==================== 历史管理类型 ====================
@@ -388,6 +405,7 @@ export interface NavigationFailure extends Error {
 export interface ScrollPosition {
   left: number
   top: number
+  el?: Element | null
 }
 
 /**

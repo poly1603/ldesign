@@ -55,6 +55,12 @@ export class DirectiveManagerImpl implements DirectiveManager {
     this.directives.clear()
   }
 
+  // 销毁指令管理器，清理资源
+  destroy(): void {
+    this.clear()
+    this.logger = undefined
+  }
+
   // 批量注册指令
   registerBatch(directives: Record<string, unknown>): void {
     for (const [name, directive] of Object.entries(directives)) {

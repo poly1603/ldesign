@@ -3,19 +3,32 @@
  * Handles parameter replacement in translation messages
  */
 
-import type { InterpolationParams, InterpolationOptions, Locale } from '../types';
-import { isPlainObject, isString, escapeHtml, getNestedValue } from '../utils/helpers';
+import type { InterpolationOptions, InterpolationParams, Locale } from '../types';
+import { escapeHtml, getNestedValue, isPlainObject } from '../utils/helpers';
 
 export class InterpolationEngine {
-  private prefix: string;
-  private suffix: string;
-  private escapeValue: boolean;
-  private nestingPrefix: string;
-  private nestingSuffix: string;
-  private formatSeparator: string;
-  private formatter?: (value: any, format?: string, locale?: Locale) => string;
+  private readonly prefix: string;
+  private readonly suffix: string;
+  private readonly escapeValue: boolean;
+  private readonly nestingPrefix: string;
+  private readonly nestingSuffix: string;
+  private readonly formatSeparator: string;
+  private readonly formatter?: (value: any, format?: string, locale?: Locale) => string;
   
-  constructor(options: InterpolationOptions = {}) {
+  // Pre-compiled regex for better performance
+  private readonly interpolationRegex: RegExp;
+  private readonly nestingRegex: RegExp;
+  
+  // Cache for formatted values
+  private readonly formatCache = new Map<string, string>();
+  private readonly MAX_CACHE_SIZE = 500;
+  
+  // Pre-compiled formatters for common types
+  private readonly numberFormatters = new Map<string, Intl.NumberFormat>();
+  private readonly dateFormatters = new Map<string, Intl.DateTimeFormat>();
+  private readonly listFormatters = new Map<string, any>(); // Use any for ListFormat due to browser compatibility
+  
+  constructor(options: InterpolationOptions | any = {}) {
     this.prefix = options.prefix || '{{';
     this.suffix = options.suffix || '}}';
     this.escapeValue = options.escapeValue !== false;
@@ -23,6 +36,22 @@ export class InterpolationEngine {
     this.nestingSuffix = options.nestingSuffix || ')';
     this.formatSeparator = options.formatSeparator || ',';
     this.formatter = options.formatter;
+    
+    // Pre-compile regex with optimized patterns
+    const prefixEscaped = this.escapeRegex(this.prefix);
+    const suffixEscaped = this.escapeRegex(this.suffix);
+    const nestingPrefixEscaped = this.escapeRegex(this.nestingPrefix);
+    const nestingSuffixEscaped = this.escapeRegex(this.nestingSuffix);
+    
+    // Use non-greedy matching for better performance
+    this.interpolationRegex = new RegExp(
+      `${prefixEscaped}(.+?)${suffixEscaped}`,
+      'g'
+    );
+    this.nestingRegex = new RegExp(
+      `${nestingPrefixEscaped}(.+?)${nestingSuffixEscaped}`,
+      'g'
+    );
   }
   
   /**
@@ -49,24 +78,40 @@ export class InterpolationEngine {
   }
   
   /**
-   * Handle parameter interpolation
+   * Handle parameter interpolation with optimized caching
    */
   private handleInterpolation(
     message: string,
     params: InterpolationParams,
     locale?: Locale
   ): string {
-    const regex = new RegExp(
-      `${this.escapeRegex(this.prefix)}([^${this.escapeRegex(this.suffix)}]+)${this.escapeRegex(this.suffix)}`,
-      'g'
-    );
+    // Fast path: no placeholders
+    if (!message.includes(this.prefix)) {
+      return message;
+    }
     
-    return message.replace(regex, (match, expression) => {
+    // Reset regex lastIndex for reuse
+    this.interpolationRegex.lastIndex = 0;
+    
+    return message.replace(this.interpolationRegex, (match, expression) => {
       const trimmedExpression = expression.trim();
-      const [path, ...formats] = trimmedExpression.split(this.formatSeparator).map((s: string) => s.trim());
       
-      // Get value from params (supports nested paths)
-      let value = this.getValue(params, path);
+      // Check format cache first
+      const cacheKey = `${trimmedExpression}:${JSON.stringify(params[trimmedExpression.split(this.formatSeparator)[0].trim()])}:${locale}`;
+      if (this.formatCache.has(cacheKey)) {
+        return this.formatCache.get(cacheKey)!;
+      }
+      
+      // Parse expression once
+      const separatorIndex = trimmedExpression.indexOf(this.formatSeparator);
+      const path = separatorIndex > -1 ? trimmedExpression.substring(0, separatorIndex).trim() : trimmedExpression;
+      const format = separatorIndex > -1 ? trimmedExpression.substring(separatorIndex + 1).trim() : undefined;
+      
+      // Get value from params (optimized path)
+      let value = params[path];
+      if (value === undefined && path.includes('.')) {
+        value = getNestedValue(params, path);
+      }
       
       // Handle undefined values
       if (value === undefined) {
@@ -74,21 +119,33 @@ export class InterpolationEngine {
       }
       
       // Apply formatting
-      if (formats.length > 0 && this.formatter) {
-        for (const format of formats) {
-          value = this.formatter(value, format, locale);
+      let result: string;
+      if (format) {
+        if (this.formatter) {
+          result = String(this.formatter(value, format, locale));
+        } else {
+          result = this.defaultFormatOptimized(value, format, locale);
         }
       } else {
-        // Default formatting for common types
-        value = this.defaultFormat(value, formats[0], locale);
+        result = String(value);
       }
       
       // Escape HTML if needed
-      if (this.escapeValue && isString(value)) {
-        value = escapeHtml(value);
+      if (this.escapeValue && typeof result === 'string') {
+        result = escapeHtml(result);
       }
       
-      return String(value);
+      // Cache the result
+      if (this.formatCache.size >= this.MAX_CACHE_SIZE) {
+        // Simple FIFO eviction
+        const firstKey = this.formatCache.keys().next().value;
+        if (firstKey !== undefined) {
+          this.formatCache.delete(firstKey);
+        }
+      }
+      this.formatCache.set(cacheKey, result);
+      
+      return result;
     });
   }
   
@@ -98,14 +155,12 @@ export class InterpolationEngine {
   private handleNesting(
     message: string,
     params: InterpolationParams,
-    locale?: Locale
+    _locale?: Locale
   ): string {
-    const regex = new RegExp(
-      `${this.escapeRegex(this.nestingPrefix)}([^${this.escapeRegex(this.nestingSuffix)}]+)${this.escapeRegex(this.nestingSuffix)}`,
-      'g'
-    );
+    // Reset regex lastIndex for reuse
+    this.nestingRegex.lastIndex = 0;
     
-    return message.replace(regex, (match, key) => {
+    return message.replace(this.nestingRegex, (match, key) => {
       const trimmedKey = key.trim();
       
       // Check if we have a translation function in params
@@ -132,27 +187,43 @@ export class InterpolationEngine {
   }
   
   /**
-   * Default formatting for common types
+   * Optimized default formatting with caching
    */
-  private defaultFormat(value: any, format?: string, locale?: Locale): string {
-    if (!format) {
-      return String(value);
-    }
-    
-    // Number formatting
+  private defaultFormatOptimized(value: any, format: string, locale?: Locale): string {
+    // Number formatting with cached formatters
     if (typeof value === 'number') {
-      switch (format.toLowerCase()) {
-        case 'number':
-          return new Intl.NumberFormat(locale).format(value);
-        case 'percent':
-          return new Intl.NumberFormat(locale, { style: 'percent' }).format(value);
-        case 'currency':
-          // Currency code should be in params, defaulting to USD
-          return new Intl.NumberFormat(locale, {
-            style: 'currency',
-            currency: 'USD'
-          }).format(value);
-        default:
+      const formatLower = format.toLowerCase();
+      const formatterKey = `${locale}:${formatLower}`;
+      
+      switch (formatLower) {
+        case 'number': {
+          let formatter = this.numberFormatters.get(formatterKey);
+          if (!formatter) {
+            formatter = new Intl.NumberFormat(locale);
+            this.numberFormatters.set(formatterKey, formatter);
+          }
+          return formatter.format(value);
+        }
+        case 'percent': {
+          let formatter = this.numberFormatters.get(formatterKey);
+          if (!formatter) {
+            formatter = new Intl.NumberFormat(locale, { style: 'percent' });
+            this.numberFormatters.set(formatterKey, formatter);
+          }
+          return formatter.format(value);
+        }
+        case 'currency': {
+          let formatter = this.numberFormatters.get(formatterKey);
+          if (!formatter) {
+            formatter = new Intl.NumberFormat(locale, {
+              style: 'currency',
+              currency: 'USD'
+            });
+            this.numberFormatters.set(formatterKey, formatter);
+          }
+          return formatter.format(value);
+        }
+        default: {
           // Check if it's a decimal precision format (e.g., "0.00")
           const precision = format.match(/^0\.0+$/);
           if (precision) {
@@ -160,7 +231,19 @@ export class InterpolationEngine {
             return value.toFixed(decimals);
           }
           return String(value);
+        }
       }
+    }
+    
+    return this.defaultFormat(value, format, locale);
+  }
+  
+  /**
+   * Default formatting for common types
+   */
+  private defaultFormat(value: any, format?: string, locale?: Locale): string {
+    if (!format) {
+      return String(value);
     }
     
     // Date formatting
@@ -188,15 +271,21 @@ export class InterpolationEngine {
     
     // Array formatting
     if (Array.isArray(value)) {
-      switch (format.toLowerCase()) {
-        case 'list':
-          return new Intl.ListFormat(locale, { type: 'conjunction' }).format(value);
-        case 'or':
-          return new Intl.ListFormat(locale, { type: 'disjunction' }).format(value);
-        case 'unit':
-          return new Intl.ListFormat(locale, { type: 'unit' }).format(value);
-        default:
-          return value.join(', ');
+      // Check if Intl.ListFormat is available
+      if (typeof (Intl as any).ListFormat !== 'undefined') {
+        switch (format.toLowerCase()) {
+          case 'list':
+            return new (Intl as any).ListFormat(locale, { type: 'conjunction' }).format(value);
+          case 'or':
+            return new (Intl as any).ListFormat(locale, { type: 'disjunction' }).format(value);
+          case 'unit':
+            return new (Intl as any).ListFormat(locale, { type: 'unit' }).format(value);
+          default:
+            return value.join(', ');
+        }
+      } else {
+        // Fallback for browsers without ListFormat support
+        return value.join(', ');
       }
     }
     
@@ -250,10 +339,8 @@ export class InterpolationEngine {
     );
     
     const placeholders: string[] = [];
-    let match: RegExpExecArray | null;
-    
-    while ((match = regex.exec(message)) !== null) {
-      const expression = match[1].trim();
+    for (let m = regex.exec(message); m !== null; m = regex.exec(message)) {
+      const expression = m[1].trim();
       const [path] = expression.split(this.formatSeparator).map(s => s.trim());
       placeholders.push(path);
     }

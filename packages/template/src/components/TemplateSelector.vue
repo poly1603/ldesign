@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { DeviceType } from '../types'
-import { computed, ref, watch, inject, type Ref } from 'vue'
+import { computed, inject, ref, type Ref, watch } from 'vue'
 import { useTemplateList } from '../composables'
-import { useTemplatePlugin } from '../plugin/useTemplatePlugin'
 import { getLocale } from '../locales'
+import { useTemplatePlugin } from '../plugin/useTemplatePlugin'
 
 interface Props {
   category: string

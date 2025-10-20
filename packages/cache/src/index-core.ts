@@ -12,54 +12,54 @@
  */
 
 import { CacheManager } from './core/cache-manager'
-import { getPresetOptions, type CachePreset } from './presets'
+import { type CachePreset, getPresetOptions } from './presets'
 
 // 核心缓存管理器
 export { CacheManager } from './core/cache-manager'
 
+export { LocalStorageEngine } from './engines/local-storage-engine'
 // 基础存储引擎
 export { MemoryEngine } from './engines/memory-engine'
-export { LocalStorageEngine } from './engines/local-storage-engine'
 export { SessionStorageEngine } from './engines/session-storage-engine'
 
 // 类型定义
 export type {
-  // 核心类型
-  CacheOptions,
-  CacheStats,
+  BaseEngineOptions,
+  // 错误类型
+  CacheError,
   CacheEvent,
   CacheEventListener,
   CacheEventType,
   CacheMetadata,
 
-  // 操作选项
-  SetOptions,
-  GetOptions,
-  RemoveOptions,
+  // 核心类型
+  CacheOptions,
+  CacheStats,
   ClearOptions,
+  CookieEngineOptions,
 
   // 引擎选项
   EngineOptions,
-  BaseEngineOptions,
-  MemoryEngineOptions,
-  LocalStorageEngineOptions,
-  SessionStorageEngineOptions,
-  CookieEngineOptions,
-  IndexedDBEngineOptions,
-
+  ErrorType,
+  EventListener,
   // 事件类型
   EventMap,
-  EventListener,
+  GetOptions,
+  IndexedDBEngineOptions,
+  LocalStorageEngineOptions,
 
-  // 错误类型
-  CacheError,
-  ErrorType,
-
-  // 存储引擎类型
-  StorageEngine,
+  MemoryEngineOptions,
+  RemoveOptions,
 
   // 其他类型
   SerializableValue,
+  SessionStorageEngineOptions,
+
+  // 操作选项
+  SetOptions,
+
+  // 存储引擎类型
+  StorageEngine,
 } from './types'
 
 // 基础工具

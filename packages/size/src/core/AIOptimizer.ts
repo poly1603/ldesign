@@ -30,7 +30,7 @@ export interface PageContext {
   hasTables?: boolean;
   hasCode?: boolean;
   userAge?: number;
-  userPreferences?: Record<string, any>;
+  userPreferences?: Record<string, unknown>;
   contentType?: 'article' | 'interface' | 'dashboard' | 'mobile-app';
 }
 
@@ -55,6 +55,12 @@ export class AIOptimizer {
   private userBehaviorData: UserBehavior[] = [];
   private optimizationHistory: OptimizationSuggestion[] = [];
   private isLearning = false;
+  private eventListeners: Array<{ element: EventTarget; event: string; handler: EventListener }> = [];
+  private intervalIds: number[] = [];
+  private timeoutIds: number[] = [];
+  private isDestroyed = false;
+  private static readonly MAX_HISTORY_SIZE = 50;
+  private static readonly MAX_BEHAVIOR_DATA = 10;
 
   constructor(config: AIOptimizerConfig) {
     this.config = {
@@ -194,13 +200,13 @@ export class AIOptimizer {
   /**
    * Parse AI response
    */
-  private parseAIResponse(response: any): OptimizationSuggestion[] {
+  private parseAIResponse(response: { choices: Array<{ message: { content: string } }> }): OptimizationSuggestion[] {
     try {
       const content = response.choices[0].message.content;
       const parsed = JSON.parse(content);
       
       if (parsed.suggestions && Array.isArray(parsed.suggestions)) {
-        return parsed.suggestions.filter((s: any) => 
+        return parsed.suggestions.filter((s: OptimizationSuggestion) =>
           s.property && 
           s.suggestedValue && 
           s.confidence >= 0.5
@@ -229,8 +235,13 @@ export class AIOptimizer {
           }
         }
         
-        // Store in history
+        // Store in history with size limit
         this.optimizationHistory.push(suggestion);
+        
+        // Limit history size to prevent memory growth
+        if (this.optimizationHistory.length > AIOptimizer.MAX_HISTORY_SIZE) {
+          this.optimizationHistory = this.optimizationHistory.slice(-AIOptimizer.MAX_HISTORY_SIZE);
+        }
       }
     }
   }
@@ -352,20 +363,29 @@ export class AIOptimizer {
 
     const startTime = Date.now();
 
-    // Track scroll patterns
-    let scrollTimer: NodeJS.Timeout;
-    window.addEventListener('scroll', () => {
-      clearTimeout(scrollTimer);
+    // Track scroll patterns with memory optimization
+    let scrollTimer: ReturnType<typeof setTimeout> | null = null;
+    const scrollHandler = () => {
+      if (this.isDestroyed) return;
+      if (scrollTimer) clearTimeout(scrollTimer);
       scrollTimer = setTimeout(() => {
+        // Limit scroll patterns to prevent memory growth
+        if (behavior.scrollPatterns.length > 100) {
+          behavior.scrollPatterns = behavior.scrollPatterns.slice(-50);
+        }
         behavior.scrollPatterns.push({
           position: window.scrollY,
           duration: Date.now() - startTime
         });
       }, 100);
-    });
+    };
+    
+    window.addEventListener('scroll', scrollHandler, { passive: true });
+    this.eventListeners.push({ element: window, event: 'scroll', handler: scrollHandler });
 
-    // Track click patterns
-    document.addEventListener('click', (e) => {
+    // Track click patterns with cleanup
+    const clickHandler = (e: Event) => {
+      if (this.isDestroyed) return;
       const target = e.target as HTMLElement;
       const selector = this.getElementSelector(target);
       
@@ -373,23 +393,39 @@ export class AIOptimizer {
       if (existing) {
         existing.count++;
       } else {
+        // Limit click patterns to prevent memory growth
+        if (behavior.clickPatterns.length > 50) {
+          behavior.clickPatterns = behavior.clickPatterns.slice(-25);
+        }
         behavior.clickPatterns.push({ element: selector, count: 1 });
       }
-    });
+    };
+    
+    document.addEventListener('click', clickHandler, { passive: true });
+    this.eventListeners.push({ element: document, event: 'click', handler: clickHandler });
 
     // Track zoom level
     const checkZoom = () => {
-      behavior.zoomLevel = window.devicePixelRatio / (window.devicePixelRatio || 1);
+      behavior.zoomLevel = (window.devicePixelRatio || 1);
     };
     
-    window.addEventListener('resize', checkZoom);
+    const resizeHandler = () => {
+      if (!this.isDestroyed) checkZoom();
+    };
+    window.addEventListener('resize', resizeHandler, { passive: true });
+    this.eventListeners.push({ element: window, event: 'resize', handler: resizeHandler });
     checkZoom();
 
-    // Analyze behavior periodically
-    setInterval(() => {
+    // Analyze behavior periodically with cleanup
+    const intervalId = setInterval(() => {
+      if (this.isDestroyed) {
+        clearInterval(intervalId);
+        return;
+      }
       behavior.sessionDuration = Date.now() - startTime;
       this.analyzeBehavior(behavior);
-    }, 30000); // Every 30 seconds
+    }, 30000) as unknown as number; // Every 30 seconds
+    this.intervalIds.push(intervalId);
   }
 
   /**
@@ -405,11 +441,18 @@ export class AIOptimizer {
    * Analyze user behavior
    */
   private async analyzeBehavior(behavior: UserBehavior): Promise<void> {
-    this.userBehaviorData.push(behavior);
+    // Clone behavior to prevent memory references
+    const behaviorCopy = {
+      ...behavior,
+      scrollPatterns: [...behavior.scrollPatterns].slice(-20), // Keep only last 20 scroll patterns
+      clickPatterns: [...behavior.clickPatterns].slice(-20) // Keep only last 20 click patterns
+    };
     
-    // Keep only recent data (last 10 sessions)
-    if (this.userBehaviorData.length > 10) {
-      this.userBehaviorData.shift();
+    this.userBehaviorData.push(behaviorCopy);
+    
+    // Keep only recent data with proper limit
+    if (this.userBehaviorData.length > AIOptimizer.MAX_BEHAVIOR_DATA) {
+      this.userBehaviorData = this.userBehaviorData.slice(-AIOptimizer.MAX_BEHAVIOR_DATA);
     }
 
     // Analyze patterns
@@ -489,18 +532,19 @@ export class AIOptimizer {
   /**
    * Get personalized suggestions based on patterns
    */
-  private async getPersonalizedSuggestions(patterns: any): Promise<void> {
-    const prompt = `
-      Based on user behavior patterns, suggest size optimizations:
-      
-      Patterns:
-      - Needs larger text: ${patterns.needsLargerText}
-      - Needs more spacing: ${patterns.needsMoreSpacing}
-      - Average scroll depth: ${patterns.scrollDepth}%
-      - Frequently clicked: ${patterns.frequentlyClickedElements?.join(', ')}
-      
-      Provide personalized size recommendations.
-    `;
+  private async getPersonalizedSuggestions(_patterns: any): Promise<void> {
+    // Placeholder for AI prompt generation
+    // const _prompt = `
+    //   Based on user behavior patterns, suggest size optimizations:
+    //   
+    //   Patterns:
+    //   - Needs larger text: ${patterns.needsLargerText}
+    //   - Needs more spacing: ${patterns.needsMoreSpacing}
+    //   - Average scroll depth: ${patterns.scrollDepth}%
+    //   - Frequently clicked: ${patterns.frequentlyClickedElements?.join(', ')}
+    //   
+    //   Provide personalized size recommendations.
+    // `;
 
     // Would make API call here
     console.info('[AIOptimizer] Analyzing user patterns for personalization');
@@ -549,7 +593,40 @@ export class AIOptimizer {
    */
   stopLearning(): void {
     this.isLearning = false;
-    // Would remove event listeners here
+    this.cleanup();
+  }
+  
+  /**
+   * Clean up resources
+   */
+  private cleanup(): void {
+    // Remove all event listeners
+    this.eventListeners.forEach(({ element, event, handler }) => {
+      element.removeEventListener(event, handler);
+    });
+    this.eventListeners = [];
+    
+    // Clear intervals
+    this.intervalIds.forEach(id => clearInterval(id));
+    this.intervalIds = [];
+    
+    // Clear timeouts
+    this.timeoutIds.forEach(id => clearTimeout(id));
+    this.timeoutIds = [];
+  }
+  
+  /**
+   * Destroy the optimizer
+   */
+  destroy(): void {
+    if (this.isDestroyed) return;
+    
+    this.isDestroyed = true;
+    this.stopLearning();
+    
+    // Clear data
+    this.userBehaviorData = [];
+    this.optimizationHistory = [];
   }
 
   /**

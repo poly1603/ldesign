@@ -114,10 +114,10 @@ export interface FeatureDetectionEvents extends Record<string, unknown> {
  * const features = featureModule.getData()
  *
  * if (features.media.webp) {
- *    * }
+ *    }
  *
  * if (features.preferences.darkMode) {
- *    * }
+ *    }
  * ```
  */
 export class FeatureDetectionModule
@@ -355,8 +355,8 @@ export class FeatureDetectionModule
    */
   private detectHardware() {
     return {
-      cpuCores: (navigator as any).hardwareConcurrency || 1,
-      deviceMemory: (navigator as any).deviceMemory || 0,
+      cpuCores: (navigator as unknown as { hardwareConcurrency?: number }).hardwareConcurrency || 1,
+      deviceMemory: (navigator as unknown as { deviceMemory?: number }).deviceMemory || 0,
       maxTouchPoints: navigator.maxTouchPoints || 0,
     }
   }

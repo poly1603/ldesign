@@ -249,11 +249,10 @@ export class DevToolsPanel {
   private container: HTMLElement | null = null
   private isVisible = false
   private config: DevToolsConfig
-  private router: Router
+  // Router reference removed
   private inspector: RouteInspector
 
   constructor(router: Router, config: Partial<DevToolsConfig> = {}) {
-    this.router = router
     this.inspector = new RouteInspector(router)
     this.config = {
       enabled: true,

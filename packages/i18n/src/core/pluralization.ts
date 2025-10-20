@@ -104,9 +104,13 @@ const PLURAL_RULES: Record<string, PluralRule> = {
 };
 
 export class PluralizationEngine {
-  private rules: Map<string, PluralRule> = new Map();
-  private defaultRule: PluralRule = () => 'other';
-  private separator: string;
+  private readonly rules = new Map<string, PluralRule>();
+  private readonly defaultRule: PluralRule = () => 'other';
+  private readonly separator: string;
+  
+  // Cache compiled rules for performance
+  private readonly categoryCache = new Map<string, PluralCategory>();
+  private readonly CACHE_MAX_SIZE = 1000;
   
   constructor(separator = '_') {
     this.separator = separator;
@@ -142,8 +146,21 @@ export class PluralizationEngine {
    * Get plural category for a count in a locale
    */
   getCategory(count: number, locale: Locale): PluralCategory {
-    const rule = this.getRule(locale);
-    return rule(count, locale) as PluralCategory;
+    // Check cache first
+    const cacheKey = `${locale}:${count}`;
+    let category = this.categoryCache.get(cacheKey);
+    
+    if (category === undefined) {
+      const rule = this.getRule(locale);
+      category = rule(count, locale) as PluralCategory;
+      
+      // Add to cache with size limit
+      if (this.categoryCache.size < this.CACHE_MAX_SIZE) {
+        this.categoryCache.set(cacheKey, category);
+      }
+    }
+    
+    return category;
   }
   
   /**
@@ -281,7 +298,7 @@ export class PluralizationEngine {
     // Must have at least "other" form
     if (!messages.other && Object.keys(messages).length > 0) {
       // Check if we have numbered forms that can serve as fallback
-      return Object.keys(messages).some(key => !isNaN(Number(key)));
+      return Object.keys(messages).some(key => !Number.isNaN(Number(key)));
     }
     
     return true;

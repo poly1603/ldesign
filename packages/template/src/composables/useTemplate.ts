@@ -3,11 +3,11 @@
  */
 
 import type { DeviceType, TemplateFilter, TemplateLoadOptions, TemplateMetadata } from '../types'
-import { type Component, computed, markRaw, onMounted, ref, type Ref, watch } from 'vue'
+import { type Component, computed, markRaw, onMounted, onUnmounted, ref, type Ref, watch } from 'vue'
 import { getManager } from '../core/manager'
 
 /**
- * 使用模板
+ * 使用模板 - 内存优化版本
  */
 export function useTemplate(
   category: Ref<string> | string,
@@ -15,44 +15,50 @@ export function useTemplate(
   name: Ref<string> | string,
   options?: TemplateLoadOptions
 ) {
-  const categoryRef = ref(category)
-  const deviceRef = ref(device)
-  const nameRef = ref(name)
+  // 使用 unref 避免创建不必要的 ref
+  const categoryRef = typeof category === 'string' ? ref(category) : category as Ref<string>
+  const deviceRef = typeof device === 'string' ? ref(device) : device as Ref<string | DeviceType>
+  const nameRef = typeof name === 'string' ? ref(name) : name as Ref<string>
 
   const component = ref<Component | null>(null)
   const loading = ref(false)
   const error = ref<Error | null>(null)
   const metadata = ref<TemplateMetadata | null>(null)
 
-  const manager = getManager()
+  // 延迟获取 manager，避免过早初始化
+  let manager: ReturnType<typeof getManager> | null = null
+  const getManagerLazy = () => {
+    if (!manager) manager = getManager()
+    return manager
+  }
 
   /**
-   * 加载模板
+   * 加载模板 - 优化版本
    */
   const load = async () => {
-    if (!categoryRef.value || !deviceRef.value || !nameRef.value) {
-      return
-    }
+    const cat = categoryRef.value
+    const dev = deviceRef.value
+    const nm = nameRef.value
+
+    if (!cat || !dev || !nm) return
 
     loading.value = true
     error.value = null
 
     try {
-      const loaded = await manager.loadTemplate(
-        categoryRef.value,
-        deviceRef.value,
-        nameRef.value,
-        options
-      )
-      component.value = markRaw(loaded)
+      const mgr = getManagerLazy()
+      const loaded = await mgr.loadTemplate(cat, dev, nm, options)
+      component.value = markRaw(loaded) // markRaw 避免响应式转换
 
-      // 获取元数据
-      const templates = await manager.queryTemplates({
-        category: categoryRef.value,
-        device: deviceRef.value as DeviceType,
-        name: nameRef.value,
-      })
-      metadata.value = templates[0] || null
+      // 获取元数据 - 只在需要时查询
+      if (!metadata.value || metadata.value.name !== nm) {
+        const templates = await mgr.queryTemplates({
+          category: cat,
+          device: dev as DeviceType,
+          name: nm,
+        })
+        metadata.value = templates[0] || null
+      }
     } catch (e) {
       error.value = e as Error
       component.value = null
@@ -63,16 +69,23 @@ export function useTemplate(
   }
 
   /**
-   * 重新加载
+   * 重新加载 - 优化版本
    */
   const reload = () => {
-    manager.clearCache(categoryRef.value, deviceRef.value, nameRef.value)
+    const mgr = getManagerLazy()
+    mgr.clearCache(categoryRef.value, deviceRef.value, nameRef.value)
+    metadata.value = null // 清理元数据缓存
     return load()
   }
 
-  // 监听参数变化
+  // 监听参数变化 - 使用防抖
+  let loadTimer: ReturnType<typeof setTimeout> | null = null
   watch([categoryRef, deviceRef, nameRef], () => {
-    load()
+    if (loadTimer) clearTimeout(loadTimer)
+    loadTimer = setTimeout(() => {
+      load()
+      loadTimer = null
+    }, 100) // 100ms 防抖
   })
 
   // 初始加载
@@ -80,36 +93,52 @@ export function useTemplate(
     load()
   })
 
+  // 清理定时器
+  onUnmounted(() => {
+    if (loadTimer) {
+      clearTimeout(loadTimer)
+      loadTimer = null
+    }
+  })
+
   return {
-    component: computed(() => component.value),
-    loading: computed(() => loading.value),
-    error: computed(() => error.value),
-    metadata: computed(() => metadata.value),
+    // 直接返回 ref，避免不必要的 computed 包装
+    component: component as Readonly<Ref<Component | null>>,
+    loading: loading as Readonly<Ref<boolean>>,
+    error: error as Readonly<Ref<Error | null>>,
+    metadata: metadata as Readonly<Ref<TemplateMetadata | null>>,
     load,
     reload,
   }
 }
 
 /**
- * 使用模板列表
+ * 使用模板列表 - 内存优化版本
  */
 export function useTemplateList(filter?: Ref<TemplateFilter> | TemplateFilter) {
-  const filterRef = ref(filter || {})
+  const filterRef = typeof filter === 'object' && 'value' in filter ?
+    filter as Ref<TemplateFilter> : ref(filter || {})
   const templates = ref<TemplateMetadata[]>([])
   const loading = ref(false)
   const error = ref<Error | null>(null)
 
-  const manager = getManager()
+  // 延迟获取 manager
+  let manager: ReturnType<typeof getManager> | null = null
+  const getManagerLazy = () => {
+    if (!manager) manager = getManager()
+    return manager
+  }
 
   /**
-   * 查询模板
+   * 查询模板 - 优化版本
    */
   const query = async () => {
     loading.value = true
     error.value = null
 
     try {
-      templates.value = await manager.queryTemplates(filterRef.value)
+      const mgr = getManagerLazy()
+      templates.value = await mgr.queryTemplates(filterRef.value)
     } catch (e) {
       error.value = e as Error
       templates.value = []
@@ -119,16 +148,22 @@ export function useTemplateList(filter?: Ref<TemplateFilter> | TemplateFilter) {
   }
 
   /**
-   * 刷新列表
+   * 刷新列表 - 优化版本
    */
   const refresh = async () => {
-    await manager.rescan()
+    const mgr = getManagerLazy()
+    await mgr.rescan()
     return query()
   }
 
-  // 监听过滤条件变化
+  // 监听过滤条件变化 - 使用防抖以减少查询次数
+  let queryTimer: ReturnType<typeof setTimeout> | null = null
   watch(filterRef, () => {
-    query()
+    if (queryTimer) clearTimeout(queryTimer)
+    queryTimer = setTimeout(() => {
+      query()
+      queryTimer = null
+    }, 200) // 200ms 防抖
   }, { deep: true })
 
   // 初始查询
@@ -136,10 +171,19 @@ export function useTemplateList(filter?: Ref<TemplateFilter> | TemplateFilter) {
     query()
   })
 
+  // 清理定时器
+  onUnmounted(() => {
+    if (queryTimer) {
+      clearTimeout(queryTimer)
+      queryTimer = null
+    }
+  })
+
   return {
-    templates: computed(() => templates.value),
-    loading: computed(() => loading.value),
-    error: computed(() => error.value),
+    // 直接返回 ref，避免 computed 开销
+    templates: templates as Readonly<Ref<TemplateMetadata[]>>,
+    loading: loading as Readonly<Ref<boolean>>,
+    error: error as Readonly<Ref<Error | null>>,
     query,
     refresh,
   }

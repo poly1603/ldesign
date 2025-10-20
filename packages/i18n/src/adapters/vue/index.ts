@@ -3,26 +3,26 @@
  * Complete Vue 3 integration with plugin, composables, and components
  */
 
-import type { App, Plugin } from 'vue';
+import type { App } from 'vue';
 import type { I18nConfig, I18nInstance } from '../../types';
 import { OptimizedI18n } from '../../core/i18n-optimized';
-import { I18N_SYMBOL, i18nSymbol } from './constants';
+import { I18N_SYMBOL } from './constants';
 
 // Import and re-export plugin
 import { createI18nPlugin, LDesignI18nPlugin } from './plugin';
 export { createI18nPlugin, LDesignI18nPlugin };
-
-// Export composables
-export { useI18n } from './composables/useI18n';
-export { useTranslation } from './composables/useTranslation';
-export { useLocale } from './composables/useLocale';
-export { useI18nAsync } from './composables/useI18nAsync';
 
 // Export components
 export { default as I18nProvider } from './components/I18nProvider.vue';
 export { default as I18nText } from './components/I18nText.vue';
 export { default as I18nTranslate } from './components/I18nTranslate.vue';
 export { default as LocaleSwitcher } from './components/LocaleSwitcher.vue';
+
+// Export composables
+export { useI18n } from './composables/useI18n';
+export { useI18nAsync } from './composables/useI18nAsync';
+export { useLocale } from './composables/useLocale';
+export { useTranslation } from './composables/useTranslation';
 
 // Export directives
 export { vT } from './directives/vT';

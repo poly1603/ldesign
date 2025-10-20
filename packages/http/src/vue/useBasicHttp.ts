@@ -6,13 +6,13 @@ import { createHttpClient } from '../factory'
 /**
  * 基础HTTP请求选项
  */
-export interface BasicHttpOptions {
+export interface BasicHttpOptions<T = unknown> {
   /** 是否立即执行请求 */
   immediate?: boolean
   /** 是否在组件卸载时取消请求 */
   cancelOnUnmount?: boolean
   /** 请求成功回调 */
-  onSuccess?: (data: any) => void
+  onSuccess?: (data: T) => void
   /** 请求失败回调 */
   onError?: (error: Error) => void
   /** 请求完成回调 */
@@ -22,7 +22,7 @@ export interface BasicHttpOptions {
 /**
  * 基础HTTP请求返回值
  */
-export interface BasicHttpReturn<T> {
+export interface BasicHttpReturn<T, D = unknown> {
   /** 响应数据 */
   data: Ref<T | null>
   /** 加载状态 */
@@ -34,7 +34,7 @@ export interface BasicHttpReturn<T> {
   /** 是否有错误 */
   hasError: Ref<boolean>
   /** 执行请求 */
-  execute: (data?: any) => Promise<T | null>
+  execute: (data?: D) => Promise<T | null>
   /** 重置状态 */
   reset: () => void
   /** 清除错误 */
@@ -58,12 +58,12 @@ function createBasicClient(config?: HttpClientConfig) {
  *
  * 这个内部函数用于创建所有HTTP方法的hooks,消除重复代码
  */
-function createHttpHook<T = any, D = any>(
+function createHttpHook<T = unknown, D = unknown>(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: BasicHttpOptions = {},
-): BasicHttpReturn<T> {
+  options: BasicHttpOptions<T> = {},
+): BasicHttpReturn<T, D> {
   const client = createBasicClient()
   const responseData = ref<T | null>(null)
   const loading = ref(false)
@@ -192,32 +192,32 @@ export function useGet<T = any>(
  * await execute({ name: 'John' })
  * ```
  */
-export function usePost<T = any, D = any>(
+export function usePost<T = unknown, D = unknown>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: BasicHttpOptions = {},
-): BasicHttpReturn<T> {
-  return createHttpHook<T, D>('POST', url, config, options)
+  options: BasicHttpOptions<T> = {},
+): BasicHttpReturn<T, D> {
+  return createHttpHook<T, D>('POST', url, config, options) as BasicHttpReturn<T, D>
 }
 
 /**
  * 基础HTTP PUT请求hook
  */
-export function usePut<T = any, D = any>(
+export function usePut<T = unknown, D = unknown>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: BasicHttpOptions = {},
-): BasicHttpReturn<T> {
-  return createHttpHook<T, D>('PUT', url, config, options)
+  options: BasicHttpOptions<T> = {},
+): BasicHttpReturn<T, D> {
+  return createHttpHook<T, D>('PUT', url, config, options) as BasicHttpReturn<T, D>
 }
 
 /**
  * 基础HTTP DELETE请求hook
  */
-export function useDelete<T = any>(
+export function useDelete<T = unknown>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: BasicHttpOptions = {},
+  options: BasicHttpOptions<T> = {},
 ): BasicHttpReturn<T> {
   return createHttpHook<T>('DELETE', url, config, options)
 }
@@ -225,10 +225,10 @@ export function useDelete<T = any>(
 /**
  * 基础HTTP PATCH请求hook
  */
-export function usePatch<T = any, D = any>(
+export function usePatch<T = unknown, D = unknown>(
   url: MaybeRef<string>,
   config?: MaybeRef<RequestConfig>,
-  options: BasicHttpOptions = {},
-): BasicHttpReturn<T> {
-  return createHttpHook<T, D>('PATCH', url, config, options)
+  options: BasicHttpOptions<T> = {},
+): BasicHttpReturn<T, D> {
+  return createHttpHook<T, D>('PATCH', url, config, options) as BasicHttpReturn<T, D>
 }

@@ -152,10 +152,21 @@ export const mobileTouch: Preset = {
     tags: ['mobile', 'touch', 'accessibility'],
     icon: '👆'
   },
-  scheme: () => {
-    const touchSize = getDeviceDetector().getTouchTargetSize();
+  // 使用缓存避免重复计算
+  scheme: (() => {
+    let cachedScheme: any = null;
+    let lastTouchSize: number | null = null;
     
-    return {
+    return () => {
+      const touchSize = getDeviceDetector().getTouchTargetSize();
+      
+      // 如果 touch size 没有变化，使用缓存
+      if (cachedScheme && lastTouchSize === touchSize) {
+        return cachedScheme;
+      }
+      
+      lastTouchSize = touchSize;
+      cachedScheme = {
       name: 'mobile-touch',
       description: 'Touch-optimized mobile preset',
       
@@ -313,6 +324,9 @@ export const mobileTouch: Preset = {
         lg: '768px',
         xl: '1024px'
       }
+      };
+      
+      return cachedScheme;
     };
-  }
+  })()
 };

@@ -338,11 +338,15 @@ export function generateCSSString(
   const { selector = ':root', important = false } = options;
   const importantFlag = important ? ' !important' : '';
   
-  const cssVars = Object.entries(variables)
-    .map(([key, value]) => `  ${key}: ${value}${importantFlag};`)
-    .join('\n');
-
-  return `${selector} {\n${cssVars}\n}`;
+  // 使用数组 push 和 join 替代字符串拼接，效率更高
+  const lines: string[] = [`${selector} {`];
+  
+  for (const [key, value] of Object.entries(variables)) {
+    lines.push(`  ${key}: ${value}${importantFlag};`);
+  }
+  
+  lines.push('}');
+  return lines.join('\n');
 }
 
 /**
@@ -378,58 +382,76 @@ export function generateCSS(
 /**
  * Generate utility classes
  */
+// 使用缓存的 CSS 生成器
+const utilityClassesCache = new WeakMap<SizeScheme, string>();
+
 function generateUtilityClasses(
   scheme: SizeScheme,
   options: CSSVariableOptions = {}
 ): string {
+  // 检查缓存
+  if (utilityClassesCache.has(scheme)) {
+    return utilityClassesCache.get(scheme)!;
+  }
+  
   const { prefix = 'size' } = options;
   const classes: string[] = [];
+  const spaceVar = (key: string) => `var(${getCSSVarName(`space-${key}`, prefix)})`;
 
-  // Spacing utilities
-  Object.keys(scheme.spacing).forEach(key => {
+  // Spacing utilities - 减少重复计算
+  for (const key of Object.keys(scheme.spacing)) {
+    const sv = spaceVar(key);
     // Padding
-    classes.push(`.p-${key} { padding: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-    classes.push(`.px-${key} { padding-left: var(${getCSSVarName(`space-${key}`, prefix)}); padding-right: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-    classes.push(`.py-${key} { padding-top: var(${getCSSVarName(`space-${key}`, prefix)}); padding-bottom: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-    classes.push(`.pt-${key} { padding-top: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-    classes.push(`.pr-${key} { padding-right: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-    classes.push(`.pb-${key} { padding-bottom: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-    classes.push(`.pl-${key} { padding-left: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
+    classes.push(
+      `.p-${key} { padding: ${sv}; }`,
+      `.px-${key} { padding-left: ${sv}; padding-right: ${sv}; }`,
+      `.py-${key} { padding-top: ${sv}; padding-bottom: ${sv}; }`,
+      `.pt-${key} { padding-top: ${sv}; }`,
+      `.pr-${key} { padding-right: ${sv}; }`,
+      `.pb-${key} { padding-bottom: ${sv}; }`,
+      `.pl-${key} { padding-left: ${sv}; }`
+    );
     
     // Margin
-    classes.push(`.m-${key} { margin: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-    classes.push(`.mx-${key} { margin-left: var(${getCSSVarName(`space-${key}`, prefix)}); margin-right: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-    classes.push(`.my-${key} { margin-top: var(${getCSSVarName(`space-${key}`, prefix)}); margin-bottom: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-    classes.push(`.mt-${key} { margin-top: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-    classes.push(`.mr-${key} { margin-right: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-    classes.push(`.mb-${key} { margin-bottom: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-    classes.push(`.ml-${key} { margin-left: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-    
-    // Gap
-    classes.push(`.gap-${key} { gap: var(${getCSSVarName(`space-${key}`, prefix)}); }`);
-  });
+    classes.push(
+      `.m-${key} { margin: ${sv}; }`,
+      `.mx-${key} { margin-left: ${sv}; margin-right: ${sv}; }`,
+      `.my-${key} { margin-top: ${sv}; margin-bottom: ${sv}; }`,
+      `.mt-${key} { margin-top: ${sv}; }`,
+      `.mr-${key} { margin-right: ${sv}; }`,
+      `.mb-${key} { margin-bottom: ${sv}; }`,
+      `.ml-${key} { margin-left: ${sv}; }`,
+      `.gap-${key} { gap: ${sv}; }`
+    );
+  }
 
+  // 使用 for...of 减少函数调用开销
   // Font size utilities
-  Object.keys(scheme.fontSize).forEach(key => {
+  for (const key of Object.keys(scheme.fontSize)) {
     classes.push(`.text-${key} { font-size: var(${getCSSVarName(`font-${key}`, prefix)}); }`);
-  });
+  }
 
   // Border radius utilities
-  Object.keys(scheme.radius).forEach(key => {
+  for (const key of Object.keys(scheme.radius)) {
     classes.push(`.rounded-${key} { border-radius: var(${getCSSVarName(`radius-${key}`, prefix)}); }`);
-  });
+  }
 
   // Line height utilities
-  Object.keys(scheme.lineHeight).forEach(key => {
+  for (const key of Object.keys(scheme.lineHeight)) {
     classes.push(`.leading-${key} { line-height: var(${getCSSVarName(`line-${key}`, prefix)}); }`);
-  });
+  }
 
   // Letter spacing utilities
-  Object.keys(scheme.letterSpacing).forEach(key => {
+  for (const key of Object.keys(scheme.letterSpacing)) {
     classes.push(`.tracking-${key} { letter-spacing: var(${getCSSVarName(`letter-${key}`, prefix)}); }`);
-  });
+  }
 
-  return classes.join('\n');
+  const result = classes.join('\n');
+  
+  // 缓存结果
+  utilityClassesCache.set(scheme, result);
+  
+  return result;
 }
 
 /**
@@ -488,11 +510,11 @@ function generateComponentClasses(
  */
 function generateResponsiveUtilities(
   scheme: SizeScheme,
-  options: CSSVariableOptions = {}
+  _options: Record<string, any> = {}
 ): string {
   if (!scheme.breakpoints) return '';
   
-  const { prefix = 'size' } = options;
+  // const { prefix = 'size' } = options; // prefix unused in this function
   const breakpoints = scheme.breakpoints;
   const media: string[] = [];
 

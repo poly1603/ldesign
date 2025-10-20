@@ -132,6 +132,11 @@ export interface SizePlugin {
    * Install the plugin
    */
   install: (app: App) => void
+
+  /**
+   * Destroy the plugin and clean up resources
+   */
+  destroy: () => void
 }
 
 /**
@@ -174,13 +179,19 @@ function useSmartLocale(options: SizePluginOptions): Ref<string> {
       locale.value = stored
     }
 
-    // 监听全局语言变化事件
-    window.addEventListener('app:locale-changed', (e: Event) => {
+    // 监听全局语言变化事件 - 存储处理器以便清理
+    const localeHandler = (e: Event) => {
       const customEvent = e as CustomEvent<{ locale: string }>
       if (customEvent.detail?.locale) {
         locale.value = customEvent.detail.locale
       }
-    })
+    }
+    window.addEventListener('app:locale-changed', localeHandler)
+
+      // 返回清理函数
+      ; (locale as any)._cleanup = () => {
+        window.removeEventListener('app:locale-changed', localeHandler)
+      }
   }
 
   return locale
@@ -220,8 +231,11 @@ export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
     cssVariables: options.cssVariables !== false,
     locale: options.locale || currentLocale.value
   }
-  // Create size manager
-  const manager = new SizeManager({ presets: mergedOptions.presets })
+  // Create size manager - 传入 storageKey 确保与插件使用相同的 key
+  const manager = new SizeManager({
+    presets: mergedOptions.presets,
+    storageKey: mergedOptions.storageKey
+  })
 
   // Reactive current size
   const currentSize = ref(mergedOptions.defaultSize)
@@ -318,17 +332,42 @@ export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
     }
   }
 
-  // Listen to size changes
+  // Listen to size changes with proper cleanup
   const listeners = new Set<(size: string) => void>()
+  const cleanupFunctions: Array<() => void> = []
 
-  manager.onChange((config) => {
+  const unsubscribe = manager.onChange(() => {
     const newSize = manager.getCurrentSize()
     currentSize.value = newSize
     listeners.forEach(listener => listener(newSize))
   })
+  cleanupFunctions.push(unsubscribe)
   const onChange = (listener: (size: string) => void): (() => void) => {
     listeners.add(listener)
     return () => listeners.delete(listener)
+  }
+
+  // Destroy function for cleanup
+  const destroy = () => {
+    // Clear all listeners
+    listeners.clear()
+
+    // Run all cleanup functions
+    cleanupFunctions.forEach(cleanup => cleanup())
+    cleanupFunctions.length = 0
+
+    // Clean up locale listener if exists
+    if ((currentLocale as any)._cleanup) {
+      (currentLocale as any)._cleanup()
+    }
+
+    // Destroy manager
+    if (manager.destroy) {
+      manager.destroy()
+    }
+
+    // Clear cache
+    localeCache = null
   }
 
   // Create plugin instance
@@ -341,6 +380,7 @@ export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
     setSize,
     getSize,
     onChange,
+    destroy,
 
     install(app: App) {
       // 智能共享：如果没有传入 Ref，尝试自动共享
@@ -388,12 +428,8 @@ export function createSizePlugin(options: SizePluginOptions = {}): SizePlugin {
       app.config.globalProperties.$size = plugin
       app.config.globalProperties.$sizeManager = manager
 
-      // Load size on initialization
-      if (typeof window !== 'undefined') {
-        setTimeout(() => {
-          loadSize()
-        }, 0)
-      }
+      // 注意：不再需要 loadSize()，因为 SizeManager 构造函数已经调用了 loadFromStorage()
+      // 如果在这里再次加载会导致冲突，因为插件的 storage 和 Manager 的 storage 格式不同
     }
   }
 

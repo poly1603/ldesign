@@ -114,14 +114,18 @@ export class EventEmitter<T = unknown> {
    */
   emit(event: string, data: T): void {
     const eventListeners = this.listeners.get(event)
-    if (eventListeners) {
-      for (const listener of eventListeners) {
-        try {
-          listener(data)
-        }
-        catch (error) {
-          console.error(`Error in event listener for ${event}:`, error instanceof Error ? error.message : 'Unknown error')
-        }
+    if (!eventListeners || eventListeners.size === 0) {
+      return
+    }
+    
+    // 优化：将Set转换为数组一次，避免迭代器开销
+    const listenersArray = Array.from(eventListeners)
+    for (let i = 0; i < listenersArray.length; i++) {
+      try {
+        listenersArray[i](data)
+      }
+      catch (error) {
+        console.error(`Error in event listener for ${event}:`, error instanceof Error ? error.message : 'Unknown error')
       }
     }
   }

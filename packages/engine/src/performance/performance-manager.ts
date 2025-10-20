@@ -255,9 +255,12 @@ export class PerformanceManagerImpl implements PerformanceManager {
   private monitoring = false
   private fpsMonitor = new FPSMonitor()
   private memoryMonitor = new MemoryMonitor()
+  private performanceObserver?: PerformanceObserver
   private engine?: Engine
   private eventIdCounter = 0
   private maxEvents = 50 // 限制最大事件数量
+  private maxMetrics = 50 // 限制最大指标数量
+  private destroyed = false
 
   constructor(thresholds: PerformanceThresholds = {}, engine?: Engine) {
     this.engine = engine
@@ -383,6 +386,8 @@ export class PerformanceManagerImpl implements PerformanceManager {
   }
 
   recordMetrics(metrics: Partial<PerformanceMetrics>): void {
+    if (this.destroyed) return
+    
     const fullMetrics: PerformanceMetrics = {
       timestamp: Date.now(),
       duration: 0,
@@ -392,8 +397,8 @@ export class PerformanceManagerImpl implements PerformanceManager {
     this.metrics.push(fullMetrics)
 
     // 限制存储的指标数量，减少内存占用
-    if (this.metrics.length > 100) { // 降低存储限制
-      this.metrics = this.metrics.slice(-50) // 只保留最近50条
+    if (this.metrics.length > this.maxMetrics) {
+      this.metrics = this.metrics.slice(-this.maxMetrics)
     }
 
     // 检查指标违规
@@ -438,13 +443,14 @@ export class PerformanceManagerImpl implements PerformanceManager {
     // 监听性能观察者API
     if (typeof PerformanceObserver !== 'undefined') {
       try {
-        const observer = new PerformanceObserver(list => {
+        this.performanceObserver = new PerformanceObserver(list => {
+          if (this.destroyed) return
           for (const entry of list.getEntries()) {
             this.handlePerformanceEntry(entry)
           }
         })
 
-        observer.observe({
+        this.performanceObserver.observe({
           entryTypes: ['navigation', 'resource', 'measure', 'mark'],
         })
       } catch (error) {
@@ -463,6 +469,11 @@ export class PerformanceManagerImpl implements PerformanceManager {
     this.monitoring = false
     this.fpsMonitor.stop()
     this.memoryMonitor.stop()
+    
+    if (this.performanceObserver) {
+      this.performanceObserver.disconnect()
+      this.performanceObserver = undefined
+    }
 
     this.engine?.logger?.info('Performance monitoring stopped')
   }
@@ -949,6 +960,37 @@ export class PerformanceManagerImpl implements PerformanceManager {
     ) {
       globalThis.performance.clearMeasures()
     }
+  }
+  
+  // 销毁方法 - 清理所有资源
+  destroy(): void {
+    if (this.destroyed) return
+    this.destroyed = true
+    
+    // 停止监控
+    this.stopMonitoring()
+    
+    // 清理性能观察器
+    if (this.performanceObserver) {
+      this.performanceObserver.disconnect()
+      this.performanceObserver = undefined
+    }
+    
+    // 清理监视器
+    this.fpsMonitor.stop()
+    this.memoryMonitor.stop()
+    
+    // 清理数据
+    this.events.clear()
+    this.metrics = []
+    this.violationCallbacks = []
+    this.metricsCallbacks = []
+    
+    // 清理性能标记
+    this.clearMarks()
+    this.clearMeasures()
+    
+    this.engine?.logger?.info('Performance manager destroyed')
   }
 }
 

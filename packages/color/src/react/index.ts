@@ -6,11 +6,11 @@
  * Note: React must be installed as a peer dependency
  */
 
-export { useTheme, ThemeProvider, useThemeContext } from './useTheme';
-export type { UseThemeOptions, ThemeProviderProps } from './useTheme';
+// Export ThemeModeSwitcher component
+export { ReactThemeModeSwitcher as ThemeModeSwitcher } from './ReactThemeModeSwitcher';
+export type { ThemeMode, ReactThemeModeSwitcherProps as ThemeModeSwitcherProps } from './ReactThemeModeSwitcher';
 export { ThemePicker } from './ThemePicker';
 export type { ThemePickerProps } from './ThemePicker';
 
-// Export ThemeModeSwitcher component
-export { ReactThemeModeSwitcher as ThemeModeSwitcher } from './ReactThemeModeSwitcher';
-export type { ReactThemeModeSwitcherProps as ThemeModeSwitcherProps, ThemeMode } from './ReactThemeModeSwitcher';
+export { ThemeProvider, useTheme, useThemeContext } from './useTheme';
+export type { ThemeProviderProps, UseThemeOptions } from './useTheme';

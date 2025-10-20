@@ -7,72 +7,48 @@
  * @license MIT
  */
 
+import type { I18nConfig, I18nInstance } from './types';
+// Vue Adapter exports for convenience
+import { useI18n as vueUseI18n } from './adapters/vue';
+
 // Core exports
-export { OptimizedI18n, OptimizedI18n as I18n } from './core/i18n-optimized';
-export { InterpolationEngine } from './core/interpolation';
-export { PluralizationEngine } from './core/pluralization';
-export type { PluralCategory } from './core/pluralization';
+// Factory function to create i18n instance
+import { createI18n, OptimizedI18n } from './core';
+
 export {
+  createVueI18n,
+  I18nT,
+  useCurrency,
+  useDate,
+  type UseI18nComposable,
+  useNumber,
+  usePlural,
+  useRelativeTime,
+  useTranslation,
+  vI18n
+} from './adapters/vue';
+export {
+  createCache,
   LRUCache,
-  WeakCache,
-  StorageCache,
   MultiTierCache,
-  createCache
+  StorageCache,
+  WeakCache
 } from './core/cache';
+export { OptimizedI18n as I18n, OptimizedI18n } from './core/i18n-optimized';
+// Performance utilities
+export { FastCacheKeyBuilder, ObjectPool } from './core/i18n-optimized';
+export { InterpolationEngine } from './core/interpolation';
 
-// Type exports - properly structured for build tools
-export type {
-  // Basic types
-  Locale,
-  MessageKey,
-  MessageValue,
-  Messages,
-  InterpolationParams,
-  PluralRule,
+export { PluralizationEngine } from './core/pluralization';
 
-  // Core interfaces
-  I18nInstance,
-  I18nConfig,
-  I18nContext,
-  I18nPlugin,
-  TranslationFunction,
-  TranslateOptions,
-  InterpolationOptions,
-  LanguagePackage,
-
-  // Component interfaces
-  MessageLoader,
-  MessageStorage,
-  LanguageDetector,
-  Cache,
-  Formatter,
-
-  // Configuration
-  CacheConfig,
-  DetectionConfig,
-  InterpolationConfig,
-
-  // Events
-  I18nEventType,
-  I18nEventData,
-  I18nEventListener,
-
-  // Error handling
-  MissingKeyHandler,
-  ErrorHandler,
-
-  // Framework
-  FrameworkAdapter,
-
-  // Utility types
-  DeepPartial,
-  ValueOf,
-  PromiseOr
-} from './types';
-
-// Utility exports
-export * from './utils/helpers';
-export * from './utils/bundle-optimization';
+export type { PluralCategory } from './core/pluralization';
+// Engine Plugin Integration (for compatibility)
+export {
+  createDefaultI18nEnginePlugin,
+  createI18nEnginePlugin,
+  type I18nEnginePluginOptions,
+  i18nPlugin
+} from './engine';
 
 // Advanced features (lazy-loadable)
 export const LazyFeatures = {
@@ -105,26 +81,8 @@ export const PluginLoader = {
   },
 };
 
-// Factory function to create i18n instance
-import { OptimizedI18n } from './core/i18n-optimized';
-import type { I18nConfig, I18nInstance } from './types';
-
-/**
- * Create a new optimized i18n instance
- * @param config - Configuration options
- * @returns Configured i18n instance
- */
-export function createI18n(config?: I18nConfig): I18nInstance {
-  const instance = new OptimizedI18n(config || {});
-
-  // Auto-initialize if messages are provided
-  if (config?.messages) {
-    instance.init().catch(err => {
-    });
-  }
-
-  return instance;
-}
+// Re-export createI18n from core
+export { createI18n };
 
 /**
  * Global i18n instance for convenience
@@ -171,7 +129,7 @@ export function clearGlobalI18n(): void {
 /**
  * Quick translation function using global instance
  */
-export function t(key: MessageKey, params?: InterpolationParams): string {
+export function t(key: string, params?: Record<string, any>): string {
   return useI18n().t(key, params);
 }
 
@@ -202,41 +160,69 @@ export const Adapters = {
   },
 };
 
-// Engine Plugin Integration (for compatibility)
-export {
-  createI18nEnginePlugin,
-  createDefaultI18nEnginePlugin,
-  i18nPlugin,
-  type I18nEnginePluginOptions
-} from './engine';
-
 // New optimized plugin
 export {
   createI18nPlugin,
-  useI18n as useI18nPlugin,
-  type I18nPluginOptions
+  type I18nPluginOptions,
+  useI18n as useI18nPlugin
 } from './plugin';
 
-// Vue Adapter exports for convenience
-import { useI18n as vueUseI18n } from './adapters/vue';
-export {
-  createVueI18n,
-  vI18n,
-  I18nT,
-  useTranslation,
-  usePlural,
-  useNumber,
-  useDate,
-  useCurrency,
-  useRelativeTime,
-  type UseI18nComposable
-} from './adapters/vue';
+// Type exports - properly structured for build tools
+export type {
+  Cache,
+  // Configuration
+  CacheConfig,
+  // Utility types
+  DeepPartial,
+  DetectionConfig,
+  ErrorHandler,
+  Formatter,
+
+  // Framework
+  FrameworkAdapter,
+  I18nConfig,
+  I18nContext,
+  I18nEventData,
+  I18nEventListener,
+  // Events
+  I18nEventType,
+  // Core interfaces
+  I18nInstance,
+  I18nPlugin,
+
+  InterpolationConfig,
+  InterpolationOptions,
+  InterpolationParams,
+  LanguageDetector,
+  LanguagePackage,
+
+  // Basic types
+  Locale,
+  MessageKey,
+  // Component interfaces
+  MessageLoader,
+
+  Messages,
+  MessageStorage,
+  MessageValue,
+
+  // Error handling
+  MissingKeyHandler,
+  PluralRule,
+
+  PromiseOr,
+
+  TranslateOptions,
+  TranslationFunction,
+  ValueOf
+} from './types';
+export * from './utils/bundle-optimization';
 
 // Export Vue's useI18n separately to avoid naming conflict
 export { vueUseI18n as useVueI18n };
 
-// Performance utilities
-export { ObjectPool, FastCacheKeyBuilder } from './core/i18n-optimized';
+// Utility exports
+export * from './utils/helpers';
 
 // Type aliases for convenience (not re-exported to avoid conflicts)
 

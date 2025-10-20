@@ -1,0 +1,35 @@
+{
+  "name": "@ldesign/excel-viewer-react",
+  "version": "1.0.0",
+  "description": "Excel 预览编辑插件 React 组件",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c ../../rollup.config.js --environment BUILD:react"
+  },
+  "dependencies": {
+    "@ldesign/excel-viewer-core": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "keywords": [
+    "excel",
+    "react",
+    "spreadsheet"
+  ],
+  "author": "ldesign",
+  "license": "MIT"
+}
+

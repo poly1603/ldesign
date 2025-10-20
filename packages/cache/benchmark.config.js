@@ -141,9 +141,12 @@ export default {
   // 环境配置
   environment: {
     node: {
-      version: process.version,
-      platform: process.platform,
-      arch: process.arch
+      // eslint-disable-next-line node/prefer-global/process
+      version: (typeof globalThis !== 'undefined' && globalThis.process?.version) || 'unknown',
+      // eslint-disable-next-line node/prefer-global/process
+      platform: (typeof globalThis !== 'undefined' && globalThis.process?.platform) || 'unknown',
+      // eslint-disable-next-line node/prefer-global/process
+      arch: (typeof globalThis !== 'undefined' && globalThis.process?.arch) || 'unknown'
     },
     warmupTime: 1000,
     cooldownTime: 500,

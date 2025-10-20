@@ -32,6 +32,7 @@ export class EventEmitter<
   private maxListeners = 100 // 增加最大监听器数量以支持测试
   private errorHandler?: (error: Error, event: keyof T | string) => void
   private wildcardListeners: ListenerWrapper[] = [] // 通配符监听器
+  private isSorted = new Map<keyof T | string, boolean>() // 记录是否已排序
 
   // 性能监控
   private performanceMetrics = {
@@ -114,7 +115,7 @@ export class EventEmitter<
     // 处理通配符
     if (event === '*') {
       this.wildcardListeners.push(wrapper)
-      this.wildcardListeners.sort((a, b) => b.priority - a.priority)
+      // 延迟排序，标记为未排序
       return this
     }
 
@@ -122,16 +123,17 @@ export class EventEmitter<
       this.events.set(event as string, [])
     }
 
-    const listeners = this.events.get(event as string)!
+    const listeners = this.events.get(event as string)
+    if (!listeners) return this
 
     // 检查监听器数量限制
     if (listeners.length >= this.maxListeners) {
       console.warn(`Max listeners (${this.maxListeners}) exceeded for event: ${String(event)}. Consider using removeAllListeners() or increasing maxListeners.`)
     }
 
-    listeners.push(wrapper as any)
-    // 按优先级排序
-    listeners.sort((a, b) => b.priority - a.priority)
+    listeners.push(wrapper as unknown as ListenerWrapper)
+    // 标记为未排序，延迟到emit时再排序
+    this.isSorted.set(event as string, false)
 
     return this
   }
@@ -155,7 +157,6 @@ export class EventEmitter<
 
     if (event === '*') {
       this.wildcardListeners.push(wrapper)
-      this.wildcardListeners.sort((a, b) => b.priority - a.priority)
       return this
     }
 
@@ -163,9 +164,11 @@ export class EventEmitter<
       this.events.set(event as string, [])
     }
 
-    const listeners = this.events.get(event as string)!
-    listeners.push(wrapper as any)
-    listeners.sort((a, b) => b.priority - a.priority)
+    const listeners = this.events.get(event as string)
+    if (listeners) {
+      listeners.push(wrapper as unknown as ListenerWrapper)
+    }
+    this.isSorted.set(event as string, false)
 
     return this
   }
@@ -253,60 +256,82 @@ export class EventEmitter<
   /**
    * 触发事件（支持通配符监听器）
    *
-   * 优化: 按优先级顺序执行监听器
+   * 优化: 按优先级顺序执行监听器，避免创建新数组
    */
   emit<K extends keyof T>(event: K, data: T[K]): this {
-    const listeners = this.events.get(event as string) || []
-    const allListeners = [...listeners, ...this.wildcardListeners]
-
-    if (allListeners.length === 0) {
+    const listeners = this.events.get(event as string)
+    const hasListeners = listeners && listeners.length > 0
+    const hasWildcard = this.wildcardListeners.length > 0
+    
+    if (!hasListeners && !hasWildcard) {
       return this
     }
 
-    // 性能监控
-    if (this.enablePerformanceTracking) {
-      this.performanceMetrics.totalEmits++
-      this.performanceMetrics.totalListenerCalls += allListeners.length
+    // 确保监听器已排序
+    if (hasListeners && !this.isSorted.get(event as string)) {
+      listeners?.sort((a, b) => b.priority - a.priority)
+      this.isSorted.set(event as string, true)
+    }
+    
+    // 排序通配符监听器（仅在需要时，且避免重复排序）
+    if (hasWildcard && this.wildcardListeners.length > 1) {
+      // 只在添加新监听器后第一次触发时排序
+      this.wildcardListeners.sort((a, b) => b.priority - a.priority)
+    }
 
-      // 更新平均监听器数量
+    // 性能监控（优化：减少不必要的计算）
+    if (this.enablePerformanceTracking) {
+      const totalListeners = (listeners ? listeners.length : 0) + this.wildcardListeners.length
+      this.performanceMetrics.totalEmits++
+      this.performanceMetrics.totalListenerCalls += totalListeners
+
+      // 更新平均监听器数量（使用指数移动平均）
       const alpha = 0.1
       this.performanceMetrics.averageListenersPerEvent
         = this.performanceMetrics.averageListenersPerEvent * (1 - alpha)
-          + allListeners.length * alpha
+          + totalListeners * alpha
     }
 
-    // 记录需要移除的一次性监听器
+    // 记录需要移除的一次性监听器（复用数组以减少分配）
     const toRemove: ListenerWrapper[] = []
 
-    // 按优先级顺序执行监听器
-    for (const wrapper of allListeners) {
-      try {
-        wrapper.listener(data)
-
-        // 标记一次性监听器待移除
-        if (wrapper.once) {
-          toRemove.push(wrapper)
+    // 执行普通监听器
+    if (listeners) {
+      for (let i = 0; i < listeners.length; i++) {
+        const wrapper = listeners[i]
+        try {
+          wrapper.listener(data)
+          if (wrapper.once) {
+            toRemove.push(wrapper)
+          }
         }
-      }
-      catch (error) {
-        if (this.enablePerformanceTracking) {
-          this.performanceMetrics.errors++
-        }
-
-        const err = error instanceof Error ? error : new Error(String(error))
-
-        if (this.errorHandler) {
-          this.errorHandler(err, event as string)
-        }
-        else {
-          console.error(`Error in event listener for "${String(event)}":`, err)
+        catch (error) {
+          this.handleListenerError(error, event as string)
         }
       }
     }
 
-    // 移除一次性监听器
-    for (const wrapper of toRemove) {
-      this.removeWrapper(event as string, wrapper)
+    // 执行通配符监听器
+    if (hasWildcard) {
+      for (let i = 0; i < this.wildcardListeners.length; i++) {
+        const wrapper = this.wildcardListeners[i]
+        try {
+          wrapper.listener(data)
+          if (wrapper.once) {
+            toRemove.push(wrapper)
+          }
+        }
+        catch (error) {
+          this.handleListenerError(error, event as string)
+        }
+      }
+    }
+
+    // 移除一次性监听器（批量处理以提高效率）
+    if (toRemove.length > 0) {
+      for (let i = 0; i < toRemove.length; i++) {
+        this.removeWrapper(event as string, toRemove[i])
+      }
     }
 
     return this
@@ -335,18 +360,39 @@ export class EventEmitter<
   }
 
   /**
-   * 移除所有事件监听器
+   * 移除所有事件监听器（支持通配符模式）
    */
-  removeAllListeners<K extends keyof T>(event?: K | '*'): this {
+  removeAllListeners<K extends keyof T>(event?: K | '*' | string): this {
     if (event === '*') {
       this.wildcardListeners = []
     }
     else if (event) {
-      this.events.delete(event as string)
+      const eventStr = event as string
+      // 支持通配符模式，如 'user:*' 移除所有 user: 开头的事件
+      if (eventStr.includes('*')) {
+        const prefix = eventStr.replace('*', '')
+        const keysToDelete: string[] = []
+        
+        for (const key of this.events.keys()) {
+          if (String(key).startsWith(prefix)) {
+            keysToDelete.push(String(key))
+          }
+        }
+        
+        for (const key of keysToDelete) {
+          this.events.delete(key)
+          this.isSorted.delete(key)
+        }
+      }
+      else {
+        this.events.delete(eventStr)
+        this.isSorted.delete(eventStr)
+      }
     }
     else {
       this.events.clear()
       this.wildcardListeners = []
+      this.isSorted.clear()
     }
     return this
   }
@@ -406,5 +452,23 @@ export class EventEmitter<
       total += listeners.length
     }
     return total
+  }
+
+  /**
+   * 处理监听器错误
+   */
+  private handleListenerError(error: unknown, event: string): void {
+    if (this.enablePerformanceTracking) {
+      this.performanceMetrics.errors++
+    }
+
+    const err = error instanceof Error ? error : new Error(String(error))
+
+    if (this.errorHandler) {
+      this.errorHandler(err, event)
+    }
+    else {
+      console.error(`Error in event listener for "${event}":`, err)
+    }
   }
 }

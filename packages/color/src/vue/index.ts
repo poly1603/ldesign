@@ -4,8 +4,9 @@
  * This file provides Vue-specific exports for @ldesign/color
  */
 
-export { useTheme } from './useTheme';
-export type { UseThemeOptions } from './useTheme';
+// Export plugin related exports
+export { ColorPluginSymbol, createColorPlugin } from '../plugin';
+export type { ColorPlugin, ColorPluginOptions } from '../plugin';
 
 // Export ThemePicker component
 export { default as ThemePicker } from './ThemePicker.vue';
@@ -15,6 +16,5 @@ export { default as VueThemePicker } from './ThemePicker.vue';
 export { default as ThemeModeSwitcher } from './VueThemeModeSwitcher.vue';
 export { default as VueThemeModeSwitcher } from './VueThemeModeSwitcher.vue';
 
-// Export plugin related exports
-export { ColorPluginSymbol, createColorPlugin } from '../plugin';
-export type { ColorPlugin, ColorPluginOptions } from '../plugin';
+export { useTheme } from './useTheme';
+export type { UseThemeOptions } from './useTheme';

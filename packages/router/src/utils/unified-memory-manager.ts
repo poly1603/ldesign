@@ -103,9 +103,14 @@ class EnhancedWeakRefManager {
   }
 
   /**
-   * 创建弱引用
+   * 创建弱引用（优化版）
    */
   createRef<T extends object>(key: string, target: T, metadata?: any): void {
+    // 优化：批量清理旧引用
+    if (this.refs.size > 100) {
+      this.cleanup()
+    }
+    
     // 清理旧引用
     this.removeRef(key)
 
@@ -121,6 +126,24 @@ class EnhancedWeakRefManager {
         this.metadata.set(key, metadata)
       }
     }
+  }
+  
+  /**
+   * 清理无效的弱引用
+   */
+  private cleanup(): void {
+    const keysToDelete: string[] = []
+    
+    for (const [key, ref] of this.refs.entries()) {
+      if (!ref.deref()) {
+        keysToDelete.push(key)
+      }
+    }
+    
+    keysToDelete.forEach(key => {
+      this.refs.delete(key)
+      this.metadata.delete(key)
+    })
   }
 
   /**
@@ -196,7 +219,14 @@ class TieredCacheManager<T = any> {
   private missCount = 0
   private evictionCount = 0
 
-  private config: Required<UnifiedMemoryConfig['tieredCache']>
+  private config: {
+    enabled: boolean
+    l1Capacity: number
+    l2Capacity: number
+    l3Capacity: number
+    promotionThreshold: number
+    demotionThreshold: number
+  }
 
   constructor(config: UnifiedMemoryConfig['tieredCache'] = {}) {
     this.config = {
@@ -250,7 +280,7 @@ class TieredCacheManager<T = any> {
   }
 
   /**
-   * 设置缓存项
+   * 设置缓存项（优化版）
    */
   set(key: string, value: T, options?: {
     priority?: CachePriority
@@ -259,6 +289,11 @@ class TieredCacheManager<T = any> {
     size?: number
   }): void {
     const now = Date.now()
+    
+    // 优化：自动清理过期项
+    if (this.l1Cache.size + this.l2Cache.size + this.l3Cache.size > 100) {
+      this.cleanupExpired(now)
+    }
 
     const item: CacheItem<T> = {
       key,
@@ -378,21 +413,21 @@ class TieredCacheManager<T = any> {
   }
 
   private addToL1(key: string, item: CacheItem<T>): void {
-    if (this.l1Cache.size >= this.config?.l1Capacity) {
+    if (this.l1Cache.size >= this.config.l1Capacity) {
       this.evictFromL1()
     }
     this.l1Cache.set(key, item)
   }
 
   private addToL2(key: string, item: CacheItem<T>): void {
-    if (this.l2Cache.size >= this.config?.l2Capacity) {
+    if (this.l2Cache.size >= this.config.l2Capacity) {
       this.evictFromL2()
     }
     this.l2Cache.set(key, item)
   }
 
   private addToL3(key: string, item: CacheItem<T>): void {
-    if (this.l3Cache.size >= this.config?.l3Capacity) {
+    if (this.l3Cache.size >= this.config.l3Capacity) {
       this.evictFromL3()
     }
     this.l3Cache.set(key, item)
@@ -455,7 +490,7 @@ class TieredCacheManager<T = any> {
   private checkPromotion(key: string, item: CacheItem<T>, currentLevel: number): void {
     const recentAccess = this.getRecentAccessCount(key, 10000) // 10秒内的访问
 
-    if (recentAccess >= this.config?.promotionThreshold) {
+    if (recentAccess >= this.config.promotionThreshold) {
       if (currentLevel === 3) {
         this.l3Cache.delete(key)
         item.priority = CachePriority.WARM
@@ -504,12 +539,23 @@ class TieredCacheManager<T = any> {
   }
 
   private estimateSize(value: any): number {
-    try {
-      return JSON.stringify(value).length * 2
+    // 优化：更快的大小估算
+    if (value === null || value === undefined) return 0
+    
+    const type = typeof value
+    if (type === 'string') return value.length * 2
+    if (type === 'number') return 8
+    if (type === 'boolean') return 4
+    
+    if (type === 'object') {
+      // 粗略估算，避免序列化开销
+      if (Array.isArray(value)) {
+        return value.length * 50
+      }
+      return Object.keys(value).length * 100
     }
-    catch {
-      return 100
-    }
+    
+    return 100
   }
 
   private cleanupExpired(now: number): void {
@@ -530,7 +576,7 @@ class TieredCacheManager<T = any> {
   private adjustLayers(now: number): void {
     // 检查 L1 中的冷数据，降级到 L2
     for (const [key, item] of this.l1Cache.entries()) {
-      if (now - item.lastAccessTime > this.config?.demotionThreshold) {
+      if (now - item.lastAccessTime > this.config.demotionThreshold) {
         this.l1Cache.delete(key)
         item.priority = CachePriority.WARM
         this.addToL2(key, item)
@@ -539,12 +585,19 @@ class TieredCacheManager<T = any> {
 
     // 检查 L2 中的冷数据，降级到 L3
     for (const [key, item] of this.l2Cache.entries()) {
-      if (now - item.lastAccessTime > this.config?.demotionThreshold * 2) {
+      if (now - item.lastAccessTime > this.config.demotionThreshold * 2) {
         this.l2Cache.delete(key)
         item.priority = CachePriority.COLD
         this.addToL3(key, item)
       }
     }
+  }
+  
+  /**
+   * 获取 L3 缓存的键列表
+   */
+  getL3Keys(): string[] {
+    return Array.from(this.l3Cache.keys())
   }
 }
 
@@ -584,34 +637,34 @@ export class UnifiedMemoryManager {
     this.config = {
       tieredCache: {
         enabled: true,
-        l1Capacity: 20,
-        l2Capacity: 50,
-        l3Capacity: 100,
-        promotionThreshold: 3,
-        demotionThreshold: 60000,
+        l1Capacity: 15,
+        l2Capacity: 30,
+        l3Capacity: 60,
+        promotionThreshold: 2,
+        demotionThreshold: 30000, // 30秒
         ...config?.tieredCache,
       },
       monitoring: {
         enabled: true,
-        interval: 120000, // 2分钟
-        warningThreshold: 15 * 1024 * 1024, // 15MB
-        criticalThreshold: 30 * 1024 * 1024, // 30MB
+        interval: 60000, // 1分钟
+        warningThreshold: 10 * 1024 * 1024, // 10MB
+        criticalThreshold: 20 * 1024 * 1024, // 20MB
         ...config?.monitoring,
       },
       weakRef: {
         enabled: true,
-        maxRefs: 1000,
+        maxRefs: 500,
         ...config?.weakRef,
       },
       cleanup: {
-        strategy: 'moderate',
+        strategy: 'aggressive',
         autoCleanup: true,
-        cleanupInterval: 300000, // 5分钟
+        cleanupInterval: 120000, // 2分钟
         ...config?.cleanup,
       },
     }
 
-    this.tieredCache = new TieredCacheManager(this.config?.tieredCache)
+    this.tieredCache = new TieredCacheManager(this.config.tieredCache)
     this.weakRefManager = new EnhancedWeakRefManager()
 
     this.initialize()
@@ -635,7 +688,7 @@ export class UnifiedMemoryManager {
     tags?: string[]
     weak?: boolean
   }): void {
-    if (options?.weak && this.config?.weakRef.enabled) {
+    if (options?.weak && this.config.weakRef.enabled) {
       if (typeof value === 'object' && value !== null) {
         this.weakRefManager.createRef(key, value as any)
         return
@@ -669,7 +722,7 @@ export class UnifiedMemoryManager {
    * 创建弱引用
    */
   createWeakRef<T extends object>(key: string, target: T): void {
-    if (this.config?.weakRef.enabled) {
+    if (this.config.weakRef.enabled) {
       this.weakRefManager.createRef(key, target)
       this.updateStats()
     }
@@ -716,11 +769,11 @@ export class UnifiedMemoryManager {
   // ==================== 私有方法 ====================
 
   private initialize(): void {
-    if (this.config?.monitoring.enabled) {
+    if (this.config.monitoring.enabled) {
       this.startMonitoring()
     }
 
-    if (this.config?.cleanup.autoCleanup) {
+    if (this.config.cleanup.autoCleanup) {
       this.startAutoCleanup()
     }
 
@@ -734,7 +787,7 @@ export class UnifiedMemoryManager {
     this.monitorTimer = window.setInterval(() => {
       this.updateStats()
       this.checkThresholds()
-    }, this.config?.monitoring.interval)
+    }, this.config.monitoring.interval)
   }
 
   private stopMonitoring(): void {
@@ -750,7 +803,7 @@ export class UnifiedMemoryManager {
 
     this.cleanupTimer = window.setInterval(() => {
       this.performCleanup()
-    }, this.config?.cleanup.cleanupInterval)
+    }, this.config.cleanup.cleanupInterval)
   }
 
   private stopAutoCleanup(): void {
@@ -789,12 +842,12 @@ export class UnifiedMemoryManager {
   private checkThresholds(): void {
     const totalMemory = this.state.stats.totalMemory
 
-    if (totalMemory > this.config?.monitoring.criticalThreshold) {
+    if (totalMemory > this.config.monitoring.criticalThreshold!) {
       this.state.isCritical = true
       this.state.isWarning = true
       this.performCleanup('aggressive')
     }
-    else if (totalMemory > this.config?.monitoring.warningThreshold) {
+    else if (totalMemory > this.config.monitoring.warningThreshold!) {
       this.state.isWarning = true
       this.state.isCritical = false
       this.performCleanup('moderate')
@@ -806,37 +859,68 @@ export class UnifiedMemoryManager {
   }
 
   private performCleanup(level?: 'aggressive' | 'moderate' | 'conservative'): void {
-    const strategy = level || this.config?.cleanup.strategy
-
-    switch (strategy) {
-      case 'aggressive':
-        // 清理所有L3缓存和部分L2缓存
-        this.tieredCache.clear()
-        this.weakRefManager.clear()
-        break
-
-      case 'moderate':
-        // 优化缓存层级
-        this.tieredCache.optimize()
-        break
-
-      case 'conservative':
-        // 仅清理过期项
-        this.tieredCache.optimize()
-        break
+    const strategy = level || this.config.cleanup.strategy
+    
+    // 优化：根据内存压力动态调整清理策略
+    const memoryPressure = this.state.stats.totalMemory / this.config.monitoring.criticalThreshold!
+    
+    if (memoryPressure > 0.9 || strategy === 'aggressive') {
+      // 激进清理：清除大部分缓存
+      this.tieredCache.clear()
+      this.weakRefManager.clear()
+    }
+    else if (memoryPressure > 0.7 || strategy === 'moderate') {
+      // 中等清理：优化缓存层级，清理L3
+      this.tieredCache.optimize()
+      // 清理L3缓存的一半
+      const l3Keys = this.tieredCache.getL3Keys()
+      l3Keys.slice(0, Math.floor(l3Keys.length / 2)).forEach(key => {
+        this.tieredCache.delete(key)
+      })
+    }
+    else {
+      // 保守清理：仅清理过期项
+      this.tieredCache.optimize()
     }
 
     this.state.lastCleanup = new Date()
     this.updateStats()
+    
+    // 触发垃圾回收（如果可用）
+    if (typeof globalThis !== 'undefined' && typeof (globalThis as any).gc === 'function') {
+      (globalThis as any).gc()
+    }
   }
 
   /**
-   * 销毁管理器
+   * 销毁管理器 - 清理所有资源
    */
   destroy(): void {
+    // 停止监控定时器
     this.stopMonitoring()
+    
+    // 停止自动清理定时器
     this.stopAutoCleanup()
+    
+    // 清空所有缓存
     this.clear()
+    
+    // 重置状态
+    this.state.stats = {
+      totalMemory: 0,
+      cacheMemory: 0,
+      l1Memory: 0,
+      l2Memory: 0,
+      l3Memory: 0,
+      routeMemory: 0,
+      listenerCount: 0,
+      weakRefCount: 0,
+      cacheHitRate: 0,
+      evictionCount: 0,
+    };
+    this.state.isWarning = false;
+    this.state.isCritical = false;
+    this.state.lastCleanup = null;
   }
 }
 
@@ -873,4 +957,15 @@ export function cacheSet<T>(key: string, value: T, options?: any): void {
  */
 export function cleanupMemory(): void {
   getMemoryManager().optimize()
+}
+
+/**
+ * 销毁默认内存管理器
+ * 应在应用卸载时调用
+ */
+export function destroyMemoryManager(): void {
+  if (defaultManager) {
+    defaultManager.destroy()
+    defaultManager = null
+  }
 }

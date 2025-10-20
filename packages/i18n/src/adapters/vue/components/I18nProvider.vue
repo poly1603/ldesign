@@ -1,10 +1,6 @@
-<template>
-  <slot />
-</template>
-
 <script setup lang="ts">
-import { provide, toRef, watch } from 'vue';
 import type { OptimizedI18n } from '../../../core';
+import { provide, watch } from 'vue';
 import { I18N_INJECTION_KEY } from '../constants';
 
 interface Props {
@@ -30,3 +26,7 @@ watch(
   { immediate: true }
 );
 </script>
+
+<template>
+  <slot />
+</template>

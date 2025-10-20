@@ -413,7 +413,7 @@ For each suggestion, include:
    */
   private calculateOptimizationResult(
     suggestions: SizeOptimizationSuggestion[],
-    context: DesignContext
+    _context: DesignContext
   ): OptimizationResult {
     // Calculate total impact
     const impactScores = { high: 3, medium: 2, low: 1 };

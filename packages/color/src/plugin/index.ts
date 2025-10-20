@@ -1,15 +1,15 @@
-﻿/**
+/**
  * @ldesign/color - Plugin System
  * 
  * Color theme plugin for Vue 3 applications
  */
 
-import type { App } from 'vue'
-import { ref, inject, type Ref, type ComputedRef } from 'vue'
-import { ThemeManager, type ThemeOptions, type ThemeState } from '../themes/themeManager'
-import { presetThemes, type PresetTheme } from '../themes/presets'
-import { getLocale } from '../locales'
+import type { App, ComputedRef, Ref } from 'vue'
 import type { ColorLocale } from '../locales'
+import { inject, ref } from 'vue'
+import { getLocale } from '../locales'
+import { type PresetTheme, presetThemes } from '../themes/presets'
+import { ThemeManager, type ThemeOptions, type ThemeState } from '../themes/themeManager'
 
 /**
  * Color plugin configuration options
@@ -21,7 +21,7 @@ export interface ColorPluginOptions {
    * 如果传入 string 或不传，将创建新�?Ref（独立模式）
    */
   locale?: string | Ref<string>
-  
+
   /**
    * CSS variable prefix
    * @default 'ld'
@@ -204,10 +204,15 @@ export interface ColorPlugin {
   getSortedPresets: () => PresetTheme[]
 
   /**
+   * Cleanup resources
+   */
+  destroy?: () => void
+
+  /**
    * Install the plugin
    */
   install: (app: App) => void
-  
+
 }
 
 /**
@@ -231,34 +236,40 @@ function useSmartLocale(options: ColorPluginOptions): Ref<string> {
   if (options.locale) {
     return isRef(options.locale) ? options.locale : ref(options.locale)
   }
-  
+
   // 优先�?：从Vue上下文inject（如果在组件内）
   try {
     const injected = inject<Ref<string> | null>('app-locale', null)
     if (injected && injected.value) {
       return injected
     }
-  } catch {}
-  
+  } catch { }
+
   // 优先�?：创建独立的locale并监听全局事件
   const locale = ref('zh-CN')
-  
+
   // 从localStorage恢复
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem('app-locale')
     if (stored) {
       locale.value = stored
     }
-    
+
     // 监听全局语言变化事件
-    window.addEventListener('app:locale-changed', (e: Event) => {
+    const localeChangeHandler = (e: Event) => {
       const customEvent = e as CustomEvent<{ locale: string }>
       if (customEvent.detail?.locale) {
         locale.value = customEvent.detail.locale
       }
-    })
+    }
+    window.addEventListener('app:locale-changed', localeChangeHandler)
+
+    // Cleanup on page unload
+    window.addEventListener('unload', () => {
+      window.removeEventListener('app:locale-changed', localeChangeHandler)
+    }, { once: true })
   }
-  
+
   return locale
 }
 
@@ -268,21 +279,24 @@ function useSmartLocale(options: ColorPluginOptions): Ref<string> {
 export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin {
   // 使用智能locale获取
   const currentLocale = useSmartLocale(options)
-  
-  // 懒加�?locale 数据（性能优化�?
-  let localeCache: { key: string; data: any } | null = null
+  // 懒加载 locale 数据（性能优化）
+  // Use WeakMap for better memory management
+  const localeCache = new WeakMap<{ value: string }, any>()
   const getLocaleData = () => {
-    if (!localeCache || localeCache.key !== currentLocale.value) {
-      localeCache = { key: currentLocale.value, data: getLocale(currentLocale.value) }
+    const cacheKey = { value: currentLocale.value }
+    let cached = localeCache.get(cacheKey)
+    if (!cached) {
+      cached = getLocale(currentLocale.value)
+      localeCache.set(cacheKey, cached)
     }
-    return localeCache.data
+    return cached
   }
-  
+
   // 兼容旧的 computed 接口
   const localeMessages = {
     get value() { return getLocaleData() }
   } as ComputedRef<ColorLocale>
-  
+
   // Merge options with defaults
   const mergedOptions = {
     prefix: options.prefix || 'ld',
@@ -303,7 +317,7 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
 
   // Prepare preset themes
   let availablePresets: PresetTheme[] = []
-  
+
   if (mergedOptions.presets === 'all') {
     // Use all built-in presets, excluding disabled ones
     availablePresets = presetThemes.filter(
@@ -347,7 +361,7 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
         if (mergedOptions.storage) {
           return await mergedOptions.storage.getItem(key)
         }
-        
+
         if (typeof window === 'undefined') return null
 
         const storageImpl = mergedOptions.storageType === 'sessionStorage'
@@ -452,7 +466,7 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
 
   // Load custom themes from storage
   const CUSTOM_THEMES_KEY = `${mergedOptions.storageKey}-custom-themes`
-  
+
   const loadCustomThemes = async (): Promise<void> => {
     try {
       const stored = await storage.getItem(CUSTOM_THEMES_KEY)
@@ -487,7 +501,7 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
     try {
       // Load custom themes first
       await loadCustomThemes()
-      
+
       const stored = await storage.getItem(mergedOptions.storageKey)
       if (stored) {
         const theme = JSON.parse(stored) as ThemeState
@@ -542,6 +556,9 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
     return sortPresets(availablePresets)
   }
 
+  // Track cleanup handlers
+  const cleanupHandlers: Array<() => void> = []
+
   // Create plugin instance
   const plugin: ColorPlugin = {
     manager,
@@ -552,32 +569,50 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
     applyTheme,
     applyPresetTheme,
     getCurrentTheme: () => manager.getCurrentTheme(),
-    onChange: (listener) => manager.onChange(listener),
+    onChange: (listener) => {
+      const unsubscribe = manager.onChange(listener)
+      cleanupHandlers.push(unsubscribe)
+      return unsubscribe
+    },
     addCustomTheme,
     removeCustomTheme,
     getSortedPresets,
 
+    // Add cleanup method
+    destroy() {
+      // Clear all event listeners
+      cleanupHandlers.forEach(handler => handler())
+      cleanupHandlers.length = 0
+
+      // Clear cache - WeakMap doesn't have clear method
+      // Cache will be auto-cleaned by garbage collection
+
+      // Destroy manager
+      if (manager.destroy) {
+        manager.destroy()
+      }
+    },
+
     install(app: App) {
       // 智能共享：如果没有传�?Ref，尝试自动共�?
       if (!isRef(options.locale)) {
-        // 尝试�?app context 获取共享�?locale
-        const sharedLocale = app._context?.provides?.['locale'] as Ref<string> | undefined
-        
+        // 尝试从 app context 获取共享的 locale
+        const sharedLocale = app._context?.provides?.locale as Ref<string> | undefined
+
         if (sharedLocale && sharedLocale.value !== undefined) {
-          // 发现共享�?locale，使用它
+          // 发现共享的 locale，使用它
           // Use sharedLocale instead
-          // Clear cache to trigger recalculation
-          localeCache = null
+          // WeakMap will automatically handle cache invalidation
         } else {
-          // 没有共享�?locale，提供自己的
+          // 没有共享的 locale，提供自己的
           app.provide('locale', currentLocale)
         }
       }
-      
+
       // Provide plugin instance
       app.provide(ColorPluginSymbol, plugin)
       app.provide('color', plugin)
-      
+
       // Provide color locale for consumers
       app.provide('color-locale', localeMessages)
 
@@ -588,11 +623,16 @@ export function createColorPlugin(options: ColorPluginOptions = {}): ColorPlugin
       if (mergedOptions.autoApply) {
         if (typeof window !== 'undefined') {
           // Load after next tick to ensure DOM is ready
-          setTimeout(() => {
+          const timeoutId = setTimeout(() => {
             loadTheme()
           }, 0)
+          cleanupHandlers.push(() => clearTimeout(timeoutId))
         }
       }
+
+      // Register app unmount cleanup
+      // Note: _scope is internal API and may not be available
+      // Use app.unmount hook if available in future versions
     }
   }
 

@@ -83,15 +83,15 @@ export class DeduplicationManager {
   }
 
   /**
-   * 执行请求（带去重）
+   * 执行请求（带去重，性能优化）
    */
   async execute<T = unknown>(
     key: string,
     requestFn: () => Promise<ResponseData<T>>,
   ): Promise<ResponseData<T>> {
-    // 检查是否有相同的请求正在进行
-    const existingTask = this.pendingRequests.get(key)
-    if (existingTask) {
+    // 检查是否有相同的请求正在进行（使用Map.has更快）
+    if (this.pendingRequests.has(key)) {
+      const existingTask = this.pendingRequests.get(key)!
       // 增加引用计数
       existingTask.refCount++
       this.stats.duplications++

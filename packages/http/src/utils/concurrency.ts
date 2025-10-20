@@ -5,10 +5,10 @@
  */
 
 import type { ConcurrencyConfig, RequestConfig, ResponseData } from '../types'
-import { DeduplicationKeyGenerator } from './request-dedup'
+import type { DeduplicationStats } from './dedup-manager'
 import type { DeduplicationKeyConfig } from './request-dedup'
 import { DeduplicationManager } from './dedup-manager'
-import type { DeduplicationStats } from './dedup-manager'
+import { DeduplicationKeyGenerator } from './request-dedup'
 
 /**
  * 请求任务接口
@@ -53,7 +53,7 @@ export class ConcurrencyManager {
   /**
    * 执行请求（带并发控制和去重）
    */
-  async execute<T = any>(
+  async execute<T = unknown>(
     requestFn: () => Promise<ResponseData<T>>,
     config: RequestConfig,
   ): Promise<ResponseData<T>> {
@@ -75,7 +75,7 @@ export class ConcurrencyManager {
   /**
    * 带并发控制的请求执行
    */
-  private async executeWithConcurrencyControl<T = any>(
+  private async executeWithConcurrencyControl<T = unknown>(
     requestFn: () => Promise<ResponseData<T>>,
     config: RequestConfig,
   ): Promise<ResponseData<T>> {
@@ -98,7 +98,7 @@ export class ConcurrencyManager {
 
       // 如果当前并发数未达到限制，直接执行
       if (this.activeRequests.size < this.config?.maxConcurrent) {
-        this.executeTask(task)
+        void this.executeTask(task)
       }
       else {
         // 否则加入队列
@@ -110,7 +110,7 @@ export class ConcurrencyManager {
   /**
    * 执行任务
    */
-  private async executeTask<T>(task: RequestTask<T>): Promise<void> {
+  private async executeTask<T = unknown>(task: RequestTask<T>): Promise<void> {
     this.activeRequests.add(task.id)
 
     try {
@@ -145,7 +145,7 @@ export class ConcurrencyManager {
       ) {
         const nextTask = this.requestQueue.shift()
         if (nextTask) {
-          this.executeTask(nextTask)
+          void this.executeTask(nextTask)
         }
       }
     }
@@ -233,7 +233,7 @@ export class ConcurrencyManager {
   /**
    * 等待特定去重请求完成
    */
-  async waitForDeduplicatedRequest<T = any>(config: RequestConfig): Promise<ResponseData<T> | null> {
+  async waitForDeduplicatedRequest<T = unknown>(config: RequestConfig): Promise<ResponseData<T> | null> {
     const key = this.keyGenerator.generate(config)
     return this.deduplicationManager.waitFor<T>(key)
   }
@@ -282,6 +282,8 @@ export function createConcurrencyManager(
 }
 
 // 导出拆分出去的模块
-export { DeduplicationManager, DeduplicationStats } from './dedup-manager'
-export { RateLimitManager } from './rate-limit'
-export { DeduplicationKeyGenerator } from './request-dedup'
+export { createDeduplicationManager, DeduplicationManager } from './dedup-manager'
+export type { DeduplicationStats } from './dedup-manager'
+export { createRateLimitManager, RateLimitManager } from './rate-limit'
+export { createDeduplicationKeyGenerator, DeduplicationKeyGenerator } from './request-dedup'
+export type { DeduplicationKeyConfig } from './request-dedup'

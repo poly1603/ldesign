@@ -9,54 +9,98 @@
  */
 
 // Vue 组件
-export { TemplateRenderer, TemplateSelector, TemplateSkeleton, TemplateVersion, TemplateDevPanel } from './components'
+export { TemplateDevPanel, TemplateRenderer, TemplateSelector, TemplateSkeleton, TemplateVersion } from './components'
+
+export { default as InheritableTemplate } from './components/InheritableTemplate.vue'
 
 // Vue 组合式函数
 export {
-  useDefaultTemplate,
-  useTemplate,
-  useTemplateList,
-  useTemplateManager,
-  // 新增 hooks
-  useTemplateLifecycle,
-  useTemplatePrefetch,
-  useTemplateNavigation,
-  useTemplatePerformance,
-  // 主题系统
-  useTemplateTheme,
-  createThemeManager,
-  provideTemplateTheme,
-  // 表单系统  
-  useTemplateForm,
-  useTemplateModel,
-  // 事件总线
-  useTemplateEventBus,
-  useTemplateEvent,
-  useTemplateEvents,
-  provideTemplateEventBus,
+  createDebugPanelData,
   createMiddlewareEventBus,
+  createThemeManager,
+  DebugLevel,
+  EASING_FUNCTIONS,
+  globalDebuggerManager,
+  provideTemplateEventBus,
+  provideTemplateTheme,
   templateEventBus,
-  // 版本控制
-  useTemplateVersion,
   useAutoMigration,
-  useVersionComparison,
+  useDefaultTemplate,
+  useGesture,
+  useParallax,
+  useScrollAnimation,
+  useSequenceAnimation,
+  useTemplate,
   // 动画系统
   useTemplateAnimation,
-  useParallax,
-  useGesture,
-  useSequenceAnimation,
-  useScrollAnimation,
-  EASING_FUNCTIONS,
-  // 快照与时间旅行
-  useTemplateSnapshot,
-  useTimeTravel,
   // 调试工具
   useTemplateDebugger,
-  globalDebuggerManager,
-  createDebugPanelData,
-  DebugLevel,
+  useTemplateEvent,
+  // 事件总线
+  useTemplateEventBus,
+  useTemplateEvents,
+  // 表单系统  
+  useTemplateForm,
+  // 新增 hooks
+  useTemplateLifecycle,
+  useTemplateList,
+  useTemplateManager,
+  useTemplateModel,
+  useTemplateNavigation,
+  useTemplatePerformance,
+  useTemplatePrefetch,
+  // 快照与时间旅行
+  useTemplateSnapshot,
+  // 主题系统
+  useTemplateTheme,
+  // 版本控制
+  useTemplateVersion,
+  useTimeTravel,
+  useVersionComparison,
 } from './composables'
 
+// 常量导出
+export { PRESET_THEMES, TEMPLATE_EVENTS } from './composables'
+
+export type { 
+  AnimationConfig, 
+  DebuggerConfig, 
+  DebugLog,
+  EasingFunction,
+  EventHandler,
+  EventMiddleware,
+  EventSubscribeOptions,
+  FieldError,
+  FieldRules,
+  FormOptions,
+  FormRules,
+  FormState,
+  GestureConfig,
+  ParallaxConfig,
+  SequenceStep,
+  SnapshotOptions,
+  TemplateEventBus,
+  TemplateEventType,
+  TemplateHookResult,
+  TemplateLifecycle,
+  TemplatePrefetchOptions,
+  TemplateSnapshot,
+  TemplateStateSnapshot,
+  TemplateTheme,
+  ThemeContext,
+  TimeTravel,
+  UseTemplateVersionOptions,
+  ValidationRule,
+  VersionState
+} from './composables'
+
+export {
+  type TemplateInheritanceContext,
+  useTemplateBlocks,
+  useTemplateInheritance,
+  type UseTemplateInheritanceOptions,
+  useTemplateMixins
+} from './composables/useTemplateInheritance'
 // 核心模块
 export {
   createTemplateManager,
@@ -74,6 +118,38 @@ export {
 // 默认导出
 export { getManager as default } from './core'
 
+// 模板继承系统
+export {
+  blockManager,
+  createInheritableTemplate,
+  createTemplateMixin,
+  inheritanceManager,
+  type MergeStrategy,
+  registerBaseTemplate,
+  type TemplateBlock,
+  TemplateBlockManager,
+  type TemplateInheritanceConfig,
+  TemplateInheritanceManager
+} from './core/inheritance'
+
+// 指令系统
+export {
+  installTemplateDirective,
+  vTemplate
+} from './directives'
+
+// 语言包
+export { 
+  enUS, 
+  getLocale, 
+  jaJP,
+  locales,
+  supportedLocales,
+  zhCN
+} from './locales'
+
+export type { LocaleKey, TemplateLocale } from './locales'
+
 // 插件系统
 export {
   createTemplatePlugin,
@@ -83,91 +159,15 @@ export {
   useTemplatePlugin,
 } from './plugin'
 
-// 语言包
-export { 
-  zhCN, 
-  enUS, 
-  jaJP,
-  getLocale,
-  locales,
-  supportedLocales
-} from './locales'
-export type { TemplateLocale, LocaleKey } from './locales'
-
-// 指令系统
-export {
-  vTemplate,
-  installTemplateDirective
-} from './directives'
-
-// 错误处理
-export {
-  TemplateError,
-  TemplateErrorType,
-  ErrorRecoveryManager,
-  GlobalTemplateErrorHandler,
-  createErrorBoundary,
-  globalErrorHandler
-} from './utils'
-
-// 常量导出
-export { PRESET_THEMES, TEMPLATE_EVENTS } from './composables'
-
-// 模板继承系统
-export {
-  TemplateInheritanceManager,
-  TemplateBlockManager,
-  inheritanceManager,
-  blockManager,
-  createInheritableTemplate,
-  createTemplateMixin,
-  registerBaseTemplate,
-  type TemplateInheritanceConfig,
-  type MergeStrategy,
-  type TemplateBlock
-} from './core/inheritance'
-
-export {
-  useTemplateInheritance,
-  useTemplateBlocks,
-  useTemplateMixins,
-  type UseTemplateInheritanceOptions,
-  type TemplateInheritanceContext
-} from './composables/useTemplateInheritance'
-
-export { default as InheritableTemplate } from './components/InheritableTemplate.vue'
-
 // 类型导出
 export type * from './types'
-export type { 
-  TemplateLifecycle, 
-  TemplatePrefetchOptions, 
-  TemplateHookResult,
-  TemplateTheme,
-  ThemeContext,
-  ValidationRule,
-  FieldRules,
-  FormRules,
-  FieldError,
-  FormState,
-  FormOptions,
-  EventHandler,
-  EventSubscribeOptions,
-  TemplateEventBus,
-  TemplateEventType,
-  EventMiddleware,
-  UseTemplateVersionOptions,
-  VersionState,
-  EasingFunction,
-  AnimationConfig,
-  ParallaxConfig,
-  GestureConfig,
-  SequenceStep,
-  TemplateSnapshot,
-  SnapshotOptions,
-  TimeTravel,
-  DebugLog,
-  DebuggerConfig,
-  TemplateStateSnapshot
-} from './composables'
+// 错误处理
+export {
+  createErrorBoundary,
+  ErrorRecoveryManager,
+  globalErrorHandler,
+  GlobalTemplateErrorHandler,
+  TemplateError,
+  TemplateErrorType
+} from './utils'
 export type { ErrorRecoveryStrategy } from './utils'

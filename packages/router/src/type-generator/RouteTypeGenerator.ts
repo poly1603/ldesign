@@ -3,9 +3,9 @@
  * @module RouteTypeGenerator
  */
 
-import * as fs from 'fs'
-import * as path from 'path'
-import { RouteRecordRaw } from '../types'
+import type { RouteRecordRaw } from '../types'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 
 /**
  * 路由类型生成选项
@@ -609,7 +609,7 @@ export type StrictRoute<T extends RouteNames> = {
   private toUpperCase(str: string): string {
     return str
       .replace(/([A-Z])/g, '_$1')
-      .replace(/[^a-zA-Z0-9]/g, '_')
+      .replace(/[^a-z0-9]/gi, '_')
       .toUpperCase()
       .replace(/^_/, '')
   }

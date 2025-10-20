@@ -56,7 +56,7 @@ export class DevToolsConnection extends EventEmitter {
       try {
         const { default: WS } = await import('ws');
         this.ws = new WS(`ws://localhost:${this.port}/devtools`);
-      } catch (e) {
+      } catch {
         console.warn('WebSocket not available, DevTools connection disabled');
         return;
       }
@@ -166,7 +166,7 @@ export class StoreDevTools extends EventEmitter {
     });
 
     this.connection.on('connected', () => {
-      
+      this.emit('devtools:connected');
       this.syncAllStores();
     });
   }
@@ -217,7 +217,7 @@ export class StoreDevTools extends EventEmitter {
 
         if (this.config?.logActions) {
           console.group(`🎯 [${storeName}] ${actionName}`);
-          
+          console.log('Args:', args);
         }
 
         try {
@@ -226,7 +226,7 @@ export class StoreDevTools extends EventEmitter {
           const duration = performance.now() - startTime;
 
           if (this.config?.logActions) {
-            }ms`);
+            console.log(`Duration: ${duration.toFixed(2)}ms`);
             console.groupEnd();
           }
 
@@ -270,7 +270,7 @@ export class StoreDevTools extends EventEmitter {
 
       store.watch('*', (newValue: any, oldValue: any, path: string) => {
         if (this.config?.logState) {
-          
+          console.log(`[${storeName}] State changed at ${path}:`, { oldValue, newValue });
         }
 
         this.sendStoreUpdate(storeName, store);
@@ -280,7 +280,7 @@ export class StoreDevTools extends EventEmitter {
     // 拦截 watch 方法以追踪所有 watchers
     if (store.watch) {
       const originalWatch = store.watch.bind(store);
-      store.watch = (path: string, callback: Function) => {
+      store.watch = (path: string, callback: (...args: any[]) => any) => {
         const watchersList = this.watchers.get(storeName) || [];
         watchersList.push({
           path,
@@ -298,7 +298,7 @@ export class StoreDevTools extends EventEmitter {
     // 拦截 $subscribe 方法以追踪订阅者数量
     if (store.$subscribe) {
       const original$Subscribe = store.$subscribe.bind(store);
-      store.$subscribe = (callback: Function, options?: any) => {
+      store.$subscribe = (callback: (...args: any[]) => any, options?: any) => {
         // 增加订阅者计数
         const currentCount = this.subscribers.get(storeName) || 0;
         this.subscribers.set(storeName, currentCount + 1);
@@ -318,7 +318,7 @@ export class StoreDevTools extends EventEmitter {
     // 拦截 $onAction 方法以追踪 action 订阅者
     if (store.$onAction) {
       const original$OnAction = store.$onAction.bind(store);
-      store.$onAction = (callback: Function) => {
+      store.$onAction = (callback: (...args: any[]) => any) => {
         // 增加订阅者计数
         const currentCount = this.subscribers.get(storeName) || 0;
         this.subscribers.set(storeName, currentCount + 1);
@@ -371,7 +371,7 @@ export class StoreDevTools extends EventEmitter {
   private cloneState(state: any): any {
     try {
       return JSON.parse(JSON.stringify(state));
-    } catch (e) {
+    } catch {
       // 处理循环引用
       const seen = new WeakSet();
       return JSON.parse(JSON.stringify(state, (key, value) => {
@@ -434,7 +434,10 @@ export class StoreDevTools extends EventEmitter {
     if (snapshot && store.setState) {
       store.setState(snapshot.state);
 
-      .toLocaleTimeString(),
+      this.emit('time:travel', {
+        storeName,
+        index: currentIndex,
+        timestamp: new Date(snapshot.timestamp).toLocaleTimeString(),
         action: snapshot.metadata.actionName,
         state: snapshot.state
       });
@@ -490,7 +493,7 @@ export class StoreDevTools extends EventEmitter {
       store.setState(currentState);
     }
 
-    
+    this.sendStoreUpdate(storeName, store);
     this.emit('store:reloaded', { storeName, store });
   }
 
@@ -584,7 +587,7 @@ export class StoreDevTools extends EventEmitter {
     }
 
     store.setState(state);
-    
+    this.emit('state:imported', { storeName, state });
   }
 
   // 清理

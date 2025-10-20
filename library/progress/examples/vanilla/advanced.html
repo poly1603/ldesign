@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress - 高级进度条示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      padding: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: #303133;
+      font-size: 36px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: #909399;
+      margin-bottom: 40px;
+      font-size: 16px;
+    }
+
+    h2 {
+      margin: 40px 0 20px;
+      color: #606266;
+      font-size: 24px;
+      border-bottom: 2px solid #409eff;
+      padding-bottom: 10px;
+    }
+
+    .demo-section {
+      margin-bottom: 50px;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .demo-item {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .demo-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-label {
+      margin-bottom: 20px;
+      color: #303133;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .demo-description {
+      margin-top: 15px;
+      color: #909399;
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .controls {
+      margin-top: 30px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+      background: #f5f7fa;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .feature-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #e1f3d8;
+      color: #67c23a;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 高级进度条示例</h1>
+    <p class="subtitle">探索创新的进度条样式和交互效果</p>
+
+    <!-- 图片进度条 -->
+    <div class="demo-section">
+      <h2>📸 图片填充进度条 <span class="feature-badge">NEW</span></h2>
+      <div class="demo-grid">
+        <div class="demo-item">
+          <div class="demo-label">水平填充</div>
+          <div id="image-horizontal"></div>
+          <div class="demo-description">从左到右显示图片</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">垂直填充</div>
+          <div id="image-vertical"></div>
+          <div class="demo-description">从底部向上显示图片</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">径向填充</div>
+          <div id="image-radial"></div>
+          <div class="demo-description">从中心向外扩展</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 自定义形状 -->
+    <div class="demo-section">
+      <h2>✨ 自定义形状进度条 <span class="feature-badge">NEW</span></h2>
+      <div class="demo-grid">
+        <div class="demo-item">
+          <div class="demo-label">星形进度</div>
+          <div id="shape-star"></div>
+          <div class="demo-description">五角星路径</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">波浪线</div>
+          <div id="shape-wave-line"></div>
+          <div class="demo-description">波浪形路径</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">无限符号</div>
+          <div id="shape-infinity"></div>
+          <div class="demo-description">∞ 形状</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 高级仪表盘 -->
+    <div class="demo-section">
+      <h2>🎯 高级仪表盘 <span class="feature-badge">NEW</span></h2>
+      <div class="demo-grid">
+        <div class="demo-item">
+          <div class="demo-label">数字刻度</div>
+          <div id="gauge-numbers"></div>
+          <div class="demo-description">显示数值刻度</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">箭头指针</div>
+          <div id="gauge-arrow"></div>
+          <div class="demo-description">箭头型指针</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">三角指针</div>
+          <div id="gauge-triangle"></div>
+          <div class="demo-description">三角型指针</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 多环进度 -->
+    <div class="demo-section">
+      <h2>⭕ 多环同心进度条 <span class="feature-badge">NEW</span></h2>
+      <div class="demo-grid">
+        <div class="demo-item">
+          <div class="demo-label">双环进度</div>
+          <div id="ring-double"></div>
+          <div class="demo-description">两个同心环</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">三环进度</div>
+          <div id="ring-triple"></div>
+          <div class="demo-description">三个同心环</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">多环进度</div>
+          <div id="ring-multi"></div>
+          <div class="demo-description">五个同心环</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 多边形进度 -->
+    <div class="demo-section">
+      <h2>🔶 多边形进度条 <span class="feature-badge">NEW</span></h2>
+      <div class="demo-grid">
+        <div class="demo-item">
+          <div class="demo-label">三角形</div>
+          <div id="polygon-triangle"></div>
+          <div class="demo-description">3边形</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">六边形</div>
+          <div id="polygon-hexagon"></div>
+          <div class="demo-description">6边形</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">八边形</div>
+          <div id="polygon-octagon"></div>
+          <div class="demo-description">8边形</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 电池进度 -->
+    <div class="demo-section">
+      <h2>🔋 电池样式进度条 <span class="feature-badge">NEW</span></h2>
+      <div class="demo-grid">
+        <div class="demo-item">
+          <div class="demo-label">水平电池</div>
+          <div id="battery-horizontal"></div>
+          <div class="demo-description">横向显示</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">垂直电池</div>
+          <div id="battery-vertical"></div>
+          <div class="demo-description">竖向显示</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">充电中</div>
+          <div id="battery-charging"></div>
+          <div class="demo-description">带闪电图标</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 心形进度 -->
+    <div class="demo-section">
+      <h2>💖 心形进度条 <span class="feature-badge">NEW</span></h2>
+      <div class="demo-grid">
+        <div class="demo-item">
+          <div class="demo-label">底部填充</div>
+          <div id="heart-bottom"></div>
+          <div class="demo-description">从下往上</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">中心扩展</div>
+          <div id="heart-center"></div>
+          <div class="demo-description">从中心扩散</div>
+        </div>
+        <div class="demo-item">
+          <div class="demo-label">心跳动画</div>
+          <div id="heart-beat"></div>
+          <div class="demo-description">跳动效果</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button onclick="updateAll(0)">0%</button>
+      <button onclick="updateAll(25)">25%</button>
+      <button onclick="updateAll(50)">50%</button>
+      <button onclick="updateAll(75)">75%</button>
+      <button onclick="updateAll(100)">100%</button>
+      <button onclick="animateAll()">🎬 动画演示</button>
+    </div>
+  </div>
+
+  <script type="module" src="/advanced.js"></script>
+</body>
+</html>
+
+

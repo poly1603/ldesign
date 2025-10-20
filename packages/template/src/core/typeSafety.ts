@@ -2,8 +2,9 @@
  * 模板类型安全系统
  */
 
-import type { Template, TemplateProps, TemplateEvents } from '../types'
-import { ref, Ref, ComputedRef, computed } from 'vue'
+import type { ComputedRef, Ref} from 'vue';
+import type { Template, TemplateEvents, TemplateProps } from '../types'
+import { computed, ref } from 'vue'
 
 /**
  * 类型定义模板
@@ -119,9 +120,9 @@ export class TypeGenerator {
     lines.push(`export interface ${interfaceName} {`)
     
     // 生成属性类型
-    if (template.props) {
+    if ((template as any).props) {
       lines.push('  props: {')
-      for (const [key, prop] of Object.entries(template.props)) {
+      for (const [key, prop] of Object.entries((template as any).props)) {
         const type = this.inferType(prop)
         lines.push(`    ${key}: ${type};`)
       }
@@ -129,9 +130,9 @@ export class TypeGenerator {
     }
     
     // 生成事件类型
-    if (template.events) {
+    if ((template as any).events) {
       lines.push('  events: {')
-      for (const [key, event] of Object.entries(template.events)) {
+      for (const [key, event] of Object.entries((template as any).events)) {
         const type = this.inferEventType(event)
         lines.push(`    ${key}: ${type};`)
       }
@@ -139,9 +140,9 @@ export class TypeGenerator {
     }
     
     // 生成插槽类型
-    if (template.slots) {
+    if ((template as any).slots) {
       lines.push('  slots: {')
-      for (const [key, slot] of Object.entries(template.slots)) {
+      for (const key of Object.keys((template as any).slots)) {
         lines.push(`    ${key}: any;`)
       }
       lines.push('  };')
@@ -206,9 +207,9 @@ export class TypeGenerator {
   /**
    * 推断函数类型
    */
-  private inferFunctionType(fn: Function): string {
+  private inferFunctionType(fn: (...args: any[]) => any): string {
     const params = fn.length
-    const paramTypes = Array(params).fill('any').join(', ')
+    const paramTypes = Array.from({ length: params }, () => 'any').join(', ')
     return `(${paramTypes}) => any`
   }
   
@@ -318,8 +319,8 @@ export class TypeGuard {
  */
 export function createTypedTemplate<
   P extends StrictTemplateProps,
-  E extends Record<string, (...args: any[]) => void> = {},
-  S extends Record<string, any> = {}
+  E extends Record<string, (...args: any[]) => void> = Record<string, never>,
+  S extends Record<string, any> = Record<string, never>
 >(config: {
   name: string
   props?: P
@@ -331,12 +332,11 @@ export function createTypedTemplate<
   const template: TypedTemplate<InferTemplateProps<P>, E, S> = {
     id: `typed-${config.name}`,
     name: config.name,
-    type: 'custom',
     category: 'typed',
     props: config.props as any,
     events: config.events,
     slots: config.slots
-  }
+  } as any
   
   // 添加类型验证
   if (config.setup) {
@@ -368,23 +368,23 @@ export function useTypedTemplate<T extends TypedTemplate>(
 } {
   const templateRef = ref(template) as Ref<T>
   
-  const computedTemplate = computed(() => 
-    'value' in templateRef.value ? templateRef.value.value : templateRef.value
+  const computedTemplate = computed<T>(() => 
+    'value' in templateRef.value ? (templateRef.value as any).value : templateRef.value
   )
   
-  const props = computed(() => computedTemplate.value.props)
-  const events = computed(() => computedTemplate.value.events)
-  const slots = computed(() => computedTemplate.value.slots)
+  const props = computed(() => (computedTemplate.value as any).props)
+  const events = computed(() => (computedTemplate.value as any).events)
+  const slots = computed(() => (computedTemplate.value as any).slots)
   
   const validate = (inputProps: any): boolean => {
-    const schema = computedTemplate.value.props
+    const schema = (computedTemplate.value as any).props
     if (!schema) return true
     
     return TypeGuard.isValidTemplateProps(inputProps, schema as any)
   }
   
   return {
-    template: computedTemplate,
+    template: computedTemplate as any,
     props,
     events,
     slots,

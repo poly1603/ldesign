@@ -1,4 +1,3 @@
-import type { Deck, DeckProps } from '@deck.gl/core';
 import type { GeoJsonLayer, ScatterplotLayer } from '@deck.gl/layers';
 
 // Inline GeoJSON types

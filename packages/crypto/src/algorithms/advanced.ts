@@ -101,8 +101,9 @@ export class ChaCha20Encryptor implements IEncryptor {
         aad = options.aad
       } else {
         ciphertext = encryptedData.data || ''
-        nonce = (encryptedData as any).nonce || options.nonce || ''
-        aad = (encryptedData as any).aad || options.aad
+        const extendedData = encryptedData as EncryptResult & { nonce?: string; aad?: string }
+        nonce = extendedData.nonce || options.nonce || ''
+        aad = extendedData.aad || options.aad
       }
 
       if (!nonce) {
@@ -348,7 +349,8 @@ export class AESGCMEncryptor implements IEncryptor {
     } else {
       ciphertext = encryptedData.data || ''
       iv = encryptedData.iv || options.nonce || ''
-      aad = (encryptedData as any).aad || options.aad
+      const extendedData = encryptedData as EncryptResult & { aad?: string }
+      aad = extendedData.aad || options.aad
     }
 
     const keyBuffer = this.hexToArrayBuffer(key)
@@ -424,7 +426,8 @@ export class AESGCMEncryptor implements IEncryptor {
     } else {
       ciphertext = encryptedData.data || ''
       iv = encryptedData.iv || options.nonce || ''
-      aad = (encryptedData as any).aad || options.aad
+      const extendedData = encryptedData as EncryptResult & { aad?: string }
+      aad = extendedData.aad || options.aad
     }
 
     // 分离密文和标签

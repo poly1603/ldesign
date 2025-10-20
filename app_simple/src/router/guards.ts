@@ -5,6 +5,9 @@
 
 import type { NavigationGuardNext, RouteLocationNormalized } from '@ldesign/router'
 
+// 存储守卫清理函数
+const guardsCleanupFns = new WeakMap<any, (() => void)[]>()
+
 /**
  * 设置路由守卫
  * @param routerPlugin - 路由器插件实例
@@ -24,70 +27,118 @@ export function setupGuards(routerPlugin: any) {
     // 获取 engine 实例
     const engine = context.engine || context
 
-    // 等待路由器就绪
-    setTimeout(() => {
-      if (!engine.router) {
-        console.warn('Router not found on engine, guards not installed')
-        return
+    // 等待路由器在引擎上就绪
+    // 使用 requestIdleCallback 或多次 Promise.resolve 确保路由器已安装
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+
+    if (!engine.router) {
+      // 路由器尚未就绪，静默返回（这是正常的初始化顺序）
+      return
+    }
+
+    const router = engine.router
+    const cleanupFns: (() => void)[] = []
+
+    // 全局前置守卫
+    const beforeEachGuard = (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+      // 路由守卫逻辑（调试日志已禁用）
+
+      // 检查是否需要认证
+      if (to.meta?.requiresAuth) {
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
+
+        if (!isLoggedIn) {
+          next({
+            path: '/login',
+            query: { redirect: to.fullPath }
+          })
+          return
+        }
       }
 
-      const router = engine.router
+      // 检查角色权限
+      if (to.meta?.roles) {
+        const userRole = localStorage.getItem('userRole') || 'guest'
+        const requiredRoles = to.meta.roles as string[]
 
-      // 全局前置守卫
-      router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
-        // 路由守卫逻辑（调试日志已禁用）
-
-        // 检查是否需要认证
-        if (to.meta?.requiresAuth) {
-          const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
-
-          if (!isLoggedIn) {
-            next({
-              path: '/login',
-              query: { redirect: to.fullPath }
-            })
-            return
-          }
+        if (!requiredRoles.includes(userRole)) {
+          next('/403')
+          return
         }
+      }
 
-        // 检查角色权限
-        if (to.meta?.roles) {
-          const userRole = localStorage.getItem('userRole') || 'guest'
-          const requiredRoles = to.meta.roles as string[]
+      next()
+    }
 
-          if (!requiredRoles.includes(userRole)) {
-            next('/403')
-            return
-          }
-        }
+    const removeBeforeEach = router.beforeEach(beforeEachGuard)
+    if (typeof removeBeforeEach === 'function') {
+      cleanupFns.push(removeBeforeEach)
+    }
 
-        next()
-      })
+    // 全局后置守卫
+    const afterEachGuard = (to: RouteLocationNormalized, from: RouteLocationNormalized) => {
+      // 设置页面标题
+      const title = to.meta?.title as string
+      if (title) {
+        document.title = `${title} - LDesign Simple App`
+      } else {
+        document.title = 'LDesign Simple App'
+      }
+    }
 
-      // 全局后置守卫
-      router.afterEach((to: RouteLocationNormalized, from: RouteLocationNormalized) => {
-        // 设置页面标题
-        const title = to.meta?.title as string
-        if (title) {
-          document.title = `${title} - LDesign Simple App`
-        } else {
-          document.title = 'LDesign Simple App'
-        }
-      })
+    const removeAfterEach = router.afterEach(afterEachGuard)
+    if (typeof removeAfterEach === 'function') {
+      cleanupFns.push(removeAfterEach)
+    }
 
-      // 全局错误处理
-      router.onError((error: Error) => {
-        console.error('[路由守卫] 导航错误:', error)
+    // 全局错误处理
+    const errorHandler = (error: Error) => {
+      console.error('[路由守卫] 导航错误:', error)
 
-        // 显示错误提示
-        if (engine.notification) {
-          engine.notification.error({
-            title: '导航错误',
-            message: error.message
-          })
-        }
-      })
-    }, 100) // 给一点延迟确保路由器已经完全初始化
+      // 显示错误提示
+      if (engine.notification) {
+        engine.notification.error({
+          title: '导航错误',
+          message: error.message
+        })
+      }
+    }
+
+    const removeErrorHandler = router.onError(errorHandler)
+    if (typeof removeErrorHandler === 'function') {
+      cleanupFns.push(removeErrorHandler)
+    }
+
+    // 保存清理函数
+    if (cleanupFns.length > 0) {
+      guardsCleanupFns.set(router, cleanupFns)
+
+      // 如果引擎有销毁钩子，注册清理
+      if (typeof engine.onBeforeUnmount === 'function') {
+        engine.onBeforeUnmount(() => {
+          cleanupRouterGuards(router)
+        })
+      }
+    }
+  }
+}
+
+/**
+ * 清理路由守卫
+ */
+export function cleanupRouterGuards(router: any) {
+  const cleanupFns = guardsCleanupFns.get(router)
+  if (cleanupFns) {
+    cleanupFns.forEach(fn => {
+      try {
+        fn()
+      } catch (error) {
+        console.warn('Error during router guards cleanup:', error)
+      }
+    })
+    guardsCleanupFns.delete(router)
   }
 }
 

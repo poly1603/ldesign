@@ -2,7 +2,12 @@
  * 模板性能监控
  */
 
-import { ref, reactive, computed, readonly, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, reactive, readonly, ref } from 'vue'
+
+/**
+ * 性能监控 composable
+ */
+import { ObjectPool } from '../utils/objectPool'
 
 export interface PerformanceMetrics {
   renderTime: number
@@ -30,9 +35,24 @@ export interface MemoryInfo {
   usagePercent: number
 }
 
-/**
- * 性能监控 composable
- */
+// 对象池用于复用PerformanceEntry
+const entryPool = new ObjectPool<PerformanceEntry>({
+  maxSize: 50,
+  factory: () => ({
+    name: '',
+    startTime: 0,
+    duration: 0,
+    type: 'measure' as const
+  }),
+  reset: (entry) => {
+    entry.name = ''
+    entry.startTime = 0
+    entry.duration = 0
+    entry.type = 'measure'
+    entry.details = undefined
+  }
+})
+
 export function useTemplatePerformance(templateId: string) {
   // 性能指标
   const metrics = reactive<PerformanceMetrics>({
@@ -45,8 +65,9 @@ export function useTemplatePerformance(templateId: string) {
     fps: 0
   })
 
-  // 性能条目
+  // 性能条目 - 限制数组大小
   const entries = ref<PerformanceEntry[]>([])
+  const MAX_ENTRIES = 100
 
   // 内存信息
   const memory = reactive<MemoryInfo>({
@@ -57,10 +78,13 @@ export function useTemplatePerformance(templateId: string) {
     usagePercent: 0
   })
 
-  // FPS 监控
-  const fpsHistory = ref<number[]>([])
+  // FPS 监控 - 使用环形缓冲区
+  const FPS_HISTORY_SIZE = 60
+  const fpsHistory = ref<number[]>(Array.from({length: FPS_HISTORY_SIZE}, () => 0))
+  let fpsIndex = 0
   let rafId: number | null = null
   let lastTime = 0
+  let intervalId: number | null = null
 
   /**
    * 开始测量
@@ -88,12 +112,18 @@ export function useTemplatePerformance(templateId: string) {
         if (measures.length > 0) {
           const measure = measures[measures.length - 1]
           
-          entries.value.push({
-            name,
-            startTime: measure.startTime,
-            duration: measure.duration,
-            type: 'measure'
-          })
+          const entry = entryPool.acquire()
+          entry.name = name
+          entry.startTime = measure.startTime
+          entry.duration = measure.duration
+          entry.type = 'measure'
+          
+          // 使用环形缓冲区避免频繁的数组操作
+          if (entries.value.length >= MAX_ENTRIES) {
+            const removed = entries.value.shift()
+            if (removed) entryPool.release(removed)
+          }
+          entries.value.push(entry)
           
           // 更新指标
           if (name.includes('render')) {
@@ -159,14 +189,20 @@ export function useTemplatePerformance(templateId: string) {
     const delta = timestamp - lastTime
     const fps = Math.round(1000 / delta)
     
-    fpsHistory.value.push(fps)
-    if (fpsHistory.value.length > 60) {
-      fpsHistory.value.shift()
-    }
+    // 使用环形缓冲区
+    fpsHistory.value[fpsIndex] = fps
+    fpsIndex = (fpsIndex + 1) % FPS_HISTORY_SIZE
     
-    metrics.fps = Math.round(
-      fpsHistory.value.reduce((a, b) => a + b, 0) / fpsHistory.value.length
-    )
+    // 计算平均FPS - 更高效的算法
+    let sum = 0
+    let count = 0
+    for (let i = 0; i < FPS_HISTORY_SIZE; i++) {
+      if (fpsHistory.value[i] > 0) {
+        sum += fpsHistory.value[i]
+        count++
+      }
+    }
+    metrics.fps = count > 0 ? Math.round(sum / count) : 0
     
     lastTime = timestamp
     rafId = requestAnimationFrame(calculateFPS)
@@ -243,12 +279,20 @@ export function useTemplatePerformance(templateId: string) {
    * 清除性能数据
    */
   const clear = () => {
+    // 释放对象池中的对象
+    entries.value.forEach(entry => entryPool.release(entry))
     entries.value = []
-    fpsHistory.value = []
+    fpsHistory.value.fill(0)
+    fpsIndex = 0
     
-    Object.keys(metrics).forEach(key => {
-      (metrics as any)[key] = 0
-    })
+    // 重置指标
+    metrics.renderTime = 0
+    metrics.loadTime = 0
+    metrics.updateTime = 0
+    metrics.componentCount = 0
+    metrics.domNodes = 0
+    metrics.memory = 0
+    metrics.fps = 0
   }
 
   /**
@@ -319,15 +363,21 @@ export function useTemplatePerformance(templateId: string) {
     countDOMNodes()
     
     // 定期更新
-    const interval = setInterval(() => {
+    intervalId = window.setInterval(() => {
       updateMemory()
       countDOMNodes()
     }, 1000)
-    
-    onUnmounted(() => {
-      clearInterval(interval)
-      stopFPSMonitoring()
-    })
+  })
+
+  onUnmounted(() => {
+    if (intervalId) {
+      clearInterval(intervalId)
+      intervalId = null
+    }
+    stopFPSMonitoring()
+    // 清理对象池
+    entries.value.forEach(entry => entryPool.release(entry))
+    entries.value = []
   })
 
   return {

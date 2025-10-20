@@ -23,6 +23,7 @@ export default {
   nav: {
     home: '首页',
     about: '关于',
+    crypto: '加密演示',
     dashboard: '仪表盘',
     login: '登录',
     logout: '退出登录',
@@ -127,6 +128,12 @@ export default {
       network: '网络错误，请稍后重试'
     },
     success: '登录成功！正在跳转...'
+  },
+
+  // 加密演示页面
+  crypto: {
+    title: '加密演示',
+    subtitle: '体验 @ldesign/crypto 加密功能'
   },
 
   // 仪表盘页面

@@ -4,23 +4,21 @@
  * Validation and parsing functions for color inputs
  */
 
-import type { RGB, HSL, HSV, HWB, ColorInput } from '../types';
-import { parseColorString, hexToRgb, hslToRgb, hsvToRgb, hwbToRgb } from '../core/conversions';
-import { namedColors } from '../constants/namedColors';
+import type { ColorInput, HSL, HSV, HWB, RGB } from '../types';
+import { namedColorsMap } from '../constants/namedColors';
+import { hexToRgb, hslToRgb, hsvToRgb, hwbToRgb, parseColorString } from '../core/conversions';
 import { clamp } from './math';
 
 /**
- * Validate RGB color values
+ * Validate RGB color values - Optimized
  */
 export function validateRGB(rgb: RGB): boolean {
+  // Fast path checks with bitwise operations
   return (
-    typeof rgb.r === 'number' &&
-    typeof rgb.g === 'number' &&
-    typeof rgb.b === 'number' &&
-    rgb.r >= 0 && rgb.r <= 255 &&
-    rgb.g >= 0 && rgb.g <= 255 &&
-    rgb.b >= 0 && rgb.b <= 255 &&
-    (rgb.a === undefined || (typeof rgb.a === 'number' && rgb.a >= 0 && rgb.a <= 1))
+    (rgb.r | 0) === rgb.r && rgb.r >= 0 && rgb.r <= 255 &&
+    (rgb.g | 0) === rgb.g && rgb.g >= 0 && rgb.g <= 255 &&
+    (rgb.b | 0) === rgb.b && rgb.b >= 0 && rgb.b <= 255 &&
+    (rgb.a === undefined || (rgb.a >= 0 && rgb.a <= 1))
   );
 }
 
@@ -70,40 +68,69 @@ export function validateHWB(hwb: HWB): boolean {
 }
 
 /**
- * Validate hex color string
+ * Validate hex color string - No regex
  */
+const HEX_CHARS = new Set('0123456789ABCDEFabcdef');
+
 export function validateHex(hex: string): boolean {
-  const hexPattern = /^#?([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/;
-  return hexPattern.test(hex);
+  if (!hex) return false;
+  
+  // Remove # if present
+  const start = hex[0] === '#' ? 1 : 0;
+  const len = hex.length - start;
+  
+  // Valid lengths: 3, 4, 6, 8
+  if (len !== 3 && len !== 4 && len !== 6 && len !== 8) {
+    return false;
+  }
+  
+  // Check all characters are valid hex
+  for (let i = start; i < hex.length; i++) {
+    if (!HEX_CHARS.has(hex[i])) {
+      return false;
+    }
+  }
+  
+  return true;
 }
 
 /**
- * Check if a value is a valid color input
+ * Check if a value is a valid color input - Optimized
  */
 export function isColorInput(value: any): value is ColorInput {
-  if (typeof value === 'string') {
-    return validateHex(value) || 
-           value.toLowerCase() in namedColors ||
-           /^(rgb|rgba|hsl|hsla|hsv|hwb)\(/.test(value);
+  if (!value) return false;
+  
+  const type = typeof value;
+  
+  if (type === 'string') {
+    // Fast checks first
+    if (value[0] === '#') return validateHex(value);
+    
+    const lower = value.toLowerCase();
+    if (namedColorsMap.has(lower)) return true;
+    
+    // Check for function notation (simplified check)
+    const firstParen = value.indexOf('(');
+    if (firstParen > 0 && firstParen < 7) {
+      const prefix = value.slice(0, firstParen);
+      return prefix === 'rgb' || prefix === 'rgba' || 
+             prefix === 'hsl' || prefix === 'hsla' ||
+             prefix === 'hsv' || prefix === 'hwb';
+    }
+    return false;
   }
   
-  if (typeof value === 'object' && value !== null) {
-    if ('r' in value && 'g' in value && 'b' in value) {
-      return validateRGB(value as RGB);
+  if (type === 'object') {
+    if (Array.isArray(value)) {
+      return (value.length === 3 || value.length === 4) &&
+             value.every(v => typeof v === 'number');
     }
-    if ('h' in value && 's' in value && 'l' in value) {
-      return validateHSL(value as HSL);
-    }
-    if ('h' in value && 's' in value && 'v' in value) {
-      return validateHSV(value as HSV);
-    }
-    if ('h' in value && 'w' in value && 'b' in value) {
-      return validateHWB(value as HWB);
-    }
-  }
-  
-  if (Array.isArray(value) && (value.length === 3 || value.length === 4)) {
-    return value.every(v => typeof v === 'number');
+    
+    // Quick property existence checks
+    if (value.r !== undefined) return validateRGB(value as RGB);
+    if (value.l !== undefined) return validateHSL(value as HSL);
+    if (value.v !== undefined) return validateHSV(value as HSV);
+    if (value.w !== undefined) return validateHWB(value as HWB);
   }
   
   return false;
@@ -118,8 +145,10 @@ export function parseColorInput(input: ColorInput): { rgb: RGB; alpha: number } 
   
   if (typeof input === 'string') {
     // Handle named colors
-    if (input.toLowerCase() in namedColors) {
-      input = namedColors[input.toLowerCase() as keyof typeof namedColors];
+    const lower = input.toLowerCase();
+    const namedColor = namedColorsMap.get(lower);
+    if (namedColor) {
+      input = namedColor;
     }
     
     // Handle hex colors
@@ -200,20 +229,19 @@ export function parseColorInput(input: ColorInput): { rgb: RGB; alpha: number } 
 }
 
 /**
- * Sanitize color channel value
+ * Sanitize color channel value - Optimized
  */
 export function sanitizeChannel(value: number, max = 255): number {
-  if (isNaN(value)) return 0;
-  return clamp(value, 0, max);
+  // Fast NaN check and clamp
+  return Number.isNaN(value) ? 0 : value < 0 ? 0 : value > max ? max : value;
 }
 
 /**
- * Sanitize alpha value
+ * Sanitize alpha value - Optimized
  */
 export function sanitizeAlpha(value: number | undefined): number {
-  if (value === undefined) return 1;
-  if (isNaN(value)) return 1;
-  return clamp(value, 0, 1);
+  return value === undefined || Number.isNaN(value) ? 1 : 
+         value < 0 ? 0 : value > 1 ? 1 : value;
 }
 
 /**

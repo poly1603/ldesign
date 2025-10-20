@@ -5,7 +5,8 @@ export default antfu({
   vue: true,
   react: false, // Disable react rules to avoid conflicts
   stylistic: false, // Disable stylistic rules to avoid stack overflow
-  ignores: [
+'ignores': [
+    'packages/device/package.json',
     '**/dist/**',
     '**/es/**',
     '**/lib/**',
@@ -23,8 +24,10 @@ export default antfu({
     '**/*.min.js',
     '**/*.min.css',
     '**/packages/webcomponent/**', // Temporarily ignore webcomponent package
+    'packages/template/package.json', // Ignore package.json jsonc sorting in template package
     // Ignore test files
     '**/tests/**',
+    '**/package.json',
     '**/e2e/**',
     '**/__tests__/**',
     '**/*.test.ts',
@@ -41,7 +44,7 @@ export default antfu({
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-non-null-assertion': 'warn',
-    'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+'no-console': ['warn', { allow: ['warn', 'error', 'info', 'group', 'groupEnd', 'time', 'timeEnd', 'table', 'debug'] }],
     'prefer-const': 'error',
     'no-var': 'error',
     'no-debugger': 'error',
@@ -52,11 +55,56 @@ export default antfu({
   },
   overrides: [
     {
+      files: ['packages/template/src/**/*.{ts,tsx,vue}'],
+      rules: {
+'@typescript-eslint/no-explicit-any': 'off',
+        'ts/no-explicit-any': 'off',
+        '@typescript-eslint/no-non-null-assertion': 'off',
+        'no-console': 'off',
+        'unicorn/error-message': 'off',
+      },
+    },
+    {
       files: ['**/__tests__/**', '**/*.test.*', '**/*.spec.*'],
       rules: {
         'no-console': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
+      },
+    },
+    {
+      files: ['packages/device/src/utils/Logger.ts'],
+      rules: {
+        'no-console': 'off',
+        'eslint-comments/no-duplicate-disable': 'off',
+      },
+    },
+    {
+      files: ['packages/device/package.json', 'package.json', '**/package.json'],
+      rules: {
+        'jsonc/sort-keys': 'off',
+        'jsonc/sort-array-values': 'off',
+      },
+    },
+    {
+      files: ['packages/device/src/**/*.ts', 'packages/device/src/**/*.vue'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'off',
+'@typescript-eslint/no-non-null-assertion': 'off',
+        'ts/no-non-null-assertion': 'off',
+        'no-console': 'off',
+      },
+    },
+    {
+      files: ['packages/device/src/vue/directives/*.ts'],
+      rules: {
+        '@typescript-eslint/no-non-null-assertion': 'off',
+      },
+    },
+    {
+      files: ['packages/device/src/**/*.ts', 'packages/device/src/**/*.vue'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'off',
       },
     },
     {

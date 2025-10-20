@@ -60,7 +60,16 @@ export class ThemeManager {
   private styleElement: HTMLStyleElement | null = null;
   private options: ThemeManagerOptions;
   private mediaQuery: MediaQueryList | null = null;
+  private hcQuery: MediaQueryList | null = null;
   private listeners: Set<(theme: Theme) => void> = new Set();
+  private mediaHandlers: Array<{ query: MediaQueryList; handler: (e: MediaQueryListEvent) => void }> = [];
+  private isDestroyed = false;
+  
+  // CSS generation cache using WeakMap to auto-cleanup
+  private cssCache = new WeakMap<ThemeConfig, string>();
+  // Theme CSS string cache to avoid regeneration
+  private generatedCSSCache = new Map<string, string>();
+  private maxCacheSize = 20; // Limit cache size
 
   constructor(options: ThemeManagerOptions = {}) {
     this.options = {
@@ -72,15 +81,17 @@ export class ThemeManager {
 
     this.themes = new Map();
     
-    // Load default themes
-    Object.entries(DEFAULT_THEMES).forEach(([key, config]) => {
-      this.themes.set(key, config);
+    // Load default themes - optimize with batch processing
+    const defaultEntries = Object.entries(DEFAULT_THEMES);
+    defaultEntries.forEach(([key, config]) => {
+      this.themes.set(key, Object.freeze(config)); // Freeze to prevent accidental modifications
     });
 
     // Load custom themes
     if (options.themes) {
-      Object.entries(options.themes).forEach(([key, config]) => {
-        this.themes.set(key, config);
+      const customEntries = Object.entries(options.themes);
+      customEntries.forEach(([key, config]) => {
+        this.themes.set(key, Object.freeze(config));
       });
     }
 
@@ -137,21 +148,34 @@ export class ThemeManager {
   private setupAutoDetection(): void {
     if (typeof window === 'undefined') return;
 
-    // Listen for dark mode changes
+    // Listen for dark mode changes with optimized handler
     this.mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    this.mediaQuery.addEventListener('change', (e) => {
-      if (this.currentTheme === 'auto' || this.options.autoDetect) {
-        this.setTheme(e.matches ? 'dark' : 'light');
+    const darkModeHandler = (e: MediaQueryListEvent) => {
+      if (!this.isDestroyed && (this.currentTheme === 'auto' || this.options.autoDetect)) {
+        // Debounce theme changes to avoid rapid switching
+        requestAnimationFrame(() => {
+          if (!this.isDestroyed) {
+            this.setTheme(e.matches ? 'dark' : 'light');
+          }
+        });
       }
-    });
+    };
+    this.mediaQuery.addEventListener('change', darkModeHandler);
+    this.mediaHandlers.push({ query: this.mediaQuery, handler: darkModeHandler });
 
     // Listen for high contrast changes
-    const hcQuery = window.matchMedia('(prefers-contrast: high)');
-    hcQuery.addEventListener('change', (e) => {
-      if (e.matches && (this.currentTheme === 'auto' || this.options.autoDetect)) {
-        this.setTheme('high-contrast');
+    this.hcQuery = window.matchMedia('(prefers-contrast: high)');
+    const hcHandler = (e: MediaQueryListEvent) => {
+      if (!this.isDestroyed && e.matches && (this.currentTheme === 'auto' || this.options.autoDetect)) {
+        requestAnimationFrame(() => {
+          if (!this.isDestroyed) {
+            this.setTheme('high-contrast');
+          }
+        });
       }
-    });
+    };
+    this.hcQuery.addEventListener('change', hcHandler);
+    this.mediaHandlers.push({ query: this.hcQuery, handler: hcHandler });
   }
 
   /**
@@ -180,7 +204,17 @@ export class ThemeManager {
     const config = this.themes.get(theme);
     if (!config) return;
 
-    const css = this.generateThemeCSS(config);
+    // Check cache first
+    let css = this.generatedCSSCache.get(theme);
+    if (!css) {
+      css = this.generateThemeCSS(config);
+      // Limit cache size
+      if (this.generatedCSSCache.size >= this.maxCacheSize) {
+        const firstKey = this.generatedCSSCache.keys().next().value;
+        if (firstKey) this.generatedCSSCache.delete(firstKey);
+      }
+      this.generatedCSSCache.set(theme, css);
+    }
     
     if (typeof document === 'undefined') return;
 
@@ -190,11 +224,17 @@ export class ThemeManager {
       document.head.appendChild(this.styleElement);
     }
 
+    // Use textContent for better performance
     this.styleElement.textContent = css;
     
-    // Add theme class to body
-    document.body.classList.remove(...Array.from(this.themes.keys()).map(k => `theme-${k}`));
-    document.body.classList.add(`theme-${theme}`);
+    // Batch DOM operations
+    const themeClasses = Array.from(this.themes.keys()).map(k => `theme-${k}`);
+    const classList = document.body.classList;
+    
+    // Remove all theme classes in one operation
+    classList.remove(...themeClasses);
+    // Add new theme class
+    classList.add(`theme-${theme}`);
     document.body.setAttribute('data-theme', theme);
   }
 
@@ -202,37 +242,42 @@ export class ThemeManager {
    * Generate theme CSS
    */
   private generateThemeCSS(config: ThemeConfig): string {
+    // Check WeakMap cache first
+    const cached = this.cssCache.get(config);
+    if (cached) return cached;
+    
+    // Use array for better performance
     const vars: string[] = [];
 
     // Apply base size adjustment
     if (config.baseSizeAdjustment) {
-      vars.push(`--size-theme-adjustment: ${config.baseSizeAdjustment};`);
+      vars.push(`--size-theme-adjustment: ${config.baseSizeAdjustment}`);
     }
 
-    // Apply scales
+    // Apply scales - combine checks for efficiency
     if (config.spacingScale && config.spacingScale !== 1) {
-      vars.push(`--size-spacing-scale: ${config.spacingScale};`);
+      vars.push(`--size-spacing-scale: ${config.spacingScale}`);
     }
-
     if (config.radiusScale && config.radiusScale !== 1) {
-      vars.push(`--size-radius-scale: ${config.radiusScale};`);
+      vars.push(`--size-radius-scale: ${config.radiusScale}`);
     }
-
     if (config.lineHeightScale && config.lineHeightScale !== 1) {
-      vars.push(`--size-line-scale: ${config.lineHeightScale};`);
+      vars.push(`--size-line-scale: ${config.lineHeightScale}`);
     }
 
-    // Apply custom CSS variables
+    // Apply custom CSS variables - optimize with entries
     if (config.cssVariables) {
-      Object.entries(config.cssVariables).forEach(([key, value]) => {
-        vars.push(`${key}: ${value};`);
-      });
+      for (const [key, value] of Object.entries(config.cssVariables)) {
+        vars.push(`${key}: ${value}`);
+      }
     }
 
-    return `
+    // Build CSS string efficiently
+    const cssVars = vars.map(v => `        ${v};`).join('\n');
+    const css = `
       :root,
       [data-theme="${this.currentTheme}"] {
-        ${vars.join('\n        ')}
+${cssVars}
       }
       
       /* Theme-specific adjustments */
@@ -246,7 +291,11 @@ export class ThemeManager {
         /* Adjusted radius with scale */
         --size-radius-adjusted: calc(var(--size-radius-md) * var(--size-radius-scale, 1));
       }
-    `;
+    `.trim();
+    
+    // Cache the result
+    this.cssCache.set(config, css);
+    return css;
   }
 
   /**
@@ -294,6 +343,10 @@ export class ThemeManager {
    * Subscribe to theme changes
    */
   onChange(listener: (theme: Theme) => void): () => void {
+    if (this.isDestroyed) {
+      console.warn('Cannot add listener to destroyed ThemeManager');
+      return () => {};
+    }
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   }
@@ -302,7 +355,15 @@ export class ThemeManager {
    * Notify listeners
    */
   private notifyListeners(theme: Theme): void {
-    this.listeners.forEach(listener => listener(theme));
+    if (this.isDestroyed) return;
+    // Use try-catch to prevent one listener error from affecting others
+    this.listeners.forEach(listener => {
+      try {
+        listener(theme);
+      } catch (e) {
+        console.error('Theme listener error:', e);
+      }
+    });
   }
 
   /**
@@ -317,16 +378,40 @@ export class ThemeManager {
    * Destroy theme manager
    */
   destroy(): void {
-    if (this.styleElement && this.styleElement.parentNode) {
+    if (this.isDestroyed) return;
+    
+    this.isDestroyed = true;
+    
+    // Remove style element
+    if (this.styleElement?.parentNode) {
       this.styleElement.parentNode.removeChild(this.styleElement);
+      this.styleElement = null;
     }
     
-    if (typeof document !== 'undefined') {
-      document.body.classList.remove(...Array.from(this.themes.keys()).map(k => `theme-${k}`));
+    // Remove media query listeners
+    this.mediaHandlers.forEach(({ query, handler }) => {
+      try {
+        query.removeEventListener('change', handler);
+      } catch {
+        // Ignore errors during cleanup
+      }
+    });
+    this.mediaHandlers.length = 0; // More efficient than creating new array
+    this.mediaQuery = null;
+    this.hcQuery = null;
+    
+    // Clean up DOM
+    if (typeof document !== 'undefined' && document.body) {
+      const themeClasses = Array.from(this.themes.keys()).map(k => `theme-${k}`);
+      document.body.classList.remove(...themeClasses);
       document.body.removeAttribute('data-theme');
     }
     
+    // Clear all caches and collections
     this.listeners.clear();
+    this.themes.clear();
+    this.generatedCSSCache.clear();
+    // WeakMap will auto-cleanup
   }
 }
 
@@ -341,6 +426,16 @@ export function getThemeManager(): ThemeManager {
     themeManager = new ThemeManager();
   }
   return themeManager;
+}
+
+/**
+ * Destroy theme manager singleton
+ */
+export function destroyThemeManager(): void {
+  if (themeManager) {
+    themeManager.destroy();
+    themeManager = null;
+  }
 }
 
 /**

@@ -109,9 +109,9 @@ export class HttpClientImpl implements HttpClient {
     this.cancelManager = globalCancelManager
     this.cacheManager = new CacheManager(config.cache)
     this.concurrencyManager = new ConcurrencyManager(config.concurrency)
-    this.monitor = new RequestMonitor(config.monitor)
-    this.priorityQueue = new PriorityQueue(config.priorityQueue)
-    this.requestPool = new RequestPool(config.connectionPool)
+    this.monitor = new RequestMonitor(config.monitor as any)
+    this.priorityQueue = new PriorityQueue(config.priorityQueue as any)
+    this.requestPool = new RequestPool(config.connectionPool as any)
 
     // 初始化拦截器
     this.interceptors = {
@@ -178,7 +178,8 @@ export class HttpClientImpl implements HttpClient {
     requestId: string,
   ): Promise<ResponseData<T>> {
     // 如果启用了重试，使用重试管理器
-    if (config.retry?.retries && config.retry.retries > 0) {
+    const retryConfig = config.retry as RetryConfig | undefined
+    if (retryConfig?.retries && retryConfig.retries > 0) {
       return this.retryManager.executeWithRetry(
         () => {
           this.monitor.recordRetry(requestId)
@@ -216,9 +217,11 @@ export class HttpClientImpl implements HttpClient {
   private async performRequest<T = unknown>(
     config: RequestConfig,
   ): Promise<ResponseData<T>> {
+    let processedConfig: RequestConfig | null = null
+    
     try {
       // 执行请求拦截器
-      const processedConfig = await this.processRequestInterceptors(config)
+      processedConfig = await this.processRequestInterceptors(config)
 
       // 发送请求
       let response = await this.adapter.request<T>(processedConfig)
@@ -238,6 +241,7 @@ export class HttpClientImpl implements HttpClient {
       )
       throw processedError
     }
+    // 移除配置回收逻辑，让GC自动处理
   }
 
   /**
@@ -399,11 +403,11 @@ export class HttpClientImpl implements HttpClient {
   /**
    * 添加响应拦截器
    */
-  addResponseInterceptor<T = any>(
+  addResponseInterceptor<T = unknown>(
     fulfilled: (response: ResponseData<T>) => ResponseData<T> | Promise<ResponseData<T>>,
     rejected?: (error: HttpError) => HttpError | Promise<HttpError>,
   ): number {
-    return this.interceptors.response.use(fulfilled, rejected)
+    return this.interceptors.response.use(fulfilled as unknown as ResponseInterceptor, rejected)
   }
 
   /**
@@ -474,7 +478,7 @@ export class HttpClientImpl implements HttpClient {
   private async processResponseInterceptors<T>(
     response: ResponseData<T>,
   ): Promise<ResponseData<T>> {
-    let processedResponse = response
+    let processedResponse = response as ResponseData<unknown>
 
     const interceptors = (
       this.interceptors.response as InterceptorManagerImpl<ResponseInterceptor>
@@ -492,7 +496,7 @@ export class HttpClientImpl implements HttpClient {
       }
     }
 
-    return processedResponse
+    return processedResponse as ResponseData<T>
   }
 
   /**
@@ -517,44 +521,38 @@ export class HttpClientImpl implements HttpClient {
     return processedError
   }
 
+  // 移除对象池（现代JS引擎的对象创建已经很快，池化反而增加复杂度）
+
   /**
-   * 优化的配置合并（避免不必要的深度合并）
+   * 优化的配置合并（简化版，去除对象池开销）
    */
   private optimizedMergeConfig(config: RequestConfig): RequestConfig {
-    // 如果请求配置为空，直接返回默认配置
+    // 如果请求配置为空，直接返回默认配置副本
     if (!config || Object.keys(config).length === 0) {
-      return this.config
+      return { ...this.config }
     }
 
-    // 浅合并，只在需要时进行深度合并
-    const merged: RequestConfig = {
-      ...this.config,
-      ...config,
-    }
+    // 直接创建新对象（现代JS引擎优化很好）
+    const merged: RequestConfig = { ...this.config, ...config }
 
     // 只有在两者都有 headers 时才进行深度合并
     if (this.config?.headers && config.headers) {
-      merged.headers = {
-        ...this.config?.headers,
-        ...config.headers,
-      }
+      merged.headers = { ...this.config.headers, ...config.headers }
     }
 
     // 只有在两者都有 params 时才进行深度合并
     if (this.config?.params && config.params) {
-      merged.params = {
-        ...this.config?.params,
-        ...config.params,
-      }
+      merged.params = { ...this.config.params, ...config.params }
     }
 
     return merged
   }
 
+
   /**
    * 上传文件
    */
-  async upload<T = any>(
+  async upload<T = unknown>(
     url: string,
     file: File | File[],
     config: UploadConfig = {},
@@ -574,7 +572,7 @@ export class HttpClientImpl implements HttpClient {
   /**
    * 上传单个文件
    */
-  private async uploadSingleFile<T = any>(
+  private async uploadSingleFile<T = unknown>(
     url: string,
     file: File,
     config: UploadConfig,
@@ -592,22 +590,22 @@ export class HttpClientImpl implements HttpClient {
 
     // 配置请求
     const requestConfig: RequestConfig = {
-      ...config,
       method: 'POST',
       url,
       data: formData,
       headers: {
-        ...config.headers,
+        ...(config.headers || {}),
         // 不设置 Content-Type，让浏览器自动设置 multipart/form-data
       },
+      ...(config || {}),
       onUploadProgress: config.onProgress
-        ? (progressEvent: any) => {
+        ? (progressEvent: { loaded: number, total?: number }) => {
             const progress = progressCalculator.calculate(
               progressEvent.loaded,
-              progressEvent.total,
+              progressEvent.total || 0,
               file,
             )
-            config.onProgress!(progress)
+            config.onProgress?.(progress)
           }
         : undefined,
     }
@@ -624,7 +622,7 @@ export class HttpClientImpl implements HttpClient {
   /**
    * 上传多个文件
    */
-  private async uploadMultipleFiles<T = any>(
+  private async uploadMultipleFiles<T = unknown>(
     url: string,
     files: File[],
     config: UploadConfig,
@@ -655,20 +653,20 @@ export class HttpClientImpl implements HttpClient {
 
     // 配置请求
     const requestConfig: RequestConfig = {
-      ...config,
       method: 'POST',
       url,
       data: formData,
       headers: {
-        ...config.headers,
+        ...(config.headers || {}),
       },
+      ...(config || {}),
       onUploadProgress: config.onProgress
-        ? (progressEvent: any) => {
+        ? (progressEvent: { loaded: number, total?: number }) => {
             const progress = progressCalculator.calculate(
               progressEvent.loaded,
-              progressEvent.total,
+              progressEvent.total || 0,
             )
-            config.onProgress!(progress)
+            config.onProgress?.(progress)
           }
         : undefined,
     }
@@ -698,18 +696,18 @@ export class HttpClientImpl implements HttpClient {
 
     // 配置请求
     const requestConfig: RequestConfig = {
-      ...config,
       method: 'GET',
       url,
       responseType: 'blob',
+      ...(config || {}),
       onDownloadProgress: config.onProgress
-        ? (progressEvent: any) => {
+        ? (progressEvent: { loaded: number, total?: number }) => {
             const progress = progressCalculator.calculate(
               progressEvent.loaded,
-              progressEvent.total,
+              progressEvent.total || 0,
               config.filename,
             )
-            config.onProgress!(progress)
+            config.onProgress?.(progress)
           }
         : undefined,
     }
@@ -862,6 +860,22 @@ export class HttpClientImpl implements HttpClient {
     this.interceptors.request.clear()
     this.interceptors.response.clear()
     this.interceptors.error.clear()
+    
+    // 清理缓存管理器的定时器
+    const cacheManager = this.cacheManager as unknown as { destroy?: () => void }
+    if (cacheManager && typeof cacheManager.destroy === 'function') {
+      cacheManager.destroy()
+    }
+    
+    // 解除循环引用（使用 null! 避免在 destroy 后使用的编译错误）
+    this.adapter = null!
+    this.retryManager = null!
+    this.cancelManager = null!
+    this.cacheManager = null!
+    this.concurrencyManager = null!
+    this.monitor = null!
+    this.priorityQueue = null!
+    this.requestPool = null!
   }
 
   /**

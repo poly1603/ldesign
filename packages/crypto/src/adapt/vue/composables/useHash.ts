@@ -1,5 +1,5 @@
-import { computed, type Ref, ref } from 'vue'
 import type { HashAlgorithm, HashOptions } from '../../../types'
+import { computed, type Ref, ref } from 'vue'
 import { hash, hmacInstance as hmac } from '../../../core'
 
 /**

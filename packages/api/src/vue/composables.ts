@@ -120,7 +120,6 @@ export function useMutation<TResult = unknown, TVars = unknown>(
           }
           // deep
           try {
-            // @ts-ignore structuredClone may not exist in some env
             if (typeof structuredClone === 'function')
               return structuredClone(val)
           }

@@ -8,7 +8,6 @@ import type {
   LayerOptions,
   CityMarker,
   CityMarkerOptions,
-  TooltipInfo,
   DeckGLLayer,
   ColorScheme,
   SelectionMode,
@@ -52,7 +51,6 @@ export class MapRenderer {
   // MarkerRenderer instance
   private markerRenderer: MarkerRenderer;
   private animationFrameId: number | null = null;
-  private isAnimating: boolean = false;
   private rippleMarkers: Map<string, RippleMarker> = new Map();
 
   constructor(container: HTMLElement | string, options: MapRendererOptions = {}) {
@@ -103,7 +101,9 @@ export class MapRenderer {
     } else if (this.autoFit === true) {
       const autoViewState = this.calculateOptimalViewState(rect.width, rect.height);
       this.viewState = {
-        ...autoViewState,
+        longitude: autoViewState.longitude || 113.3,
+        latitude: autoViewState.latitude || 23.1,
+        zoom: autoViewState.zoom || 6,
         pitch: this.mode === '3d' ? 45 : 0,
         bearing: 0
       };
@@ -197,8 +197,8 @@ export class MapRenderer {
           this.handleViewStateChange(viewState);
           return viewState;
         },
-        getTooltip: this.showTooltip ? (({ object }: TooltipInfo) => object && {
-          html: this.getTooltipHTML(object),
+        getTooltip: this.showTooltip ? ((info: any) => info.object && {
+          html: this.getTooltipHTML(info.object),
           style: {
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
             color: 'white',
@@ -226,7 +226,6 @@ export class MapRenderer {
   private setupMouseWheelControl(): void {
     // 跟踪鼠标是否在地图图形上
     let isMouseOverMapFeature = false;
-    let lastPickedObject: any = null;
     
     // 监听鼠标移动，检测是否在地图特征上
     this.container.addEventListener('mousemove', (event: MouseEvent) => {
@@ -254,7 +253,7 @@ export class MapRenderer {
       // 当鼠标从无特征移到特征上时
       if (!wasOverFeature && isMouseOverMapFeature) {
         // 启用滚轮缩放
-        const currentController = this.deck.props.controller || {};
+        const currentController = (this.deck.props.controller as any) || {};
         this.deck.setProps({
           controller: {
             ...currentController,
@@ -270,7 +269,7 @@ export class MapRenderer {
       // 当鼠标从特征上移开时
       else if (wasOverFeature && !isMouseOverMapFeature) {
         // 禁用滚轮缩放
-        const currentController = this.deck.props.controller || {};
+        const currentController = (this.deck.props.controller as any) || {};
         this.deck.setProps({
           controller: {
             ...currentController,
@@ -280,8 +279,6 @@ export class MapRenderer {
         // 恢复默认鼠标样式
         this.container.style.cursor = 'default';
       }
-      
-        lastPickedObject = pickInfo;
       } catch (error) {
         // 忽略 pick 错误，可能是 deck.gl 还没有完全初始化
         console.debug('Pick object error (safe to ignore):', error);
@@ -293,7 +290,7 @@ export class MapRenderer {
       isMouseOverMapFeature = false;
       // 禁用滚轮缩放
       if (this.deck) {
-        const currentController = this.deck.props.controller || {};
+        const currentController = (this.deck.props.controller as any) || {};
         this.deck.setProps({
           controller: {
             ...currentController,
@@ -1016,7 +1013,7 @@ export class MapRenderer {
       
       // 如果颜色设置为 'auto'，计算背景色并选择对比色
       let textColor = labelOptions.getColor;
-      if (textColor === 'auto' || (Array.isArray(textColor) && textColor[0] === 'auto')) {
+      if (textColor === 'auto') {
         const bgColor = fillColorFunction(feature, { index });
         textColor = this.getContrastingTextColor(bgColor);
       } else if (!textColor) {

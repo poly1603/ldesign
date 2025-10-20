@@ -1,62 +1,88 @@
 {
-  "name": "@ldesign/gridstack",
+  "name": "@ldesign/grid",
   "version": "1.0.0",
-  "description": "A powerful gridstack wrapper with Vue, React and Vanilla JS support",
-  "keywords": [
-    "grid",
-    "gridstack",
-    "layout",
-    "drag-drop",
-    "vue",
-    "react",
-    "typescript"
-  ],
-  "author": "LDesign",
-  "license": "MIT",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "description": "Feature-rich, high-performance GridStack wrapper for any framework",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    },
-    "./vanilla": {
-      "types": "./dist/vanilla/index.d.ts",
-      "import": "./dist/vanilla/index.mjs",
-      "require": "./dist/vanilla/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./vue": {
-      "types": "./dist/vue/index.d.ts",
-      "import": "./dist/vue/index.mjs",
-      "require": "./dist/vue/index.js"
+      "types": "./dist/adapters/vue/index.d.ts",
+      "import": "./dist/adapters/vue/index.js",
+      "require": "./dist/adapters/vue/index.cjs"
     },
     "./react": {
-      "types": "./dist/react/index.d.ts",
-      "import": "./dist/react/index.mjs",
-      "require": "./dist/react/index.js"
+      "types": "./dist/adapters/react/index.d.ts",
+      "import": "./dist/adapters/react/index.js",
+      "require": "./dist/adapters/react/index.cjs"
     },
-    "./styles": "./dist/style.css"
+    "./lit": {
+      "types": "./dist/adapters/lit/index.d.ts",
+      "import": "./dist/adapters/lit/index.js",
+      "require": "./dist/adapters/lit/index.cjs"
+    },
+    "./presets": {
+      "types": "./dist/presets/index.d.ts",
+      "import": "./dist/presets/index.js",
+      "require": "./dist/presets/index.cjs"
+    }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build && npm run build:types",
-    "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
+    "dev": "ldesign dev",
+    "build": "ldesign build",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "test:examples": "node test-examples.mjs",
-    "test:examples:ps": "powershell -ExecutionPolicy Bypass -File .\\test-examples.ps1",
-    "test:examples:install": "cd examples/vue-demo && pnpm install && cd ../react-demo && pnpm install && cd ../vanilla-demo && pnpm install"
+    "example:vanilla": "vite examples/vanilla",
+    "example:vue": "vite examples/vue",
+    "example:react": "vite examples/react",
+    "example:lit": "vite examples/lit",
+    "example:all": "vite examples"
+  },
+  "keywords": [
+    "gridstack",
+    "grid",
+    "layout",
+    "dashboard",
+    "drag-and-drop",
+    "vue",
+    "react",
+    "lit",
+    "framework-agnostic",
+    "typescript"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "dependencies": {
+    "gridstack": "^10.3.1"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10",
+    "vitepress": "^1.0.0-rc.36",
+    "vue": "^3.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "lit": "^3.0.0"
   },
   "peerDependencies": {
     "vue": "^3.0.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "lit": "^2.0.0 || ^3.0.0"
   },
   "peerDependenciesMeta": {
     "vue": {
@@ -65,25 +91,20 @@
     "react": {
       "optional": true
     },
-    "react-dom": {
+    "lit": {
       "optional": true
     }
-  },
-  "dependencies": {
-    "gridstack": "^10.3.1"
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.5",
-    "@types/react": "^18.2.48",
-    "@types/react-dom": "^18.2.18",
-    "@vitejs/plugin-vue": "^5.0.3",
-    "@vitejs/plugin-react": "^4.2.1",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.12",
-    "vite-plugin-dts": "^3.7.1",
-    "vitepress": "^1.0.0-rc.40",
-    "vue": "^3.4.15",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+

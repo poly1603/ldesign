@@ -82,6 +82,11 @@ export class UnifiedLogger implements ILogger {
   private remoteQueue: LogEntry[] = []
   private remoteTimer?: NodeJS.Timeout
 
+  // 内存优化：限制数组最大长度
+  private readonly MAX_LOGS_ABSOLUTE = 1000 // 绝对上限
+  private readonly MAX_BUFFER = 200 // 缓冲区上限
+  private readonly MAX_REMOTE_QUEUE = 500 // 远程队列上限
+
   constructor(config: LogConfig = {}) {
     this.config = this.normalizeConfig(config)
     this.stats = this.initStats()
@@ -89,9 +94,9 @@ export class UnifiedLogger implements ILogger {
     // 初始化传输器
     this.initTransports()
 
-    // 初始化插件
+    // 初始化插件 - 防御性：限制插件数量
     if (config.plugins) {
-      this.plugins = config.plugins
+      this.plugins = config.plugins.slice(0, 10) // 最多10个插件
     }
 
     // 启动定期刷新
@@ -106,28 +111,28 @@ export class UnifiedLogger implements ILogger {
   }
 
   /**
-   * 标准化配置
+   * 标准化配置 - 优化版：更严格的默认值
    */
   private normalizeConfig(config: LogConfig): Required<LogConfig> {
     return {
       level: config.level ?? 'warn',
       enabled: config.enabled ?? true,
-      maxLogs: config.maxLogs ?? 100,
+      maxLogs: Math.min(config.maxLogs ?? 100, this.MAX_LOGS_ABSOLUTE), // 限制最大日志数
       console: config.console ?? true,
       remote: config.remote ?? false,
       file: config.file ?? false,
       remoteUrl: config.remoteUrl ?? '',
       remoteHeaders: config.remoteHeaders ?? {},
-      remoteBatchSize: config.remoteBatchSize ?? 50,
-      remoteInterval: config.remoteInterval ?? 10000,
+      remoteBatchSize: Math.min(config.remoteBatchSize ?? 50, 100), // 限制批次大小
+      remoteInterval: Math.max(config.remoteInterval ?? 10000, 5000), // 最小5秒间隔
       format: config.format ?? 'text',
       timestamp: config.timestamp ?? false,
       context: config.context ?? false,
       async: config.async ?? false,
-      bufferSize: config.bufferSize ?? 50,
-      flushInterval: config.flushInterval ?? 2000,
-      filters: config.filters ?? [],
-      plugins: config.plugins ?? [],
+      bufferSize: Math.min(config.bufferSize ?? 50, this.MAX_BUFFER), // 限制缓冲区大小
+      flushInterval: Math.max(config.flushInterval ?? 2000, 1000), // 最小1秒刷新
+      filters: config.filters?.slice(0, 5) ?? [], // 最多5个过滤器
+      plugins: config.plugins?.slice(0, 10) ?? [], // 最多10个插件
       showTimestamp: config.showTimestamp ?? false,
       showContext: config.showContext ?? false,
       prefix: config.prefix ?? ''
@@ -227,6 +232,12 @@ export class UnifiedLogger implements ILogger {
 
     // 异步模式：加入缓冲区
     if (this.config?.async) {
+      // 检查缓冲区大小限制
+      if (this.buffer.length >= this.MAX_BUFFER) {
+        // 强制刷新
+        this.flush()
+      }
+
       this.buffer.push(entry)
       this.stats.buffered++
 
@@ -261,15 +272,18 @@ export class UnifiedLogger implements ILogger {
   }
 
   /**
-   * 添加到历史记录
+   * 添加到历史记录 - 优化版：使用环形缓冲区避免数组扩容
    */
   private addToHistory(entry: LogEntry): void {
-    this.logs.push(entry)
+    // 双重限制：配置的maxLogs和绝对上限
+    const effectiveMax = Math.min(this.config?.maxLogs, this.MAX_LOGS_ABSOLUTE)
 
-    // 限制历史记录大小
-    if (this.logs.length > this.config?.maxLogs) {
+    if (this.logs.length >= effectiveMax) {
+      // 已满：移除最旧的，添加新的
       this.logs.shift()
     }
+
+    this.logs.push(entry)
   }
 
   /**
@@ -341,10 +355,18 @@ export class UnifiedLogger implements ILogger {
   }
 
   /**
-   * 刷新远程日志
+   * 刷新远程日志 - 优化版：限制队列大小避免无限增长
    */
   private async flushRemote(): Promise<void> {
     if (this.remoteQueue.length === 0) return
+
+    // 检查队列大小限制
+    if (this.remoteQueue.length > this.MAX_REMOTE_QUEUE) {
+      // 队列过大：移除最旧的日志
+      const excess = this.remoteQueue.length - this.MAX_REMOTE_QUEUE
+      this.remoteQueue.splice(0, excess)
+      this.stats.dropped += excess
+    }
 
     const batch = this.remoteQueue.splice(0, this.config?.remoteBatchSize)
 
@@ -359,8 +381,14 @@ export class UnifiedLogger implements ILogger {
       })
     } catch {
       this.stats.errors++
-      // 恢复失败的日志到队列
-      this.remoteQueue.unshift(...batch)
+      // 恢复失败的日志到队列（但限制数量）
+      const toRestore = batch.slice(0, Math.min(batch.length, 50))
+      this.remoteQueue.unshift(...toRestore)
+
+      // 超过部分丢弃
+      if (batch.length > toRestore.length) {
+        this.stats.dropped += (batch.length - toRestore.length)
+      }
     }
   }
 
@@ -443,9 +471,17 @@ export class UnifiedLogger implements ILogger {
    * 清空日志
    */
   clearLogs(): void {
+    // 使用更高效的方式清空数组
     this.logs.length = 0
     this.buffer.length = 0
     this.remoteQueue.length = 0
+
+    // 清理插件缓存
+    for (const plugin of this.plugins) {
+      if (typeof plugin.flush === 'function') {
+        plugin.flush()
+      }
+    }
   }
 
   /**
@@ -494,6 +530,7 @@ export class UnifiedLogger implements ILogger {
    * 销毁日志器
    */
   destroy(): void {
+    // 清理定时器
     if (this.flushTimer) {
       clearInterval(this.flushTimer)
       this.flushTimer = undefined
@@ -504,9 +541,26 @@ export class UnifiedLogger implements ILogger {
       this.remoteTimer = undefined
     }
 
+    // 最后一次刷新
     this.flush()
+
+    // 清理日志数据
     this.clearLogs()
+
+    // 清理传输器
+    for (const transport of this.transports.values()) {
+      if (typeof (transport as any).destroy === 'function') {
+        (transport as any).destroy()
+      }
+    }
     this.transports.clear()
+
+    // 清理插件
+    for (const plugin of this.plugins) {
+      if (typeof plugin.flush === 'function') {
+        plugin.flush()
+      }
+    }
     this.plugins.length = 0
   }
 }
@@ -521,7 +575,7 @@ export class UnifiedLogger implements ILogger {
 class ConsoleTransport implements LogTransport {
   name = 'console'
 
-  constructor(private config: Required<LogConfig>) {}
+  constructor(private config: Required<LogConfig>) { }
 
   write(entry: LogEntry): void {
     const { level, message, data } = entry
@@ -538,7 +592,7 @@ class ConsoleTransport implements LogTransport {
 
     switch (level) {
       case 'debug':
-        
+
         break
       case 'info':
         console.info(...args)
@@ -573,10 +627,16 @@ class ConsoleTransport implements LogTransport {
 class RemoteTransport implements LogTransport {
   name = 'remote'
   private queue: LogEntry[] = []
+  private maxQueueSize = 10000 // 防止队列无限增长
 
-  constructor(private config: Required<LogConfig>) {}
+  constructor(private config: Required<LogConfig>) { }
 
   write(entry: LogEntry): void {
+    // 防止队列无限增长导致内存泄漏
+    if (this.queue.length >= this.maxQueueSize) {
+      this.queue.shift() // 移除最旧的条目
+    }
+
     this.queue.push(entry)
 
     if (this.queue.length >= this.config?.remoteBatchSize) {
@@ -599,10 +659,16 @@ class RemoteTransport implements LogTransport {
         body: JSON.stringify(batch)
       })
     } catch (error) {
-      // 恢复失败的日志
-      this.queue.unshift(...batch)
+      // 恢复失败的日志，但限制数量
+      const restoreCount = Math.min(batch.length, this.maxQueueSize - this.queue.length)
+      this.queue.unshift(...batch.slice(0, restoreCount))
       throw error
     }
+  }
+
+  // 添加销毁方法
+  destroy(): void {
+    this.queue.length = 0
   }
 }
 
@@ -614,9 +680,14 @@ class IndexedDBTransport implements LogTransport {
   private db?: IDBDatabase
   private dbName = 'LoggerDB'
   private storeName = 'logs'
+  private cleanupTimer?: NodeJS.Timeout
 
   constructor(private config: Required<LogConfig>) {
     this.initDB()
+    // 定期清理旧日志
+    this.cleanupTimer = setInterval(() => {
+      this.cleanup()
+    }, 60000) // 每分钟清理一次
   }
 
   private async initDB(): Promise<void> {
@@ -682,6 +753,18 @@ class IndexedDBTransport implements LogTransport {
       request.onerror = () => reject(request.error)
     })
   }
+
+  // 添加销毁方法
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = undefined
+    }
+    if (this.db) {
+      this.db.close()
+      this.db = undefined
+    }
+  }
 }
 
 // ============================================
@@ -694,10 +777,20 @@ class IndexedDBTransport implements LogTransport {
 export class PerformancePlugin implements LogPlugin {
   name = 'performance'
   private timings = new Map<string, number>()
+  private maxTimings = 1000 // 限制缓存大小
 
   process(entry: LogEntry): LogEntry {
     const start = performance.now()
     const id = `${entry.timestamp}-${entry.level}`
+
+    // 限制 Map 大小防止内存泄漏
+    if (this.timings.size >= this.maxTimings) {
+      const firstKey = this.timings.keys().next().value
+      if (firstKey !== undefined) {
+        this.timings.delete(firstKey)
+      }
+    }
+
     this.timings.set(id, start)
 
     return {
@@ -747,7 +840,7 @@ export class ErrorTrackingPlugin implements LogPlugin {
 export class SamplingPlugin implements LogPlugin {
   name = 'sampling'
 
-  constructor(private sampleRate: number = 1) {}
+  constructor(private sampleRate: number = 1) { }
 
   process(entry: LogEntry): LogEntry | null {
     if (Math.random() <= this.sampleRate) {

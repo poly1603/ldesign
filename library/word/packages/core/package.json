@@ -1,0 +1,48 @@
+{
+  "name": "@word-viewer/core",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "核心 Word 文档查看和编辑库",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "browser": "dist/index.umd.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "word",
+    "docx",
+    "doc",
+    "viewer",
+    "editor",
+    "document"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "docx-preview": "^0.3.0",
+    "mammoth": "^1.6.0",
+    "docx": "^8.5.0",
+    "jszip": "^3.10.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "postcss": "^8.4.31",
+    "rollup": "^4.1.4",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-terser": "^7.0.2",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2"
+  }
+}
+
+

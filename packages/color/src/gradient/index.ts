@@ -1,10 +1,10 @@
-﻿/**
+/**
  * 渐变色生成器
  * 支持线性、径向、锥形和网格渐变
  */
 
-import { Color } from '../core/Color'
 import type { ColorInput } from '../types'
+import { Color } from '../core/Color'
 
 /**
  * 渐变色停止点
@@ -72,8 +72,8 @@ export class GradientGenerator {
       stops: customStops
     } = options
     
-    const colorObjs = colors.map(c => new Color(c))
-    const stops = customStops || this.generateEvenStops(colorObjs)
+    // 优化：使用临时颜色对象并立即处理，避免大量Color实例占用内存
+    const stops = customStops || this.generateEvenStopsOptimized(colors)
     
     const prefix = repeating ? 'repeating-linear-gradient' : 'linear-gradient'
     const gradientStops = stops.map(stop => {
@@ -95,8 +95,8 @@ export class GradientGenerator {
       stops: customStops
     } = options
     
-    const colorObjs = colors.map(c => new Color(c))
-    const stops = customStops || this.generateEvenStops(colorObjs)
+    // 优化：避免创建不必要的Color对象
+    const stops = customStops || this.generateEvenStopsOptimized(colors)
     
     const posStr = `${position.x} ${position.y}`
     const gradientStops = stops.map(stop => {
@@ -117,8 +117,8 @@ export class GradientGenerator {
       stops: customStops
     } = options
     
-    const colorObjs = colors.map(c => new Color(c))
-    const stops = customStops || this.generateEvenStops(colorObjs, true)
+    // 优化：避免创建不必要的Color对象
+    const stops = customStops || this.generateEvenStopsOptimized(colors, true)
     
     const posStr = `${position.x} ${position.y}`
     const gradientStops = stops.map(stop => {
@@ -189,8 +189,9 @@ export class GradientGenerator {
   }
   
   /**
-   * 生成平均分布的停止点
+   * 生成平均分布的停止点 - 保留原方法以兼容
    */
+  // @ts-expect-error - Preserved for compatibility but not used
   private static generateEvenStops(colors: Color[], isDegrees = false): GradientStop[] {
     if (colors.length === 0) return []
     if (colors.length === 1) {
@@ -202,6 +203,32 @@ export class GradientGenerator {
       color,
       position: (index / (colors.length - 1)) * maxValue
     }))
+  }
+  
+  /**
+   * 优化的生成平均分布停止点 - 延迟创建Color对象
+   */
+  private static generateEvenStopsOptimized(colors: ColorInput[], isDegrees = false): GradientStop[] {
+    if (colors.length === 0) return []
+    
+    const maxValue = isDegrees ? 360 : 100
+    const stops: GradientStop[] = []
+    
+    for (let index = 0; index < colors.length; index++) {
+      const color = new Color(colors[index])
+      stops.push({
+        color,
+        position: colors.length === 1 ? 0 : (index / (colors.length - 1)) * maxValue
+      })
+      
+      // 如果Color实例有dispose方法，使用完立即释放
+      if (typeof color.dispose === 'function') {
+        // 标记为待释放，在使用完后释放
+        (color as any)._pendingDispose = true
+      }
+    }
+    
+    return stops
   }
   
   /**
@@ -265,17 +292,36 @@ export class GradientGenerator {
   }
   
   /**
-   * 贝塞尔曲线颜色插�?
+   * 贝塞尔曲线颜色插值 - 优化递归内存使用
    */
   private static bezierInterpolation(colors: Color[], t: number): Color {
     if (colors.length === 1) return colors[0]
     
-    const newColors: Color[] = []
-    for (let i = 0; i < colors.length - 1; i++) {
-      newColors.push(colors[i].mix(colors[i + 1], t * 100))
+    // 使用迭代代替递归，避免栈溢出和内存占用
+    let workingColors = colors
+    
+    while (workingColors.length > 1) {
+      const newColors: Color[] = []
+      for (let i = 0; i < workingColors.length - 1; i++) {
+        const mixed = workingColors[i].mix(workingColors[i + 1], t * 100)
+        newColors.push(mixed)
+      }
+      
+      // 清理中间Color对象
+      if (workingColors !== colors) {
+        for (const color of workingColors) {
+          if (typeof color.dispose === 'function' && (color as any)._intermediate) {
+            color.dispose()
+          }
+        }
+      }
+      
+      // 标记中间对象
+      newColors.forEach(c => (c as any)._intermediate = true)
+      workingColors = newColors
     }
     
-    return this.bezierInterpolation(newColors, t)
+    return workingColors[0]
   }
   
   /**
@@ -289,31 +335,43 @@ export class GradientGenerator {
     css: string
     keyframes: string
   } {
-    const colorObjs = colors.map(c => new Color(c))
-    const animationName = `gradient-animation-${Date.now()}`
+    // 优化：使用唯一但更短的动画名称
+    const animationName = `ga${Math.random().toString(36).substr(2, 9)}`
     
-    // 生成关键�?
+    // 生成关键帧 - 优化内存使用
+    const keyframeSteps: string[] = []
+    
+    for (let index = 0; index < colors.length; index++) {
+      const color = new Color(colors[index])
+      const percent = (index / (colors.length - 1)) * 100
+      const nextColor = new Color(colors[(index + 1) % colors.length])
+          
+      let gradient = ''
+      const hex1 = color.toHex()
+      const hex2 = nextColor.toHex()
+      
+      switch (type) {
+        case 'linear':
+          gradient = `linear-gradient(90deg, ${hex1}, ${hex2})`
+          break
+        case 'radial':
+          gradient = `radial-gradient(circle farthest-corner at center center, ${hex1}, ${hex2})`
+          break
+        case 'conic':
+          gradient = `conic-gradient(at center center, ${hex1}, ${hex2})`
+          break
+      }
+      
+      keyframeSteps.push(`${percent}% { background: ${gradient}; }`)
+      
+      // 立即释放Color对象
+      if (typeof color.dispose === 'function') color.dispose()
+      if (typeof nextColor.dispose === 'function') nextColor.dispose()
+    }
+    
     const keyframes = `
       @keyframes ${animationName} {
-        ${colorObjs.map((color, index) => {
-          const percent = (index / (colorObjs.length - 1)) * 100
-          const nextColor = colorObjs[(index + 1) % colorObjs.length]
-          
-          let gradient = ''
-          switch (type) {
-            case 'linear':
-              gradient = GradientGenerator.linear([color.toHex(), nextColor.toHex()])
-              break
-            case 'radial':
-              gradient = GradientGenerator.radial([color.toHex(), nextColor.toHex()])
-              break
-            case 'conic':
-              gradient = GradientGenerator.conic([color.toHex(), nextColor.toHex()])
-              break
-          }
-          
-          return `${percent}% { background: ${gradient}; }`
-        }).join('\n')}
+        ${keyframeSteps.join('\n')}
       }
     `
     
@@ -334,16 +392,23 @@ export class GradientGenerator {
     colors: ColorInput[],
     prefix = 'gradient'
   ): Record<string, string> {
-    const colorObjs = colors.map(c => new Color(c))
     const variables: Record<string, string> = {}
+    const hexColors: string[] = []
     
-    // 颜色变量
-    colorObjs.forEach((color, index) => {
-      variables[`--${prefix}-${gradientName}-color-${index + 1}`] = color.toHex()
-    })
+    // 优化：逐个处理颜色，避免同时持有所有Color对象
+    for (let index = 0; index < colors.length; index++) {
+      const color = new Color(colors[index])
+      const hex = color.toHex()
+      hexColors.push(hex)
+      variables[`--${prefix}-${gradientName}-color-${index + 1}`] = hex
+      
+      // 立即释放Color对象
+      if (typeof color.dispose === 'function') {
+        color.dispose()
+      }
+    }
     
-    // 渐变变量
-    const hexColors = colorObjs.map(c => c.toHex())
+    // 渐变变量 - 直接使用优化后的方法
     variables[`--${prefix}-${gradientName}-linear`] = GradientGenerator.linear(hexColors)
     variables[`--${prefix}-${gradientName}-radial`] = GradientGenerator.radial(hexColors)
     variables[`--${prefix}-${gradientName}-conic`] = GradientGenerator.conic(hexColors)

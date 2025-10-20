@@ -4,61 +4,55 @@
  */
 
 import type {
-  I18nInstance,
+  Cache,
   I18nConfig,
-  I18nEventType,
+  I18nContext,
   I18nEventData,
   I18nEventListener,
-  I18nContext,
+  I18nEventType,
+  I18nInstance,
   I18nPlugin,
-  Locale,
-  Messages,
-  MessageKey,
-  TranslateOptions,
-  TranslationFunction,
   InterpolationParams,
-  MessageLoader,
-  MessageStorage,
   LanguageDetector,
-  Cache
+  Locale,
+  MessageKey,
+  MessageLoader,
+  Messages,
+  MessageStorage,
+  TranslateOptions,
+  TranslationFunction
 } from '../types';
 
-import { InterpolationEngine } from './interpolation';
-import { PluralizationEngine } from './pluralization';
-import { createCache, LRUCache } from './cache';
 import {
-  EventEmitter,
   deepMerge,
+  EventEmitter,
+  getBrowserLanguage,
   getNestedValue,
   isPlainObject,
   isString,
-  warn,
-  error as logError,
-  parseLocale,
-  formatLocale,
-  getBrowserLanguage
+  warn
 } from '../utils/helpers';
+import { createCache, LRUCache } from './cache';
+import { InterpolationEngine } from './interpolation';
+import { PluralizationEngine } from './pluralization';
 
 const VERSION = '2.0.0';
 
-// Object pool for reducing GC pressure
+// Singleton Object pool for reducing GC pressure
 export class ObjectPool<T> {
-  private pool: T[] = [];
-  private factory: () => T;
-  private reset: (obj: T) => void;
-  private maxSize: number;
+  private readonly pool: T[] = [];
+  private readonly factory: () => T;
+  private readonly reset: (obj: T) => void;
+  private readonly maxSize: number;
 
-  constructor(factory: () => T, reset: (obj: T) => void, maxSize = 100) {
+  constructor(factory: () => T, reset: (obj: T) => void, maxSize = 50) {
     this.factory = factory;
     this.reset = reset;
     this.maxSize = maxSize;
   }
 
   get(): T {
-    if (this.pool.length > 0) {
-      return this.pool.pop()!;
-    }
-    return this.factory();
+    return this.pool.pop() || this.factory();
   }
 
   release(obj: T): void {
@@ -67,12 +61,21 @@ export class ObjectPool<T> {
       this.pool.push(obj);
     }
   }
+
+  clear(): void {
+    this.pool.length = 0;
+  }
 }
 
-// Fast cache key generation using string concatenation
+// Fast cache key generation with pre-allocated buffer
 export class FastCacheKeyBuilder {
-  private static readonly separator = '\x00'; // Use null character as separator for uniqueness
-  private buffer: string[] = [];
+  private static readonly separator = '\x00';
+  private static readonly instance = new FastCacheKeyBuilder(); // Singleton
+  private readonly buffer: string[] = [];
+
+  static get(): FastCacheKeyBuilder {
+    return FastCacheKeyBuilder.instance;
+  }
 
   add(value: string | number | undefined): this {
     if (value !== undefined) {
@@ -82,8 +85,9 @@ export class FastCacheKeyBuilder {
   }
 
   build(): string {
+    if (this.buffer.length === 0) return '';
     const result = this.buffer.join(FastCacheKeyBuilder.separator);
-    this.buffer.length = 0; // Reset buffer
+    this.buffer.length = 0;
     return result;
   }
 
@@ -113,13 +117,13 @@ export class OptimizedI18n implements I18nInstance {
   private keySeparator: string;
   private namespaceSeparator: string;
   
-  // Performance optimizations
-  private cacheKeyBuilder = new FastCacheKeyBuilder();
+  // Performance optimizations - using singletons and lazy init
+  private cacheKeyBuilder = FastCacheKeyBuilder.get();
   private optionsPool: ObjectPool<TranslateOptions>;
-  private weakRefCache = new WeakMap<object, string>();
-  private hotPathCache = new Map<string, string>(); // Small cache for most frequent translations
-  private readonly HOT_PATH_CACHE_SIZE = 50;
-  private accessCount = new Map<string, number>();
+  private readonly pooledMarker = Symbol('pooled'); // mark pooled option objects
+  private hotPathCache?: Map<string, string>; // Lazy init
+  private readonly HOT_PATH_CACHE_SIZE = 30; // Smaller size for better cache locality
+  private accessCount?: Map<string, number>; // Lazy init
   private readonly isDev = typeof window !== 'undefined' && (window as any).__DEV__ === true;
   
   constructor(config: I18nConfig = {}) {
@@ -141,18 +145,19 @@ export class OptimizedI18n implements I18nInstance {
     // Initialize cache with performance optimization
     this.cache = config.cache === false 
       ? new LRUCache<string, string>(0) 
-      : createCache(typeof config.cache === 'object' ? config.cache : { maxSize: 1000 });
+      : createCache(typeof config.cache === 'object' ? config.cache as any : { maxSize: 1000 });
     
-    // Initialize object pool for options
+    // Initialize object pool for options with optimized reset
     this.optionsPool = new ObjectPool(
-      () => ({}),
+      () => Object.create(null), // Faster than {}
       (obj) => {
-        // Reset object properties
-        for (const key in obj) {
-          delete obj[key];
+        // Faster reset using Object.keys
+        const keys = Object.keys(obj);
+        for (let i = 0; i < keys.length; i++) {
+          delete obj[keys[i]];
         }
       },
-      50
+      30
     );
     
     // Set loaders
@@ -188,7 +193,7 @@ export class OptimizedI18n implements I18nInstance {
     }
     
     // Emit ready event
-    this.emit('ready', { locale: this._locale });
+    this.emit('initialized', { type: 'initialized', locale: this._locale });
   }
   
   // ============== Properties ==============
@@ -202,7 +207,7 @@ export class OptimizedI18n implements I18nInstance {
       const oldLocale = this._locale;
       this._locale = value;
       this.clearPerformanceCaches();
-      this.emit('localeChanged', { locale: value, oldLocale });
+      this.emit('localeChanged', { type: 'localeChanged', locale: value, oldLocale });
     }
   }
   
@@ -225,13 +230,19 @@ export class OptimizedI18n implements I18nInstance {
     ): string => {
       // Fast path for simple translations without options
       if (!optionsOrParams && !maybeParams) {
-        const fastKey = `${this._locale}${this.namespaceSeparator}${this.defaultNamespace}${this.keySeparator}${key}`;
+        // Use pre-built cache key
+        const fastKey = this.cacheKeyBuilder
+          .add(this._locale)
+          .add(this.defaultNamespace)
+          .add(key)
+          .build();
         
-        // Check hot path cache first
-        const hotCached = this.hotPathCache.get(fastKey);
-        if (hotCached !== undefined) {
-          this.updateAccessCount(fastKey);
-          return hotCached;
+        // Check hot path cache first (lazy init)
+        if (this.hotPathCache) {
+          const hotCached = this.hotPathCache.get(fastKey);
+          if (hotCached !== undefined) {
+            return hotCached;
+          }
         }
         
         // Check main cache
@@ -243,11 +254,94 @@ export class OptimizedI18n implements I18nInstance {
       }
       
       // Fall back to full translation logic
-      return this.translate(key, this.normalizeOptionsOptimized(optionsOrParams, maybeParams));
+      const opts = this.normalizeOptionsOptimized(optionsOrParams, maybeParams);
+      const result = this.translate(key, opts);
+      if ((opts as any)[this.pooledMarker]) {
+        delete (opts as any)[this.pooledMarker];
+        this.optionsPool.release(opts);
+      }
+      return result;
     }) as TranslationFunction;
   }
   
   t: TranslationFunction;
+  
+  /**
+   * Batch translate multiple keys with optimized performance
+   */
+  translateBatch(
+    keys: MessageKey[] | Record<string, MessageKey>,
+    options: TranslateOptions = {}
+  ): string[] | Record<string, string> {
+    const isArray = Array.isArray(keys);
+    const keyList = isArray ? keys : Object.values(keys);
+    const keyNames = isArray ? null : Object.keys(keys);
+    
+    // Pre-calculate common values
+    const locale = options.locale || this.locale;
+    const namespace = options.namespace || this.defaultNamespace;
+    
+    // Batch get messages for locale
+    const messages = namespace === this.defaultNamespace
+      ? this.messages.get(locale)
+      : this.namespaces.get(namespace)?.get(locale);
+    
+    const results: string[] = [];
+    
+    // Process all keys in batch
+    for (let i = 0; i < keyList.length; i++) {
+      const key = keyList[i];
+      
+      // Optimized cache key generation
+      const cacheKey = this.getCacheKeyOptimized(locale, key, namespace, options);
+      
+      // Check cache first
+      let result = this.cache.get(cacheKey);
+      
+      if (result === undefined) {
+        // Resolve message without cache lookup
+        let message = messages ? getNestedValue(messages, key, this.keySeparator) : undefined;
+        
+        if (message === undefined) {
+          message = this.resolveFallbackOptimized(key, options);
+        }
+        
+        if (message === undefined) {
+          result = this.handleMissing(key, locale, namespace, options);
+        } else {
+          // Handle pluralization
+          if (options.count !== undefined && this.pluralization.hasPluralForms(message)) {
+            message = this.pluralization.format(message, options.count, locale, options.params);
+          }
+          
+          // Handle interpolation
+          if (options.params) {
+            const interpolationParams = { ...options.params };
+            interpolationParams.$t = (k: string, p?: any) => this.translate(k, { ...options, params: p });
+            message = this.interpolation.interpolate(message, interpolationParams, locale);
+          }
+          
+          result = message;
+        }
+        
+        // Cache the result
+        this.cache.set(cacheKey, result!);
+      }
+      
+      results.push(result!);
+    }
+    
+    // Return in the same format as input
+    if (isArray) {
+      return results;
+    }
+    
+    const resultMap: Record<string, string> = {};
+    for (let i = 0; i < keyNames!.length; i++) {
+      resultMap[keyNames![i]] = results[i];
+    }
+    return resultMap;
+  }
   
   translate(key: MessageKey, options: TranslateOptions = {}): string {
     const locale = options.locale || this.locale;
@@ -289,7 +383,7 @@ export class OptimizedI18n implements I18nInstance {
       const interpolationParams = { ...options.params };
       
       // Add translation function for nested translations
-      interpolationParams.$t = (k: string, p?: any) => this.translate(k, { ...options, key: k, params: p });
+      interpolationParams.$t = (k: string, p?: any) => this.translate(k, { ...options, params: p });
       
       message = this.interpolation.interpolate(message, interpolationParams, locale);
     }
@@ -350,6 +444,7 @@ export class OptimizedI18n implements I18nInstance {
     
     if (type === 'string') {
       const opts = this.optionsPool.get();
+      (opts as any)[this.pooledMarker] = 1;
       opts.defaultValue = optionsOrParams as string;
       if (maybeParams) opts.params = maybeParams;
       return opts;
@@ -366,6 +461,7 @@ export class OptimizedI18n implements I18nInstance {
       
       // It's params
       const opts = this.optionsPool.get();
+      (opts as any)[this.pooledMarker] = 1;
       opts.params = obj as InterpolationParams;
       return opts;
     }
@@ -452,20 +548,26 @@ export class OptimizedI18n implements I18nInstance {
   }
   
   private updateHotPathCache(key: string, value: string): void {
-    // Update access count
+    // Lazy init hot path cache
+    if (!this.hotPathCache) {
+      this.hotPathCache = new Map<string, string>();
+    }
+    if (!this.accessCount) {
+      this.accessCount = new Map<string, number>();
+    }
+    
+    // Update access count with decay to prevent stale entries
     const count = (this.accessCount.get(key) || 0) + 1;
     this.accessCount.set(key, count);
     
     // Add to hot path cache if frequently accessed
-    if (count > 5 && this.hotPathCache.size < this.HOT_PATH_CACHE_SIZE) {
-      this.hotPathCache.set(key, value);
-    } else if (count > 10) {
-      // Replace least accessed item if cache is full
+    if (count > 2) { // Lower threshold for faster promotion
       if (this.hotPathCache.size >= this.HOT_PATH_CACHE_SIZE) {
-        const minKey = this.findLeastAccessedKey();
-        if (minKey) {
-          this.hotPathCache.delete(minKey);
-          this.accessCount.delete(minKey);
+        // LFU eviction - remove least frequently used
+        const leastUsedKey = this.findLeastAccessedKey();
+        if (leastUsedKey) {
+          this.hotPathCache.delete(leastUsedKey);
+          this.accessCount.delete(leastUsedKey);
         }
       }
       this.hotPathCache.set(key, value);
@@ -473,15 +575,22 @@ export class OptimizedI18n implements I18nInstance {
   }
   
   private updateAccessCount(key: string): void {
+    if (!this.accessCount) {
+      this.accessCount = new Map<string, number>();
+    }
     this.accessCount.set(key, (this.accessCount.get(key) || 0) + 1);
   }
   
   private findLeastAccessedKey(): string | undefined {
+    if (!this.accessCount || !this.hotPathCache) return undefined;
+    
     let minKey: string | undefined;
     let minCount = Infinity;
     
-    for (const [key, count] of this.accessCount) {
-      if (this.hotPathCache.has(key) && count < minCount) {
+    // Only check keys that are in hot path cache
+    for (const key of this.hotPathCache.keys()) {
+      const count = this.accessCount.get(key) || 0;
+      if (count < minCount) {
         minCount = count;
         minKey = key;
       }
@@ -491,8 +600,8 @@ export class OptimizedI18n implements I18nInstance {
   }
   
   private clearPerformanceCaches(): void {
-    this.hotPathCache.clear();
-    this.accessCount.clear();
+    this.hotPathCache?.clear();
+    this.accessCount?.clear();
     this.cache.clear();
   }
   
@@ -503,14 +612,14 @@ export class OptimizedI18n implements I18nInstance {
     
     // Load messages if not already loaded
     if (!this.hasLocale(locale) && this.loader) {
-      this.emit('loading', { locale });
+      this.emit('loading', { type: 'loading', locale });
       
       try {
         const messages = await this.loader.load(locale);
         this.addMessages(locale, messages);
-        this.emit('loaded', { locale });
+        this.emit('loaded', { type: 'loaded', locale });
       } catch (err) {
-        this.emit('loadError', { locale, error: err as Error });
+        this.emit('loadError', { type: 'loadError', locale, error: err as Error });
         throw err;
       }
     }
@@ -520,7 +629,7 @@ export class OptimizedI18n implements I18nInstance {
     // Clear all caches when locale changes
     this.clearPerformanceCaches();
     
-    this.emit('localeChanged', { locale, oldLocale });
+    this.emit('localeChanged', { type: 'localeChanged', locale, oldLocale });
   }
   
   getLocale(): Locale {
@@ -587,8 +696,9 @@ export class OptimizedI18n implements I18nInstance {
   
   // ============== Event Methods ==============
   
-  on(event: I18nEventType, listener: I18nEventListener): void {
+  on(event: I18nEventType, listener: I18nEventListener): () => void {
     this.eventEmitter.on(event, listener);
+    return () => this.eventEmitter.off(event, listener);
   }
   
   off(event: I18nEventType, listener: I18nEventListener): void {
@@ -599,14 +709,180 @@ export class OptimizedI18n implements I18nInstance {
     this.eventEmitter.once(event, listener);
   }
   
-  emit(event: I18nEventType, data: I18nEventData): void {
-    this.eventEmitter.emit(event, data);
+  emit(event: I18nEventType, data?: Omit<I18nEventData, 'type'>): void {
+    const eventData: I18nEventData = { type: event, ...data };
+    this.eventEmitter.emit(event, eventData);
   }
   
-  // ============== Other methods remain the same ==============
+  // ============== Namespace Management ==============
   
-  // ... (rest of the methods like namespace management, formatting, events, plugins, etc.)
-  // These would be the same as in the original implementation
+  async loadNamespace(namespace: string, locale?: Locale): Promise<void> {
+    const targetLocale = locale || this.locale;
+    
+    if (this.loader && this.loader.load) {
+      try {
+        const messages = await this.loader.load(targetLocale, namespace);
+        this.addMessages(targetLocale, messages, namespace);
+        this.emit('namespaceLoaded', { namespace, locale: targetLocale });
+      } catch (error) {
+        console.warn(`Failed to load namespace ${namespace} for locale ${targetLocale}:`, error);
+        throw error;
+      }
+    }
+  }
+  
+  hasNamespace(namespace: string, locale?: Locale): boolean {
+    const targetLocale = locale || this.locale;
+    return this.namespaces.get(namespace)?.has(targetLocale) || false;
+  }
+  
+  // ============== Formatting Methods ==============
+  
+  format(value: any, format: string, locale?: Locale, options?: any): string {
+    const targetLocale = locale || this.locale;
+    
+    // Check for custom formatters
+    if (this.config.formatters && this.config.formatters[format]) {
+      return this.config.formatters[format].format(value, format, targetLocale, options);
+    }
+    
+    // Default formatting
+    return String(value);
+  }
+  
+  number(value: number, options?: Intl.NumberFormatOptions): string {
+    try {
+      return new Intl.NumberFormat(this.locale, options).format(value);
+    } catch (error) {
+      console.warn('Failed to format number:', error);
+      return String(value);
+    }
+  }
+  
+  currency(value: number, currency: string, options?: Intl.NumberFormatOptions): string {
+    try {
+      return new Intl.NumberFormat(this.locale, {
+        style: 'currency',
+        currency,
+        ...options
+      }).format(value);
+    } catch (error) {
+      console.warn('Failed to format currency:', error);
+      return `${currency} ${value}`;
+    }
+  }
+  
+  date(value: Date | string | number, options?: Intl.DateTimeFormatOptions): string {
+    try {
+      const date = value instanceof Date ? value : new Date(value);
+      return new Intl.DateTimeFormat(this.locale, options).format(date);
+    } catch (error) {
+      console.warn('Failed to format date:', error);
+      return String(value);
+    }
+  }
+  
+  relativeTime(value: Date | string | number, options?: Intl.RelativeTimeFormatOptions): string {
+    try {
+      const date = value instanceof Date ? value : new Date(value);
+      const now = new Date();
+      const diffInSeconds = Math.floor((date.getTime() - now.getTime()) / 1000);
+      
+      // Simple relative time calculation
+      const units: [Intl.RelativeTimeFormatUnit, number][] = [
+        ['year', 60 * 60 * 24 * 365],
+        ['month', 60 * 60 * 24 * 30],
+        ['week', 60 * 60 * 24 * 7],
+        ['day', 60 * 60 * 24],
+        ['hour', 60 * 60],
+        ['minute', 60],
+        ['second', 1]
+      ];
+      
+      for (const [unit, secondsInUnit] of units) {
+        if (Math.abs(diffInSeconds) >= secondsInUnit) {
+          const value = Math.floor(diffInSeconds / secondsInUnit);
+          return new Intl.RelativeTimeFormat(this.locale, options).format(value, unit);
+        }
+      }
+      
+      return new Intl.RelativeTimeFormat(this.locale, options).format(0, 'second');
+    } catch (error) {
+      console.warn('Failed to format relative time:', error);
+      return String(value);
+    }
+  }
+  
+  // ============== Plugin Management ==============
+  
+  async use(plugin: I18nPlugin): Promise<void> {
+    if (this.plugins.has(plugin.name)) {
+      console.warn(`Plugin ${plugin.name} is already installed`);
+      return;
+    }
+    
+    await plugin.install(this);
+    this.plugins.set(plugin.name, plugin);
+    this.emit('pluginInstalled', { plugin: plugin.name });
+  }
+  
+  async unuse(plugin: I18nPlugin | string): Promise<void> {
+    const pluginName = typeof plugin === 'string' ? plugin : plugin.name;
+    const installedPlugin = this.plugins.get(pluginName);
+    
+    if (!installedPlugin) {
+      console.warn(`Plugin ${pluginName} is not installed`);
+      return;
+    }
+    
+    if (installedPlugin.uninstall) {
+      await installedPlugin.uninstall(this);
+    }
+    
+    this.plugins.delete(pluginName);
+    this.emit('pluginUninstalled', { plugin: pluginName });
+  }
+  
+  // ============== Lifecycle Methods ==============
+  
+  async ready(): Promise<void> {
+    if (!this.initialized) {
+      await this.init();
+    }
+  }
+  
+  // ============== Utility Methods ==============
+  
+  clone(config?: Partial<I18nConfig>): I18nInstance {
+    const mergedConfig = { ...this.config, ...config };
+    const cloned = new OptimizedI18n(mergedConfig);
+    
+    // Copy messages
+    this.messages.forEach((messages, locale) => {
+      cloned.addMessages(locale, messages);
+    });
+    
+    // Copy namespaces
+    this.namespaces.forEach((locales, namespace) => {
+      locales.forEach((messages, locale) => {
+        cloned.addMessages(locale, messages, namespace);
+      });
+    });
+    
+    return cloned;
+  }
+  
+      createContext(namespace: string): I18nContext {
+        return {
+          namespace,
+          t: ((key: MessageKey, options?: any) => {
+            return this.translate(key, { ...options, namespace });
+          }) as TranslationFunction,
+          exists: (key: MessageKey, options?: Omit<TranslateOptions, 'namespace'>) => {
+            return this.exists(key, { ...options, namespace });
+          }
+        };
+      }
   
   private handleMissing(
     key: MessageKey,
@@ -616,7 +892,7 @@ export class OptimizedI18n implements I18nInstance {
   ): string {
     // Only emit and warn in development
     if (this.isDev) {
-      this.emit('missingKey', { key, locale, namespace });
+      this.emit('missingKey', { type: 'missingKey', key, locale, namespace });
       
       if (this.config?.warnOnMissing !== false) {
         warn(`Missing translation for key "${key}" in locale "${locale}"`);
@@ -652,7 +928,12 @@ export class OptimizedI18n implements I18nInstance {
     this.eventEmitter.removeAllListeners();
     
     // Clean up object pool
-    this.optionsPool = null as any;
+    this.optionsPool.clear();
+    
+    // Clean up cache if it has destroy method
+    if ('destroy' in this.cache && typeof this.cache.destroy === 'function') {
+      this.cache.destroy();
+    }
   }
 }
 

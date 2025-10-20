@@ -44,12 +44,16 @@ export class ModuleLoader implements IModuleLoader {
   async load<T = unknown>(name: string): Promise<T> {
     // 如果模块已经加载，直接返回
     if (this.modules.has(name)) {
-      return this.modules.get(name)!.getData() as T
+      const module = this.modules.get(name)
+      if (!module) throw new Error(`Module ${name} not found`)
+      return module.getData() as T
     }
 
     // 如果正在加载，返回加载中的 Promise
     if (this.loadingPromises.has(name)) {
-      return this.loadingPromises.get(name)! as Promise<T>
+      const promise = this.loadingPromises.get(name)
+      if (!promise) throw new Error(`Loading promise for ${name} not found`)
+      return promise as Promise<T>
     }
 
     // 开始加载模块
@@ -76,13 +80,18 @@ export class ModuleLoader implements IModuleLoader {
   ): Promise<T> {
     // 如果模块已加载，直接返回实例
     if (this.modules.has(name)) {
-      return this.modules.get(name)! as T
+      const module = this.modules.get(name)
+      if (!module) throw new Error(`Module ${name} not found`)
+      return module as T
     }
 
     // 如果正在加载，等待加载完成
     if (this.loadingPromises.has(name)) {
-      await this.loadingPromises.get(name)!
-      return this.modules.get(name)! as T
+      const promise = this.loadingPromises.get(name)
+      if (promise) await promise
+      const module = this.modules.get(name)
+      if (!module) throw new Error(`Module ${name} not found after loading`)
+      return module as T
     }
 
     // 开始加载模块
@@ -199,23 +208,29 @@ export class ModuleLoader implements IModuleLoader {
   /**
    * 清理旧的统计信息
    *
-   * 当统计信息过多时,只保留最近使用的模块统计
+   * 当统计信息过多时,只保留最近使用的模块统计（优化版本）
    */
   private cleanupOldStats(): void {
     if (this.loadingStats.size <= this.statsCleanupThreshold) {
       return
     }
 
-    // 按最后加载时间排序,删除最旧的统计
+    // 优化：使用更高效的方式进行排序和清理
+    // 将Map转换为数组进行排序
     const entries = Array.from(this.loadingStats.entries())
-      .sort((a, b) => b[1].lastLoadTime - a[1].lastLoadTime)
+    
+    // 按最后加载时间降序排序（最近的在前）
+    entries.sort((a, b) => b[1].lastLoadTime - a[1].lastLoadTime)
 
-    // 只保留最近的maxStatsEntries个
-    const toKeep = entries.slice(0, this.maxStatsEntries)
+    // 清空Map并只保留最近的maxStatsEntries个条目
     this.loadingStats.clear()
-    toKeep.forEach(([name, stats]) => {
+    
+    // 优化：使用for循环而不是forEach以提高性能
+    const keepCount = Math.min(this.maxStatsEntries, entries.length)
+    for (let i = 0; i < keepCount; i++) {
+      const [name, stats] = entries[i]
       this.loadingStats.set(name, stats)
-    })
+    }
   }
 
   /**
@@ -355,7 +370,8 @@ export class ModuleLoader implements IModuleLoader {
       })
     }
 
-    const stats = this.loadingStats.get(name)!
+    const stats = this.loadingStats.get(name)
+    if (!stats) return
 
     const safeLoadTime = Math.max(1, Math.floor(loadTime))
 

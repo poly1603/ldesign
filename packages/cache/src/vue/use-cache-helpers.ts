@@ -1,5 +1,5 @@
-import { computed } from 'vue'
 import type { SerializableValue } from '../types'
+import { computed } from 'vue'
 
 import { useCache } from './use-cache'
 

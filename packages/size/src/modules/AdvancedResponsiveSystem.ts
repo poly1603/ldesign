@@ -6,6 +6,9 @@
 import type { SizeUnit, SizeValue } from '../types';
 import { getDeviceDetector } from '../core/DeviceDetector';
 
+// WeakMap for storing container query cleanups to avoid memory leaks
+const containerQueryCleanups = new WeakMap<Element, (() => void)[]>();
+
 /**
  * Container query type
  */
@@ -98,19 +101,23 @@ export class AdvancedResponsiveSystem {
   private activeBreakpoints: Set<string>;
   private containerObservers: Map<string, ResizeObserver>;
   private mediaQueries: Map<string, MediaQueryList>;
-  private listeners: Set<(breakpoints: string[]) => void>;
+  private listeners: WeakSet<(breakpoints: string[]) => void>;
+  private listenerRefs: Set<{ deref: () => ((breakpoints: string[]) => void) | undefined }>;
   private detector = getDeviceDetector();
   private layoutConfigs: Map<string, LayoutConfig>;
   private visibilityRules: Map<string, VisibilityConfig>;
+  private mediaQueryHandlers: Map<string, (e: MediaQueryListEvent) => void>;
 
   constructor() {
     this.breakpoints = new Map();
     this.activeBreakpoints = new Set();
     this.containerObservers = new Map();
     this.mediaQueries = new Map();
-    this.listeners = new Set();
+    this.listeners = new WeakSet();
+    this.listenerRefs = new Set();
     this.layoutConfigs = new Map();
     this.visibilityRules = new Map();
+    this.mediaQueryHandlers = new Map();
 
     this.initializeDefaultBreakpoints();
     this.setupMediaQueryListeners();
@@ -168,14 +175,20 @@ export class AdvancedResponsiveSystem {
   addBreakpoint(breakpoint: AdvancedBreakpoint): void {
     this.breakpoints.set(breakpoint.name, breakpoint);
     
+    // Remove existing handler if present
+    this.cleanupBreakpointHandler(breakpoint.name);
+    
     // Create media query listener
     if (typeof window !== 'undefined') {
       const mql = window.matchMedia(breakpoint.query);
       this.mediaQueries.set(breakpoint.name, mql);
       
-      mql.addEventListener('change', (e) => {
+      const handler = (e: MediaQueryListEvent) => {
         this.handleBreakpointChange(breakpoint.name, e.matches);
-      });
+      };
+      
+      this.mediaQueryHandlers.set(breakpoint.name, handler);
+      mql.addEventListener('change', handler);
 
       // Check initial state
       if (mql.matches) {
@@ -190,11 +203,22 @@ export class AdvancedResponsiveSystem {
   removeBreakpoint(name: string): void {
     this.breakpoints.delete(name);
     this.activeBreakpoints.delete(name);
-    
+    this.cleanupBreakpointHandler(name);
+  }
+  
+  /**
+   * Cleanup breakpoint handler
+   */
+  private cleanupBreakpointHandler(name: string): void {
     const mql = this.mediaQueries.get(name);
-    if (mql) {
-      this.mediaQueries.delete(name);
+    const handler = this.mediaQueryHandlers.get(name);
+    
+    if (mql && handler) {
+      mql.removeEventListener('change', handler);
     }
+    
+    this.mediaQueries.delete(name);
+    this.mediaQueryHandlers.delete(name);
   }
 
   /**
@@ -207,9 +231,12 @@ export class AdvancedResponsiveSystem {
         const mql = window.matchMedia(breakpoint.query);
         this.mediaQueries.set(name, mql);
         
-        mql.addEventListener('change', (e) => {
+        const handler = (e: MediaQueryListEvent) => {
           this.handleBreakpointChange(name, e.matches);
-        });
+        };
+        
+        this.mediaQueryHandlers.set(name, handler);
+        mql.addEventListener('change', handler);
 
         if (mql.matches) {
           this.activeBreakpoints.add(name);
@@ -238,7 +265,21 @@ export class AdvancedResponsiveSystem {
    */
   private notifyListeners(): void {
     const active = this.getActiveBreakpoints();
-    this.listeners.forEach(listener => listener(active));
+    
+    // Clean up dead references
+    const deadRefs: { deref: () => ((breakpoints: string[]) => void) | undefined }[] = [];
+    
+    this.listenerRefs.forEach(ref => {
+      const listener = ref.deref();
+      if (listener && this.listeners.has(listener)) {
+        listener(active);
+      } else {
+        deadRefs.push(ref);
+      }
+    });
+    
+    // Remove dead references
+    deadRefs.forEach(ref => this.listenerRefs.delete(ref));
   }
 
   // ============================================
@@ -268,7 +309,7 @@ export class AdvancedResponsiveSystem {
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const width = entry.contentRect.width;
-        const height = entry.contentRect.height;
+        // const _height = entry.contentRect.height;
 
         // Find matching query
         const match = queries.find(q => {
@@ -331,9 +372,11 @@ export class AdvancedResponsiveSystem {
       }
     );
 
-    // Store cleanup function for later
-    element.dataset.containerQueryCleanup = 'true';
-    (element as any).__containerQueryCleanup = cleanup;
+    // Store cleanup function using WeakMap instead of property
+    if (!containerQueryCleanups.has(element)) {
+      containerQueryCleanups.set(element, []);
+    }
+    containerQueryCleanups.get(element)!.push(cleanup);
   }
 
   // ============================================
@@ -605,7 +648,7 @@ export class AdvancedResponsiveSystem {
     
     // Apply to children
     const children = container.children;
-    Array.from(children).forEach((child: Element, index) => {
+    Array.from(children).forEach((child: Element) => {
       const element = child as HTMLElement;
       const height = element.offsetHeight;
       const rowSpan = Math.ceil(height / 10);
@@ -634,7 +677,7 @@ export class AdvancedResponsiveSystem {
     updateLayout();
 
     // Listen for breakpoint changes
-    this.onChange((breakpoints) => {
+    this.onChange(() => {
       updateLayout();
     });
   }
@@ -746,8 +789,19 @@ export class AdvancedResponsiveSystem {
    */
   onChange(listener: (breakpoints: string[]) => void): () => void {
     this.listeners.add(listener);
+    const ref = typeof globalThis !== 'undefined' && typeof (globalThis as any).WeakRef !== 'undefined'
+      ? new ((globalThis as any).WeakRef)(listener)
+      : { deref: () => listener };
+    this.listenerRefs.add(ref);
+    
     return () => {
       this.listeners.delete(listener);
+      // Find and remove the corresponding WeakRef
+      this.listenerRefs.forEach(r => {
+        if (r.deref() === listener) {
+          this.listenerRefs.delete(r);
+        }
+      });
     };
   }
 
@@ -796,15 +850,29 @@ export class AdvancedResponsiveSystem {
     this.containerObservers.forEach(observer => observer.disconnect());
     this.containerObservers.clear();
     
+    // Remove all media query listeners
+    this.mediaQueryHandlers.forEach((handler, name) => {
+      const mql = this.mediaQueries.get(name);
+      if (mql) {
+        mql.removeEventListener('change', handler);
+      }
+    });
+    
     // Clear media queries
     this.mediaQueries.clear();
+    this.mediaQueryHandlers.clear();
     
     // Clear other maps
     this.breakpoints.clear();
     this.activeBreakpoints.clear();
-    this.listeners.clear();
+    this.listenerRefs.clear();
     this.layoutConfigs.clear();
     this.visibilityRules.clear();
+    
+    // Clear global cleanup map
+    if (typeof (containerQueryCleanups as any).clear === 'function') {
+      (containerQueryCleanups as any).clear();
+    }
   }
 }
 

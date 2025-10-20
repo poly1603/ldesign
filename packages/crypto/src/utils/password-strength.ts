@@ -18,6 +18,8 @@ export enum PasswordStrength {
 /**
  * 密码分析结果
  */
+interface CharacterTypes { lowercase: boolean; uppercase: boolean; numbers: boolean; symbols: boolean; unicode: boolean }
+
 export interface PasswordAnalysis {
   /** 强度级别 */
   strength: PasswordStrength
@@ -126,6 +128,7 @@ export class PasswordStrengthChecker {
     '543210',
   ]
 
+
   /**
    * 分析密码强度
    */
@@ -158,7 +161,7 @@ export class PasswordStrengthChecker {
   /**
    * 分析字符类型
    */
-  private analyzeCharacterTypes(password: string) {
+  private analyzeCharacterTypes(password: string): CharacterTypes {
     return {
       lowercase: /[a-z]/.test(password),
       uppercase: /[A-Z]/.test(password),
@@ -194,7 +197,7 @@ export class PasswordStrengthChecker {
    */
   private calculateScore(
     password: string,
-    characterTypes: any,
+    characterTypes: CharacterTypes,
     entropy: number,
   ): number {
     let score = 0
@@ -241,7 +244,7 @@ export class PasswordStrengthChecker {
   /**
    * 识别问题
    */
-  private identifyIssues(password: string, characterTypes: any): string[] {
+  private identifyIssues(password: string, characterTypes: CharacterTypes): string[] {
     const issues: string[] = []
 
     if (password.length < 8) {
@@ -286,7 +289,7 @@ export class PasswordStrengthChecker {
    */
   private generateSuggestions(
     password: string,
-    characterTypes: any,
+    characterTypes: CharacterTypes,
     issues: string[],
   ): string[] {
     const suggestions: string[] = []

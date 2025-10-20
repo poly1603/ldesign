@@ -1,0 +1,57 @@
+{
+  "name": "@ldesign/progress",
+  "version": "1.1.0",
+  "description": "功能全面、性能优越的进度条插件库，支持14种进度条类型和主流框架",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/**\" run build",
+    "build:core": "pnpm --filter @ldesign/progress-core run build",
+    "build:vue": "pnpm --filter @ldesign/progress-vue run build",
+    "build:react": "pnpm --filter @ldesign/progress-react run build",
+    "build:lit": "pnpm --filter @ldesign/progress-lit run build",
+    "build:all": "pnpm build && node scripts/test-build.js",
+    "dev": "pnpm -r --parallel run dev",
+    "dev:vanilla": "pnpm --filter progress-example-vanilla run dev",
+    "dev:vue": "pnpm --filter progress-example-vue run dev",
+    "dev:react": "pnpm --filter progress-example-react run dev",
+    "clean": "pnpm -r run clean && rimraf node_modules",
+    "test": "jest",
+    "test:build": "node scripts/test-build.js",
+    "lint": "eslint packages --ext .ts,.tsx"
+  },
+  "keywords": [
+    "progress",
+    "progress-bar",
+    "ui",
+    "component",
+    "vue",
+    "react",
+    "lit",
+    "typescript"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.11.5",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "postcss": "^8.4.33",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.9.6",
+    "rollup-plugin-postcss": "^4.0.2",
+    "ts-jest": "^29.1.1",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3"
+  }
+}
+

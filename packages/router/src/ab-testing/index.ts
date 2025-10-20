@@ -3,9 +3,9 @@
  * 支持路由变体、用户分组、数据分析等
  */
 
-import type { Router, RouteLocationRaw, RouteRecord, NavigationGuard } from '../types'
-import { ref, reactive, computed, watch, inject } from 'vue'
+import type { RouteLocationRaw, Router, RouteRecord } from '../types'
 import { nanoid } from 'nanoid'
+import { computed, inject } from 'vue'
 
 export interface ABTestVariant {
   id: string
@@ -115,7 +115,7 @@ export class ABTestManager {
     if (!this.router) return
 
     // 添加导航守卫
-    this.router.beforeEach((to, from, next) => {
+    this.router.beforeEach((to, _from, next) => {
       const experiment = this.getExperimentForRoute(to.path)
       
       if (experiment && experiment.status === 'running') {
@@ -260,10 +260,18 @@ export class ABTestManager {
   private setupExperimentRoutes(experiment: ABTestExperiment) {
     if (!this.router) return
 
+    const router = this.router
     experiment.variants.forEach(variant => {
       if (variant.component) {
+        // 仅当变体路由为字符串或具有 path 时才创建路由
+        const routePath = typeof variant.route === 'string'
+          ? variant.route
+          : (typeof variant.route === 'object' && 'path' in (variant.route as any)
+            ? (variant.route as any).path
+            : undefined)
+        if (!routePath) return
         const route: RouteRecord = {
-          path: typeof variant.route === 'string' ? variant.route : variant.route.path!,
+          path: routePath,
           name: `ab-${experiment.id}-${variant.id}`,
           component: variant.component,
           props: variant.props,
@@ -276,7 +284,7 @@ export class ABTestManager {
           }
         }
 
-        this.router.addRoute(route)
+        router.addRoute(route)
       }
     })
   }
@@ -287,9 +295,10 @@ export class ABTestManager {
   private removeExperimentRoutes(experiment: ABTestExperiment) {
     if (!this.router) return
 
+    const router = this.router
     experiment.variants.forEach(variant => {
       const routeName = `ab-${experiment.id}-${variant.id}`
-      this.router.removeRoute(routeName)
+      router.removeRoute(routeName)
     })
   }
 
@@ -343,7 +352,7 @@ export class ABTestManager {
       }
     }
 
-    return experiment.variants[0].id
+    return experiment.variants[0]?.id || experiment.variants[0]!.id
   }
 
   /**
@@ -406,7 +415,7 @@ export class ABTestManager {
       return true
     }
     
-    const daysSinceFirstVisit = (Date.now() - parseInt(firstVisit)) / (1000 * 60 * 60 * 24)
+    const daysSinceFirstVisit = (Date.now() - Number.parseInt(firstVisit)) / (1000 * 60 * 60 * 24)
     return daysSinceFirstVisit < 7
   }
 
@@ -431,7 +440,7 @@ export class ABTestManager {
   /**
    * 匹配设备
    */
-  private matchesDevice(value: any, operator?: string): boolean {
+  private matchesDevice(value: any, _operator?: string): boolean {
     const userAgent = navigator.userAgent.toLowerCase()
     
     switch (value) {
@@ -449,7 +458,7 @@ export class ABTestManager {
   /**
    * 匹配自定义分段
    */
-  private matchesCustomSegment(value: any, operator?: string): boolean {
+  private matchesCustomSegment(_value: any, _operator?: string): boolean {
     // 实现自定义分段逻辑
     return true
   }
@@ -554,7 +563,7 @@ export class ABTestManager {
         
         const totalValue = result.goals.reduce((sum, goal) => sum + (goal.value || 0), 0)
         variantStats.avgValue = 
-          (variantStats.avgValue * (variantStats.conversions - 1) + totalValue) / 
+          ((variantStats.avgValue || 0) * (variantStats.conversions - 1) + totalValue) / 
           variantStats.conversions
       }
     })
@@ -674,10 +683,7 @@ export class ABTestManager {
    * 保存实验
    */
   private saveExperiments() {
-    const data = Array.from(this.experiments.entries()).map(([id, exp]) => ({
-      id,
-      ...exp
-    }))
+    const data = Array.from(this.experiments.values())
     this.storage.setItem('ab_experiments', JSON.stringify(data))
   }
 
@@ -729,6 +735,13 @@ export class ABTestManager {
   }
 
   /**
+   * 获取全部实验（只读）
+   */
+  getExperiments(): ABTestExperiment[] {
+    return Array.from(this.experiments.values())
+  }
+
+  /**
    * 导出结果
    */
   exportResults(experimentId?: string): any {
@@ -757,7 +770,7 @@ export class ABTestManager {
  * 分析适配器接口
  */
 export interface AnalyticsAdapter {
-  track(event: string, properties?: any): void
+  track: (event: string, properties?: any) => void
 }
 
 /**
@@ -803,9 +816,7 @@ export function useABTest() {
   }
 
   const currentExperiments = computed(() => {
-    return Array.from(abTest['experiments'].values()).filter(
-      exp => exp.status === 'running'
-    )
+    return abTest.getExperiments().filter(exp => exp.status === 'running')
   })
 
   return {
@@ -825,6 +836,3 @@ export function useABTest() {
 declare global {
   function gtag(...args: any[]): void
 }
-
-// 导出类型
-export type { ABTestManager }

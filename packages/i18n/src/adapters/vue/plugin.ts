@@ -4,9 +4,9 @@
 
 import type { App, Plugin } from 'vue';
 import type { I18nInstance } from '../../types';
+import * as components from './components';
 import { I18N_SYMBOL } from './constants';
 import { vT, vTHtml, vTPlural } from './directives';
-import * as components from './components';
 
 export interface I18nPluginOptions {
   globalProperties?: boolean;

@@ -20,8 +20,8 @@ export default defineConfig({
   // 娓呯悊杈撳嚭鐩綍
   clean: true,
 
-  // 鐢熶骇鐜鍘嬬缉浠ｇ爜
-  minify: globalThis.process?.env?.NODE_ENV === 'production',
+  // 產生綠境圧縮代碼
+  minify: false, // 默认不压缩，由 CI/CD 决定
 
   // UMD 鏋勫缓閰嶇疆
   umd: {
@@ -50,7 +50,7 @@ export default defineConfig({
   build: {
     // 绂佺敤鏋勫缓璀﹀憡
     rollupOptions: {
-      onwarn: (warning, warn) => {
+      onwarn: (_warning, _warn) => {
         // 瀹屽叏闈欓粯锛屼笉杈撳嚭浠讳綍璀﹀憡
 
       },

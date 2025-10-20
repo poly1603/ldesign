@@ -30,17 +30,44 @@ export class Renderer {
   private enableZoom: boolean;
   private enablePan: boolean;
   private enableNodeDrag: boolean;
+  private minScale: number;
+  private maxScale: number;
+  private scaleStep: number;
+  private onZoomChange?: (scale: number) => void;
+  private initialPosition?: string | { x: number; y: number };
+  private centerOnInit: boolean;
 
   constructor(container: HTMLElement, config: RenderConfig, options?: {
     enableZoom?: boolean;
     enablePan?: boolean;
     enableNodeDrag?: boolean;
+    initialScale?: number;
+    minScale?: number;
+    maxScale?: number;
+    scaleStep?: number;
+    initialPosition?: string | { x: number; y: number };
+    centerOnInit?: boolean;
+    onZoomChange?: (scale: number) => void;
   }) {
     this.container = container;
     this.config = config;
     this.enableZoom = options?.enableZoom ?? true;
     this.enablePan = options?.enablePan ?? true;
     this.enableNodeDrag = options?.enableNodeDrag ?? true;
+    this.minScale = options?.minScale ?? 0.1;
+    this.maxScale = options?.maxScale ?? 3;
+    this.scaleStep = options?.scaleStep ?? 0.1;
+    this.onZoomChange = options?.onZoomChange;
+    
+    // 设置初始缩放比例
+    if (options?.initialScale) {
+      this.transform.scale = Math.max(this.minScale, Math.min(this.maxScale, options.initialScale));
+    }
+    
+    // 保存初始位置配置，在内容加载后应用
+    this.initialPosition = options?.initialPosition;
+    this.centerOnInit = options?.centerOnInit ?? true; // 默认居中
+    
     this.edgeRenderer = new EdgeRenderer();
     
     // 创建SVG元素
@@ -71,7 +98,8 @@ export class Renderer {
    */
   private initViewBox(): void {
     const rect = this.container.getBoundingClientRect();
-    this.svg.setAttribute('viewBox', `${-rect.width / 2} ${-rect.height / 2} ${rect.width} ${rect.height}`);
+    // 以(0,0)为原点，便于坐标计算
+    this.svg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
   }
 
   /**
@@ -99,13 +127,12 @@ export class Renderer {
     event.preventDefault();
     
     const delta = -event.deltaY;
-    const scaleStep = 0.1;
     const newScale = delta > 0 
-      ? this.transform.scale * (1 + scaleStep)
-      : this.transform.scale * (1 - scaleStep);
+      ? this.transform.scale * (1 + this.scaleStep)
+      : this.transform.scale * (1 - this.scaleStep);
     
     // 限制缩放范围
-    const clampedScale = Math.max(0.1, Math.min(3, newScale));
+    const clampedScale = Math.max(this.minScale, Math.min(this.maxScale, newScale));
     
     // 获取鼠标在SVG中的位置
     const rect = this.svg.getBoundingClientRect();
@@ -124,6 +151,11 @@ export class Renderer {
     this.transform.scale = clampedScale;
     
     this.applyTransform();
+    
+    // 触发缩放变化回调
+    if (this.onZoomChange) {
+      this.onZoomChange(clampedScale);
+    }
   }
 
   /**
@@ -476,14 +508,68 @@ export class Renderer {
    * 设置缩放和平移
    */
   public setTransform(x: number, y: number, scale: number): void {
-    this.transform = { x, y, scale };
+    const clampedScale = Math.max(this.minScale, Math.min(this.maxScale, scale));
+    this.transform = { x, y, scale: clampedScale };
     this.applyTransform();
+    
+    if (this.onZoomChange && clampedScale !== scale) {
+      this.onZoomChange(clampedScale);
+    }
+  }
+  
+  /**
+   * 设置缩放比例
+   */
+  public setScale(scale: number, centerX?: number, centerY?: number): void {
+    const clampedScale = Math.max(this.minScale, Math.min(this.maxScale, scale));
+    
+    if (centerX !== undefined && centerY !== undefined) {
+      // 以指定点为中心缩放
+      const scaleFactor = clampedScale / this.transform.scale;
+      this.transform.x = centerX - (centerX - this.transform.x) * scaleFactor;
+      this.transform.y = centerY - (centerY - this.transform.y) * scaleFactor;
+    }
+    
+    this.transform.scale = clampedScale;
+    this.applyTransform();
+    
+    if (this.onZoomChange) {
+      this.onZoomChange(clampedScale);
+    }
+  }
+  
+  /**
+   * 获取当前缩放比例
+   */
+  public getScale(): number {
+    return this.transform.scale;
+  }
+  
+  /**
+   * 放大
+   */
+  public zoomIn(): void {
+    this.setScale(this.transform.scale * (1 + this.scaleStep));
+  }
+  
+  /**
+   * 缩小
+   */
+  public zoomOut(): void {
+    this.setScale(this.transform.scale * (1 - this.scaleStep));
+  }
+  
+  /**
+   * 重置缩放
+   */
+  public resetZoom(): void {
+    this.setTransform(0, 0, 1);
   }
 
   /**
    * 适应画布
    */
-  public fitView(): void {
+  public fitView(padding: number = 50): void {
     const bbox = this.nodesGroup.getBBox();
     const rect = this.container.getBoundingClientRect();
     
@@ -492,15 +578,141 @@ export class Renderer {
     }
     
     const scale = Math.min(
-      rect.width / (bbox.width + 100),
-      rect.height / (bbox.height + 100),
-      1
+      rect.width / (bbox.width + padding * 2),
+      rect.height / (bbox.height + padding * 2),
+      this.maxScale
     );
     
     const centerX = bbox.x + bbox.width / 2;
     const centerY = bbox.y + bbox.height / 2;
     
     this.setTransform(-centerX * scale, -centerY * scale, scale);
+  }
+  
+  /**
+   * 应用初始位置
+   */
+  public applyInitialPosition(): void {
+    const bbox = this.nodesGroup.getBBox();
+    if (bbox.width === 0 || bbox.height === 0) {
+      return;
+    }
+    
+    const rect = this.container.getBoundingClientRect();
+    const scale = this.transform.scale;
+    
+    // 如果设置了居中
+    if (this.centerOnInit) {
+      this.centerContent();
+      return;
+    }
+    
+    // 如果有初始位置配置
+    if (!this.initialPosition) {
+      return;
+    }
+    
+    let x = 0;
+    let y = 0;
+    
+    if (typeof this.initialPosition === 'object') {
+      // 自定义位置
+      x = this.initialPosition.x;
+      y = this.initialPosition.y;
+    } else {
+      // 预设位置
+      const contentWidth = bbox.width * scale;
+      const contentHeight = bbox.height * scale;
+      const viewWidth = rect.width;
+      const viewHeight = rect.height;
+      
+      // 计算内容中心和视图中心
+      const contentCenterX = bbox.x + bbox.width / 2;
+      const contentCenterY = bbox.y + bbox.height / 2;
+      const viewCenterX = rect.width / 2;
+      const viewCenterY = rect.height / 2;
+      const padding = 30; // 边距
+      
+      switch (this.initialPosition) {
+        case 'center':
+          // 完全居中
+          x = viewCenterX - contentCenterX * scale;
+          y = viewCenterY - contentCenterY * scale;
+          break;
+        case 'top-left':
+          x = padding - bbox.x * scale;
+          y = padding - bbox.y * scale;
+          break;
+        case 'top-center':
+          // 水平居中，垂直顶部
+          x = viewCenterX - contentCenterX * scale;
+          y = padding - bbox.y * scale;
+          break;
+        case 'top-right':
+          x = viewWidth - contentWidth - padding - bbox.x * scale;
+          y = padding - bbox.y * scale;
+          break;
+        case 'middle-left':
+          // 水平左对齐，垂直居中
+          x = padding - bbox.x * scale;
+          y = viewCenterY - contentCenterY * scale;
+          break;
+        case 'middle-right':
+          // 水平右对齐，垂直居中
+          x = viewWidth - contentWidth - padding - bbox.x * scale;
+          y = viewCenterY - contentCenterY * scale;
+          break;
+        case 'bottom-left':
+          x = padding - bbox.x * scale;
+          y = viewHeight - contentHeight - padding - bbox.y * scale;
+          break;
+        case 'bottom-center':
+          // 水平居中，垂直底部
+          x = viewCenterX - contentCenterX * scale;
+          y = viewHeight - contentHeight - padding - bbox.y * scale;
+          break;
+        case 'bottom-right':
+          x = viewWidth - contentWidth - padding - bbox.x * scale;
+          y = viewHeight - contentHeight - padding - bbox.y * scale;
+          break;
+        default:
+          // 默认完全居中
+          x = viewCenterX - contentCenterX * scale;
+          y = viewCenterY - contentCenterY * scale;
+      }
+    }
+    
+    this.transform.x = x;
+    this.transform.y = y;
+    this.applyTransform();
+  }
+  
+  /**
+   * 居中内容
+   */
+  public centerContent(): void {
+    const bbox = this.nodesGroup.getBBox();
+    const rect = this.container.getBoundingClientRect();
+    
+    if (bbox.width === 0 || bbox.height === 0) {
+      return;
+    }
+    
+    const scale = this.transform.scale;
+    
+    // 计算内容中心点
+    const contentCenterX = bbox.x + bbox.width / 2;
+    const contentCenterY = bbox.y + bbox.height / 2;
+    
+    // 计算视图中心点
+    const viewCenterX = rect.width / 2;
+    const viewCenterY = rect.height / 2;
+    
+    // 计算平移量，使内容中心与视图中心对齐
+    this.transform.x = viewCenterX - contentCenterX * scale;
+    this.transform.y = viewCenterY - contentCenterY * scale;
+    
+    this.applyTransform();
   }
 
   /**

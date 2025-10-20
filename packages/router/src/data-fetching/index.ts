@@ -5,38 +5,38 @@
 
 // 导出管理器
 export {
-  DataFetchingManager,
+  createDataFetchingManager,
   DATA_FETCHING_KEY,
-  DataFetchingPlugin,
-  createDataFetchingManager
+  DataFetchingManager,
+  DataFetchingPlugin
 } from './DataFetchingManager'
 
 // 导出类型
 export type {
   DataFetchConfig,
-  DataFetchState,
+  DataFetchFunction,
   DataFetchOptions,
-  DataFetchFunction
+  DataFetchState
+} from './DataFetchingManager'
+
+// 导出类型
+export type {
+  DataFetchingManager as DataFetchingManagerType
 } from './DataFetchingManager'
 
 // 导出组合式API
 export {
   useDataFetching,
-  useMultipleDataFetching,
+  useInfiniteDataFetching,
   useLazyDataFetching,
-  usePaginatedDataFetching,
-  useInfiniteDataFetching
+  useMultipleDataFetching,
+  usePaginatedDataFetching
 } from './useDataFetching'
 
 // 导出组合式API类型
 export type {
   UseDataFetchingOptions,
   UseDataFetchingReturn,
-  UsePaginatedDataFetchingOptions,
-  UseInfiniteDataFetchingOptions
+  UseInfiniteDataFetchingOptions,
+  UsePaginatedDataFetchingOptions
 } from './useDataFetching'
-
-// 导出类型
-export type {
-  DataFetchingManager as DataFetchingManagerType
-} from './DataFetchingManager'

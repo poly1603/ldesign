@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>流程图边动画效果演示</title>
+  <link rel="stylesheet" href="../src/styles/edge.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .demo-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+    }
+    
+    .demo-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+    
+    .demo-card h3 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .demo-svg {
+      width: 100%;
+      height: 200px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      overflow: visible;
+    }
+    
+    .control-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    
+    .control-group {
+      display: inline-block;
+      margin-right: 20px;
+      margin-bottom: 10px;
+    }
+    
+    .control-group label {
+      display: inline-block;
+      margin-right: 8px;
+      color: #555;
+      font-weight: 500;
+    }
+    
+    .control-group button {
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    
+    .control-group button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .control-group button:active {
+      transform: translateY(0);
+    }
+    
+    .code-block {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-top: 20px;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .code-block pre {
+      margin: 0;
+    }
+    
+    .feature-list {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    
+    .feature-list h2 {
+      color: #333;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    
+    .feature-list ul {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .feature-list li {
+      padding: 10px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #667eea10, #764ba210);
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+    
+    .feature-list li::before {
+      content: '✨';
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 流程图边动画效果演示</h1>
+    
+    <!-- 控制面板 -->
+    <div class="control-panel">
+      <div class="control-group">
+        <label>边的状态：</label>
+        <button onclick="toggleState('normal')">普通</button>
+        <button onclick="toggleState('selected')">选中</button>
+        <button onclick="toggleState('highlighted')">高亮</button>
+        <button onclick="toggleState('disabled')">禁用</button>
+      </div>
+      <div class="control-group">
+        <label>边的类型：</label>
+        <button onclick="toggleType('default')">默认</button>
+        <button onclick="toggleType('success')">成功</button>
+        <button onclick="toggleType('warning')">警告</button>
+        <button onclick="toggleType('error')">错误</button>
+        <button onclick="toggleType('info')">信息</button>
+      </div>
+    </div>
+    
+    <!-- 功能特性 -->
+    <div class="feature-list">
+      <h2>✨ 边的动画效果特性</h2>
+      <ul>
+        <li><strong>Hover效果：</strong>鼠标悬停时线条会变粗、变亮，并显示发光效果</li>
+        <li><strong>流动动画：</strong>鼠标悬停时显示流动的光点，表示数据流向</li>
+        <li><strong>标签缩放：</strong>悬停时标签会放大，但不会阻挡线条的hover效果</li>
+        <li><strong>箭头动画：</strong>箭头在悬停时会放大，增强视觉反馈</li>
+        <li><strong>平滑过渡：</strong>所有效果都有平滑的过渡动画，提升用户体验</li>
+        <li><strong>多种状态：</strong>支持普通、选中、高亮、禁用等多种状态</li>
+        <li><strong>类型样式：</strong>不同类型的边有不同的颜色主题</li>
+        <li><strong>性能优化：</strong>使用CSS动画，GPU加速，性能优秀</li>
+      </ul>
+    </div>
+    
+    <!-- 演示网格 -->
+    <div class="demo-grid">
+      <!-- 基础Hover效果 -->
+      <div class="demo-card">
+        <h3>基础Hover效果</h3>
+        <svg class="demo-svg" id="demo1">
+          <g class="flow-edge">
+            <path class="edge-path" d="M 50,100 L 250,100" stroke="#666" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M 50,100 L 250,100" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="250,100 240,95 240,105" fill="#666"/>
+            <g class="edge-label" transform="translate(150, 100)" style="pointer-events: none;">
+              <rect x="-30" y="-12" width="60" height="24" fill="white" stroke="#e0e0e0" rx="4"/>
+              <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" fill="#333" font-size="12">流程</text>
+            </g>
+            <!-- 流动动画路径 -->
+            <path class="flow-animation-path" d="M 50,100 L 250,100" stroke="#888" stroke-width="1" fill="none" stroke-dasharray="10,20" opacity="0"/>
+          </g>
+        </svg>
+      </div>
+      
+      <!-- 曲线边效果 -->
+      <div class="demo-card">
+        <h3>曲线边动画</h3>
+        <svg class="demo-svg" id="demo2">
+          <g class="flow-edge">
+            <path class="edge-path" d="M 50,100 C 100,50 200,150 250,100" stroke="#2196f3" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M 50,100 C 100,50 200,150 250,100" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="250,100 240,95 240,105" fill="#2196f3"/>
+            <g class="edge-label" transform="translate(150, 100)" style="pointer-events: none;">
+              <rect x="-30" y="-12" width="60" height="24" fill="white" stroke="#e0e0e0" rx="4"/>
+              <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" fill="#333" font-size="12">审批</text>
+            </g>
+            <!-- 流动动画路径 -->
+            <path class="flow-animation-path" d="M 50,100 C 100,50 200,150 250,100" stroke="#42a5f5" stroke-width="1" fill="none" stroke-dasharray="10,20" opacity="0"/>
+          </g>
+        </svg>
+      </div>
+      
+      <!-- 折线边效果 -->
+      <div class="demo-card">
+        <h3>折线边动画</h3>
+        <svg class="demo-svg" id="demo3">
+          <g class="flow-edge">
+            <path class="edge-path" d="M 50,100 L 100,100 L 100,50 L 200,50 L 200,100 L 250,100" stroke="#4caf50" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 50,100 L 100,100 L 100,50 L 200,50 L 200,100 L 250,100" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="250,100 240,95 240,105" fill="#4caf50"/>
+            <g class="edge-label" transform="translate(150, 50)" style="pointer-events: none;">
+              <rect x="-30" y="-12" width="60" height="24" fill="white" stroke="#e0e0e0" rx="4"/>
+              <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" fill="#333" font-size="12">通过</text>
+            </g>
+            <!-- 流动动画路径 -->
+            <path class="flow-animation-path" d="M 50,100 L 100,100 L 100,50 L 200,50 L 200,100 L 250,100" stroke="#66bb6a" stroke-width="1" fill="none" stroke-dasharray="10,20" opacity="0"/>
+          </g>
+        </svg>
+      </div>
+      
+      <!-- 条件边效果 -->
+      <div class="demo-card">
+        <h3>条件边动画</h3>
+        <svg class="demo-svg" id="demo4">
+          <g class="flow-edge edge-condition">
+            <path class="edge-path" d="M 50,100 L 250,100" stroke="#ff9800" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="8,4"/>
+            <path d="M 50,100 L 250,100" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="250,100 240,95 240,105" fill="#ff9800"/>
+            <g class="edge-label" transform="translate(150, 100)" style="pointer-events: none;">
+              <rect x="-30" y="-12" width="60" height="24" fill="white" stroke="#e0e0e0" rx="4"/>
+              <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" fill="#333" font-size="12">条件</text>
+            </g>
+            <!-- 流动动画路径 -->
+            <path class="flow-animation-path" d="M 50,100 L 250,100" stroke="#ffb74d" stroke-width="1" fill="none" stroke-dasharray="10,20" opacity="0"/>
+          </g>
+        </svg>
+      </div>
+      
+      <!-- 错误边效果 -->
+      <div class="demo-card">
+        <h3>错误边动画</h3>
+        <svg class="demo-svg" id="demo5">
+          <g class="flow-edge edge-type-error">
+            <path class="edge-path" d="M 50,100 Q 150,50 250,100" stroke="#f44336" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M 50,100 Q 150,50 250,100" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="250,100 240,95 240,105" fill="#f44336"/>
+            <g class="edge-label" transform="translate(150, 75)" style="pointer-events: none;">
+              <rect x="-30" y="-12" width="60" height="24" fill="white" stroke="#e0e0e0" rx="4"/>
+              <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" fill="#333" font-size="12">拒绝</text>
+            </g>
+            <!-- 流动动画路径 -->
+            <path class="flow-animation-path" d="M 50,100 Q 150,50 250,100" stroke="#ef5350" stroke-width="1" fill="none" stroke-dasharray="10,20" opacity="0"/>
+          </g>
+        </svg>
+      </div>
+      
+      <!-- 成功边效果 -->
+      <div class="demo-card">
+        <h3>成功边动画</h3>
+        <svg class="demo-svg" id="demo6">
+          <g class="flow-edge edge-type-success highlighted">
+            <path class="edge-path" d="M 50,100 L 250,100" stroke="#52c41a" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M 50,100 L 250,100" stroke="transparent" stroke-width="12" fill="none"/>
+            <polygon class="edge-arrow" points="250,100 240,95 240,105" fill="#52c41a"/>
+            <g class="edge-label" transform="translate(150, 100)" style="pointer-events: none;">
+              <rect x="-30" y="-12" width="60" height="24" fill="white" stroke="#e0e0e0" rx="4"/>
+              <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" fill="#333" font-size="12">完成</text>
+            </g>
+            <!-- 流动动画路径 -->
+            <path class="flow-animation-path" d="M 50,100 L 250,100" stroke="#73d13d" stroke-width="1" fill="none" stroke-dasharray="10,20" opacity="0.6"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    
+    <!-- 代码示例 -->
+    <div class="code-block">
+      <pre>// 配置边的动画效果
+const edge = {
+  id: 'edge1',
+  source: 'node1',
+  target: 'node2',
+  label: '审批流程',
+  style: {
+    type: EdgeType.POLYLINE,
+    strokeColor: '#2196f3',
+    strokeWidth: 2,
+    animated: true,           // 启用动画
+    animationType: 'flow',    // 流动动画类型
+    animationDuration: 1.5    // 动画持续时间
+  }
+};
+
+// 添加边到流程图
+flowChart.addEdge(edge);
+
+// 边会自动具有以下效果：
+// 1. 鼠标悬停时变亮、变粗
+// 2. 显示流动的光点动画
+// 3. 标签放大但不阻挡hover
+// 4. 箭头缩放动画
+// 5. 发光效果</pre>
+    </div>
+  </div>
+  
+  <script>
+    // 切换边的状态
+    function toggleState(state) {
+      const edges = document.querySelectorAll('.flow-edge');
+      edges.forEach(edge => {
+        edge.classList.remove('selected', 'highlighted', 'disabled');
+        if (state !== 'normal') {
+          edge.classList.add(state);
+        }
+      });
+    }
+    
+    // 切换边的类型
+    function toggleType(type) {
+      const edges = document.querySelectorAll('.flow-edge');
+      edges.forEach(edge => {
+        edge.classList.remove('edge-type-success', 'edge-type-warning', 'edge-type-error', 'edge-type-info');
+        if (type !== 'default') {
+          edge.classList.add(`edge-type-${type}`);
+        }
+      });
+    }
+    
+    // 手动触发hover效果演示
+    document.querySelectorAll('.flow-edge').forEach(edge => {
+      edge.addEventListener('mouseenter', function() {
+        const flowPath = this.querySelector('.flow-animation-path');
+        if (flowPath) {
+          flowPath.style.opacity = '0.6';
+        }
+      });
+      
+      edge.addEventListener('mouseleave', function() {
+        const flowPath = this.querySelector('.flow-animation-path');
+        if (flowPath && !this.classList.contains('highlighted')) {
+          flowPath.style.opacity = '0';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

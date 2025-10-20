@@ -5,19 +5,18 @@
 
 import type { Engine } from '../types/engine'
 import type { Plugin } from '../types/plugin'
-import process from 'node:process'
 
 // 扩展 ImportMeta 接口以支持 Vite HMR
 declare global {
   interface ImportMeta {
     hot?: {
-      // eslint-disable-next-line ts/no-explicit-any
+       
       accept: (deps?: string | string[] | ((mod: any) => void), callback?: (newModule: any) => void) => void
-      // eslint-disable-next-line ts/no-explicit-any
+       
       on: (event: string, callback: (...args: any[]) => void) => void
-      // eslint-disable-next-line ts/no-explicit-any
+       
       dispose: (callback: (data: any) => void) => void
-      // eslint-disable-next-line ts/no-explicit-any
+       
       data: any
     }
   }
@@ -81,8 +80,14 @@ export class HMRManager {
   private updateQueue: HMRUpdateEvent[] = []
   private isProcessing = false
   private reconnectAttempts = 0
-  private reconnectTimer?: NodeJS.Timeout
+  private reconnectTimer?: number
   private stateSnapshot?: Record<string, unknown>
+  
+  // Memory optimization
+  private readonly maxModules = 100
+  private readonly maxQueueSize = 50
+  private moduleAccessOrder = new Map<string, number>()
+  private accessCounter = 0
 
   /** HMR事件监听器 */
   private listeners: Map<string, Set<(event: HMRUpdateEvent) => void>> = new Map()
@@ -186,6 +191,12 @@ export class HMRManager {
    * 处理模块更新
    */
   private async handleUpdate(payload: HMRUpdateEvent): Promise<void> {
+    // 限制更新队列大小
+    if (this.updateQueue.length >= this.maxQueueSize) {
+      this.engine.logger.warn('HMR update queue full, removing oldest updates')
+      this.updateQueue = this.updateQueue.slice(-Math.floor(this.maxQueueSize / 2))
+    }
+    
     // 加入更新队列
     this.updateQueue.push(payload)
 
@@ -249,8 +260,8 @@ export class HMRManager {
           this.engine.logger.warn('Unknown module type', module.type)
       }
 
-      // 更新模块缓存
-      this.modules.set(module.id, module)
+      // 更新模块缓存 with LRU eviction
+      this.setModuleWithEviction(module.id, module)
 
       // 触发模块的热更新回调
       if (module.hot?.accept) {
@@ -270,7 +281,7 @@ export class HMRManager {
   private async updateComponent(module: HMRModule): Promise<void> {
     // 使用Vue的热更新API
     if (import.meta.hot && typeof import.meta.hot.accept === 'function') {
-      // eslint-disable-next-line ts/no-explicit-any
+       
       import.meta.hot.accept(module.id, (newModule: any) => {
         // 更新组件实例
         this.engine.logger.debug('Component hot updated', { moduleId: module.id, newModule })
@@ -373,6 +384,12 @@ export class HMRManager {
    * 显示错误覆盖层
    */
   private showErrorOverlay(error: unknown): void {
+    // Remove existing overlay if exists
+    const existingOverlay = document.getElementById('hmr-error-overlay')
+    if (existingOverlay) {
+      existingOverlay.remove()
+    }
+    
     const overlay = document.createElement('div')
     overlay.id = 'hmr-error-overlay'
     overlay.style.cssText = `
@@ -405,6 +422,13 @@ export class HMRManager {
     `
 
     document.body.appendChild(overlay)
+    
+    // Auto-remove after 30 seconds to prevent memory leak
+    setTimeout(() => {
+      if (document.getElementById('hmr-error-overlay') === overlay) {
+        overlay.remove()
+      }
+    }, 30000)
   }
 
   /**
@@ -418,7 +442,7 @@ export class HMRManager {
 
     this.reconnectAttempts++
 
-    this.reconnectTimer = setTimeout(() => {
+    this.reconnectTimer = window.setTimeout(() => {
       this.engine.logger.info('Attempting to reconnect HMR...', {
         attempt: this.reconnectAttempts
       })
@@ -468,16 +492,16 @@ export class HMRManager {
         this.engine.logger.debug('Vite HMR update detected')
       })
 
-      // eslint-disable-next-line ts/no-explicit-any
+       
       import.meta.hot.on('vite:error', (error: any) => {
         this.handleError(error)
       })
     }
 
     // 监听webpack的HMR API
-    // eslint-disable-next-line ts/no-explicit-any
+     
     if ((module as any).hot) {
-      // eslint-disable-next-line ts/no-explicit-any
+       
       (module as any).hot.addStatusHandler((status: string) => {
         this.engine.logger.debug('Webpack HMR status', status)
       })
@@ -488,8 +512,8 @@ export class HMRManager {
    * 检查是否为开发环境
    */
   private isDevelopment(): boolean {
-    return (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') ||
-           this.engine.config.get('debug', false) as boolean
+    return this.engine.config.get('debug', false) as boolean ||
+           (typeof window !== 'undefined' && window.location?.hostname === 'localhost')
   }
 
   /**
@@ -553,22 +577,79 @@ export class HMRManager {
   }
 
   /**
+   * 设置模块并进行LRU驱逐
+   */
+  private setModuleWithEviction(id: string, module: HMRModule): void {
+    // Update access order
+    this.moduleAccessOrder.set(id, ++this.accessCounter)
+    
+    // Check if eviction needed
+    if (this.modules.size >= this.maxModules && !this.modules.has(id)) {
+      // Find least recently used module
+      let lruId: string | null = null
+      let minAccess = Infinity
+      
+      for (const [moduleId] of this.modules) {
+        const access = this.moduleAccessOrder.get(moduleId) || 0
+        if (access < minAccess) {
+          minAccess = access
+          lruId = moduleId
+        }
+      }
+      
+      // Evict LRU module
+      if (lruId) {
+        const oldModule = this.modules.get(lruId)
+        if (oldModule?.hot?.dispose) {
+          oldModule.hot.dispose(() => {})
+        }
+        this.modules.delete(lruId)
+        this.moduleAccessOrder.delete(lruId)
+      }
+    }
+    
+    this.modules.set(id, module)
+  }
+  
+  /**
    * 销毁HMR管理器
    */
   destroy(): void {
+    // Close WebSocket connection
     if (this.ws) {
+      this.ws.onopen = null
+      this.ws.onmessage = null
+      this.ws.onerror = null
+      this.ws.onclose = null
       this.ws.close()
       this.ws = undefined
     }
 
+    // Clear timers
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer)
       this.reconnectTimer = undefined
     }
 
+    // Dispose all modules
+    for (const [, module] of this.modules) {
+      if (module.hot?.dispose) {
+        module.hot.dispose(() => {})
+      }
+    }
+    
+    // Clear error overlay
+    const overlay = document.getElementById('hmr-error-overlay')
+    if (overlay) {
+      overlay.remove()
+    }
+
+    // Clear all collections
     this.modules.clear()
+    this.moduleAccessOrder.clear()
     this.updateQueue.length = 0
     this.listeners.clear()
+    this.stateSnapshot = undefined
 
     this.engine.logger.info('HMR Manager destroyed')
   }

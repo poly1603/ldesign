@@ -118,7 +118,7 @@ export class LWECrypto {
    * Generate LWE key pair
    */
   generateKeyPair(): QuantumSafeKeyPair {
-    const { n, q: _q } = this.params
+    const { n } = this.params
 
     // Generate public matrix A
     const A = this.generateMatrix(n, n)
@@ -658,7 +658,6 @@ export class SPHINCSPlus {
 
     // Convert message hash to base-w representation
     const msgW: number[] = []
-    const _bits = 0
     let bitsInBuffer = 0
     let buffer = 0
 
@@ -867,7 +866,7 @@ export class Dilithium {
    * Sign a message
    */
   sign(message: Uint8Array, privateKey: Uint8Array): QuantumSafeSignature {
-    const { seed, s1, s2: _s2, t: _t } = this.deserializePrivate(privateKey)
+    const { seed, s1 } = this.deserializePrivate(privateKey)
     const A = this.expandSeed(seed, this.params.n)
 
     // Hash message
@@ -1338,7 +1337,7 @@ export class HybridCrypto {
     }
   }
 
-  verify(message: Uint8Array, signature: any, quantumPublicKey: Uint8Array, classicalPublicKey: Uint8Array): boolean {
+  verify(message: Uint8Array, signature: { quantumSignature: Uint8Array, classicalSignature: Uint8Array }, quantumPublicKey: Uint8Array, classicalPublicKey: Uint8Array): boolean {
     try {
       // Verify both signatures - both must be valid for security
       const quantumValid = this.dilithium.verify(message, { signature: signature.quantumSignature }, quantumPublicKey)

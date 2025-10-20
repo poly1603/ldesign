@@ -8,16 +8,34 @@
 // ==================== 核心功能导出 ====================
 
 export {
+  ABTestManager,
+  ABTestPlugin,
+  GoogleAnalyticsAdapter,
+  useABTest
+} from './ab-testing'
+export type {
+  ABTestExperiment,
+  ABTestResult,
+  ABTestVariant,
+  AnalyticsAdapter,
+  ExperimentGoal,
+  TargetingRule,
+  UserSegment,
+  VariantStats
+} from './ab-testing'
+export {
   createRouteAnalytics,
   // 路由分析
   RouteAnalytics,
 } from './analytics/route-analytics'
+
 export type {
   AnalyticsConfig,
   PerformanceMetrics as AnalyticsPerformanceMetrics,
   RouteVisit,
   UserBehaviorEvent,
 } from './analytics/route-analytics'
+
 // Vue 组件
 export {
   DeviceUnsupported,
@@ -36,6 +54,12 @@ export type {
   RouteErrorInfo,
 } from './components'
 
+// ==================== 类型定义导出 ====================
+
+export {
+  LocaleSwitcher,
+} from './components/LocaleSwitcher'
+
 // 组件类型
 export type {
   AnimationConfig,
@@ -53,11 +77,10 @@ export type {
   RouterViewProps,
   RouterViewSlotProps,
 } from './components/types'
-
 // 核心 Hooks
 export { useLink, useNavigation, useRoute, useRouter } from './composables'
 
-// ==================== 类型定义导出 ====================
+// ==================== 组件导出 ====================
 
 // 参数 Hooks
 export {
@@ -70,10 +93,11 @@ export {
 
 // 守卫 Hooks
 export { onBeforeRouteLeave, onBeforeRouteUpdate } from './composables'
+
 // 工具 Hooks
 export { hasRoute, hasRouter } from './composables'
 
-// ==================== 组件导出 ====================
+// ==================== 组合式 API 导出 ====================
 
 // 设备适配 Hooks
 export { useDeviceComponent, useDeviceRoute } from './composables'
@@ -88,7 +112,12 @@ export type {
 // 组合式 API 类型
 export type { UseLinkOptions, UseLinkReturn } from './composables'
 
-// ==================== 组合式 API 导出 ====================
+export {
+  FormRoutePlugin,
+  useFormRoute,
+  useMultiStepForm
+} from './composables/useFormRoute'
+
 
 // 常量
 export {
@@ -102,6 +131,10 @@ export {
   PreloadStrategy,
   START_LOCATION,
 } from './core/constants'
+
+// ==================== 插件系统导出 ====================
+
+// ==================== Engine集成导出 ====================
 
 // 历史管理
 export {
@@ -117,18 +150,12 @@ export { RouteMatcher } from './core/matcher'
 export { createRouter } from './core/router'
 
 export type { RouterImpl } from './core/router'
-
-// ==================== 插件系统导出 ====================
-
-// ==================== Engine集成导出 ====================
-
 export {
   // 开发调试工具
   createDevTools,
   DevToolsPanel,
   RouteInspector,
 } from './debug/dev-tools'
-
 // ==================== 路由调试器导出 ====================
 export {
   getRouteDebugger,
@@ -139,19 +166,22 @@ export {
 export type {
   DebugConfig,
 } from './debug/RouteDebugger'
-
 // 设备适配核心功能
 export {
   createDeviceRouterPlugin,
   DeviceComponentResolver,
   DeviceRouteGuard,
 } from './device'
+
+// ==================== 路由守卫导出 ====================
+
 // 设备适配工具函数
 export {
   checkDeviceSupport,
   createUnsupportedDeviceRoute,
   resolveDeviceComponent,
 } from './device/utils'
+
 // Engine插件（用于Engine集成）
 export {
   createDefaultRouterEnginePlugin,
@@ -159,7 +189,12 @@ export {
   routerPlugin,
 } from './engine'
 
+// ==================== 工具函数导出 ====================
+
 export type { RouterEnginePluginOptions } from './engine'
+
+// ==================== Engine 集成导出 ====================
+
 // ==================== 智能代码分割导出 ====================
 export {
   CodeSplittingManager,
@@ -167,7 +202,7 @@ export {
   createCodeSplittingManager,
 } from './features/code-splitting'
 
-// ==================== 路由守卫导出 ====================
+// ==================== 设备适配功能 ====================
 
 export type {
   ChunkInfo,
@@ -180,79 +215,35 @@ export type {
   SplittingStrategy,
 } from './features/code-splitting'
 
-// ==================== 路由性能分析器导出 ====================
 export {
-  generatePerformanceReport,
-  getPerformanceAnalyzer,
-  getPerformanceSuggestions,
-  RoutePerformanceAnalyzer,
-  setupPerformanceAnalyzer,
-} from './features/RoutePerformanceAnalyzer'
-
-// ==================== 工具函数导出 ====================
+  DataFetchingManager,
+  DataFetchingPlugin,
+  defineAsyncComponent,
+  defineLoader,
+  setupDataFetching,
+  useRouteData,
+} from './features/data-fetching'
 
 export type {
-  AnalyzerConfig,
-  OptimizationSuggestion,
-  PerformanceMetric,
-  PerformanceReport,
-} from './features/RoutePerformanceAnalyzer'
-
-// ==================== Engine 集成导出 ====================
-
-// ==================== 安全功能导出 ====================
-export {
-  AuthManager,
-  checkPermission,
-  CSRFProtection,
-  getCurrentUser,
-  isAuthenticated,
-  PermissionManager,
-  RouteSecurityManager,
-  sanitizeContent,
-  setupRouteSecurity,
-  XSSProtection,
-} from './features/RouteSecurity'
-
-// ==================== 设备适配功能 ====================
-
-export type {
-  SecurityConfig,
-} from './features/RouteSecurity'
-
-// ==================== 路由版本控制导出 ====================
-export {
-  createRouteVersion,
-  getVersionControl,
-  restoreRouteVersion,
-  RouteVersionControl,
-  setupRouteVersionControl,
-} from './features/RouteVersionControl'
-
-export type {
-  RouteVersion,
-  VersionControlConfig,
-  VersionDiff,
-} from './features/RouteVersionControl'
+  DataFetchingOptions,
+  DataFetchingState,
+  DataLoader,
+  DataResolver,
+} from './features/data-fetching'
 
 // ==================== 性能优化工具 ====================
 
-// ==================== 智能路由管理导出 ====================
 export {
-  addDynamicRoute,
-  AutoRouteGenerator,
-  DynamicRouteLoader,
-  getRouteStatistics,
-  NestedRouteOptimizer,
-  RouteGroupManager,
-  setupSmartRouteManager,
-  SmartRouteManager,
-} from './features/SmartRouteManager'
+  getI18nManager,
+  I18nRouteManager,
+  I18nRouterPlugin,
+  setupI18nRouter,
+  useI18nRoute,
+} from './features/i18n'
 
 export type {
-  RouteGroup,
-  SmartRouteConfig,
-} from './features/SmartRouteManager'
+  I18nRouteConfig,
+} from './features/i18n'
 
 // ==================== 便捷创建函数 ====================
 
@@ -384,6 +375,85 @@ export async function createFullRouter(options: {
 
 // ==================== 开发工具导出 ====================
 
+// ==================== 路由性能分析器导出 ====================
+export {
+  generatePerformanceReport,
+  getPerformanceAnalyzer,
+  getPerformanceSuggestions,
+  RoutePerformanceAnalyzer,
+  setupPerformanceAnalyzer,
+} from './features/RoutePerformanceAnalyzer'
+
+export type {
+  AnalyzerConfig,
+  OptimizationSuggestion,
+  PerformanceMetric,
+  PerformanceReport,
+} from './features/RoutePerformanceAnalyzer'
+
+// ==================== 功能扩展导出 ====================
+
+// ==================== 安全功能导出 ====================
+export {
+  AuthManager,
+  checkPermission,
+  CSRFProtection,
+  getCurrentUser,
+  isAuthenticated,
+  PermissionManager,
+  RouteSecurityManager,
+  sanitizeContent,
+  setupRouteSecurity,
+  XSSProtection,
+} from './features/RouteSecurity'
+
+export type {
+  SecurityConfig,
+} from './features/RouteSecurity'
+
+// ==================== 路由版本控制导出 ====================
+export {
+  createRouteVersion,
+  getVersionControl,
+  restoreRouteVersion,
+  RouteVersionControl,
+  setupRouteVersionControl,
+} from './features/RouteVersionControl'
+
+export type {
+  RouteVersion,
+  VersionControlConfig,
+  VersionDiff,
+} from './features/RouteVersionControl'
+
+export {
+  createScrollBehavior,
+  getScrollManager,
+  ScrollBehaviorManager,
+  ScrollBehaviorPlugin,
+} from './features/ScrollBehavior'
+
+export type {
+  ScrollBehaviorOptions,
+} from './features/ScrollBehavior'
+
+// ==================== 智能路由管理导出 ====================
+export {
+  addDynamicRoute,
+  AutoRouteGenerator,
+  DynamicRouteLoader,
+  getRouteStatistics,
+  NestedRouteOptimizer,
+  RouteGroupManager,
+  setupSmartRouteManager,
+  SmartRouteManager,
+} from './features/SmartRouteManager'
+
+export type {
+  RouteGroup,
+  SmartRouteConfig,
+} from './features/SmartRouteManager'
+
 export {
   combineGuards,
   createAuthGuard,
@@ -405,7 +475,29 @@ export type {
   TitleGuardOptions,
 } from './guards'
 
-// ==================== 功能扩展导出 ====================
+export {
+  FormRouteManager
+} from './managers/FormRouteManager'
+
+export type {
+  FormRouteConfig
+} from './managers/FormRouteManager'
+
+// 测试工具已移除
+
+export {
+  MicroFrontendPlugin,
+  MicroFrontendRouter,
+  useMicroFrontend
+} from './micro-frontend'
+
+export type {
+  GlobalLifeCycles,
+  MicroApp,
+  MicroAppState,
+  MicroFrontendConfig,
+  SandboxConfig
+} from './micro-frontend'
 
 export {
   authMiddleware,
@@ -420,6 +512,10 @@ export {
   roleMiddleware,
   titleMiddleware,
 } from './middleware'
+
+// 懒加载功能已集成到其他模块中
+
+// ==================== 性能监控导出 ====================
 
 export type {
   MiddlewareConfig,
@@ -437,6 +533,8 @@ export {
   supportsAnimations,
 } from './plugins/animation'
 
+// ==================== 国际化功能导出 ====================
+
 export type { AnimationPluginOptions } from './plugins/animation'
 
 // 缓存插件
@@ -448,6 +546,8 @@ export {
 } from './plugins/cache'
 
 export type { CachePluginOptions } from './plugins/cache'
+
+// ==================== 数据预取功能导出 ====================
 
 // 性能监控插件
 export {
@@ -462,6 +562,8 @@ export {
 
 export type { PerformancePluginOptions } from './plugins/performance'
 
+// ==================== 滚动行为功能导出 ====================
+
 // 预加载插件
 export {
   createPreloadConfig,
@@ -475,6 +577,25 @@ export {
 
 export type { PreloadPluginOptions } from './plugins/preload'
 
+// ==================== 路由类型生成器导出 ====================
+// 注意：类型生成器是构建时工具，不应该在浏览器代码中使用
+// 如需使用，请直接导入：import { RouteTypeGenerator } from '@ldesign/router/features/type-generator'
+// export {
+//   generateRouteTypes,
+//   RouteTypeGenerator,
+//   RouteTypeGenerator as RouteTypesGenerator, // 别名兼容
+//   RouteTypeGenerator as RouteTypesGeneratorPlugin, // 别名兼容
+//   vitePluginRouteTypes as ViteRouteTypesPlugin,
+//   WebpackPluginRouteTypes as WebpackRouteTypesPlugin
+// } from './features/type-generator'
+
+// export type {
+//   TypeGeneratorOptions as RouteTypesGeneratorOptions,
+//   RouteTypeInfo as RouteInfo
+// } from './features/type-generator'
+
+// ==================== 表单路由管理导出 ====================
+
 export {
   createRouteStateManager,
   // 路由状态管理
@@ -486,8 +607,6 @@ export type {
   RouteHistoryItem,
   RouteState,
 } from './state/route-state'
-
-// 测试工具已移除
 
 // 核心类型
 export type {
@@ -505,11 +624,13 @@ export type {
   RouteComponent,
   RouteLocationBase,
   RouteLocationNormalized,
+  RouteLocationNormalizedLoaded,
   RouteLocationRaw,
   RouteMeta,
   RouteParams,
   RouteQuery,
   Router,
+  RouteRecord,
   RouteRecordNormalized,
   RouteRecordRaw,
   RouterHistory,
@@ -519,6 +640,8 @@ export type {
   UseRouteReturn,
   UseRouterReturn,
 } from './types'
+
+// ==================== 微前端路由集成导出 ====================
 
 // 设备适配类型
 export type {
@@ -560,9 +683,7 @@ export {
   stringifyURL,
 } from './utils'
 
-// 懒加载功能已集成到其他模块中
-
-// ==================== 性能监控导出 ====================
+// ==================== A/B测试功能导出 ====================
 
 // ==================== 内存管理器导出 ====================
 export {
@@ -579,126 +700,6 @@ export type {
   MemoryStats,
   UnifiedMemoryConfig,
 } from './utils/unified-memory-manager'
-
-// ==================== 国际化功能导出 ====================
-
-export {
-  getI18nManager,
-  I18nRouteManager,
-  I18nRouterPlugin,
-  setupI18nRouter,
-  useI18nRoute,
-} from './features/i18n'
-
-export type {
-  I18nRouteConfig,
-} from './features/i18n'
-
-export {
-  LocaleSwitcher,
-} from './components/LocaleSwitcher'
-
-// ==================== 数据预取功能导出 ====================
-
-export {
-  DataFetchingManager,
-  DataFetchingPlugin,
-  defineAsyncComponent,
-  defineLoader,
-  setupDataFetching,
-  useRouteData,
-} from './features/data-fetching'
-
-export type {
-  DataFetchingOptions,
-  DataFetchingState,
-  DataLoader,
-  DataResolver,
-} from './features/data-fetching'
-
-// ==================== 滚动行为功能导出 ====================
-
-export {
-  createScrollBehavior,
-  getScrollManager,
-  ScrollBehaviorManager,
-  ScrollBehaviorPlugin,
-} from './features/ScrollBehavior'
-
-export type {
-  ScrollBehaviorOptions,
-} from './features/ScrollBehavior'
-
-// ==================== 路由类型生成器导出 ====================
-// 注意：类型生成器是构建时工具，不应该在浏览器代码中使用
-// 如需使用，请直接导入：import { RouteTypeGenerator } from '@ldesign/router/features/type-generator'
-// export {
-//   generateRouteTypes,
-//   RouteTypeGenerator,
-//   RouteTypeGenerator as RouteTypesGenerator, // 别名兼容
-//   RouteTypeGenerator as RouteTypesGeneratorPlugin, // 别名兼容
-//   vitePluginRouteTypes as ViteRouteTypesPlugin,
-//   WebpackPluginRouteTypes as WebpackRouteTypesPlugin
-// } from './features/type-generator'
-
-// export type {
-//   TypeGeneratorOptions as RouteTypesGeneratorOptions,
-//   RouteTypeInfo as RouteInfo
-// } from './features/type-generator'
-
-// ==================== 表单路由管理导出 ====================
-
-export {
-  FormRouteManager
-} from './managers/FormRouteManager'
-
-export {
-  FormRoutePlugin,
-  useFormRoute,
-  useMultiStepForm
-} from './composables/useFormRoute'
-
-export type {
-  FormRouteConfig,
-  FormField,
-  FormStep
-} from './managers/FormRouteManager'
-
-// ==================== 微前端路由集成导出 ====================
-
-export {
-  MicroFrontendRouter,
-  MicroFrontendPlugin,
-  useMicroFrontend
-} from './micro-frontend'
-
-export type {
-  MicroApp,
-  MicroFrontendConfig,
-  MicroAppState,
-  GlobalLifeCycles,
-  SandboxConfig
-} from './micro-frontend'
-
-// ==================== A/B测试功能导出 ====================
-
-export {
-  ABTestManager,
-  ABTestPlugin,
-  GoogleAnalyticsAdapter,
-  useABTest
-} from './ab-testing'
-
-export type {
-  ABTestExperiment,
-  ABTestVariant,
-  ABTestResult,
-  AnalyticsAdapter,
-  ExperimentGoal,
-  TargetingRule,
-  UserSegment,
-  VariantStats
-} from './ab-testing'
 
 // ==================== 默认导出 ====================
 

@@ -1,7 +1,7 @@
 import type { CacheEvent, StorageEngine } from '../types'
-import { EventEmitter } from '../utils'
-
 import type { CacheManager } from './cache-manager'
+
+import { EventEmitter } from '../utils'
 
 
 /**

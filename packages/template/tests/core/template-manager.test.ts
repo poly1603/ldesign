@@ -2,9 +2,9 @@
  * 模板管理器单元测试
  */
 
-import type { TemplateInfo, TemplateManagerConfig } from '../../src/types'
+import type { Template, TemplateManagerOptions } from '../../src/types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { TemplateManager } from '../../src/core/template-manager'
+import { TemplateManager } from '../../src/core/manager'
 
 // Mock 文件系统
 vi.mock('fs/promises', () => ({

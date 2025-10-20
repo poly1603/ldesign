@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Viewer - Vanilla JS 示例</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>📄 Word Viewer - Vanilla JavaScript</h1>
+      <p>功能强大的 Word 文档查看器</p>
+    </header>
+
+    <div class="toolbar">
+      <div class="file-input-wrapper">
+        <input type="file" id="fileInput" accept=".docx,.doc" />
+        <label for="fileInput" class="btn btn-primary">📁 选择文档</label>
+      </div>
+      <button id="btn-zoom-in" class="btn">🔍 放大</button>
+      <button id="btn-zoom-out" class="btn">🔎 缩小</button>
+      <button id="btn-toggle-edit" class="btn">✏️ 编辑模式</button>
+      <button id="btn-toggle-theme" class="btn">🌓 切换主题</button>
+      <button id="btn-export-pdf" class="btn">📥 导出 PDF</button>
+      <button id="btn-export-html" class="btn">📄 导出 HTML</button>
+      <input 
+        type="text" 
+        id="searchInput" 
+        placeholder="搜索文本..." 
+        class="search-input"
+      />
+      <button id="btn-search" class="btn">🔍 搜索</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div class="viewer-wrapper">
+      <div id="viewer"></div>
+    </div>
+
+    <div class="info-panel">
+      <h3>文档信息</h3>
+      <div id="doc-info">
+        <p>未加载文档</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
+

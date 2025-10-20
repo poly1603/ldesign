@@ -1,5 +1,5 @@
-import CryptoJS from 'crypto-js'
 import type { HashAlgorithm, HashOptions, HashResult, IHasher } from '../types'
+import CryptoJS from 'crypto-js'
 import { CONSTANTS, ErrorUtils } from '../utils'
 
 /**

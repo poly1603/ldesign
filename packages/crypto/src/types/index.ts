@@ -191,11 +191,11 @@ export interface KeyGenerationOptions {
  * 注意：使用any以支持各算法的特定选项类型，各算法实现内部保持类型安全
  */
 export interface IEncryptor {
-  encrypt: (data: string, key: string, options?: any) => EncryptResult | Promise<EncryptResult>
+  encrypt: (data: string, key: string, options?: Record<string, unknown>) => EncryptResult | Promise<EncryptResult>
   decrypt: (
     encryptedData: string | EncryptResult,
     key: string,
-    options?: any
+    options?: Record<string, unknown>
   ) => DecryptResult | Promise<DecryptResult>
 }
 
@@ -252,3 +252,8 @@ export interface IKeyGenerator {
   generateSalt: (length?: number) => string
   generateIV: (length?: number) => string
 }
+
+/**
+ * 导出 CryptoJS 类型定义
+ */
+export type * from './cryptojs'

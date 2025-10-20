@@ -4,7 +4,7 @@
  */
 import type { ApiEngine, ApiMethodConfig, ApiPlugin } from '../types'
 
-export interface RestPluginOptions<TList = unknown, TItem = unknown, TCreate = unknown, TUpdate = Partial<TItem>> {
+export interface RestPluginOptions<_TList = unknown, TItem = unknown, _TCreate = unknown, _TUpdate = Partial<TItem>> {
   /** 资源名（用于方法命名前缀，如 'user' => user.list/get/create/update/remove） */
   resource: string
   /** 基础路径，如 '/users'，支持 ':id' 或 '{id}' 模板 */

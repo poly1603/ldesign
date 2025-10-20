@@ -19,23 +19,159 @@
   "author": "ldesign",
   "license": "MIT",
   "type": "module",
+  "sideEffects": [
+    "*.css",
+    "*.vue.css",
+    "*/ThemePicker.css",
+    "*/VueThemeModeSwitcher.vue.css"
+  ],
   "exports": {
     ".": {
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
     },
-    "./vue": {
-      "types": "./src/vue/index.ts",
-      "import": "./src/vue/index.ts"
+    "./accessibility": {
+      "types": "./es/accessibility/index.d.ts",
+      "import": "./es/accessibility/index.js",
+      "require": "./lib/accessibility/index.cjs"
     },
-    "./vue/ThemePicker": {
-      "import": "./src/vue/ThemePicker.vue"
+    "./accessibility/*": {
+      "types": "./es/accessibility/*.d.ts",
+      "import": "./es/accessibility/*.js",
+      "require": "./lib/accessibility/*.cjs"
+    },
+    "./ai/*": {
+      "types": "./es/ai/*.d.ts",
+      "import": "./es/ai/*.js",
+      "require": "./lib/ai/*.cjs"
+    },
+    "./analyzer": {
+      "types": "./es/analyzer/index.d.ts",
+      "import": "./es/analyzer/index.js",
+      "require": "./lib/analyzer/index.cjs"
+    },
+    "./analyzer/*": {
+      "types": "./es/analyzer/*.d.ts",
+      "import": "./es/analyzer/*.js",
+      "require": "./lib/analyzer/*.cjs"
+    },
+    "./brand": {
+      "types": "./es/brand/index.d.ts",
+      "import": "./es/brand/index.js",
+      "require": "./lib/brand/index.cjs"
+    },
+    "./brand/*": {
+      "types": "./es/brand/*.d.ts",
+      "import": "./es/brand/*.js",
+      "require": "./lib/brand/*.cjs"
+    },
+    "./constants/*": {
+      "types": "./es/constants/*.d.ts",
+      "import": "./es/constants/*.js",
+      "require": "./lib/constants/*.cjs"
+    },
+    "./core": {
+      "types": "./es/core/index.d.ts",
+      "import": "./es/core/index.js",
+      "require": "./lib/core/index.cjs"
+    },
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
+    },
+    "./gradient": {
+      "types": "./es/gradient/index.d.ts",
+      "import": "./es/gradient/index.js",
+      "require": "./lib/gradient/index.cjs"
+    },
+    "./gradient/*": {
+      "types": "./es/gradient/*.d.ts",
+      "import": "./es/gradient/*.js",
+      "require": "./lib/gradient/*.cjs"
+    },
+    "./locales": {
+      "types": "./es/locales/index.d.ts",
+      "import": "./es/locales/index.js",
+      "require": "./lib/locales/index.cjs"
+    },
+    "./locales/*": {
+      "types": "./es/locales/*.d.ts",
+      "import": "./es/locales/*.js",
+      "require": "./lib/locales/*.cjs"
+    },
+    "./palette/*": {
+      "types": "./es/palette/*.d.ts",
+      "import": "./es/palette/*.js",
+      "require": "./lib/palette/*.cjs"
+    },
+    "./performance": {
+      "types": "./es/performance/index.d.ts",
+      "import": "./es/performance/index.js",
+      "require": "./lib/performance/index.cjs"
+    },
+    "./performance/*": {
+      "types": "./es/performance/*.d.ts",
+      "import": "./es/performance/*.js",
+      "require": "./lib/performance/*.cjs"
+    },
+    "./plugin": {
+      "types": "./es/plugin/index.d.ts",
+      "import": "./es/plugin/index.js",
+      "require": "./lib/plugin/index.cjs"
+    },
+    "./plugin/*": {
+      "types": "./es/plugin/*.d.ts",
+      "import": "./es/plugin/*.js",
+      "require": "./lib/plugin/*.cjs"
     },
     "./react": {
-      "types": "./src/react/index.ts",
-      "import": "./src/react/index.ts"
-    }
+      "types": "./es/react/index.d.ts",
+      "import": "./es/react/index.js",
+      "require": "./lib/react/index.cjs"
+    },
+    "./react/*": {
+      "types": "./es/react/*.d.ts",
+      "import": "./es/react/*.js",
+      "require": "./lib/react/*.cjs"
+    },
+    "./schemes": {
+      "types": "./es/schemes/index.d.ts",
+      "import": "./es/schemes/index.js",
+      "require": "./lib/schemes/index.cjs"
+    },
+    "./schemes/*": {
+      "types": "./es/schemes/*.d.ts",
+      "import": "./es/schemes/*.js",
+      "require": "./lib/schemes/*.cjs"
+    },
+    "./themes/*": {
+      "types": "./es/themes/*.d.ts",
+      "import": "./es/themes/*.js",
+      "require": "./lib/themes/*.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
+    },
+    "./vue": {
+      "types": "./es/vue/index.d.ts",
+      "import": "./es/vue/index.js",
+      "require": "./lib/vue/index.cjs"
+    },
+    "./vue/*": {
+      "types": "./es/vue/*.d.ts",
+      "import": "./es/vue/*.js",
+      "require": "./lib/vue/*.cjs"
+    },
+    "./es/react/index.css": "./es/react/index.css",
+    "./es/vue/ThemePicker.vue.css": "./es/vue/ThemePicker.vue.css",
+    "./es/vue/VueThemeModeSwitcher.vue.css": "./es/vue/VueThemeModeSwitcher.vue.css",
+    "./lib/react/index.css": "./lib/react/index.css",
+    "./lib/vue/ThemePicker.vue.css": "./lib/vue/ThemePicker.vue.css",
+    "./lib/vue/VueThemeModeSwitcher.vue.css": "./lib/vue/VueThemeModeSwitcher.vue.css"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
@@ -51,15 +187,19 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
-    "build:esm": "tsc --project tsconfig.build.json --module esnext --outDir es",
-    "build:cjs": "tsc --project tsconfig.build.json --module commonjs --outDir lib",
-    "build:all": "npm run build:esm && npm run build:cjs",
+    "build": "ldesign-builder build",
     "dev": "tsc --watch --project tsconfig.build.json",
     "type-check": "tsc --noEmit --project tsconfig.json",
     "clean": "node -e \"const fs=require('fs'); ['es','lib','dist','.tsbuildinfo'].forEach(d=>{try{fs.rmSync(d,{recursive:true,force:true})}catch{}})\"",
     "prepublishOnly": "npm run clean && npm run build:all",
     "postinstall": "echo '✨ @ldesign/color installed successfully!'"
+  },
+  "dependencies": {
+    "lucide-react": "^0.546.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "vue": ">=3.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
@@ -67,11 +207,8 @@
     "@vitejs/plugin-vue": "^4.0.0",
     "rimraf": "^5.0.0",
     "tsx": "^4.20.6",
-    "typescript": "^5.6.0"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.0",
-    "vue": ">=3.0.0"
+    "typescript": "^5.6.0",
+    "@ldesign/builder": "workspace:*"
   },
   "peerDependenciesMeta": {
     "react": {
@@ -80,8 +217,5 @@
     "vue": {
       "optional": true
     }
-  },
-  "dependencies": {
-    "lucide-react": "^0.546.0"
   }
 }

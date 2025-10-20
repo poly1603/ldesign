@@ -97,7 +97,6 @@ export class MarkerRenderer {
   private customRenderers: Map<MarkerStyle, CustomMarkerRenderer> = new Map();
   private markerIdCounter = 0;
   private animationTimer: number | null = null;
-  private lastAnimationTime = 0;
   
   /**
    * 添加单个标记
@@ -204,7 +203,7 @@ export class MarkerRenderer {
     
     if (rippleMarkers.length > 0) {
       // 为每个水波纹标记创建3个环
-      rippleMarkers.forEach((marker, markerIndex) => {
+      rippleMarkers.forEach((marker) => {
         for (let ringIndex = 0; ringIndex < 3; ringIndex++) {
           const rippleLayer = new ScatterplotLayer({
             id: `ripple-${marker.id}-ring-${ringIndex}`,
@@ -307,24 +306,27 @@ export class MarkerRenderer {
       return null;
     }
     
+    // 为每个样式创建唯一的层ID，添加时间戳避免冲突
+    const layerId = `marker-${style}-${Date.now()}`;
+    
     switch (style) {
       case 'circle':
       case 'square':
       case 'triangle':
       case 'diamond':
-        return this.createMainShapeLayer(style, visibleMarkers);
+        return this.createMainShapeLayer(style, visibleMarkers, layerId);
       
       case 'pin':
-        return this.createPinLayer(visibleMarkers);
+        return this.createPinLayer(visibleMarkers, layerId);
       
       case 'icon':
-        return this.createIconLayer(visibleMarkers);
+        return this.createIconLayer(visibleMarkers, layerId);
       
       case 'custom':
-        return this.createMainShapeLayer('circle', visibleMarkers);
+        return this.createMainShapeLayer('circle', visibleMarkers, layerId);
       
       default:
-        return this.createMainShapeLayer('circle', visibleMarkers);
+        return this.createMainShapeLayer('circle', visibleMarkers, layerId);
     }
   }
   
@@ -332,9 +334,9 @@ export class MarkerRenderer {
   /**
    * 创建主形状图层
    */
-  private createMainShapeLayer(shape: string, markers: MarkerOptions[]): ScatterplotLayer {
+  private createMainShapeLayer(shape: string, markers: MarkerOptions[], layerId: string): ScatterplotLayer {
     return new ScatterplotLayer({
-      id: `marker-${shape}-layer`,
+      id: layerId,
       data: markers,
       pickable: true,
       opacity: 1,  // 完全不透明
@@ -366,12 +368,12 @@ export class MarkerRenderer {
         }
         return color;
       },
-      getLineColor: (d: MarkerOptions) => {
+      getLineColor: () => {
         // 白色边框，完全不透明
         return [255, 255, 255, 255];
       },
       lineWidthScale: 1,
-      getLineWidth: (d: MarkerOptions) => {
+      getLineWidth: () => {
         return 2; // 固定边框宽度
       },
       onClick: (info: any) => {
@@ -401,7 +403,7 @@ export class MarkerRenderer {
   /**
    * 创建图钉图层
    */
-  private createPinLayer(markers: MarkerOptions[]): IconLayer {
+  private createPinLayer(markers: MarkerOptions[], layerId: string): IconLayer {
     // 默认图钉 SVG
     const defaultPinSvg = `
       <svg width="24" height="36" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg">
@@ -421,7 +423,7 @@ export class MarkerRenderer {
     };
     
     return new IconLayer({
-      id: 'marker-pin-layer',
+      id: layerId,
       data: markers,
       pickable: true,
       iconAtlas: 'data:image/svg+xml;base64,' + btoa(defaultPinSvg),
@@ -453,7 +455,7 @@ export class MarkerRenderer {
   /**
    * 创建图标图层
    */
-  private createIconLayer(markers: MarkerOptions[]): IconLayer {
+  private createIconLayer(markers: MarkerOptions[], layerId: string): IconLayer {
     // 准备图标数据
     const iconData = markers.map(marker => {
       const icon = marker.icon;
@@ -478,7 +480,7 @@ export class MarkerRenderer {
     });
     
     return new IconLayer({
-      id: 'marker-icon-layer',
+      id: layerId,
       data: iconData,
       pickable: true,
       getIcon: (d: any) => ({
@@ -531,20 +533,20 @@ export class MarkerRenderer {
     const uniqueLabelChars = Array.from(new Set(labelChars)).join('');
     
     return new TextLayer({
-      id: 'marker-labels-layer',
+      id: `marker-labels-${Date.now()}`,
       data: labelData,
       pickable: false,
       getPosition: (d: any) => d.position,
       getText: (d: any) => d.text,
       getSize: (d: any) => d.marker.label?.fontSize || 12,
-      getColor: (d: any) => d.marker.label?.color || [0, 0, 0, 255],
-      getTextAnchor: (d: any) => d.marker.label?.anchor || 'middle',
-      getAlignmentBaseline: (d: any) => d.marker.label?.alignment || 'center',
-      fontFamily: (d: any) => d.marker.label?.fontFamily || 'Arial, sans-serif',
-      fontWeight: (d: any) => d.marker.label?.fontWeight || 'normal',
-      maxWidth: (d: any) => d.marker.label?.maxWidth || 200,
-      getBackgroundColor: (d: any) => d.marker.label?.backgroundColor || [255, 255, 255, 0],  // 使用新的API
-      backgroundPadding: (d: any) => d.marker.label?.backgroundPadding || [2, 2],
+      getColor: () => [0, 0, 0, 255],
+      getTextAnchor: () => 'middle',
+      getAlignmentBaseline: () => 'center',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'normal',
+      maxWidth: 200,
+      getBackgroundColor: () => [255, 255, 255, 0],
+      backgroundPadding: [2, 2],
       characterSet: uniqueLabelChars  // 设置字符集
     } as any);
   }

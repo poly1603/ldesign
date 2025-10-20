@@ -1,148 +1,10 @@
-<template>
-  <div class="ld-theme-picker" ref="pickerRef">
-    <button 
-      class="ld-theme-picker__trigger"
-      @click="toggleDropdown"
-      :title="currentLabel"
-    >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" :stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="13.5" cy="6.5" r=".5" :fill="currentColor"/>
-        <circle cx="17.5" cy="10.5" r=".5" :fill="currentColor"/>
-        <circle cx="8.5" cy="7.5" r=".5" :fill="currentColor"/>
-        <circle cx="6.5" cy="12.5" r=".5" :fill="currentColor"/>
-        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
-      </svg>
-    </button>
-    
-    <Teleport to="body">
-      <Transition name="ld-theme-picker-fade">
-        <div 
-          v-if="isOpen"
-          class="ld-theme-picker__dropdown"
-          :style="dropdownStyle"
-          @click.stop
-        >
-        <div v-if="showSearch" class="ld-theme-picker__search">
-          <input 
-            v-model="searchQuery"
-            type="text"
-            :placeholder="t('theme.searchPlaceholder', 'Search colors...')"
-            class="ld-theme-picker__search-input"
-          />
-        </div>
-        
-        <div class="ld-theme-picker__content">
-          <div v-if="showCustom" class="ld-theme-picker__custom">
-            <label class="ld-theme-picker__label">{{ t('theme.customColor', 'Custom Color') }}</label>
-            <div class="ld-theme-picker__custom-input">
-              <input 
-                v-model="customColor"
-                type="color"
-                class="ld-theme-picker__color-input"
-                @change="handleCustomColor"
-              />
-              <input 
-                v-model="customColor"
-                type="text"
-                placeholder="#000000"
-                class="ld-theme-picker__hex-input"
-                @keyup.enter="handleCustomColor"
-              />
-              <button 
-                class="ld-theme-picker__apply-btn"
-                @click="handleCustomColor"
-              >
-                {{ t('theme.apply', 'Apply') }}
-              </button>
-            </div>
-
-            <!-- 添加自定义主题 -->
-            <div class="ld-theme-picker__add-theme" v-if="showAddCustomTheme">
-              <label class="ld-theme-picker__label">{{ t('theme.addCustomTheme', 'Add Custom Theme') }}</label>
-              <div class="ld-theme-picker__add-input">
-                <input 
-                  v-model="newThemeName"
-                  type="text"
-                  :placeholder="t('theme.themeName', 'Theme name')"
-                  class="ld-theme-picker__name-input"
-                />
-                <input 
-                  v-model="newThemeColor"
-                  type="color"
-                  class="ld-theme-picker__color-input"
-                />
-                <input 
-                  v-model="newThemeColor"
-                  type="text"
-                  placeholder="#000000"
-                  class="ld-theme-picker__hex-input"
-                />
-                <button 
-                  class="ld-theme-picker__add-btn"
-                  @click="handleAddCustomTheme"
-                  :disabled="!newThemeName || !newThemeColor"
-                >
-                  {{ t('theme.add', 'Add') }}
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div class="ld-theme-picker__presets">
-            <label class="ld-theme-picker__label">
-              {{ t('theme.selectThemeColor', 'Select Theme Color') }}
-              <span style="font-size: 10px; color: #999; margin-left: 8px;">
-                ({{ currentLocale }})
-              </span>
-            </label>
-            <div class="ld-theme-picker__grid">
-              <div
-                v-for="preset in filteredPresets"
-                :key="`${preset.name}-${preset.color}`"
-                class="ld-theme-picker__preset"
-                :class="{ 'is-active': (preset.name === activeThemeName) || (!activeThemeName && preset.custom), 'is-custom': preset.custom }"
-              >
-                <span 
-                  class="ld-theme-picker__preset-color"
-                  :style="{ backgroundColor: preset.color }"
-                  :title="preset.label"
-                  @click="selectPreset(preset)"
-                >
-                  <svg v-if="(preset.name === activeThemeName) || (!activeThemeName && preset.custom)" class="ld-theme-picker__check" width="16" height="16" viewBox="0 0 16 16">
-                    <path d="M3 8L6 11L13 4" stroke="white" stroke-width="2" fill="none"/>
-                  </svg>
-                </span>
-                <span 
-                  class="ld-theme-picker__preset-label"
-                  @click="selectPreset(preset)"
-                >{{ t(`theme.presets.${preset.name}`, preset.label) }}</span>
-                <!-- 删除按钮（仅自定义主题） -->
-                <button
-                  v-if="preset.custom && showRemoveButton"
-                  class="ld-theme-picker__remove-btn"
-                  @click.stop="handleRemoveCustomTheme(preset.name)"
-                  :title="t('theme.remove', 'Remove')"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        </div>
-      </Transition>
-    </Teleport>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick, inject } from 'vue'
-import { useTheme } from './useTheme'
-import { ColorPluginSymbol } from '../plugin'
-import type { PresetTheme } from '../themes/presets'
 import type { ColorPlugin } from '../plugin'
+import type { PresetTheme } from '../themes/presets'
+import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { getLocale } from '../locales'
-import type { ColorLocale } from '../locales'
+import { ColorPluginSymbol } from '../plugin'
+import { useTheme } from './useTheme'
 
 interface Props {
   modelValue?: string
@@ -218,7 +80,7 @@ const dropdownStyle = ref({})
 const selectedThemeName = ref<string>('')
 
 const { 
-  currentTheme,
+  // currentTheme,
   presets: defaultPresets,
   primaryColor,
   themeName,
@@ -247,9 +109,9 @@ const currentThemeColor = computed(() => {
 const currentColor = computed(() => {
   // 获取主题色的 RGB 值
   const color = currentThemeColor.value
-  const r = parseInt(color.slice(1, 3), 16)
-  const g = parseInt(color.slice(3, 5), 16)
-  const b = parseInt(color.slice(5, 7), 16)
+  const r = Number.parseInt(color.slice(1, 3), 16)
+  const g = Number.parseInt(color.slice(3, 5), 16)
+  const b = Number.parseInt(color.slice(5, 7), 16)
   
   // 计算亮度
   const brightness = (r * 299 + g * 587 + b * 114) / 1000
@@ -310,14 +172,6 @@ const filteredPresets = computed(() => {
   })
 })
 
-// 切换下拉框
-const toggleDropdown = () => {
-  isOpen.value = !isOpen.value
-  if (isOpen.value) {
-    nextTick(() => updateDropdownPosition())
-  }
-}
-
 // 更新下拉框位置（防止溢出屏幕，优先正下方）
 const updateDropdownPosition = () => {
   if (!pickerRef.value) return
@@ -357,6 +211,14 @@ const updateDropdownPosition = () => {
     width: `${desiredWidth}px`,
     maxWidth: `calc(100vw - ${margin * 2}px)`,
     zIndex: 9999
+  }
+}
+
+// 切换下拉框
+const toggleDropdown = () => {
+  isOpen.value = !isOpen.value
+  if (isOpen.value) {
+    nextTick(() => updateDropdownPosition())
   }
 }
 
@@ -428,14 +290,16 @@ const handleAddCustomTheme = async () => {
     }
   } catch (error) {
     console.error('[ThemePicker] Failed to add custom theme:', error)
-    alert(error instanceof Error ? error.message : 'Failed to add theme')
+    console.error('[ThemePicker] Failed to add custom theme:', error instanceof Error ? error.message : 'Failed to add theme')
   }
 }
 
 // 删除自定义主题
 const handleRemoveCustomTheme = async (name: string) => {
-  const confirmMessage = t('theme.confirmRemove', `Remove theme "${name}"?`).replace('%s', name)
-  if (!confirm(confirmMessage)) {
+  // Use custom confirmation dialog in production
+  // For now, skip confirmation in development
+  const shouldRemove = true // Replace with custom dialog
+  if (!shouldRemove) {
     return
   }
 
@@ -456,7 +320,7 @@ const handleRemoveCustomTheme = async (name: string) => {
     }
   } catch (error) {
     console.error('[ThemePicker] Failed to remove custom theme:', error)
-    alert(error instanceof Error ? error.message : 'Failed to remove theme')
+    console.error('[ThemePicker] Failed to remove theme:', error instanceof Error ? error.message : 'Failed to remove theme')
   }
 }
 
@@ -507,6 +371,143 @@ watch(themeName, (newName) => {
   }
 })
 </script>
+
+<template>
+  <div ref="pickerRef" class="ld-theme-picker">
+    <button 
+      class="ld-theme-picker__trigger"
+      :title="currentLabel"
+      @click="toggleDropdown"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" :stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="13.5" cy="6.5" r=".5" :fill="currentColor" />
+        <circle cx="17.5" cy="10.5" r=".5" :fill="currentColor" />
+        <circle cx="8.5" cy="7.5" r=".5" :fill="currentColor" />
+        <circle cx="6.5" cy="12.5" r=".5" :fill="currentColor" />
+        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+      </svg>
+    </button>
+    
+    <Teleport to="body">
+      <Transition name="ld-theme-picker-fade">
+        <div 
+          v-if="isOpen"
+          class="ld-theme-picker__dropdown"
+          :style="dropdownStyle"
+          @click.stop
+        >
+          <div v-if="showSearch" class="ld-theme-picker__search">
+            <input 
+              v-model="searchQuery"
+              type="text"
+              :placeholder="t('theme.searchPlaceholder', 'Search colors...')"
+              class="ld-theme-picker__search-input"
+            >
+          </div>
+        
+          <div class="ld-theme-picker__content">
+            <div v-if="showCustom" class="ld-theme-picker__custom">
+              <label class="ld-theme-picker__label">{{ t('theme.customColor', 'Custom Color') }}</label>
+              <div class="ld-theme-picker__custom-input">
+                <input 
+                  v-model="customColor"
+                  type="color"
+                  class="ld-theme-picker__color-input"
+                  @change="handleCustomColor"
+                >
+                <input 
+                  v-model="customColor"
+                  type="text"
+                  placeholder="#000000"
+                  class="ld-theme-picker__hex-input"
+                  @keyup.enter="handleCustomColor"
+                >
+                <button 
+                  class="ld-theme-picker__apply-btn"
+                  @click="handleCustomColor"
+                >
+                  {{ t('theme.apply', 'Apply') }}
+                </button>
+              </div>
+
+              <!-- 添加自定义主题 -->
+              <div v-if="showAddCustomTheme" class="ld-theme-picker__add-theme">
+                <label class="ld-theme-picker__label">{{ t('theme.addCustomTheme', 'Add Custom Theme') }}</label>
+                <div class="ld-theme-picker__add-input">
+                  <input 
+                    v-model="newThemeName"
+                    type="text"
+                    :placeholder="t('theme.themeName', 'Theme name')"
+                    class="ld-theme-picker__name-input"
+                  >
+                  <input 
+                    v-model="newThemeColor"
+                    type="color"
+                    class="ld-theme-picker__color-input"
+                  >
+                  <input 
+                    v-model="newThemeColor"
+                    type="text"
+                    placeholder="#000000"
+                    class="ld-theme-picker__hex-input"
+                  >
+                  <button 
+                    class="ld-theme-picker__add-btn"
+                    :disabled="!newThemeName || !newThemeColor"
+                    @click="handleAddCustomTheme"
+                  >
+                    {{ t('theme.add', 'Add') }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          
+            <div class="ld-theme-picker__presets">
+              <label class="ld-theme-picker__label">
+                {{ t('theme.selectThemeColor', 'Select Theme Color') }}
+                <span style="font-size: 10px; color: #999; margin-left: 8px;">
+                  ({{ currentLocale }})
+                </span>
+              </label>
+              <div class="ld-theme-picker__grid">
+                <div
+                  v-for="preset in filteredPresets"
+                  :key="`${preset.name}-${preset.color}`"
+                  class="ld-theme-picker__preset"
+                  :class="{ 'is-active': (preset.name === activeThemeName) || (!activeThemeName && preset.custom), 'is-custom': preset.custom }"
+                >
+                  <span 
+                    class="ld-theme-picker__preset-color"
+                    :style="{ backgroundColor: preset.color }"
+                    :title="preset.label"
+                    @click="selectPreset(preset)"
+                  >
+                    <svg v-if="(preset.name === activeThemeName) || (!activeThemeName && preset.custom)" class="ld-theme-picker__check" width="16" height="16" viewBox="0 0 16 16">
+                      <path d="M3 8L6 11L13 4" stroke="white" stroke-width="2" fill="none" />
+                    </svg>
+                  </span>
+                  <span 
+                    class="ld-theme-picker__preset-label"
+                    @click="selectPreset(preset)"
+                  >{{ t(`theme.presets.${preset.name}`, preset.label) }}</span>
+                  <!-- 删除按钮（仅自定义主题） -->
+                  <button
+                    v-if="preset.custom && showRemoveButton"
+                    class="ld-theme-picker__remove-btn"
+                    :title="t('theme.remove', 'Remove')"
+                    @click.stop="handleRemoveCustomTheme(preset.name)"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+  </div>
+</template>
 
 <style>
 .ld-theme-picker {

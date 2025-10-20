@@ -102,12 +102,12 @@ export class RippleMarker {
       layers.push(
         new ScatterplotLayer({
           id: `${this.id}-ripple-${i}`,
-          data: [{ position: this.position }],
+          data: [{ position: this.position, radius, lineColor: rippleColor, lineWidth }],
           getPosition: d => d.position,
           getFillColor: [0, 0, 0, 0],
-          getLineColor: rippleColor,
-          getRadius: radius,
-          getLineWidth: lineWidth,
+          getLineColor: d => d.lineColor,
+          getRadius: d => d.radius,
+          getLineWidth: d => d.lineWidth,
           lineWidthMinPixels: 0.5,
           lineWidthMaxPixels: 6,
           stroked: true,

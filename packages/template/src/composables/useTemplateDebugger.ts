@@ -1,5 +1,4 @@
-import { ref, watch, computed, onMounted, onUnmounted, reactive, type Ref } from 'vue'
-import type { TemplateMetadata } from '../types'
+import { computed, onMounted, onUnmounted, reactive, readonly, ref, watch } from 'vue'
 import { globalAnalytics } from '../utils/templateAnalytics'
 
 /**
@@ -57,7 +56,7 @@ export function useTemplateDebugger(
 ) {
   const {
     enabled = import.meta.env.DEV,
-    logLevel = DebugLevel.DEBUG,
+    // logLevel = DebugLevel.DEBUG, // Not used currently
     maxLogs = 100,
     trackLifecycle = true,
     trackProps = true,
@@ -131,7 +130,7 @@ export function useTemplateDebugger(
   }
 
   const error = (message: string, data?: any) => {
-    const stack = new Error().stack
+    const stack = new Error('Stack trace').stack
     addLog(DebugLevel.ERROR, message, data, stack)
   }
 
@@ -159,7 +158,7 @@ export function useTemplateDebugger(
   /**
    * 监听 props 变化
    */
-  const watchProps = (props: Record<string, Ref<any>>) => {
+  const watchProps = (props: Record<string, import('vue').Ref<any>>) => {
     if (!trackProps || !isEnabled.value) return
 
     Object.entries(props).forEach(([key, value]) => {
@@ -176,7 +175,7 @@ export function useTemplateDebugger(
   /**
    * 监听状态变化
    */
-  const watchState = (state: Record<string, Ref<any>>) => {
+  const watchState = (state: Record<string, import('vue').Ref<any>>) => {
     if (!trackState || !isEnabled.value) return
 
     Object.entries(state).forEach(([key, value]) => {
@@ -195,8 +194,7 @@ export function useTemplateDebugger(
    */
   const measurePerformance = (label: string, fn: () => void | Promise<void>) => {
     if (!isEnabled.value) {
-      fn()
-      return
+      return fn()
     }
 
     const startTime = performance.now()

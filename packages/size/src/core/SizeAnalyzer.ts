@@ -54,6 +54,9 @@ export class SizeAnalyzer {
   private usageMap: Map<string, number> = new Map();
   private performanceObserver: PerformanceObserver | null = null;
   private debugPanel: HTMLElement | null = null;
+  private panelStyleEl: HTMLStyleElement | null = null;
+  private variableObserver: MutationObserver | null = null;
+  private rafId: number | null = null;
   private isMonitoring = false;
 
   constructor() {
@@ -84,6 +87,10 @@ export class SizeAnalyzer {
     if (this.debugPanel) {
       this.debugPanel.style.display = 'none';
       this.stopMonitoring();
+      if (this.rafId !== null) {
+        cancelAnimationFrame(this.rafId);
+        this.rafId = null;
+      }
     }
   }
 
@@ -114,6 +121,7 @@ export class SizeAnalyzer {
 
     // Add styles
     const style = document.createElement('style');
+    this.panelStyleEl = style;
     style.textContent = `
       #ldesign-size-debug-panel {
         position: fixed;
@@ -367,7 +375,10 @@ export class SizeAnalyzer {
 
     // Schedule next update if monitoring
     if (this.isMonitoring) {
-      requestAnimationFrame(() => this.updateDebugPanel());
+      this.rafId = requestAnimationFrame(() => {
+        this.rafId = null;
+        this.updateDebugPanel();
+      });
     }
   }
 
@@ -402,6 +413,7 @@ export class SizeAnalyzer {
       subtree: true,
       attributeFilter: ['style', 'class']
     });
+    this.variableObserver = observer;
   }
 
   /**
@@ -478,7 +490,7 @@ export class SizeAnalyzer {
             }
           }
         });
-      } catch (e) {
+    } catch {
         // Cross-origin stylesheets
       }
     });
@@ -516,7 +528,7 @@ export class SizeAnalyzer {
     Array.from(document.styleSheets).forEach(sheet => {
       try {
         count += sheet.cssRules?.length || 0;
-      } catch (e) {
+      } catch {
         // Cross-origin
       }
     });
@@ -697,6 +709,22 @@ ${spec.usage.variables.mostUsed.slice(0, 10).map((v, i) =>
    */
   destroy(): void {
     this.hideDebugPanel();
+    if (this.debugPanel?.parentNode) {
+      this.debugPanel.parentNode.removeChild(this.debugPanel);
+    }
+    this.debugPanel = null;
+    if (this.panelStyleEl?.parentNode) {
+      this.panelStyleEl.parentNode.removeChild(this.panelStyleEl);
+    }
+    this.panelStyleEl = null;
+    if (this.variableObserver) {
+      this.variableObserver.disconnect();
+      this.variableObserver = null;
+    }
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
     this.performanceObserver?.disconnect();
     this.usageMap.clear();
   }

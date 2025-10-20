@@ -134,6 +134,11 @@ export class MiddlewareManager {
       }
 
       const middleware = applicableMiddlewares[currentIndex]
+      if (!middleware) {
+        next()
+        return
+      }
+
       context.index = currentIndex
       currentIndex++
 
@@ -180,7 +185,7 @@ export class MiddlewareManager {
 export const authMiddleware: MiddlewareConfig = {
   name: 'auth',
   priority: 10,
-  handler: async (to, from, next, context) => {
+  handler: async (to, _from, next, context) => {
     if (to.meta?.requiresAuth) {
       // 检查用户是否已登录
       const isAuthenticated = context.user || localStorage.getItem('token')
@@ -201,7 +206,7 @@ export const authMiddleware: MiddlewareConfig = {
 export const permissionMiddleware: MiddlewareConfig = {
   name: 'permission',
   priority: 20,
-  handler: async (to, from, next, context) => {
+  handler: async (to, _from, next, context) => {
     const requiredPermissions = to.meta?.permissions as string[]
 
     if (requiredPermissions && requiredPermissions.length > 0) {
@@ -226,7 +231,7 @@ export const permissionMiddleware: MiddlewareConfig = {
 export const roleMiddleware: MiddlewareConfig = {
   name: 'role',
   priority: 15,
-  handler: async (to, from, next, context) => {
+  handler: async (to, _from, next, context) => {
     const requiredRoles = to.meta?.roles as string[]
 
     if (requiredRoles && requiredRoles.length > 0) {
@@ -268,11 +273,9 @@ export const loggingMiddleware: MiddlewareConfig = {
 export const titleMiddleware: MiddlewareConfig = {
   name: 'title',
   priority: 90,
-  handler: async (to, from, next, _context) => {
+  handler: async (to, _from, next, _context) => {
     if (to.meta?.title) {
-      document.title = typeof to.meta.title === 'function'
-        ? to.meta.title(to)
-        : to.meta.title
+      document.title = to.meta.title
     }
     next()
   },
@@ -323,7 +326,7 @@ export function createCacheMiddleware(options: {
   return {
     name: 'cache',
     priority: 30,
-    handler: async (to, from, next, context) => {
+    handler: async (to, _from, next, context) => {
       const cacheKey = to.fullPath
       const cached = cache.get(cacheKey)
 
@@ -356,7 +359,7 @@ export function createRateLimitMiddleware(options: {
   return {
     name: 'rateLimit',
     priority: 5,
-    handler: async (to, from, next, _context) => {
+    handler: async (to, _from, next, _context) => {
       const key = to.path
       const now = Date.now()
       const windowStart = now - options.windowMs

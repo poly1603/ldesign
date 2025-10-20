@@ -4,9 +4,9 @@
  * 根据条件自动选择模板，支持A/B测试
  */
 
-import { ref, computed, watch, onMounted, reactive } from 'vue'
-import type { Ref, ComputedRef } from 'vue'
+import type { Ref } from 'vue'
 import type { DeviceType } from '../types'
+import { computed, onMounted, ref, watch } from 'vue'
 
 /**
  * 条件类型
@@ -225,23 +225,6 @@ export function useTemplateABTest(
   }
   
   /**
-   * 分配变体
-   */
-  const assignVariant = (): ABTestVariant => {
-    const strategy = config.strategy || 'random'
-    
-    switch (strategy) {
-      case 'hash':
-        return assignByHash()
-      case 'weighted':
-        return assignByWeight()
-      case 'random':
-      default:
-        return assignRandomly()
-    }
-  }
-  
-  /**
    * 哈希分配
    */
   const assignByHash = (): ABTestVariant => {
@@ -286,6 +269,23 @@ export function useTemplateABTest(
   const assignRandomly = (): ABTestVariant => {
     const index = Math.floor(Math.random() * config.variants.length)
     return config.variants[index]
+  }
+  
+  /**
+   * 分配变体
+   */
+  const assignVariant = (): ABTestVariant => {
+    const strategy = config.strategy || 'random'
+    
+    switch (strategy) {
+      case 'hash':
+        return assignByHash()
+      case 'weighted':
+        return assignByWeight()
+      case 'random':
+      default:
+        return assignRandomly()
+    }
   }
   
   /**

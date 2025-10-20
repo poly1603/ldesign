@@ -1,14 +1,7 @@
-<template>
-  <component :is="tag">
-    <slot v-if="$slots.default" :text="translatedText" :values="values" />
-    <template v-else>{{ translatedText }}</template>
-  </component>
-</template>
-
 <script setup lang="ts">
+import type { TranslateOptions } from '../../../types';
 import { computed } from 'vue';
 import { useI18n } from '../composables';
-import type { TranslateOptions } from '../../../types';
 
 interface Props {
   keypath: string;
@@ -45,3 +38,12 @@ const translatedText = computed(() => {
   return t(props.keypath, options, locale);
 });
 </script>
+
+<template>
+  <component :is="tag">
+    <slot v-if="$slots.default" :text="translatedText" :values="values" />
+    <template v-else>
+      {{ translatedText }}
+    </template>
+  </component>
+</template>

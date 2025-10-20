@@ -371,11 +371,10 @@ export class PerformanceMonitor {
     this.reportTimer = setInterval(() => {
       const report = this.generateReport()
       console.group('📊 API Performance Report')
-      , '-', new Date(report.timeRange.end))
-      
-      )
-      .toFixed(1)}%`)
-      
+      console.log(`Time Range: ${new Date(report.timeRange.start)} - ${new Date(report.timeRange.end)}`)
+      console.log(`Total Calls: ${report.overall.totalCalls}`)
+      console.log(`Average Time: ${report.overall.averageTime.toFixed(2)}ms`)
+      console.log(`Error Rate: ${(report.overall.errorRate * 100).toFixed(1)}%`)
       console.groupEnd()
     }, this.config?.reportInterval)
   }

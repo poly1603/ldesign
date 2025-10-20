@@ -108,7 +108,6 @@ export function memoize<T extends (...args: any[]) => any>(
     maxSize = Infinity,
     ttl,
     keyFn = (...args) => JSON.stringify(args),
-    equalFn,
   } = options
 
   const cache = new Map<string, { value: ReturnType<T>, timestamp?: number }>()
@@ -138,8 +137,10 @@ export function memoize<T extends (...args: any[]) => any>(
     // 限制缓存大小
     if (cache.size >= maxSize) {
       // 删除最旧的（第一个）
-      const firstKey = cache.keys().next().value
-      cache.delete(firstKey)
+      const firstKey = cache.keys().next().value as string | undefined
+      if (firstKey !== undefined) {
+        cache.delete(firstKey)
+      }
     }
 
     cache.set(key, {
@@ -262,22 +263,12 @@ export async function retry<T>(
 export function createRetryableFunction<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   options: RetryOptions = {},
-): T & {
-  retry: (options?: RetryOptions) => ReturnType<T>
-} {
+): T {
   function retryable(this: any, ...args: Parameters<T>): ReturnType<T> {
     return retry(() => fn.apply(this, args), options) as ReturnType<T>
   }
 
-  const enhanced = retryable as T & {
-    retry: (options?: RetryOptions) => ReturnType<T>
-  }
-
-  enhanced.retry = function(overrideOptions?: RetryOptions) {
-    return retry(() => fn(...args), { ...options, ...overrideOptions }) as ReturnType<T>
-  }
-
-  return enhanced
+  return retryable as unknown as T
 }
 
 /**

@@ -2,9 +2,9 @@
  * useTranslation - Simplified translation hook
  */
 
+import type { InterpolationParams, MessageKey } from '../../../types';
 import { computed } from 'vue';
 import { useI18n } from './useI18n';
-import type { MessageKey, InterpolationParams } from '../../../types';
 
 export interface UseTranslationOptions {
   namespace?: string;

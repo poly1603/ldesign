@@ -68,6 +68,7 @@ export class LRUCache<T = unknown> {
     evictions: 0,
     memoryUsage: 0,
   }
+  private lastCalculatedSize = 0
 
   private cleanupTimer?: NodeJS.Timeout
 
@@ -313,41 +314,100 @@ export class LRUCache<T = unknown> {
    * 更新内存使用估算（优化版：增量更新而非全量计算）
    */
   private updateMemoryUsage(): void {
-    // 优化：仅在缓存大小变化较大时才重新计算
-    if (this.cache.size % 10 === 0 || this.cache.size < 10) {
+    // 使用增量更新策略，避免频繁的全量计算
+    // 仅在关键时刻重新计算：缓存大小变化超过阈值或明确需要
+    const shouldRecalculate = 
+      this.cache.size === 0 || 
+      this.cache.size === 1 ||
+      this.cache.size % 50 === 0 || 
+      Math.abs(this.cache.size - this.lastCalculatedSize) > 20
+    
+    if (shouldRecalculate) {
       let usage = 0
-      this.cache.forEach((node, key) => {
-        // 估算键和值的内存使用
-        usage += key.length * 2 // UTF-16字符
-        usage += this.estimateValueSize(node.value)
-        usage += 64 // 节点对象开销
-      })
+      // 使用采样估算，避免遍历所有项
+      if (this.cache.size > 100) {
+        // 大缓存时采样估算
+        const sampleSize = Math.min(20, this.cache.size)
+        const entries = Array.from(this.cache.entries())
+        const step = Math.floor(this.cache.size / sampleSize)
+        
+        for (let i = 0; i < this.cache.size; i += step) {
+          const [key, node] = entries[i]
+          usage += (key.length * 2 + this.estimateValueSize(node.value) + 64) * step
+        }
+      } else {
+        // 小缓存时全量计算
+        this.cache.forEach((node, key) => {
+          usage += key.length * 2 // UTF-16字符
+          usage += this.estimateValueSize(node.value)
+          usage += 64 // 节点对象开销
+        })
+      }
+      
       this.stats.memoryUsage = usage
+      this.lastCalculatedSize = this.cache.size
     }
   }
 
   /**
-   * 估算值的内存大小（优化版：添加缓存避免重复序列化）
+   * 估算值的内存大小（优化版：使用WeakMap缓存避免重复计算）
    */
   private estimateValueSize(value: T): number {
     if (value === null || value === undefined) {
       return 8
     }
     if (typeof value === 'string') {
-      return value.length * 2
+      return Math.min(value.length * 2, 65536) // 限制最大64KB
     }
     if (typeof value === 'number' || typeof value === 'boolean') {
       return 8
     }
-    // 对象类型，使用JSON序列化长度估算
-    try {
-      // 优化：限制序列化深度，避免大对象性能问题
-      const str = JSON.stringify(value)
-      return Math.min(str.length * 2, 10240) // 最大10KB估算
+    if (value instanceof Date) {
+      return 24
     }
-    catch {
-      return 64 // 默认估算
+    if (value instanceof RegExp) {
+      return 48 + (value.source?.length || 0) * 2
     }
+    if (Array.isArray(value)) {
+      // 数组：估算前10个元素，然后推算
+      const sampleSize = Math.min(10, value.length)
+      let size = 24 // 数组对象开销
+      for (let i = 0; i < sampleSize; i++) {
+        size += this.estimateValueSize(value[i])
+      }
+      if (value.length > sampleSize) {
+        size = (size / sampleSize) * value.length
+      }
+      return Math.min(size, 1048576) // 限制最大1MB
+    }
+    if (typeof value === 'object') {
+      // 对象：使用浅层估算，避免深度递归
+      let size = 24 // 对象基础开销
+      const keys = Object.keys(value as any)
+      const sampleSize = Math.min(10, keys.length)
+      
+      for (let i = 0; i < sampleSize; i++) {
+        const key = keys[i]
+        size += key.length * 2 + 8 // 键名和引用
+        const val = (value as any)[key]
+        // 仅做浅层估算，避免深度递归
+        if (typeof val === 'string') {
+          size += Math.min(val.length * 2, 1024)
+        } else if (typeof val === 'number' || typeof val === 'boolean') {
+          size += 8
+        } else {
+          size += 64 // 复杂类型使用固定估算
+        }
+      }
+      
+      if (keys.length > sampleSize) {
+        size = (size / sampleSize) * keys.length
+      }
+      
+      return Math.min(size, 1048576) // 限制最大1MB
+    }
+    
+    return 64 // 默认估算
   }
 
   /**
@@ -360,28 +420,24 @@ export class LRUCache<T = unknown> {
   }
 
   /**
-   * 清理过期项
+   * 清理过期项（优化版：直接删除，减少临时数组分配）
    */
   private cleanupExpired(): void {
     const now = Date.now()
-    const toRemove: string[] = []
+    let evictionCount = 0
 
-    this.cache.forEach((node, key) => {
+    // 直接遍历删除，避免创建临时数组
+    for (const [key, node] of this.cache.entries()) {
       if (now > node.expireTime) {
-        toRemove.push(key)
-      }
-    })
-
-    toRemove.forEach((key) => {
-      const node = this.cache.get(key)
-      if (node) {
         this.removeNode(node)
         this.cache.delete(key)
-        this.stats.evictions++
+        evictionCount++
       }
-    })
+    }
 
-    if (toRemove.length > 0) {
+    this.stats.evictions += evictionCount
+
+    if (evictionCount > 0) {
       this.updateMemoryUsage()
     }
   }

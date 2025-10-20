@@ -9,7 +9,7 @@
  */
 export type DeepReadonly<T> = {
   readonly [P in keyof T]: T[P] extends object
-    ? T[P] extends Function
+    ? T[P] extends (...args: any[]) => any
       ? T[P]
       : DeepReadonly<T[P]>
     : T[P]
@@ -21,7 +21,7 @@ export type DeepReadonly<T> = {
  */
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object
-    ? T[P] extends Function
+    ? T[P] extends (...args: any[]) => any
       ? T[P]
       : DeepPartial<T[P]>
     : T[P]
@@ -33,7 +33,7 @@ export type DeepPartial<T> = {
  */
 export type DeepRequired<T> = {
   [P in keyof T]-?: T[P] extends object
-    ? T[P] extends Function
+    ? T[P] extends (...args: any[]) => any
       ? T[P]
       : DeepRequired<T[P]>
     : T[P]
@@ -103,6 +103,7 @@ export type KeyOf<T> = Extract<keyof T, string>
  * 必需的键
  */
 export type RequiredKeys<T> = {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   [K in keyof T]-?: {} extends Pick<T, K> ? never : K
 }[keyof T]
 
@@ -110,6 +111,7 @@ export type RequiredKeys<T> = {
  * 可选的键
  */
 export type OptionalKeys<T> = {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   [K in keyof T]-?: {} extends Pick<T, K> ? K : never
 }[keyof T]
 
@@ -123,7 +125,7 @@ export type KeysOfType<T, U> = {
 /**
  * 提取函数类型的键
  */
-export type FunctionKeys<T> = KeysOfType<T, Function>
+export type FunctionKeys<T> = KeysOfType<T, (...args: any[]) => any>
 
 /**
  * 提取非函数类型的键
@@ -142,7 +144,7 @@ export type Mutable<T> = {
  */
 export type DeepMutable<T> = {
   -readonly [P in keyof T]: T[P] extends object
-    ? T[P] extends Function
+    ? T[P] extends (...args: any[]) => any
       ? T[P]
       : DeepMutable<T[P]>
     : T[P]

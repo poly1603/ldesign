@@ -3,7 +3,7 @@
  * 智能懒加载系统，支持按需加载和代码分割
  */
 
-import type { Locale, Messages, I18nInstance } from '../types';
+import type { Locale, Messages } from '../types';
 
 /**
  * 懒加载配置
@@ -52,13 +52,16 @@ interface LoadState {
  * 懒加载管理器
  */
 export class LazyLoader {
-  private config: LazyLoadConfig;
-  private loadStates: Map<string, LoadState> = new Map();
-  private cache: Map<string, Messages> = new Map();
-  private preloadQueue: Set<string> = new Set();
-  private loadingPool: Map<string, Promise<Messages>> = new Map();
+  private readonly config: LazyLoadConfig;
+  private readonly loadStates = new Map<string, LoadState>();
+  private readonly cache = new Map<string, Messages>();
+  private readonly preloadQueue = new Set<string>();
+  private readonly loadingPool = new Map<string, Promise<Messages>>();
   private observer?: IntersectionObserver;
   private idleCallback?: number;
+  private eventListeners: Array<{ element: Window; event: string; handler: EventListener }> = [];
+  private readonly MAX_CACHE_SIZE = 50; // 限制缓存大小
+  private readonly MAX_LOAD_STATES = 100; // 限制状态记录
 
   constructor(config: LazyLoadConfig = {}) {
     this.config = {
@@ -99,7 +102,16 @@ export class LazyLoader {
 
     try {
       const messages = await loadPromise;
+      
+      // 限制缓存大小
+      if (this.cache.size >= this.MAX_CACHE_SIZE) {
+        const firstKey = this.cache.keys().next().value;
+        if (firstKey !== undefined) {
+          this.cache.delete(firstKey);
+        }
+      }
       this.cache.set(key, messages);
+      
       this.updateLoadState(key, 'loaded', undefined, messages);
       return messages;
     } catch (error) {
@@ -127,7 +139,7 @@ export class LazyLoader {
     }
 
     // 限制并发数
-    await this.executeWithConcurrency(tasks, this.config?.concurrent!);
+    await this.executeWithConcurrency(tasks, Number(this.config?.concurrent ?? 3));
   }
 
   /**
@@ -217,38 +229,31 @@ export class LazyLoader {
     const startTime = Date.now();
     this.updateLoadState(this.getCacheKey(locale, namespace), 'loading');
 
-    try {
-      let messages: Messages;
+    let messages: Messages;
 
-      if (this.config?.loader) {
-        messages = await this.withRetry(
-          () => this.config?.loader!(locale, namespace),
-          this.config?.retry!
-        );
-      } else if (this.config?.baseUrl) {
-        messages = await this.loadFromUrl(locale, namespace);
-      } else {
-        throw new Error('No loader configured');
-      }
-
-      // 解压缩
-      if (this.config?.compression) {
-        messages = await this.decompress(messages);
-      }
-
-      // 记录大小
-      const size = this.estimateSize(messages);
-      const loadTime = Date.now() - startTime;
-
-      this.updateLoadState(this.getCacheKey(locale, namespace), 'loaded', {
-        size,
-        loadTime
-      });
-
-      return messages;
-    } catch (error) {
-      throw error;
+    if (this.config?.loader) {
+      messages = await this.withRetry(
+        () => this.config?.loader!(locale, namespace),
+        Number(this.config?.retry ?? 3)
+      );
+    } else if (this.config?.baseUrl) {
+      messages = await this.loadFromUrl(locale, namespace);
+    } else {
+      throw new Error('No loader configured');
     }
+
+    // 解压缩
+    if (this.config?.compression) {
+      messages = await this.decompress(messages);
+    }
+
+    // 记录大小（如需统计可在外部状态中使用）
+    const _size = this.estimateSize(messages);
+    const _loadTime = Date.now() - startTime;
+
+    this.updateLoadState(this.getCacheKey(locale, namespace), 'loaded', undefined);
+
+    return messages;
   }
 
   /**
@@ -263,7 +268,7 @@ export class LazyLoader {
         'Accept': 'application/json',
         'Accept-Encoding': 'gzip, deflate, br'
       },
-      signal: AbortSignal.timeout(this.config?.timeout!)
+      signal: AbortSignal.timeout(this.config?.timeout ?? 30000)
     });
 
     if (!response.ok) {
@@ -299,7 +304,7 @@ export class LazyLoader {
       } catch (error) {
         lastError = error as Error;
         if (i < retries) {
-          await this.delay(Math.pow(2, i) * 1000); // 指数退避
+          await this.delay(2**i * 1000); // 指数退避
         }
       }
     }
@@ -390,7 +395,9 @@ export class LazyLoader {
 
     // 监听带有data-i18n-preload属性的元素
     document.querySelectorAll('[data-i18n-preload]').forEach(element => {
-      this.observer!.observe(element);
+      if (this.observer) {
+        this.observer.observe(element as Element);
+      }
     });
   }
 
@@ -403,7 +410,7 @@ export class LazyLoader {
       return this.load(locale, namespace);
     });
 
-    await this.executeWithConcurrency(tasks, this.config?.concurrent!);
+    await this.executeWithConcurrency(tasks, Number(this.config?.concurrent ?? 3));
     this.preloadQueue.clear();
   }
 
@@ -436,6 +443,14 @@ export class LazyLoader {
     error?: Error,
     messages?: Messages
   ): void {
+    // 限制状态记录大小
+    if (this.loadStates.size >= this.MAX_LOAD_STATES) {
+      const firstKey = this.loadStates.keys().next().value;
+      if (firstKey !== undefined) {
+        this.loadStates.delete(firstKey);
+      }
+    }
+    
     const [locale, namespace] = key.split(':');
     this.loadStates.set(key, {
       locale,
@@ -498,11 +513,15 @@ export class LazyLoader {
   private initializePreloadStrategy(): void {
     // 监听路由变化
     if (typeof window !== 'undefined') {
-      window.addEventListener('popstate', () => {
+      const handler = () => {
         const locale = this.getCurrentLocale();
         const route = window.location.pathname;
         this.loadForRoute(route, locale).catch(console.error);
-      });
+      };
+      
+      window.addEventListener('popstate', handler);
+      // 记录事件监听器以便清理
+      this.eventListeners.push({ element: window, event: 'popstate', handler });
     }
   }
 
@@ -517,15 +536,29 @@ export class LazyLoader {
    * 清理资源
    */
   destroy(): void {
+    // 清理观察器
     if (this.observer) {
       this.observer.disconnect();
+      this.observer = undefined;
     }
+    
+    // 清理空闲回调
     if (this.idleCallback) {
       window.cancelIdleCallback(this.idleCallback);
+      this.idleCallback = undefined;
     }
+    
+    // 清理事件监听器
+    this.eventListeners.forEach(({ element, event, handler }) => {
+      element.removeEventListener(event, handler);
+    });
+    this.eventListeners = [];
+    
+    // 清理所有缓存和状态
     this.cache.clear();
     this.loadStates.clear();
     this.loadingPool.clear();
+    this.preloadQueue.clear();
   }
 }
 

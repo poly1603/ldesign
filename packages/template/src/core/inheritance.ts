@@ -2,9 +2,10 @@
  * 模板继承与组合系统
  */
 
-import { defineComponent, DefineComponent, VNode, h, mergeProps, Component } from 'vue'
-import { deepMerge } from '../utils'
+import type { Component, VNode } from 'vue';
 import type { Template, TemplateConfig } from '../types'
+import { defineComponent, h } from 'vue'
+import { deepMerge } from '../utils'
 
 /**
  * 模板继承配置
@@ -101,8 +102,14 @@ export interface TemplateBlock {
  */
 export class TemplateInheritanceManager {
   private templates: Map<string, Template> = new Map()
-  private inheritanceCache: Map<string, Template> = new Map()
+  // 使用WeakMap缓存继承结果，允许垃圾回收
+  private inheritanceCache: WeakMap<object, Template> = new WeakMap()
   private mixinCache: Map<string, any> = new Map()
+  private cacheKeyMap: Map<string, object> = new Map()
+  private readonly MAX_TEMPLATES = 500
+  private readonly MAX_MIXINS = 100
+  private readonly MAX_CACHE_KEYS = 1000
+  private cleanupTimer: ReturnType<typeof setTimeout> | null = null
   
   /**
    * 注册模板
@@ -111,6 +118,15 @@ export class TemplateInheritanceManager {
     this.templates.set(id, template)
     // 清除相关缓存
     this.clearCache(id)
+    
+    // 限制模板数量
+    if (this.templates.size > this.MAX_TEMPLATES) {
+      const oldestKeys = Array.from(this.templates.keys()).slice(0, this.templates.size - this.MAX_TEMPLATES)
+      oldestKeys.forEach(key => {
+        this.templates.delete(key)
+        this.clearCache(key)
+      })
+    }
   }
   
   /**
@@ -127,11 +143,29 @@ export class TemplateInheritanceManager {
     child: Template,
     config: TemplateInheritanceConfig
   ): Template {
-    const cacheKey = this.getCacheKey(child, config)
+    const cacheKeyStr = this.getCacheKey(child, config)
+    let cacheKeyObj = this.cacheKeyMap.get(cacheKeyStr)
     
     // 检查缓存
-    if (this.inheritanceCache.has(cacheKey)) {
-      return this.inheritanceCache.get(cacheKey)!
+    if (cacheKeyObj && this.inheritanceCache.has(cacheKeyObj)) {
+      const cached = this.inheritanceCache.get(cacheKeyObj)
+      if (cached) return cached
+    }
+    
+    // 创建新的缓存键对象
+    if (!cacheKeyObj) {
+      cacheKeyObj = { key: cacheKeyStr }
+      this.cacheKeyMap.set(cacheKeyStr, cacheKeyObj)
+      
+      // 限制缓存键数量
+      if (this.cacheKeyMap.size > this.MAX_CACHE_KEYS) {
+        const oldestKeys = Array.from(this.cacheKeyMap.keys()).slice(0, this.cacheKeyMap.size - this.MAX_CACHE_KEYS)
+        oldestKeys.forEach(key => {
+          const obj = this.cacheKeyMap.get(key)
+          if (obj) this.inheritanceCache.delete(obj)
+          this.cacheKeyMap.delete(key)
+        })
+      }
     }
     
     // 应用继承
@@ -156,7 +190,7 @@ export class TemplateInheritanceManager {
     }
     
     // 缓存结果
-    this.inheritanceCache.set(cacheKey, result)
+    this.inheritanceCache.set(cacheKeyObj, result)
     
     return result
   }
@@ -166,6 +200,12 @@ export class TemplateInheritanceManager {
    */
   createMixin(id: string, mixin: Partial<Template>): void {
     this.mixinCache.set(id, mixin)
+    
+    // 限制混入数量
+    if (this.mixinCache.size > this.MAX_MIXINS) {
+      const oldestKeys = Array.from(this.mixinCache.keys()).slice(0, this.mixinCache.size - this.MAX_MIXINS)
+      oldestKeys.forEach(key => this.mixinCache.delete(key))
+    }
   }
   
   /**
@@ -196,8 +236,8 @@ export class TemplateInheritanceManager {
     // 合并配置
     if (parent.config || child.config) {
       mergedTemplate.config = this.mergeConfig(
-        parent.config || {},
-        child.config || {},
+        parent.config as any || {},
+        child.config as any || {},
         strategy
       )
     }
@@ -212,19 +252,19 @@ export class TemplateInheritanceManager {
     }
     
     // 合并样式
-    if (parent.styles || child.styles) {
-      mergedTemplate.styles = this.mergeStyles(
-        parent.styles,
-        child.styles,
+    if ((parent as any).styles || (child as any).styles) {
+      (mergedTemplate as any).styles = this.mergeStyles(
+        (parent as any).styles,
+        (child as any).styles,
         strategy?.styles
       )
     }
     
     // 合并数据
-    if (parent.data || child.data) {
-      mergedTemplate.data = this.mergeData(
-        parent.data,
-        child.data,
+    if ((parent as any).data || (child as any).data) {
+      (mergedTemplate as any).data = this.mergeData(
+        (parent as any).data,
+        (child as any).data,
         strategy?.data
       )
     }
@@ -372,14 +412,37 @@ export class TemplateInheritanceManager {
   private clearCache(templateId?: string): void {
     if (templateId) {
       // 清除特定模板的缓存
-      for (const [key] of this.inheritanceCache) {
+      const keysToDelete: string[] = []
+      for (const [key, obj] of this.cacheKeyMap) {
         if (key.includes(templateId)) {
-          this.inheritanceCache.delete(key)
+          this.inheritanceCache.delete(obj)
+          keysToDelete.push(key)
         }
       }
+      keysToDelete.forEach(key => this.cacheKeyMap.delete(key))
     } else {
-      // 清除所有缓存
-      this.inheritanceCache.clear()
+      // 清除所有缓存 - WeakMap会自动处理
+      this.cacheKeyMap.clear()
+    }
+    
+    if (this.cleanupTimer) {
+      clearTimeout(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+  }
+  
+  /**
+   * 清理所有数据
+   */
+  dispose(): void {
+    this.templates.clear()
+    this.mixinCache.clear()
+    this.cacheKeyMap.clear()
+    // WeakMap会自动垃圾回收
+    
+    if (this.cleanupTimer) {
+      clearTimeout(this.cleanupTimer)
+      this.cleanupTimer = null
     }
   }
 }

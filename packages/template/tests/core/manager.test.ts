@@ -2,7 +2,7 @@
  * TemplateManager 测试用例
  */
 
-import type { TemplateManagerConfig } from '../../src/types'
+import type { TemplateManagerOptions } from '../../src/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TemplateManager } from '../../src/core/manager'
 
@@ -10,7 +10,7 @@ describe('templateManager', () => {
   let manager: TemplateManager
 
   beforeEach(() => {
-    const config: TemplateManagerConfig = {
+    const config: TemplateManagerOptions = {
       enableCache: true,
       autoDetectDevice: false,
       defaultDevice: 'desktop',

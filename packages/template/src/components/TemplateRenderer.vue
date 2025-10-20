@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import type { TemplatePlugin } from '../plugin/createPlugin'
 import type { DeviceType, TemplateLoadOptions, TemplateSlots } from '../types'
-import { type Component, computed, onMounted, onUnmounted, ref, type Ref, type Slot, toRefs, useSlots, watch, inject, nextTick, provide } from 'vue'
+import { type Component, computed, inject, nextTick, onMounted, onUnmounted, provide, ref, type Ref, type Slot, toRefs, useSlots, watch } from 'vue'
 import { useTemplate } from '../composables/useTemplate'
 import { useTemplateTheme } from '../composables/useTemplateTheme'
-import { useTemplateModel } from '../composables/useTemplateForm'
 import { getManager } from '../core'
+import { getLocale } from '../locales'
+import { useTemplatePlugin } from '../plugin/useTemplatePlugin'
 import TemplateSelector from './TemplateSelector.vue'
 import TemplateSkeleton from './TemplateSkeleton.vue'
-import { useTemplatePlugin } from '../plugin/useTemplatePlugin'
-import { getLocale } from '../locales'
 
 /**
  * 组件属性
@@ -100,12 +99,28 @@ const messages = computed(() => {
   return getLocale(localeValue)
 })
 
+// AbortController 用于取消异步操作
+const abortController = ref<AbortController | null>(null)
+
+// 自动保存
+let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
+
 // v-model 支持
 const modelData = ref(props.modelValue)
-watch(() => props.modelValue, (newVal) => {
+const modelWatcher = watch(() => props.modelValue, (newVal) => {
   modelData.value = newVal
 })
-watch(modelData, (newVal) => {
+// Move scheduleAutoSave before usage
+const scheduleAutoSave = () => {
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  autoSaveTimer = setTimeout(() => {
+    if (!abortController.value?.signal.aborted) {
+      emit('save', modelData.value)
+    }
+  }, props.autoSaveDelay)
+}
+
+const dataWatcher = watch(modelData, (newVal) => {
   emit('update:modelValue', newVal)
   if (props.autoSave) {
     scheduleAutoSave()
@@ -113,13 +128,7 @@ watch(modelData, (newVal) => {
 }, { deep: true })
 
 // 自动保存
-let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
-const scheduleAutoSave = () => {
-  if (autoSaveTimer) clearTimeout(autoSaveTimer)
-  autoSaveTimer = setTimeout(() => {
-    emit('save', modelData.value)
-  }, props.autoSaveDelay)
-}
+// moved above to avoid use-before-define
 
 // 主题支持
 const { setTheme, currentTheme } = props.theme ? useTemplateTheme() : { setTheme: () => {}, currentTheme: ref(null) }
@@ -131,11 +140,6 @@ if (props.theme) {
 
 // 重试机制
 const retryCount = ref(0)
-const shouldShowSkeleton = computed(() => {
-  if (props.skeleton === true) return true
-  if (props.skeleton === 'auto') return loading.value
-  return false
-})
 
 // 决定是否自动检测和自动加载
 const shouldAutoDetect = computed(() => props.autoDetect ?? !props.device)
@@ -224,34 +228,63 @@ const isInitialized = ref(false)
 
 onMounted(async () => {
   if (!isInitialized.value) {
-    // 初始化管理器
-    await manager.initialize()
+    // 创建AbortController
+    abortController.value = new AbortController()
     
-    // 自动检测设备
-    if (shouldAutoDetect.value) {
-      currentDevice.value = detectDevice()
-      emit('deviceChange', currentDevice.value)
-    }
-    
-    // 自动加载默认模板
-    if (shouldAutoLoadDefault.value) {
-      await loadDefaultTemplate(currentDevice.value)
-    }
-    
-    isInitialized.value = true
-    
-    // 监听窗口变化
-    if (shouldAutoDetect.value) {
-      window.addEventListener('resize', handleResize)
+    try {
+      // 初始化管理器
+      await manager.initialize()
+      
+      // 检查是否已被取消
+      if (abortController.value.signal.aborted) return
+      
+      // 自动检测设备
+      if (shouldAutoDetect.value) {
+        currentDevice.value = detectDevice()
+        emit('deviceChange', currentDevice.value)
+      }
+      
+      // 自动加载默认模板
+      if (shouldAutoLoadDefault.value) {
+        await loadDefaultTemplate(currentDevice.value)
+      }
+      
+      isInitialized.value = true
+      
+      // 监听窗口变化 - 使用passive优化性能
+      if (shouldAutoDetect.value) {
+        window.addEventListener('resize', handleResize, { passive: true })
+      }
+    } catch (error) {
+      if (!abortController.value.signal.aborted) {
+        console.error('Initialization failed:', error)
+      }
     }
   }
 })
 
 onUnmounted(() => {
+  // 取消所有异步操作
+  abortController.value?.abort()
+  
+  // 清理事件监听器
   if (shouldAutoDetect.value) {
     window.removeEventListener('resize', handleResize)
-    if (resizeTimer) clearTimeout(resizeTimer)
   }
+  
+  // 清理所有定时器
+  if (resizeTimer) {
+    clearTimeout(resizeTimer)
+    resizeTimer = null
+  }
+  if (autoSaveTimer) {
+    clearTimeout(autoSaveTimer)
+    autoSaveTimer = null
+  }
+  
+  // 停止监听器
+  modelWatcher()
+  dataWatcher()
 })
 
 /**
@@ -265,6 +298,13 @@ const { component, loading, error, reload: originalReload } = useTemplate(
   props.loadOptions
 )
 
+// Define shouldShowSkeleton after loading is available
+const shouldShowSkeleton = computed(() => {
+  if (props.skeleton === true) return true
+  if (props.skeleton === 'auto') return loading.value
+  return false
+})
+
 // 增强的重载函数（带重试机制）
 const reload = async () => {
   if (retryCount.value >= props.retryTimes) {
@@ -277,7 +317,7 @@ const reload = async () => {
   } catch (err) {
     if (retryCount.value < props.retryTimes) {
       retryCount.value++
-      setTimeout(() => reload(), props.retryDelay * Math.pow(2, retryCount.value - 1))
+      setTimeout(() => reload(), props.retryDelay * 2**(retryCount.value - 1))
     } else {
       throw err
     }
@@ -362,7 +402,7 @@ const availableSlots = computed(() => {
 </script>
 
 <template>
-  <div class="ldesign-template-renderer" :data-theme="currentTheme?.value">
+  <div class="ldesign-template-renderer" :data-theme="currentTheme">
     <!-- 骨架屏 -->
     <div v-if="shouldShowSkeleton && !component" class="template-skeleton-wrapper">
       <slot name="skeleton">
@@ -384,7 +424,7 @@ const availableSlots = computed(() => {
 
     <!-- 错误 -->
     <div v-else-if="error && !fallback" class="template-error">
-      <slot name="error" :error="error" :retry="handleReload" :retryCount="retryCount">
+      <slot name="error" :error="error" :retry="handleReload" :retry-count="retryCount">
         <div class="error-message">
           <p>{{ messages.messages.loadError }}</p>
           <p class="error-detail">
@@ -393,7 +433,7 @@ const availableSlots = computed(() => {
           <p v-if="retryCount > 0" class="retry-info">
             重试次数: {{ retryCount }}/{{ retryTimes }}
           </p>
-          <button @click="handleReload" :disabled="retryCount >= retryTimes">
+          <button :disabled="retryCount >= retryTimes" @click="handleReload">
             {{ retryCount >= retryTimes ? '不能重试' : messages.actions.loadMore }}
           </button>
         </div>

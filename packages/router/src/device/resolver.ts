@@ -10,7 +10,6 @@ import type {
   RouteComponent,
   RouteRecordNormalized,
 } from '../types'
-import { h } from 'vue'
 
 /**
  * 设备组件解析器类
@@ -144,19 +143,7 @@ export class DeviceComponentResolver {
   /**
    * 创建错误组件
    */
-  private createErrorComponent(error: Error): RouteComponent {
-    return {
-      name: 'DeviceComponentError',
-      setup() {
-        return () => {
-          return h('div', { class: 'device-component-error' }, [
-            h('h3', '组件加载失败'),
-            h('p', error.message),
-          ])
-        }
-      },
-    }
-  }
+  // createErrorComponent method removed
 
   /**
    * 检查组件是否支持当前设备

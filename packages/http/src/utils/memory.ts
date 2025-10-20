@@ -2,6 +2,7 @@
  * 内存监控和管理功能
  * 监控内存使用情况，防止内存泄漏
  */
+import process from 'node:process'
 
 /**
  * 内存监控配置
@@ -196,9 +197,9 @@ export class MemoryMonitor {
     this.config?.onCleanup?.()
 
     // 触发垃圾回收（如果可用）
-    if (typeof global !== 'undefined' && (global as any).gc) {
+    if (typeof globalThis !== 'undefined' && (globalThis as any).gc) {
       try {
-        (global as any).gc()
+        (globalThis as any).gc()
       }
       catch {
         // 忽略错误

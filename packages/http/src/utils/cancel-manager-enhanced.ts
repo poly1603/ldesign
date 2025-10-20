@@ -5,8 +5,8 @@
  */
 
 import type { RequestConfig } from '../types'
-import type { CancelToken } from './cancel-token'
-import { CancelTokenImpl } from './cancel-token'
+import type { CancelToken, CancelTokenImpl  } from './cancel-token'
+
 
 /**
  * 请求元数据
@@ -61,7 +61,7 @@ export class EnhancedCancelManager {
       shouldCancel: (metadata: RequestMetadata, _requestId: string) => {
         // 检查是否有相同URL的新请求
         let hasDuplicate = false
-        this.metadata.forEach((meta, id) => {
+        this.metadata.forEach((meta, _id) => {
           if (meta !== metadata && 
               meta.config?.url === metadata.config?.url &&
               meta.createdAt > metadata.createdAt) {
@@ -230,7 +230,7 @@ export class EnhancedCancelManager {
   cancelAll(reason = 'All requests cancelled'): number {
     const count = this.metadata.size
 
-    this.metadata.forEach((meta, id) => {
+    this.metadata.forEach((_meta, id) => {
       this.cancel(id, reason)
     })
 
@@ -298,7 +298,7 @@ export class EnhancedCancelManager {
   applyStrategies(): number {
     let totalCancelled = 0
 
-    this.strategies.forEach((strategy, name) => {
+    this.strategies.forEach((_strategy, name) => {
       totalCancelled += this.cancelByStrategy(name)
     })
 

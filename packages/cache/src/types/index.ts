@@ -248,6 +248,17 @@ export interface StorageStrategyConfig {
  * 缓存配置选项
  */
 export interface CacheOptions {
+  /** 最大内存限制（字节） */
+  maxMemory?: number
+  /** 启用预取 */
+  enablePrefetch?: boolean
+  /** 预取配置 */
+  prefetch?: {
+    /** 预取策略 */
+    strategy?: 'markov' | 'lru' | 'association'
+    /** 预取数据获取函数 */
+    fetcher?: (key: string) => Promise<SerializableValue>
+  }
   /** 默认存储引擎 */
   defaultEngine?: StorageEngine
   /** 默认过期时间（毫秒） */

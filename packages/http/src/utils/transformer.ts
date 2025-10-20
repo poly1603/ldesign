@@ -134,7 +134,7 @@ export class DataTransformer {
   // 日期转换
   if (this.config?.transformDates && this.isDateField(key, value)) {
    const date = new Date(value)
-   if (!isNaN(date.getTime())) {
+   if (!Number.isNaN(date.getTime())) {
     return date
    }
   }

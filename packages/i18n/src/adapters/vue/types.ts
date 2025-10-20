@@ -2,8 +2,8 @@
  * Type definitions for Vue i18n adapter
  */
 
-import type { InjectionKey, Ref, ComputedRef } from 'vue';
-import type { I18nInstance, Locale, MessageKey, InterpolationParams } from '../../types';
+import type { InjectionKey } from 'vue';
+import type { I18nInstance, InterpolationParams, Locale, MessageKey } from '../../types';
 
 // Augment Vue global properties
 declare module '@vue/runtime-core' {

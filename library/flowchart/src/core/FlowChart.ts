@@ -57,6 +57,11 @@ export class FlowChart {
     if (this.config.height) {
       this.container.style.height = `${this.config.height}px`;
     }
+    
+    // 设置主题色CSS变量
+    if (this.config.primaryColor) {
+      this.container.style.setProperty('--flowchart-primary-color', this.config.primaryColor);
+    }
 
     this.nodes = new Map();
     this.edges = new Map();
@@ -82,7 +87,14 @@ export class FlowChart {
     this.renderer = new Renderer(this.container, renderConfig, {
       enableZoom: this.config.enableZoom,
       enablePan: this.config.enablePan ?? this.config.enableDrag, // 兼容旧参数
-      enableNodeDrag: this.config.enableNodeDrag
+      enableNodeDrag: this.config.enableNodeDrag,
+      initialScale: this.config.zoom?.initialScale,
+      minScale: this.config.zoom?.minScale,
+      maxScale: this.config.zoom?.maxScale,
+      scaleStep: this.config.zoom?.scaleStep,
+      initialPosition: this.config.zoom?.initialPosition,
+      centerOnInit: this.config.zoom?.centerOnInit,
+      onZoomChange: this.config.onZoomChange
     });
     this.renderer.init();
   }
@@ -242,10 +254,16 @@ export class FlowChart {
       this.renderer.renderNode(node, this.config.onNodeClick);
     });
 
-    // 只在第一次渲染时自动适应视图
+    // 根据配置处理初始视图
     if (this.nodes.size > 0 && !this.hasRendered) {
       setTimeout(() => {
-        this.renderer.fitView();
+        if (this.config.zoom?.autoFit) {
+          // 明确启用自动适应
+          this.renderer.fitView(this.config.zoom?.fitPadding);
+        } else {
+          // 应用初始位置配置
+          this.renderer.applyInitialPosition();
+        }
         this.hasRendered = true;
       }, 0);
     }

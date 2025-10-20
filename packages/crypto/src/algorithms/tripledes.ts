@@ -1,10 +1,10 @@
-import CryptoJS from 'crypto-js'
 import type {
   DecryptResult,
   EncryptResult,
   IEncryptor,
   TripleDESOptions,
 } from '../types'
+import CryptoJS from 'crypto-js'
 import { ErrorUtils, RandomUtils, ValidationUtils } from '../utils'
 
 /**
@@ -198,7 +198,7 @@ export class TripleDESEncryptor implements IEncryptor {
   /**
    * 获取加密模式
    */
-  private getMode(mode: string): any {
+  private getMode(mode: string): unknown {
     switch (mode.toUpperCase()) {
       case 'CBC':
         return CryptoJS.mode.CBC

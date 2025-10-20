@@ -137,11 +137,11 @@ export const CryptoPlugin: Plugin = {
       // eslint-disable-next-line node/prefer-global/process
       && process.env?.NODE_ENV === 'development'
     ) {
-      /* eslint-disable no-console */
+       
       console.info('[LDesign Crypto] Plugin installed successfully')
       console.info('[LDesign Crypto] Global property:', globalPropertyName)
       console.info('[LDesign Crypto] Config:', config)
-      /* eslint-enable no-console */
+       
     }
   },
 }

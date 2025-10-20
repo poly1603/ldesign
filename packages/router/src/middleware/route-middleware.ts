@@ -410,7 +410,7 @@ export function createProgressMiddleware(options?: {
 }): RouteMiddleware {
   let progressBar: HTMLElement | null = null
 
-  return async (context, next) => {
+  return async (_context, next) => {
     const showDelay = options?.showDelay ?? 200
 
     // 延迟显示进度条

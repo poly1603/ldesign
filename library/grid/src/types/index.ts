@@ -1,246 +1,338 @@
-import type { GridStack as GridStackNative, GridStackWidget, GridStackNode, GridStackOptions as GridStackNativeOptions } from 'gridstack'
+/**
+ * Core types for @ldesign/grid
+ */
+
+import type { GridStack as GridStackNative, GridStackOptions, GridStackNode, GridStackWidget } from 'gridstack'
 
 /**
- * 网格项配置
+ * Grid Manager configuration
  */
-export interface GridItemOptions extends Omit<GridStackWidget, 'id' | 'content'> {
-  /** 唯一标识符 */
-  id?: string | number
-  /** X坐标 (列位置) */
+export interface GridManagerConfig {
+  /** Maximum number of grid instances */
+  maxInstances?: number
+  /** Enable global performance monitoring */
+  enablePerformanceMonitor?: boolean
+  /** Enable automatic cleanup of unused instances */
+  enableAutoCleanup?: boolean
+  /** Global drag options */
+  globalDragOptions?: DragOptions
+  /** Enable memory optimization */
+  memoryOptimization?: boolean
+}
+
+/**
+ * Grid options extending GridStack native options
+ */
+export interface GridOptions extends GridStackOptions {
+  /** Accept widgets from outside */
+  acceptWidgets?: boolean | string
+  /** Enable nested grids */
+  nested?: {
+    enabled: boolean
+    maxDepth?: number
+  }
+  /** Performance optimization options */
+  performance?: {
+    virtualScroll?: boolean
+    batchUpdate?: boolean
+    lazyRender?: boolean
+  }
+  /** Custom drag and drop options */
+  dragOptions?: DragOptions
+}
+
+/**
+ * Grid item options
+ */
+export interface GridItemOptions extends Partial<GridStackNode> {
+  /** Unique identifier */
+  id?: string
+  /** Grid x position */
   x?: number
-  /** Y坐标 (行位置) */
+  /** Grid y position */
   y?: number
-  /** 宽度 (占据列数) */
+  /** Width in grid units */
   w?: number
-  /** 高度 (占据行数) */
+  /** Height in grid units */
   h?: number
-  /** 最小宽度 */
+  /** Minimum width */
   minW?: number
-  /** 最大宽度 */
+  /** Maximum width */
   maxW?: number
-  /** 最小高度 */
+  /** Minimum height */
   minH?: number
-  /** 最大高度 */
+  /** Maximum height */
   maxH?: number
-  /** 是否可以移动 */
-  noMove?: boolean
-  /** 是否可以调整大小 */
-  noResize?: boolean
-  /** 是否锁定 */
+  /** Is item locked */
   locked?: boolean
-  /** 自动定位 */
-  autoPosition?: boolean
-  /** 内容（HTML字符串或元素） */
+  /** Disable resize */
+  noResize?: boolean
+  /** Disable move */
+  noMove?: boolean
+  /** HTML content or element */
   content?: string | HTMLElement
-  /** 自定义数据 */
-  [key: string]: any
+  /** Auto position */
+  autoPosition?: boolean
+  /** Custom data */
+  data?: any
 }
 
 /**
- * 网格配置选项
+ * Drag options
  */
-export interface GridStackOptions extends Partial<GridStackNativeOptions> {
-  /** 列数 */
-  column?: number
-  /** 单元格高度 (px 或 'auto') */
-  cellHeight?: number | string
-  /** 最小行数 */
-  minRow?: number
-  /** 最大行数 */
-  maxRow?: number
-  /** 是否启用动画 */
-  animate?: boolean
-  /** 动画速度 (ms) */
-  animationSpeed?: number
-  /** 是否自动调整 */
-  auto?: boolean
-  /** 是否禁用一列模式 */
-  disableOneColumnMode?: boolean
-  /** 是否禁用拖拽 */
-  disableDrag?: boolean
-  /** 是否禁用调整大小 */
-  disableResize?: boolean
-  /** 拖拽句柄选择器 */
+export interface DragOptions {
+  /** Accept elements from selector */
+  acceptFrom?: string
+  /** Draggable handle selector */
   handle?: string
-  /** 拖拽句柄类名 */
-  handleClass?: string
-  /** 是否浮动布局 */
-  float?: boolean
-  /** 垂直间距 */
-  verticalMargin?: number | string
-  /** 水平间距 */
-  margin?: number | string
-  /** 边距单位 */
-  marginUnit?: string
-  /** 是否静态网格（不可交互） */
-  staticGrid?: boolean
-  /** 接受的拖拽元素选择器 */
-  acceptWidgets?: boolean | string | ((element: Element) => boolean)
-  /** 是否移除超时 */
-  removable?: boolean | string
-  /** 移除提示文本 */
-  removeTimeout?: number
-  /** 拖拽占位符类名 */
-  placeholderClass?: string
-  /** 拖拽占位符文本 */
-  placeholderText?: string
-  /** 拖拽时的类名 */
-  draggable?: {
-    handle?: string
-    appendTo?: string
-    scroll?: boolean
-    containment?: string
-  }
-  /** 调整大小时的类名 */
-  resizable?: {
-    handles?: string
-    autoHide?: boolean
-  }
-  /** 响应式断点 */
-  oneColumnSize?: number
-  /** 列宽度 (px) */
-  columnWidth?: number
-  /** 子网格选项 */
-  subGridOpts?: GridStackOptions
-  /** RTL 支持 */
-  rtl?: boolean
-  /** 样式选项 */
-  styleInHead?: boolean
+  /** Elements that should not trigger drag */
+  cancel?: string
+  /** Show helper while dragging */
+  helper?: 'clone' | 'original'
+  /** Revert position if not dropped */
+  revert?: boolean
+  /** Scroll container while dragging */
+  scroll?: boolean
+  /** Append helper to element */
+  appendTo?: string | HTMLElement
+  /** Z-index for dragging element */
+  zIndex?: number
 }
 
 /**
- * 网格事件类型
+ * Drag source options
  */
-export interface GridStackEvents {
-  /** 添加事件 */
-  added: (event: Event, items: GridStackNode[]) => void
-  /** 变化事件 */
-  change: (event: Event, items: GridStackNode[]) => void
-  /** 禁用事件 */
-  disable: (event: Event) => void
-  /** 拖拽事件 */
-  drag: (event: Event, element: GridStackNode) => void
-  /** 拖拽开始 */
-  dragstart: (event: Event, element: GridStackNode) => void
-  /** 拖拽停止 */
-  dragstop: (event: Event, element: GridStackNode) => void
-  /** 投放事件 */
-  dropped: (event: Event, previousNode: GridStackNode, newNode: GridStackNode) => void
-  /** 启用事件 */
-  enable: (event: Event) => void
-  /** 移除事件 */
-  removed: (event: Event, items: GridStackNode[]) => void
-  /** 调整大小事件 */
-  resize: (event: Event, element: GridStackNode) => void
-  /** 调整大小开始 */
-  resizestart: (event: Event, element: GridStackNode) => void
-  /** 调整大小停止 */
-  resizestop: (event: Event, element: GridStackNode) => void
+export interface DragSourceOptions {
+  /** Data to pass when dropped */
+  data?: any
+  /** Default grid item options */
+  itemOptions?: GridItemOptions
+  /** Custom drag preview */
+  preview?: string | HTMLElement
+  /** Helper type */
+  helper?: 'clone' | 'original'
+  /** Revert if not dropped */
+  revert?: boolean
 }
 
 /**
- * 事件名称类型
+ * Grid layout for serialization
  */
-export type GridStackEventName = keyof GridStackEvents
-
-/**
- * 事件处理器类型
- */
-export type GridStackEventHandler<T extends GridStackEventName = GridStackEventName> = GridStackEvents[T]
-
-/**
- * 序列化后的网格数据
- */
-export interface SerializedGrid {
-  /** 网格项数组 */
-  widgets: GridItemOptions[]
-  /** 网格配置 */
-  options?: GridStackOptions
+export interface GridLayout {
+  /** Grid options */
+  options?: GridOptions
+  /** Grid items */
+  items: GridItemOptions[]
+  /** Nested grids */
+  children?: Record<string, GridLayout>
 }
 
 /**
- * 网格实例接口
+ * Grid item state
  */
-export interface IGridStackInstance {
-  /** 原生 GridStack 实例 */
-  readonly instance: GridStackNative | null
-  /** 网格容器元素 */
-  readonly el: HTMLElement | null
-  /** 添加网格项 */
-  addWidget: (options: GridItemOptions) => HTMLElement | undefined
-  /** 批量添加网格项 */
-  addWidgets: (items: GridItemOptions[]) => HTMLElement[]
-  /** 移除网格项 */
-  removeWidget: (el: HTMLElement | string, removeDOM?: boolean) => void
-  /** 移除所有网格项 */
-  removeAll: (removeDOM?: boolean) => void
-  /** 更新网格项 */
-  update: (el: HTMLElement, options: Partial<GridItemOptions>) => void
-  /** 启用拖拽和调整大小 */
-  enable: () => void
-  /** 禁用拖拽和调整大小 */
-  disable: () => void
-  /** 锁定网格项 */
-  lock: (el: HTMLElement) => void
-  /** 解锁网格项 */
-  unlock: (el: HTMLElement) => void
-  /** 设置静态模式 */
-  setStatic: (staticValue: boolean) => void
-  /** 设置动画 */
-  setAnimation: (animate: boolean) => void
-  /** 设置列数 */
-  column: (column: number, layout?: 'moveScale' | 'move' | 'scale' | 'none') => void
-  /** 获取列数 */
-  getColumn: () => number
-  /** 获取单元格高度 */
-  getCellHeight: () => number
-  /** 设置单元格高度 */
-  cellHeight: (val: number, update?: boolean) => void
-  /** 批量更新 */
-  batchUpdate: (flag?: boolean) => void
-  /** 紧凑布局 */
-  compact: () => void
-  /** 浮��模式 */
-  float: (val: boolean) => void
-  /** 获取网格数据 */
-  save: (saveContent?: boolean) => GridItemOptions[]
-  /** 加载网格数据 */
-  load: (items: GridItemOptions[], addAndRemove?: boolean) => void
-  /** 监听事件 */
-  on: <T extends GridStackEventName>(event: T, callback: GridStackEventHandler<T>) => void
-  /** 取消监听事件 */
-  off: <T extends GridStackEventName>(event: T) => void
-  /** 销毁实例 */
-  destroy: (removeDOM?: boolean) => void
-  /** 使网格项适合容器 */
-  cellWidth: () => number
-  /** 获取所有网格项 */
-  getGridItems: () => HTMLElement[]
-  /** 创建子网格 */
-  makeSubGrid: (el: HTMLElement, options?: GridStackOptions) => GridStackNative
-  /** 将元素转换为子网格 */
-  makeWidget: (el: HTMLElement | string) => HTMLElement
-  /** 调整布局 */
-  margin: (value: number | string) => void
-  /** 交换两个网格项 */
-  swap: (a: HTMLElement, b: HTMLElement) => void
+export interface GridItem extends GridItemOptions {
+  /** DOM element */
+  element: HTMLElement
+  /** Grid instance reference */
+  grid: IGridInstance
+  /** Is nested grid */
+  isNested?: boolean
+  /** Nested grid instance */
+  nestedGrid?: IGridInstance
 }
 
 /**
- * 工具函数类型
+ * Performance statistics
  */
-export interface GridStackUtils {
-  /** 解析网格项选项 */
-  parseOptions: (options: any) => GridItemOptions
-  /** 获取元素的网格节点 */
-  getElement: (el: HTMLElement | string) => HTMLElement | null
-  /** 生成唯一 ID */
-  generateId: () => string
-  /** 克隆对象 */
-  clone: <T>(obj: T) => T
+export interface PerformanceStats {
+  /** Number of items */
+  itemCount: number
+  /** Number of visible items (if virtual scrolling) */
+  visibleItemCount?: number
+  /** Average render time (ms) */
+  avgRenderTime: number
+  /** Memory usage (bytes) */
+  memoryUsage?: number
+  /** FPS */
+  fps?: number
+  /** Last update timestamp */
+  lastUpdate: number
 }
 
 /**
- * 导出 GridStack 原生类型
+ * Grid instance interface
  */
-export type { GridStackNative, GridStackWidget, GridStackNode }
+export interface IGridInstance {
+  /** Instance ID */
+  id: string
+  /** Container element */
+  container: HTMLElement
+  /** Grid options */
+  options: GridOptions
+  /** Native GridStack instance */
+  native: GridStackNative
+  /** Grid items */
+  items: Map<string, GridItem>
+  /** Parent grid (if nested) */
+  parent?: IGridInstance
+  /** Nested depth */
+  depth: number
+
+  /** Initialize grid */
+  init(): void
+  /** Add item to grid */
+  addItem(element: HTMLElement, options: GridItemOptions): GridItem
+  /** Remove item from grid */
+  removeItem(id: string): void
+  /** Update item */
+  updateItem(id: string, options: Partial<GridItemOptions>): void
+  /** Get item by id */
+  getItem(id: string): GridItem | undefined
+  /** Get all items */
+  getAllItems(): GridItem[]
+  /** Save layout */
+  save(): GridLayout
+  /** Load layout */
+  load(layout: GridLayout): void
+  /** Clear all items */
+  clear(): void
+  /** Enable drag */
+  enableDrag(): void
+  /** Disable drag */
+  disableDrag(): void
+  /** Enable resize */
+  enableResize(): void
+  /** Disable resize */
+  disableResize(): void
+  /** Destroy grid */
+  destroy(): void
+  /** Get performance stats */
+  getStats(): PerformanceStats
+}
+
+/**
+ * Grid Manager interface
+ */
+export interface IGridManager {
+  /** Get manager instance */
+  getInstance(): IGridManager
+  /** Configure manager */
+  configure(config: GridManagerConfig): void
+  /** Create grid instance */
+  create(container: HTMLElement, options: GridOptions): IGridInstance
+  /** Get grid instance by id */
+  get(id: string): IGridInstance | undefined
+  /** Remove grid instance */
+  remove(id: string): void
+  /** Get all grid instances */
+  getAll(): IGridInstance[]
+  /** Destroy all grids */
+  destroyAll(): void
+  /** Get global performance stats */
+  getGlobalStats(): GlobalPerformanceStats
+}
+
+/**
+ * Global performance statistics
+ */
+export interface GlobalPerformanceStats {
+  /** Total number of grids */
+  totalGrids: number
+  /** Total number of items */
+  totalItems: number
+  /** Average FPS across all grids */
+  avgFps: number
+  /** Total memory usage */
+  totalMemory: number
+  /** Active drag operations */
+  activeDrags: number
+}
+
+/**
+ * Drag event data
+ */
+export interface DragEventData {
+  /** Source element */
+  source: HTMLElement
+  /** Source data */
+  data?: any
+  /** Grid item options */
+  itemOptions?: GridItemOptions
+  /** Event */
+  event: DragEvent
+}
+
+/**
+ * Grid events
+ */
+export interface GridEvents {
+  /** Item added */
+  added: (item: GridItem) => void
+  /** Item removed */
+  removed: (item: GridItem) => void
+  /** Item updated */
+  updated: (item: GridItem) => void
+  /** Item drag started */
+  dragstart: (item: GridItem) => void
+  /** Item drag stopped */
+  dragstop: (item: GridItem) => void
+  /** Item resize started */
+  resizestart: (item: GridItem) => void
+  /** Item resize stopped */
+  resizestop: (item: GridItem) => void
+  /** Layout changed */
+  change: (items: GridItem[]) => void
+  /** External item dropped */
+  dropped: (item: GridItem, data: DragEventData) => void
+}
+
+/**
+ * Viewport rectangle
+ */
+export interface Rect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+/**
+ * Collision detection result
+ */
+export interface CollisionResult {
+  hasCollision: boolean
+  collidingItems: GridItem[]
+}
+
+/**
+ * Batch operation
+ */
+export interface BatchOperation {
+  type: 'add' | 'remove' | 'update'
+  id?: string
+  element?: HTMLElement
+  options?: GridItemOptions
+}
+
+/**
+ * Memory pool stats
+ */
+export interface PoolStats {
+  size: number
+  used: number
+  available: number
+}
+
+export type { GridStackNative, GridStackOptions, GridStackNode, GridStackWidget }
+
+
+
+
+
+
+
+
+
+
+
+

@@ -5,6 +5,7 @@
  */
 
 import type { HttpClient, HttpError, RequestConfig, ResponseData } from '../types'
+import process from 'node:process'
 import { logger } from '../utils/logger'
 
 /**
@@ -348,14 +349,15 @@ export class HttpDevTools {
   printStats(): void {
     const stats = this.getStats()
 
+    // 使用 console.group/groupEnd 是允许的（调试工具特性）
     console.group('HTTP DevTools Statistics')
-    console.log(`Total Requests: ${stats.total}`)
-    console.log(`Pending: ${stats.pending}`)
-    console.log(`Success: ${stats.success}`)
-    console.log(`Error: ${stats.error}`)
-    console.log(`Cancelled: ${stats.cancelled}`)
-    console.log(`Average Duration: ${stats.averageDuration}ms`)
-    console.log(`Slow Requests: ${stats.slowRequests}`)
+    console.info(`Total Requests: ${stats.total}`)
+    console.info(`Pending: ${stats.pending}`)
+    console.info(`Success: ${stats.success}`)
+    console.info(`Error: ${stats.error}`)
+    console.info(`Cancelled: ${stats.cancelled}`)
+    console.info(`Average Duration: ${stats.averageDuration}ms`)
+    console.info(`Slow Requests: ${stats.slowRequests}`)
     console.groupEnd()
   }
 }

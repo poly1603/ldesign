@@ -6,7 +6,7 @@ import { BaseAdapter } from './base'
  */
 export class AxiosAdapter extends BaseAdapter {
   name = 'axios'
-  private axios: any
+  private axios: any // axios实例，保持any避免依赖axios类型
 
   constructor(axiosInstance?: any) {
     super()
@@ -37,7 +37,7 @@ export class AxiosAdapter extends BaseAdapter {
   /**
    * 发送请求
    */
-  async request<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
+  async request<T = unknown>(config: RequestConfig): Promise<ResponseData<T>> {
     if (!this.isSupported()) {
       throw new Error(
         'Axios is not available. Please install axios: npm install axios',

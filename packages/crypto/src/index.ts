@@ -59,6 +59,10 @@ import {
   ValidationUtils,
 } from './utils'
 
+// 导入实用工具类
+import { PasswordStrengthChecker } from './utils/password-strength'
+import { PerformanceMonitor } from './utils/performance-monitor'
+
 // Vue imports commented out due to build issues
 // export {
 //   useCrypto,
@@ -104,62 +108,76 @@ export {
 } from './algorithms'
 
 export {
+  // 认证加密
+  AuthenticatedEncryption,
+  authenticatedEncryption,
+  chain,
+  // 链式调用 API
+  CryptoChain,
   // 核心管理器
   CryptoManager,
   cryptoManager,
   Decrypt,
   decrypt,
+  decryptFromBase64,
+  decryptJSON,
+  decryptJSONWithAuth,
+  decryptWithAuth,
   DigitalSignature,
   digitalSignature,
+
   // 核心功能类
   Encrypt,
+
   // 核心功能实例
   encrypt,
+  encryptJSON,
+  encryptJSONWithAuth,
+  encryptToBase64,
+  encryptWithAuth,
   Hash,
   hash,
+
+  hashPassword,
   HMAC,
   hmac,
   KeyGenerator,
   keyGenerator,
-
   // 性能优化
   PerformanceOptimizer,
-
-  // 链式调用 API
-  CryptoChain,
-  chain,
-  encryptToBase64,
-  decryptFromBase64,
-  encryptJSON,
-  decryptJSON,
-  hashPassword,
-
-  // 认证加密
-  AuthenticatedEncryption,
-  authenticatedEncryption,
-  encryptWithAuth,
-  decryptWithAuth,
-  encryptJSONWithAuth,
-  decryptJSONWithAuth,
 } from './core'
 
 // === 管理器相关类型 ===
 export type {
+  AuthenticatedDecryptResult,
+  AuthenticatedEncryptionOptions,
+  // 认证加密类型
+  AuthenticatedEncryptResult,
   BatchOperation,
   BatchResult,
   CacheStats,
   CryptoConfig,
   PerformanceMetrics,
   PerformanceOptimizerConfig,
-  // 认证加密类型
-  AuthenticatedEncryptResult,
-  AuthenticatedDecryptResult,
-  AuthenticatedEncryptionOptions,
 } from './core'
 
 // === Engine 插件模块（已移至独立入口，避免将可选依赖纳入基础构建）===
 // 如需使用 Engine 插件，请从独立入口导入：
 // import { createCryptoEnginePlugin } from '@ldesign/crypto/engine'
+
+// === 流式加密 ===
+export {
+  type FileDecryptionOptions,
+  type FileEncryptionOptions,
+  type IStreamDecryptor,
+  type IStreamEncryptor,
+  type IStreamProcessor,
+  type StreamDecryptionOptions,
+  type StreamDecryptionResult,
+  type StreamEncryptionOptions,
+  type StreamEncryptionResult,
+  type StreamProgress,
+} from './stream'
 
 // === 类型定义模块 ===
 export type {
@@ -207,52 +225,111 @@ export {
   ValidationUtils,
 } from './utils'
 
-// === 密码强度检测 ===
+// === 性能基准测试 ===
 export {
-  PasswordStrength,
-  type PasswordAnalysis,
-  PasswordStrengthChecker,
-} from './utils/password-strength'
-
-// === 性能监控 ===
-export {
-  PerformanceMonitor,
-  type PerformanceMetric,
-  type PerformanceReport,
-  type AlgorithmStats,
-  type OperationStats,
-  type TimeSeriesData,
-  type PerformanceMonitorConfig,
-} from './utils/performance-monitor'
+  Benchmark,
+  type BenchmarkOptions,
+  type BenchmarkResult,
+  type BenchmarkSuite,
+  compareBenchmark,
+  createBenchmark,
+  quickBenchmark,
+} from './utils/benchmark'
 
 // === 数据压缩 ===
 export {
   compress,
-  DataCompressor,
-  decompress,
   type CompressionOptions,
   type CompressionResult,
+  DataCompressor,
+  decompress,
   type DecompressionResult,
 } from './utils/compression'
+
+// === 错误处理 ===
+export {
+  CryptoError,
+  CryptoErrorCode,
+  CryptoErrorFactory,
+  DecryptionError,
+  EncodingError,
+  EncryptionError,
+  ErrorHandler,
+  HashError,
+  KeyManagementError,
+  RateLimitError,
+  StorageError,
+  ValidationError,
+} from './utils/errors'
 
 // === 密钥派生 ===
 export {
   deriveKey,
   generateSalt,
   KeyDerivation,
-  verifyKey,
   type KeyDerivationOptions,
   type KeyDerivationResult,
+  verifyKey,
 } from './utils/key-derivation'
 
 // === 密钥轮换 ===
 export {
-  KeyRotation,
   createKeyRotation,
-  type KeyInfo,
   type EncryptedDataMetadata,
+  type KeyInfo,
+  KeyRotation,
   type ReencryptionResult,
 } from './utils/key-rotation'
+
+// === 对象池 ===
+export {
+  acquireDecryptResult,
+  acquireEncryptResult,
+  clearAllPools,
+  createDecryptFailure,
+  createDecryptSuccess,
+  createEncryptFailure,
+  createEncryptSuccess,
+  DecryptResultPool,
+  EncryptResultPool,
+  getAllPoolStats,
+  globalDecryptResultPool,
+  globalEncryptResultPool,
+  ObjectPool,
+  type ObjectPoolOptions,
+  type ObjectPoolStats,
+  releaseDecryptResult,
+  releaseEncryptResult,
+} from './utils/object-pool'
+
+// === 密码强度检测 ===
+export {
+  type PasswordAnalysis,
+  PasswordStrength,
+  PasswordStrengthChecker,
+} from './utils/password-strength'
+
+// === 性能监控 ===
+export {
+  type AlgorithmStats,
+  type OperationStats,
+  type PerformanceMetric,
+  PerformanceMonitor,
+  type PerformanceMonitorConfig,
+  type PerformanceReport,
+  type TimeSeriesData,
+} from './utils/performance-monitor'
+
+// === 限流器 ===
+export {
+  createFixedWindowLimiter,
+  createSlidingWindowLimiter,
+  createTokenBucketLimiter,
+  RateLimiter,
+  type RateLimiterOptions,
+  type RateLimitStatus,
+  type RateLimitStrategy,
+} from './utils/rate-limiter'
 
 // === 安全存储 ===
 export {
@@ -261,93 +338,16 @@ export {
   type SecureStorageOptions,
 } from './utils/secure-storage'
 
-// === 限流器 ===
-export {
-  RateLimiter,
-  createTokenBucketLimiter,
-  createSlidingWindowLimiter,
-  createFixedWindowLimiter,
-  type RateLimiterOptions,
-  type RateLimitStrategy,
-  type RateLimitStatus,
-} from './utils/rate-limiter'
-
-// === 错误处理 ===
-export {
-  CryptoError,
-  EncryptionError,
-  DecryptionError,
-  HashError,
-  KeyManagementError,
-  EncodingError,
-  RateLimitError,
-  ValidationError,
-  StorageError,
-  CryptoErrorFactory,
-  ErrorHandler,
-  CryptoErrorCode,
-} from './utils/errors'
-
-// === 性能基准测试 ===
-export {
-  Benchmark,
-  createBenchmark,
-  quickBenchmark,
-  compareBenchmark,
-  type BenchmarkResult,
-  type BenchmarkSuite,
-  type BenchmarkOptions,
-} from './utils/benchmark'
-
-// === 对象池 ===
-export {
-  ObjectPool,
-  EncryptResultPool,
-  DecryptResultPool,
-  globalEncryptResultPool,
-  globalDecryptResultPool,
-  acquireEncryptResult,
-  releaseEncryptResult,
-  acquireDecryptResult,
-  releaseDecryptResult,
-  createEncryptSuccess,
-  createEncryptFailure,
-  createDecryptSuccess,
-  createDecryptFailure,
-  getAllPoolStats,
-  clearAllPools,
-  type ObjectPoolOptions,
-  type ObjectPoolStats,
-} from './utils/object-pool'
-
 // === Worker 线程池 ===
 export {
-  WorkerPool,
-  getGlobalWorkerPool,
   destroyGlobalWorkerPool,
+  getGlobalWorkerPool,
+  type WorkerMessage,
+  WorkerPool,
   type WorkerPoolOptions,
   type WorkerPoolStats,
-  type WorkerMessage,
   type WorkerResponse,
 } from './workers'
-
-// === 流式加密 ===
-export {
-  ChunkEncryptor,
-  ChunkDecryptor,
-  encryptFile,
-  decryptFile,
-  type StreamEncryptionOptions,
-  type StreamDecryptionOptions,
-  type StreamProgress,
-  type StreamEncryptionResult,
-  type StreamDecryptionResult,
-  type FileEncryptionOptions,
-  type FileDecryptionOptions,
-  type IStreamProcessor,
-  type IStreamEncryptor,
-  type IStreamDecryptor,
-} from './stream'
 
 const LDesignCrypto = {
   // === 核心功能 ===
@@ -395,10 +395,6 @@ const LDesignCrypto = {
   version: '0.1.0',
   name: '@ldesign/crypto',
 }
-
-// 导入实用工具类
-import { PasswordStrengthChecker } from './utils/password-strength'
-import { PerformanceMonitor } from './utils/performance-monitor'
 
 // 添加到默认导出
 Object.assign(LDesignCrypto, {

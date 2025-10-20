@@ -3,6 +3,36 @@
  * 导出所有 Vue 相关的功能和核心 API（便于 Vue 用户使用）
  */
 
+// 重新导出核心工厂与类型（便于 Vue 用户快速导入）
+export {
+ createApiEngine,
+ createApiEngineByEnv,
+ createSingletonApiEngine,
+ createSystemApiEngine,
+ destroySingletonApiEngine,
+} from '../core/factory'
+
+export {
+ systemApiPlugin,
+} from '../plugins/systemApi'
+
+export type {
+ ApiCallOptions,
+ ApiEngine,
+ ApiEngineConfig,
+ ApiPlugin,
+ LoginParams,
+ LoginResult,
+ MenuItem,
+ SystemApiMethodName,
+ UserInfo,
+} from '../types'
+
+export { SYSTEM_API_METHODS } from '../types'
+
+// 版本信息
+export { version } from '../version'
+
 // Vue 组合式 API
 export {
  useApi,
@@ -16,7 +46,6 @@ export {
  useRequest,
  useSystemApi,
 } from './composables'
-
 export type {
  ApiCallState,
  UseApiCallOptions,
@@ -46,6 +75,7 @@ export {
  getApiEngineFromApp,
  installApiVuePlugin,
 } from './plugin'
+
 export type { ApiVuePluginOptions } from './plugin'
 
 // Vue 工具函数
@@ -58,33 +88,3 @@ export {
 } from './utils'
 
 export type { UseIntersectionOptions } from './utils'
-
-// 重新导出核心工厂与类型（便于 Vue 用户快速导入）
-export {
- createApiEngine,
- createApiEngineByEnv,
- createSystemApiEngine,
- createSingletonApiEngine,
- destroySingletonApiEngine,
-} from '../core/factory'
-
-export {
- systemApiPlugin,
-} from '../plugins/systemApi'
-
-export type {
- ApiCallOptions,
- ApiEngine,
- ApiEngineConfig,
- ApiPlugin,
- LoginParams,
- LoginResult,
- MenuItem,
- SystemApiMethodName,
- UserInfo,
-} from '../types'
-
-export { SYSTEM_API_METHODS } from '../types'
-
-// 版本信息
-export { version } from '../version'

@@ -185,6 +185,7 @@ export class UnitStrategyManager {
     
     // Handle conversions (simplified for common cases)
     if (fromUnit === 'px') {
+      const viewport = getDeviceDetector().getViewport();
       switch (targetUnit) {
         case 'rem':
           convertedValue = value / rootFontSize;
@@ -193,16 +194,14 @@ export class UnitStrategyManager {
           convertedValue = value / rootFontSize; // Approximate
           break;
         case 'vw':
-          const viewport = getDeviceDetector().getViewport();
           convertedValue = (value / viewport.width) * 100;
           break;
         case 'vh':
-          const viewportH = getDeviceDetector().getViewport();
-          convertedValue = (value / viewportH.height) * 100;
+          convertedValue = (value / viewport.height) * 100;
           break;
         case '%':
           // Context-dependent, default to 100% = viewport width
-          convertedValue = (value / getDeviceDetector().getViewport().width) * 100;
+          convertedValue = (value / viewport.width) * 100;
           break;
         case 'pt':
           convertedValue = value * 0.75; // 1px ≈ 0.75pt

@@ -15,56 +15,6 @@ export default defineConfig({
       formats: ['es'],
       fileName: (format, entryName) => `${entryName}.js`
     },
-    rollupOptions: {
-      external: ['vue', 'react', 'react-dom', 'react/jsx-runtime'],
-      output: {
-        // 代码分割优化
-        manualChunks: (id) => {
-          // CodeMirror 相关包单独打包（体积大）
-          if (id.includes('@codemirror')) {
-            // 区分核心和语言包
-            if (id.includes('lang-')) {
-              return 'codemirror-langs'
-            }
-            return 'codemirror-core'
-          }
-          
-          // AI 相关单独打包
-          if (id.includes('/src/ai/')) {
-            return 'ai'
-          }
-          
-          // 插件按类别打包
-          if (id.includes('/src/plugins/')) {
-            if (id.includes('/plugins/formatting/')) return 'plugins-formatting'
-            if (id.includes('/plugins/media/')) return 'plugins-media'
-            if (id.includes('/plugins/table/')) return 'plugins-table'
-            return 'plugins-utils'
-          }
-          
-          // UI 组件
-          if (id.includes('/src/ui/')) {
-            return 'ui'
-          }
-          
-          // 核心模块
-          if (id.includes('/src/core/')) {
-            return 'core'
-          }
-        },
-        globals: {
-          vue: 'Vue',
-          react: 'React',
-          'react-dom': 'ReactDOM'
-        },
-        assetFileNames: (assetInfo) => {
-          if (assetInfo.name === 'style.css') return 'editor.css'
-          return assetInfo.name || ''
-        },
-        // 优化 chunk 命名
-        chunkFileNames: 'chunks/[name]-[hash].js'
-      }
-    },
     cssCodeSplit: false,
     sourcemap: true,
     
@@ -72,58 +22,102 @@ export default defineConfig({
     minify: 'terser',
     terserOptions: {
       compress: {
-        // 生产环境移除 console
         drop_console: true,
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.debug', 'logger.debug']
+        pure_funcs: ['console.log', 'console.debug', 'logger.debug'],
+        passes: 2
       },
       format: {
-        // 移除注释
         comments: false
+      },
+      mangle: {
+        safari10: true
       }
     },
     
-    // 其他优化
-    chunkSizeWarningLimit: 1000, // 提高警告阈值到 1000KB
+    // chunk大小警告
+    chunkSizeWarningLimit: 1000,
     
-    // Rollup 优化
+    // Rollup优化
     rollupOptions: {
-      ...{
-        external: ['vue', 'react', 'react-dom', 'react/jsx-runtime'],
-        output: {
-          manualChunks: (id) => {
-            if (id.includes('@codemirror')) {
-              if (id.includes('lang-')) return 'codemirror-langs'
-              return 'codemirror-core'
-            }
-            if (id.includes('/src/ai/')) return 'ai'
-            if (id.includes('/src/plugins/')) {
-              if (id.includes('/plugins/formatting/')) return 'plugins-formatting'
-              if (id.includes('/plugins/media/')) return 'plugins-media'
-              if (id.includes('/plugins/table/')) return 'plugins-table'
-              return 'plugins-utils'
-            }
-            if (id.includes('/src/ui/')) return 'ui'
-            if (id.includes('/src/core/')) return 'core'
-          },
-          globals: {
-            vue: 'Vue',
-            react: 'React',
-            'react-dom': 'ReactDOM'
-          },
-          assetFileNames: (assetInfo) => {
-            if (assetInfo.name === 'style.css') return 'editor.css'
-            return assetInfo.name || ''
-          },
-          chunkFileNames: 'chunks/[name]-[hash].js'
-        }
+      external: ['vue', 'react', 'react-dom', 'react/jsx-runtime'],
+      
+      output: {
+        // 精细化代码分割
+        manualChunks: (id) => {
+          // CodeMirror（最大的依赖）
+          if (id.includes('@codemirror')) {
+            if (id.includes('lang-')) return 'codemirror-langs'
+            return 'codemirror-core'
+          }
+          
+          // AI功能（独立加载）
+          if (id.includes('/src/ai/')) {
+            if (id.includes('/providers/')) return 'ai-providers'
+            return 'ai-core'
+          }
+          
+          // 插件（按类别分割）
+          if (id.includes('/src/plugins/')) {
+            if (id.includes('/formatting/')) return 'plugins-formatting'
+            if (id.includes('/media/')) return 'plugins-media'
+            if (id.includes('/table/')) return 'plugins-table'
+            if (id.includes('/ai/')) return 'plugins-ai'
+            return 'plugins-utils'
+          }
+          
+          // UI组件（独立）
+          if (id.includes('/src/ui/')) {
+            if (id.includes('/base/')) return 'ui-base'
+            if (id.includes('/icons/')) return 'ui-icons'
+            return 'ui-components'
+          }
+          
+          // 核心模块（最重要）
+          if (id.includes('/src/core/')) {
+            return 'core'
+          }
+          
+          // 工具函数
+          if (id.includes('/src/utils/')) {
+            return 'utils'
+          }
+          
+          // 图标和主题
+          if (id.includes('/src/icons/') || id.includes('/src/theme/')) {
+            return 'theme-icons'
+          }
+        },
+        
+        globals: {
+          vue: 'Vue',
+          react: 'React',
+          'react-dom': 'ReactDOM'
+        },
+        
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === 'style.css') return 'editor.css'
+          return '[name].[ext]'
+        },
+        
+        chunkFileNames: 'chunks/[name]-[hash].js',
+        
+        // 优化导出
+        exports: 'named',
+        
+        // 保留模块结构
+        preserveModules: false,
+        
+        // 压缩选项
+        compact: true
       },
       
-      // Tree-shaking 优化
+      // Tree-shaking优化
       treeshake: {
         moduleSideEffects: false,
         propertyReadSideEffects: false,
-        unknownGlobalSideEffects: false
+        unknownGlobalSideEffects: false,
+        annotations: true
       }
     }
   },

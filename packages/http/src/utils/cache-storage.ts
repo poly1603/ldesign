@@ -193,7 +193,7 @@ export class MemoryCacheStorage implements CacheStorage {
  * LocalStorage 缓存存储实现
  */
 export class LocalStorageCacheStorage implements CacheStorage {
-  private prefix: string
+  protected prefix: string
 
   constructor(prefix = 'http_cache_') {
     this.prefix = prefix
@@ -322,7 +322,7 @@ export class SessionStorageCacheStorage extends LocalStorageCacheStorage {
     }
 
     try {
-      const item = sessionStorage.getItem(this['prefix'] + key)
+      const item = sessionStorage.getItem(this.prefix + key)
       if (!item) {
         return null
       }
@@ -354,7 +354,7 @@ export class SessionStorageCacheStorage extends LocalStorageCacheStorage {
         ttl,
       }
 
-      sessionStorage.setItem(this['prefix'] + key, JSON.stringify(item))
+      sessionStorage.setItem(this.prefix + key, JSON.stringify(item))
     }
     catch {
       // 存储失败
@@ -366,7 +366,7 @@ export class SessionStorageCacheStorage extends LocalStorageCacheStorage {
       return
     }
 
-    sessionStorage.removeItem(this['prefix'] + key)
+    sessionStorage.removeItem(this.prefix + key)
   }
 
   async clear(): Promise<void> {
@@ -377,7 +377,7 @@ export class SessionStorageCacheStorage extends LocalStorageCacheStorage {
     const keysToRemove: string[] = []
     for (let i = 0; i < sessionStorage.length; i++) {
       const key = sessionStorage.key(i)
-      if (key?.startsWith(this['prefix'])) {
+      if (key?.startsWith(this.prefix)) {
         keysToRemove.push(key)
       }
     }

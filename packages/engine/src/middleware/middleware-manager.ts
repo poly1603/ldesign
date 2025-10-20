@@ -9,35 +9,81 @@ import type {
 export class MiddlewareManagerImpl implements MiddlewareManager {
   private middleware: Middleware[] = []
 
-  constructor(_logger?: Logger) {
-    // logger参数保留用于未来扩展
+  // 内存优化：限制中间件数量
+  private readonly MAX_MIDDLEWARE = 50
+  private logger?: Logger
+  
+  // 性能优化：缓存中间件映射
+  private middlewareMap = new Map<string, Middleware>()
+  private needsSort = false
+
+  constructor(logger?: Logger) {
+    this.logger = logger
   }
 
   use(middleware: Middleware): void {
-    // 检查是否已存在同名中间件
-    const existingIndex = this.middleware.findIndex(
-      m => m.name === middleware.name
-    )
-    if (existingIndex > -1) {
+    // 使用 Map 快速查找
+    const existing = this.middlewareMap.get(middleware.name)
+    
+    if (existing) {
       // 替换现有中间件
-      this.middleware[existingIndex] = middleware
+      const index = this.middleware.indexOf(existing)
+      if (index > -1) {
+        this.middleware[index] = middleware
+        this.middlewareMap.set(middleware.name, middleware)
+      }
     } else {
+      // 检查中间件数量限制
+      if (this.middleware.length >= this.MAX_MIDDLEWARE) {
+        this.logger?.warn(`Maximum middleware limit (${this.MAX_MIDDLEWARE}) reached, removing lowest priority`)
+        // 移除优先级最低的中间件
+        let lowestPriority = -Infinity
+        let lowestMiddleware: Middleware | null = null
+        
+        for (const m of this.middleware) {
+          const priority = m.priority ?? 100
+          if (priority > lowestPriority) {
+            lowestPriority = priority
+            lowestMiddleware = m
+          }
+        }
+        
+        if (lowestMiddleware) {
+          this.remove(lowestMiddleware.name)
+        }
+      }
+
       // 添加新中间件
       this.middleware.push(middleware)
+      this.middlewareMap.set(middleware.name, middleware)
     }
 
-    // 按优先级排序（数字越小优先级越高）
-    this.middleware.sort((a, b) => {
-      const priorityA = a.priority ?? 100
-      const priorityB = b.priority ?? 100
-      return priorityA - priorityB
-    })
+    // 标记需要排序，延迟到执行时进行
+    this.needsSort = true
   }
 
   remove(name: string): void {
-    const index = this.middleware.findIndex(m => m.name === name)
-    if (index > -1) {
-      this.middleware.splice(index, 1)
+    const middleware = this.middlewareMap.get(name)
+    if (middleware) {
+      const index = this.middleware.indexOf(middleware)
+      if (index > -1) {
+        this.middleware.splice(index, 1)
+      }
+      this.middlewareMap.delete(name)
+    }
+  }
+  
+  /**
+   * 确保中间件已排序 - 懒排序优化
+   */
+  private ensureSorted(): void {
+    if (this.needsSort) {
+      this.middleware.sort((a, b) => {
+        const priorityA = a.priority ?? 100
+        const priorityB = b.priority ?? 100
+        return priorityA - priorityB
+      })
+      this.needsSort = false
     }
   }
 
@@ -46,13 +92,13 @@ export class MiddlewareManagerImpl implements MiddlewareManager {
   async execute(contextOrName: MiddlewareContext | string, context?: MiddlewareContext): Promise<void | unknown> {
     // 重载处理
     if (typeof contextOrName === 'string') {
-      // 执行特定名称的中间件
+      // 执行特定名称的中间件 - 使用 Map 优化查找
       const name = contextOrName
       if (!context) {
         throw new Error('Context is required when executing middleware by name')
       }
       const ctx = context
-      const middleware = this.middleware.find(m => m.name === name)
+      const middleware = this.middlewareMap.get(name)
 
       if (!middleware) {
         throw new Error(`Middleware "${name}" not found`)
@@ -67,15 +113,18 @@ export class MiddlewareManagerImpl implements MiddlewareManager {
       return result
     } else {
       // 执行所有中间件
+      this.ensureSorted() // 确保已排序
+      
       const ctx = contextOrName
       let index = 0
+      const middlewareList = this.middleware
 
       const next: MiddlewareNext = async () => {
-        if (index >= this.middleware.length) {
+        if (index >= middlewareList.length) {
           return
         }
 
-        const middleware = this.middleware[index++]
+        const middleware = middlewareList[index++]
         try {
           await middleware.handler(ctx, next)
         } catch (error) {
@@ -94,19 +143,21 @@ export class MiddlewareManagerImpl implements MiddlewareManager {
     return [...this.middleware]
   }
 
-  // 获取指定名称的中间件
+  // 获取指定名称的中间件 - 使用 Map 优化
   get(name: string): Middleware | undefined {
-    return this.middleware.find(m => m.name === name)
+    return this.middlewareMap.get(name)
   }
 
-  // 检查中间件是否存在
+  // 检查中间件是否存在 - 使用 Map 优化
   has(name: string): boolean {
-    return this.middleware.some(m => m.name === name)
+    return this.middlewareMap.has(name)
   }
 
   // 清空所有中间件
   clear(): void {
-    this.middleware = []
+    this.middleware.length = 0
+    this.middlewareMap.clear()
+    this.needsSort = false
   }
 
   // 获取中间件数量
@@ -117,6 +168,30 @@ export class MiddlewareManagerImpl implements MiddlewareManager {
   // 获取中间件执行顺序
   getExecutionOrder(): string[] {
     return this.middleware.map(m => m.name)
+  }
+
+  // 销毁方法
+  destroy(): void {
+    this.clear()
+    this.logger = undefined
+  }
+  
+  // 获取性能统计
+  getStats(): {
+    total: number
+    byPriority: Record<number, number>
+  } {
+    const stats: Record<number, number> = {}
+    
+    for (const middleware of this.middleware) {
+      const priority = middleware.priority ?? 100
+      stats[priority] = (stats[priority] || 0) + 1
+    }
+    
+    return {
+      total: this.middleware.length,
+      byPriority: stats
+    }
   }
 }
 

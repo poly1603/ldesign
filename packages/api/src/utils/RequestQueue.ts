@@ -45,11 +45,36 @@ export class RequestQueueManager {
         reject,
         priority,
       }
-      this.queue.push(task as unknown as Task<unknown>)
-      // 按优先级排序（降序），同优先级按先入先出
-      this.queue.sort((a, b) => b.priority - a.priority || a.id - b.id)
+      
+      // 优化：使用二分查找插入位置，避免每次都排序整个数组
+      // 时间复杂度从 O(n log n) 降为 O(n)
+      const insertIndex = this.findInsertIndex(task as unknown as Task<unknown>)
+      this.queue.splice(insertIndex, 0, task as unknown as Task<unknown>)
+      
       this.pump()
     })
+  }
+  
+  /**
+   * 二分查找插入位置（优化版）
+   * 按优先级降序，同优先级按 ID 升序（FIFO）
+   */
+  private findInsertIndex(task: Task<unknown>): number {
+    let left = 0
+    let right = this.queue.length
+    
+    while (left < right) {
+      const mid = (left + right) >>> 1 // 使用位运算优化除法
+      const comparison = this.queue[mid].priority - task.priority
+      
+      if (comparison > 0 || (comparison === 0 && this.queue[mid].id < task.id)) {
+        left = mid + 1
+      } else {
+        right = mid
+      }
+    }
+    
+    return left
   }
 
   private pump() {
@@ -74,7 +99,21 @@ export class RequestQueueManager {
     }
   }
 
+  /**
+   * 清空队列（优化版：拒绝所有待处理任务，防止内存泄漏）
+   */
   clear() {
+    // 拒绝所有待处理的任务
+    for (const task of this.queue) {
+      task.reject(new Error('Queue cleared'))
+    }
     this.queue = []
+  }
+  
+  /**
+   * 销毁队列管理器
+   */
+  destroy() {
+    this.clear()
   }
 }

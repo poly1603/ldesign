@@ -7,88 +7,19 @@
  */
 
 // Export all types
-export * from './types';
-
-// Export core functionality
-export * from './core';
-
-// Export constants
-export { namedColors, getNamedColor, isNamedColor, getNamedColorNames, getColorName } from './constants/namedColors';
-
-// Export utilities
-export { ColorCache, globalColorCache, memoize, createCacheKey } from './utils/cache';
-export { 
-  clamp, 
-  round, 
-  lerp, 
-  degreesToRadians, 
-  radiansToDegrees,
-  euclideanDistance,
-  mapRange,
-  average,
-  normalize,
-  randomRange,
-  randomInt
-} from './utils/math';
-export { 
-  validateRGB,
-  validateHSL,
-  validateHSV,
-  validateHWB,
-  validateHex,
-  isColorInput,
-  parseColorInput,
-  sanitizeChannel,
-  sanitizeAlpha,
-  isValidColorFormat
-} from './utils/validators';
-
-// Export palette generators
-export * from './core/tailwindPalette';
-
-// Theme management
-export * from './themes/presets';
-export { ThemeManager, defaultThemeManager } from './themes/themeManager';
-export type { ThemeState, ThemeOptions } from './themes/themeManager';
+// Default export
+import { Color } from './core'
 
 // Accessibility tools
 export { 
-  ColorAccessibility,
-  simulateColorBlindness,
   autoAdjustForWCAG,
-  suggestAccessiblePairs,
-  getAccessibilityReport
+  ColorAccessibility,
+  getAccessibilityReport,
+  simulateColorBlindness,
+  suggestAccessiblePairs
 } from './accessibility';
+
 export type { ColorBlindnessType } from './accessibility';
-
-// Gradient generator
-export {
-  GradientGenerator,
-  linearGradient,
-  radialGradient,
-  conicGradient,
-  meshGradient,
-  smoothGradient,
-  animatedGradient
-} from './gradient';
-export type { GradientStop, LinearGradientOptions, RadialGradientOptions } from './gradient';
-
-// Color analyzer
-export {
-  ColorAnalyzer,
-  extractPalette,
-  findDominantColors,
-  analyzeColorDistribution,
-  generateColorReport
-} from './analyzer';
-export type { ColorStatistics, ColorDistribution, AnalyzerOptions } from './analyzer';
-
-// Brand manager
-export {
-  BrandColorManager,
-  createBrandManager
-} from './brand';
-export type { BrandColors, BrandPalette, BrandConfig } from './brand';
 
 // AI color assistant
 export {
@@ -96,75 +27,158 @@ export {
   colorAI,
   createColorAI
 } from './ai/colorAI';
-export type { AIColorOptions, AIColorSuggestion, ColorContext } from './ai/colorAI';
 
-// Error handling
+export type { AIColorOptions, AIColorSuggestion, ColorContext } from './ai/colorAI';
+// Color analyzer
 export {
-  ColorError,
-  InputValidationError,
-  ColorConversionError,
-  ColorManipulationError,
-  ThemeOperationError,
-  ErrorLogger,
-  ErrorRecovery,
-  logError,
-  safeExecute,
-  retryExecute
-} from './utils/errors';
-export type { ErrorSeverity, ErrorCategory, RecoverySuggestion } from './utils/errors';
+  analyzeColorDistribution,
+  ColorAnalyzer,
+  extractPalette,
+  findDominantColors,
+  generateColorReport
+} from './analyzer';
+export type { AnalyzerOptions, ColorDistribution, ColorStatistics } from './analyzer';
+
+// Brand manager
+export {
+  BrandColorManager,
+  createBrandManager
+} from './brand';
+
+export type { BrandColors, BrandConfig, BrandPalette } from './brand';
+// Export constants
+export { getColorName, getNamedColor, getNamedColorNames, isNamedColor, namedColors } from './constants/namedColors';
+// Export core functionality
+export * from './core';
+
+// Export palette generators
+export * from './core/tailwindPalette';
+// Gradient generator
+export {
+  animatedGradient,
+  conicGradient,
+  GradientGenerator,
+  linearGradient,
+  meshGradient,
+  radialGradient,
+  smoothGradient
+} from './gradient';
+
+export type { GradientStop, LinearGradientOptions, RadialGradientOptions } from './gradient';
+// Locales
+export { 
+  deDE, 
+  enUS, 
+  esES, 
+  frFR, 
+  getLocale, 
+  itIT, 
+  jaJP, 
+  koKR, 
+  locales, 
+  ptBR, 
+  ruRU, 
+  zhCN 
+} from './locales'
+
+export type { ColorLocale, LocaleKey } from './locales'
+// Performance optimization
+export {
+  batchAnalyze,
+  BatchColorProcessor,
+  batchConvert,
+  batchManipulate,
+  batchProcess,
+  ColorPerformance,
+  LazyColorLoader,
+  lazyLoad,
+  preloadModules
+} from './performance';
+
+export type { BatchOptions, PerformanceMetrics } from './performance';
+// Plugin system
+export { ColorPluginSymbol, createColorPlugin } from './plugin';
+
+export type { ColorPlugin, ColorPluginOptions } from './plugin';
+export { useColorPlugin } from './plugin/useColorPlugin';
+
+// Color schemes generator
+export {
+  ColorSchemeGenerator,
+  evaluateHarmony,
+  generateAdaptiveScheme,
+  generateAllSchemes,
+  generateColorScheme
+} from './schemes';
+export type { ColorScheme, ColorSchemeOptions, ColorSchemeType } from './schemes';
+
+// Theme management
+export * from './themes/presets';
+export { defaultThemeManager, ThemeManager } from './themes/themeManager';
+
+export type { ThemeOptions, ThemeState } from './themes/themeManager';
+export * from './types';
 
 // Advanced cache
 export {
   AdvancedColorCache,
   globalColorCache as advancedGlobalCache
 } from './utils/advancedCache';
-export type { CacheStrategy, CacheStats } from './utils/advancedCache';
+export type { CacheStats, CacheStrategy } from './utils/advancedCache';
 
-// Performance optimization
+// Export utilities
+export { ColorCache, createCacheKey, globalColorCache, memoize } from './utils/cache';
+// Error handling
 export {
-  BatchColorProcessor,
-  LazyColorLoader,
-  ColorPerformance,
-  batchProcess,
-  batchConvert,
-  batchManipulate,
-  batchAnalyze,
-  lazyLoad,
-  preloadModules
-} from './performance';
-export type { BatchOptions, PerformanceMetrics } from './performance';
+  ColorConversionError,
+  ColorError,
+  ColorManipulationError,
+  ErrorLogger,
+  ErrorRecovery,
+  InputValidationError,
+  logError,
+  retryExecute,
+  safeExecute,
+  ThemeOperationError
+} from './utils/errors';
 
-// Color schemes generator
-export {
-  ColorSchemeGenerator,
-  generateColorScheme,
-  generateAdaptiveScheme,
-  generateAllSchemes,
-  evaluateHarmony
-} from './schemes';
-export type { ColorSchemeType, ColorSchemeOptions, ColorScheme } from './schemes';
-
-// Plugin system
-export { createColorPlugin, ColorPluginSymbol } from './plugin';
-export type { ColorPlugin, ColorPluginOptions } from './plugin';
-export { useColorPlugin } from './plugin/useColorPlugin';
-
-// Locales
+export type { ErrorCategory, ErrorSeverity, RecoverySuggestion } from './utils/errors';
 export { 
-  zhCN, 
-  enUS, 
-  jaJP, 
-  koKR, 
-  deDE, 
-  frFR, 
-  esES, 
-  itIT, 
-  ptBR, 
-  ruRU, 
-  getLocale, 
-  locales 
-} from './locales'
-export type { ColorLocale, LocaleKey } from './locales'
+  average, 
+  clamp, 
+  degreesToRadians, 
+  euclideanDistance, 
+  lerp,
+  mapRange,
+  normalize,
+  radiansToDegrees,
+  randomInt,
+  randomRange,
+  round
+} from './utils/math';
+// Memory management
+export {
+  cleanupMemory,
+  getMemoryStats,
+  memoryManager,
+  resetMemory,
+  setAutoCleanup,
+  setMemoryLimit
+} from './utils/memoryManager';
+
+export type { MemoryStats } from './utils/memoryManager';
+export { 
+  isColorInput,
+  isValidColorFormat,
+  parseColorInput,
+  sanitizeAlpha,
+  sanitizeChannel,
+  validateHex,
+  validateHSL,
+  validateHSV,
+  validateHWB,
+  validateRGB
+} from './utils/validators';
 
 // Vue 3 support
 // Note: Vue components should be imported from '@ldesign/color/vue'
@@ -174,7 +188,4 @@ export type { ColorLocale, LocaleKey } from './locales'
 
 // Version
 export const VERSION = '1.0.0'
-
-// Default export
-import { Color } from './core'
 export default Color

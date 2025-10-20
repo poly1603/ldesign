@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react'
+import type { PresetTheme } from '../themes/presets'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTheme } from './useTheme'
-import { PresetTheme } from '../themes/presets'
 import './ThemePicker.css'
 
 export interface ThemePickerProps {
@@ -73,16 +73,8 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
     )
   }, [visiblePresets, searchQuery])
 
-  // Toggle dropdown
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen)
-    if (!isOpen) {
-      updateDropdownPosition()
-    }
-  }
-
-// Update dropdown position (prevent overflow on small screens)
-  const updateDropdownPosition = () => {
+  // Update dropdown position (prevent overflow on small screens)
+  const updateDropdownPosition = useCallback(() => {
     if (!pickerRef.current) return
 
     const rect = pickerRef.current.getBoundingClientRect()
@@ -112,37 +104,48 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
       width: `${desiredWidth}px`,
       zIndex: 9999
     })
-  }
+  }, [])
+
+  // Toggle dropdown
+  const toggleDropdown = useCallback(() => {
+    setIsOpen((prev) => {
+      if (!prev) {
+        // Defer position update to next tick after state is updated
+        queueMicrotask(() => updateDropdownPosition())
+      }
+      return !prev
+    })
+  }, [updateDropdownPosition])
 
   // Select preset
-  const selectPreset = (preset: PresetTheme) => {
+  const selectPreset = useCallback((preset: PresetTheme) => {
     applyPresetTheme(preset.name)
     onChange?.(preset.color, preset)
     setIsOpen(false)
-  }
+  }, [applyPresetTheme, onChange])
 
   // Handle custom color
-  const handleCustomColor = () => {
+  const handleCustomColor = useCallback(() => {
     if (customColor) {
       applyTheme(customColor)
       onChange?.(customColor)
       setIsOpen(false)
     }
-  }
+  }, [customColor, applyTheme, onChange])
 
   // Handle click outside
-  const handleClickOutside = (event: MouseEvent) => {
+  const handleClickOutside = useCallback((event: MouseEvent) => {
     if (!pickerRef.current?.contains(event.target as Node)) {
       setIsOpen(false)
     }
-  }
+  }, [])
 
   // Handle resize
-  const handleResize = () => {
+  const handleResize = useCallback(() => {
     if (isOpen) {
       updateDropdownPosition()
     }
-  }
+  }, [isOpen, updateDropdownPosition])
 
   useEffect(() => {
     // Restore theme on mount
@@ -158,6 +161,7 @@ export const ThemePicker: React.FC<ThemePickerProps> = ({
       window.removeEventListener('resize', handleResize)
       window.removeEventListener('scroll', handleResize)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Watch value changes

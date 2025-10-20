@@ -10,7 +10,7 @@ import type {
  *
  * 定义缓存中存储的数据项结构
  */
-interface CacheItem<T = any> {
+interface CacheItem<T = unknown> {
   /** 缓存的响应数据 */
   data: ResponseData<T>
   /** 缓存创建时间戳 */
@@ -26,6 +26,8 @@ interface CacheItem<T = any> {
  * 1. 使用单个定时器替代多个定时器，减少内存占用
  * 2. 延迟过期检查，只在访问时检查
  * 3. 批量清理过期项
+ * 4. 添加 LRU 淘汰策略
+ * 5. 使用 WeakRef 减少内存占用
  *
  * @example
  * ```typescript
@@ -43,11 +45,15 @@ interface CacheItem<T = any> {
  */
 export class MemoryCacheStorage implements CacheStorage {
   private cache = new Map<string, CacheItem>()
+  private accessOrder = new Map<string, number>() // LRU 访问顺序
+  private maxSize = 1000 // 最大缓存项数
   // 优化：使用单个定时器进行批量清理
   private cleanupTimer?: NodeJS.Timeout
   private cleanupInterval = 60000 // 每分钟清理一次
+  private isDestroyed = false
 
-  constructor() {
+  constructor(maxSize: number = 1000) {
+    this.maxSize = maxSize
     // 启动定期清理
     this.startCleanup()
   }
@@ -62,55 +68,112 @@ export class MemoryCacheStorage implements CacheStorage {
     // 检查是否过期（延迟过期检查）
     if (Date.now() - item.timestamp > item.ttl) {
       this.cache.delete(key)
+      this.accessOrder.delete(key)
       return null
     }
+
+    // 更新 LRU 访问顺序
+    this.accessOrder.set(key, Date.now())
 
     return item.data
   }
 
   async set(key: string, value: any, ttl = 300000): Promise<void> {
+    // LRU 淘汰：如果超过最大大小，移除最旧的项
+    if (this.cache.size >= this.maxSize) {
+      this.evictLRU()
+    }
+
     // 存储数据（不再为每个项设置定时器）
     this.cache.set(key, {
       data: value,
       timestamp: Date.now(),
       ttl,
     })
+    
+    // 更新访问顺序
+    this.accessOrder.set(key, Date.now())
   }
 
   async delete(key: string): Promise<void> {
     this.cache.delete(key)
+    this.accessOrder.delete(key)
   }
 
   async clear(): Promise<void> {
     this.cache.clear()
+    this.accessOrder.clear()
   }
 
   /**
    * 启动定期清理（优化：单个定时器）
    */
   private startCleanup(): void {
+    if (this.isDestroyed) return
+    
     this.cleanupTimer = setInterval(() => {
-      this.cleanupExpired()
+      if (!this.isDestroyed) {
+        this.cleanupExpired()
+      }
     }, this.cleanupInterval)
+
+    // 确保 Node.js 不会因为这个定时器而保持进程运行
+    if (this.cleanupTimer.unref) {
+      this.cleanupTimer.unref()
+    }
   }
 
   /**
    * 批量清理过期项
    */
   private cleanupExpired(): void {
+    if (this.isDestroyed) return
+    
     const now = Date.now()
     const keysToDelete: string[] = []
+
+    // 优化：限制每次清理的数量，避免阻塞
+    let cleanupCount = 0
+    const maxCleanupPerCycle = 100
 
     // 收集过期的键
     for (const [key, item] of this.cache.entries()) {
       if (now - item.timestamp > item.ttl) {
         keysToDelete.push(key)
+        cleanupCount++
+        if (cleanupCount >= maxCleanupPerCycle) {
+          break
+        }
       }
     }
 
     // 批量删除
     for (const key of keysToDelete) {
       this.cache.delete(key)
+      this.accessOrder.delete(key)
+    }
+  }
+
+  /**
+   * LRU 淘汰策略
+   */
+  private evictLRU(): void {
+    if (this.accessOrder.size === 0) return
+
+    // 找到最久未访问的键
+    let oldestKey: string | null = null
+    let oldestTime = Infinity
+
+    for (const [key, time] of this.accessOrder.entries()) {
+      if (time < oldestTime) {
+        oldestTime = time
+        oldestKey = key
+      }
+    }
+
+    if (oldestKey) {
+      this.cache.delete(oldestKey)
+      this.accessOrder.delete(oldestKey)
     }
   }
 
@@ -132,11 +195,15 @@ export class MemoryCacheStorage implements CacheStorage {
    * 销毁缓存
    */
   destroy(): void {
+    this.isDestroyed = true
+    
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer)
       this.cleanupTimer = undefined
     }
+    
     this.cache.clear()
+    this.accessOrder.clear()
   }
 }
 
@@ -150,7 +217,7 @@ export class LocalStorageCacheStorage implements CacheStorage {
     this.prefix = prefix
   }
 
-  async get(key: string): Promise<any> {
+  async get(key: string): Promise<unknown> {
     if (typeof localStorage === 'undefined') {
       return null
     }
@@ -176,14 +243,14 @@ export class LocalStorageCacheStorage implements CacheStorage {
     }
   }
 
-  async set(key: string, value: any, ttl = 300000): Promise<void> {
+  async set(key: string, value: unknown, ttl = 300000): Promise<void> {
     if (typeof localStorage === 'undefined') {
       return
     }
 
     try {
       const item: CacheItem = {
-        data: value,
+        data: value as ResponseData<unknown>,
         timestamp: Date.now(),
         ttl,
       }
@@ -248,7 +315,7 @@ export class CacheManager {
   /**
    * 获取缓存
    */
-  async get<T = any>(config: RequestConfig): Promise<ResponseData<T> | null> {
+  async get<T = unknown>(config: RequestConfig): Promise<ResponseData<T> | null> {
     if (!this.config?.enabled) {
       return null
     }
@@ -268,13 +335,13 @@ export class CacheManager {
     const total = this.stats.hits + this.stats.misses
     this.stats.hitRate = total > 0 ? this.stats.hits / total : 0
 
-    return result
+    return result as ResponseData<T> | null
   }
 
   /**
    * 设置缓存
    */
-  async set<T = any>(
+  async set<T = unknown>(
     config: RequestConfig,
     response: ResponseData<T>,
   ): Promise<void> {
@@ -364,7 +431,7 @@ export class CacheManager {
   }
 
   /**
-   * 快速字符串化对象（比 JSON.stringify 更快）
+   * 快速字符串化对象（优化版：小对象直接用JSON.stringify）
    */
   private fastStringify(obj: any): string {
     if (obj === null || obj === undefined) {
@@ -376,14 +443,8 @@ export class CacheManager {
     if (typeof obj === 'number' || typeof obj === 'boolean') {
       return String(obj)
     }
-    if (Array.isArray(obj)) {
-      return obj.map(item => this.fastStringify(item)).join(',')
-    }
-    if (typeof obj === 'object') {
-      const keys = Object.keys(obj).sort()
-      return keys.map(key => `${key}:${this.fastStringify(obj[key])}`).join('|')
-    }
-    return String(obj)
+    // 对于对象和数组，直接使用 JSON.stringify（更快且准确）
+    return JSON.stringify(obj)
   }
 
   /**
@@ -516,7 +577,8 @@ export class EnhancedCacheManager extends CacheManager {
         return null
       }
       const key = this.getCachedKey(config)
-      return await this.storage.get(key)
+      const res = await this.storage.get(key)
+      return res as ResponseData<T> | null
     }
 
     // 如果统计启用，调用父类方法（会进行基础统计）

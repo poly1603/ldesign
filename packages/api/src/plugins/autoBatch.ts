@@ -212,7 +212,7 @@ export function createAutoBatchPlugin(config: AutoBatchConfig): ApiPlugin {
     originalDestroy()
    }
   },
-  uninstall(engine) {
+  uninstall(_engine) {
    if (batchManager) {
     batchManager.destroy()
     batchManager = null

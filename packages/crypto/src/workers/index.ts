@@ -25,14 +25,14 @@
  */
 
 export {
-  WorkerPool,
-  type WorkerPoolOptions,
-  type WorkerPoolStats,
-  getGlobalWorkerPool,
-  destroyGlobalWorkerPool,
-} from './worker-pool'
-
-export {
   type WorkerMessage,
   type WorkerResponse,
 } from './crypto.worker'
+
+export {
+  destroyGlobalWorkerPool,
+  getGlobalWorkerPool,
+  WorkerPool,
+  type WorkerPoolOptions,
+  type WorkerPoolStats,
+} from './worker-pool'

@@ -490,7 +490,17 @@ export function waitForEvent(
 }
 
 /**
- * 创建自定义事件发射器
+ * 事件处理器类型
+ */
+export type EventHandler = (...args: any[]) => void
+
+/**
+ * 事件映射类型
+ */
+export type EventMap = Record<string, any[]>
+
+/**
+ * 增强的事件发射器（支持泛型）
  */
 export class EventEmitter<T extends Record<string, any[]> = Record<string, any[]>> {
   private events: Map<keyof T, Set<Function>> = new Map()

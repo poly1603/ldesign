@@ -1,162 +1,170 @@
-# @ldesign/gridstack
+# @ldesign/grid
 
-一个基于 [gridstack.js](https://gridstackjs.com/) 封装的强大网格布局库，支持 Vanilla JS、Vue 3 和 React。
+A powerful, feature-rich GridStack wrapper for any framework. Build beautiful, responsive grid layouts with drag-and-drop support, nested grids, and high performance.
 
-## ✨ 特性
+## Features
 
-- 🚀 **易用性**: 简洁的 API 设计，开箱即用
-- 🎨 **配置丰富**: 支持 gridstack 所有配置选项
-- ⚡️ **高性能**: 优化的性能和内存管理
-- 🔧 **多框架支持**: 原生 JS、Vue 3、React
-- 🎯 **TypeScript**: 完整的类型定义
-- 📦 **Tree-shaking**: 按需引入，减小打包体积
-- 🎪 **多种用法**: 组件式和 Hooks 式使用
+✨ **Framework Agnostic** - Works with Vue 3, React, Lit, or vanilla JavaScript  
+🎯 **Drag from Outside** - Easily drag elements from toolbars or external sources into grids  
+🔄 **Nested Grids** - Support for multi-level nested grid layouts  
+⚡ **High Performance** - Optimized for 100+ items with virtual scrolling and batch updates  
+🎨 **Rich Configuration** - Extensive options for customization  
+📱 **Responsive** - Built-in responsive layout management  
+💾 **Serialization** - Save and restore layouts easily  
+🎭 **Presets** - Common layout templates included  
 
-## 📦 安装
+## Installation
 
 ```bash
-npm install @ldesign/gridstack
+npm install @ldesign/grid
 # or
-yarn add @ldesign/gridstack
+pnpm add @ldesign/grid
 # or
-pnpm add @ldesign/gridstack
+yarn add @ldesign/grid
 ```
 
-## 🚀 快速开始
+You'll also need to install the gridstack CSS:
 
-### Vanilla JS / TypeScript
+```css
+@import 'gridstack/dist/gridstack.min.css';
+```
 
-```typescript
-import { GridStackManager } from '@ldesign/gridstack/vanilla'
-import '@ldesign/gridstack/styles'
+## Quick Start
 
-const grid = new GridStackManager('#grid', {
+### Vanilla JavaScript
+
+```javascript
+import { GridManager } from '@ldesign/grid'
+
+const manager = GridManager.getInstance()
+const grid = manager.create(document.getElementById('grid'), {
   column: 12,
   cellHeight: 70,
-  animate: true
+  acceptWidgets: true
 })
 
-grid.addWidget({
-  x: 0, y: 0,
-  w: 4, h: 2,
-  content: '<div>Widget 1</div>'
-})
+grid.addItem(element, { x: 0, y: 0, w: 2, h: 2 })
 ```
 
 ### Vue 3
 
-**组件式用法:**
-
 ```vue
 <template>
-  <GridStack :options="gridOptions">
-    <GridStackItem v-for="item in items" :key="item.id" v-bind="item">
-      <div>{{ item.content }}</div>
-    </GridStackItem>
-  </GridStack>
-</template>
-
-<script setup lang="ts">
-import { GridStack, GridStackItem } from '@ldesign/gridstack/vue'
-import '@ldesign/gridstack/styles'
-
-const gridOptions = {
-  column: 12,
-  cellHeight: 70
-}
-
-const items = [
-  { id: 1, x: 0, y: 0, w: 4, h: 2, content: 'Widget 1' },
-  { id: 2, x: 4, y: 0, w: 4, h: 2, content: 'Widget 2' }
-]
-</script>
-```
-
-**Hooks 用法:**
-
-```vue
-<template>
-  <div ref="gridRef">
-    <div v-for="item in items" :key="item.id">
-      {{ item.content }}
+  <div class="demo">
+    <div class="toolbar">
+      <GridDragSource 
+        v-for="widget in widgets"
+        :key="widget.id"
+        :data="widget"
+      >
+        {{ widget.name }}
+      </GridDragSource>
     </div>
+    
+    <GridStack :options="{ column: 12, cellHeight: 70 }">
+      <GridItem 
+        v-for="item in items"
+        :key="item.id"
+        v-bind="item"
+      >
+        {{ item.content }}
+      </GridItem>
+    </GridStack>
   </div>
 </template>
 
-<script setup lang="ts">
-import { useGridStack } from '@ldesign/gridstack/vue'
+<script setup>
+import { GridStack, GridItem, GridDragSource } from '@ldesign/grid/vue'
 
-const { gridRef, addWidget, removeWidget } = useGridStack({
-  column: 12,
-  cellHeight: 70
-})
+const widgets = [
+  { id: 1, name: 'Chart', w: 4, h: 3 },
+  { id: 2, name: 'Table', w: 6, h: 4 }
+]
 </script>
 ```
 
 ### React
 
-**组件式用法:**
-
 ```tsx
-import { GridStack, GridStackItem } from '@ldesign/gridstack/react'
-import '@ldesign/gridstack/styles'
+import { GridStack, GridItem, GridDragSource } from '@ldesign/grid/react'
 
 function App() {
-  const items = [
-    { id: '1', x: 0, y: 0, w: 4, h: 2, content: 'Widget 1' },
-    { id: '2', x: 4, y: 0, w: 4, h: 2, content: 'Widget 2' }
+  const widgets = [
+    { id: 1, name: 'Chart', w: 4, h: 3 },
+    { id: 2, name: 'Table', w: 6, h: 4 }
   ]
-
+  
   return (
-    <GridStack column={12} cellHeight={70}>
-      {items.map(item => (
-        <GridStackItem key={item.id} {...item}>
-          <div>{item.content}</div>
-        </GridStackItem>
-      ))}
-    </GridStack>
+    <div className="demo">
+      <div className="toolbar">
+        {widgets.map(widget => (
+          <GridDragSource key={widget.id} data={widget}>
+            {widget.name}
+          </GridDragSource>
+        ))}
+      </div>
+      
+      <GridStack options={{ column: 12, cellHeight: 70 }}>
+        {items.map(item => (
+          <GridItem key={item.id} {...item}>
+            {item.content}
+          </GridItem>
+        ))}
+      </GridStack>
+    </div>
   )
 }
 ```
 
-**Hooks 用法:**
+### Lit
 
-```tsx
-import { useGridStack } from '@ldesign/gridstack/react'
+```typescript
+import '@ldesign/grid/lit'
 
-function App() {
-  const { gridRef, addWidget, removeWidget } = useGridStack({
-    column: 12,
-    cellHeight: 70
-  })
-
-  return <div ref={gridRef}>{/* widgets */}</div>
-}
+html`
+  <grid-stack .options=${{ column: 12, cellHeight: 70 }}>
+    <grid-item .x=${0} .y=${0} .w=${2} .h=${2}>
+      Content here
+    </grid-item>
+  </grid-stack>
+`
 ```
 
-## 📚 文档
+## Documentation
 
-完整文档请访问: [文档站点](./docs)
+- [Installation Guide](./docs/guide/installation.md)
+- [Quick Start](./docs/guide/quick-start.md)
+- [Configuration](./docs/guide/configuration.md)
+- [Drag from Outside](./docs/guide/drag-from-outside.md)
+- [Nested Grids](./docs/guide/nested-grids.md)
+- [Performance Optimization](./docs/guide/performance.md)
+- [API Reference](./docs/api/)
 
-- [快速开始](./docs/guide/getting-started.md)
-- [Vanilla JS 用法](./docs/guide/vanilla.md)
-- [Vue 用法](./docs/guide/vue.md)
-- [React 用法](./docs/guide/react.md)
-- [API 参考](./docs/api/index.md)
-- [示例](./examples)
+## Examples
 
-## 🎯 示例
+Check out the [examples](./examples) folder for complete working examples:
 
-查看 [examples](./examples) 目录获取完整示例:
+- [Vanilla JS Example](./examples/vanilla)
+- [Vue 3 Example](./examples/vue)
+- [React Example](./examples/react)
+- [Lit Example](./examples/lit)
 
-- [Vanilla TypeScript 示例](./examples/vanilla-demo)
-- [Vue 3 示例](./examples/vue-demo)
-- [React 示例](./examples/react-demo)
+## License
 
-## 🤝 贡献
+MIT
 
-欢迎贡献! 请查看我们的贡献指南。
+## Credits
 
-## 📄 License
+Built on top of [GridStack.js](https://gridstackjs.com/)
 
-MIT License © 2024 LDesign
+
+
+
+
+
+
+
+
+
+
+

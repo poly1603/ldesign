@@ -52,6 +52,6 @@ export default defineConfig({
 
   // 构建完成钩子
   onSuccess: async () => {
-    console.log('✅ @ldesign/cache 构建完成')
+    console.info('✅ @ldesign/cache 构建完成')
   }
 })

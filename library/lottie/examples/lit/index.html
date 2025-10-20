@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lottie Lit (Web Components) 示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .section h2 {
+      color: #333;
+      margin-bottom: 16px;
+      font-size: 20px;
+    }
+
+    .demo-box {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .info {
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 6px;
+      width: 100%;
+    }
+
+    .highlight {
+      background: #fff3cd;
+      padding: 16px;
+      border-left: 4px solid #ffc107;
+      border-radius: 4px;
+      margin-top: 12px;
+    }
+
+    .code {
+      background: #2d3748;
+      color: #a0aec0;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    /* Web Components 样式 */
+    lottie-animation {
+      width: 300px;
+      height: 300px;
+      display: block;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+
+    lottie-player {
+      max-width: 600px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎬 Lottie Lit (Web Components) 示例</h1>
+      <p class="subtitle">使用标准 Web Components API，无需框架！</p>
+    </header>
+
+    <!-- 示例 1: 基础用法 -->
+    <section class="section">
+      <h2>1️⃣ 基础 Web Component</h2>
+      <div class="demo-box">
+        <lottie-animation 
+          id="basic-animation"
+          src="../assets/loading.json"
+          loop="true"
+          autoplay="true"
+          renderer="svg"
+        ></lottie-animation>
+        
+        <div class="info">
+          使用 &lt;lottie-animation&gt; 标签即可！
+        </div>
+        
+        <div class="highlight">
+          <strong>💡 优势:</strong> 
+          <ul style="margin-top: 8px; margin-left: 20px;">
+            <li>无需任何框架</li>
+            <li>标准 Web API</li>
+            <li>可在任何项目中使用</li>
+            <li>浏览器原生支持</li>
+          </ul>
+        </div>
+        
+        <div class="code">
+&lt;lottie-animation 
+  src="../assets/loading.json"
+  loop="true"
+  autoplay="true"
+  renderer="svg"
+&gt;&lt;/lottie-animation&gt;
+        </div>
+      </div>
+    </section>
+
+    <!-- 示例 2: 带控制栏的播放器 -->
+    <section class="section">
+      <h2>2️⃣ 播放器 Component (带控制栏)</h2>
+      <div class="demo-box">
+        <lottie-player
+          id="player"
+          src="../assets/heart.json"
+          loop="true"
+          autoplay="false"
+          controls="true"
+        ></lottie-player>
+        
+        <div class="info">
+          内置完整的播放控制栏
+        </div>
+        
+        <div class="code">
+&lt;lottie-player
+  src="../assets/heart.json"
+  loop="true"
+  controls="true"
+&gt;&lt;/lottie-player&gt;
+        </div>
+      </div>
+    </section>
+
+    <!-- 示例 3: JavaScript 控制 -->
+    <section class="section">
+      <h2>3️⃣ JavaScript 控制</h2>
+      <div class="demo-box">
+        <lottie-animation 
+          id="js-controlled"
+          src="../assets/success.json"
+          loop="false"
+          autoplay="false"
+        ></lottie-animation>
+        
+        <div class="controls">
+          <button onclick="playAnimation()" class="btn btn-primary">播放</button>
+          <button onclick="pauseAnimation()" class="btn btn-secondary">暂停</button>
+          <button onclick="stopAnimation()" class="btn btn-secondary">停止</button>
+          <button onclick="resetAnimation()" class="btn btn-secondary">重置</button>
+        </div>
+        
+        <div class="code">
+const element = document.getElementById('js-controlled');
+
+// 调用方法
+element.play();
+element.pause();
+element.stop();
+element.reset();
+element.setSpeed(2);
+        </div>
+      </div>
+    </section>
+
+    <!-- 示例 4: 事件监听 -->
+    <section class="section">
+      <h2>4️⃣ 事件监听</h2>
+      <div class="demo-box">
+        <lottie-animation 
+          id="event-animation"
+          src="../assets/loading.json"
+          loop="false"
+          autoplay="false"
+        ></lottie-animation>
+        
+        <div class="controls">
+          <button onclick="playEventAnimation()" class="btn btn-primary">播放查看事件</button>
+        </div>
+        
+        <div id="event-log" class="info" style="background: #f0f4ff; color: #0c5460;">
+          等待事件触发...
+        </div>
+        
+        <div class="code">
+const element = document.getElementById('event-animation');
+
+element.addEventListener('ready', () => {
+  console.log('动画加载完成');
+});
+
+element.addEventListener('complete', () => {
+  console.log('动画播放完成');
+});
+
+element.addEventListener('error', (e) => {
+  console.error('错误:', e.detail);
+});
+        </div>
+      </div>
+    </section>
+
+    <!-- 示例 5: 动态创建 -->
+    <section class="section">
+      <h2>5️⃣ 动态创建元素</h2>
+      <div class="demo-box">
+        <div id="dynamic-container"></div>
+        
+        <div class="controls">
+          <button onclick="createDynamicAnimation()" class="btn btn-primary">
+            创建动画
+          </button>
+          <button onclick="removeDynamicAnimation()" class="btn btn-danger">
+            移除动画
+          </button>
+        </div>
+        
+        <div class="code">
+const lottie = document.createElement('lottie-animation');
+lottie.setAttribute('src', '../assets/loading.json');
+lottie.setAttribute('loop', 'true');
+lottie.setAttribute('autoplay', 'true');
+document.getElementById('container').appendChild(lottie);
+        </div>
+      </div>
+    </section>
+
+    <!-- 示例 6: 多个实例 -->
+    <section class="section">
+      <h2>6️⃣ 多个实例</h2>
+      <div class="demo-box">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; width: 100%;">
+          <lottie-animation src="../assets/loading.json" loop="true" autoplay="true" style="width: 100%; height: 150px;"></lottie-animation>
+          <lottie-animation src="../assets/heart.json" loop="true" autoplay="true" style="width: 100%; height: 150px;"></lottie-animation>
+          <lottie-animation src="../assets/success.json" loop="true" autoplay="true" style="width: 100%; height: 150px;"></lottie-animation>
+          <lottie-animation src="../assets/loading.json" loop="true" autoplay="true" style="width: 100%; height: 150px;"></lottie-animation>
+        </div>
+        <div class="info">
+          多个 Web Components 可以共存，完全独立运行
+        </div>
+      </div>
+    </section>
+
+    <!-- 优势说明 -->
+    <section class="section">
+      <h2>✨ Web Components 的优势</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+        <div style="padding: 16px; background: #f0f4ff; border-radius: 8px;">
+          <h3 style="color: #667eea; margin-bottom: 8px;">🌐 框架无关</h3>
+          <p style="font-size: 14px; color: #666;">可在任何框架中使用，甚至纯 HTML</p>
+        </div>
+        <div style="padding: 16px; background: #f0f4ff; border-radius: 8px;">
+          <h3 style="color: #667eea; margin-bottom: 8px;">📦 封装性好</h3>
+          <p style="font-size: 14px; color: #666;">Shadow DOM 隔离，不会污染全局样式</p>
+        </div>
+        <div style="padding: 16px; background: #f0f4ff; border-radius: 8px;">
+          <h3 style="color: #667eea; margin-bottom: 8px;">🔧 易于使用</h3>
+          <p style="font-size: 14px; color: #666;">像使用普通 HTML 标签一样简单</p>
+        </div>
+        <div style="padding: 16px; background: #f0f4ff; border-radius: 8px;">
+          <h3 style="color: #667eea; margin-bottom: 8px;">♻️ 可复用</h3>
+          <p style="font-size: 14px; color: #666;">一次定义，到处使用</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    // 导入 Lottie Web Components
+    // 注意：这里需要实际项目中正确配置路径
+    // import '@ldesign/lottie/lit'
+
+    // JavaScript 控制示例
+    window.playAnimation = () => {
+      const element = document.getElementById('js-controlled')
+      element.play()
+    }
+
+    window.pauseAnimation = () => {
+      const element = document.getElementById('js-controlled')
+      element.pause()
+    }
+
+    window.stopAnimation = () => {
+      const element = document.getElementById('js-controlled')
+      element.stop()
+    }
+
+    window.resetAnimation = () => {
+      const element = document.getElementById('js-controlled')
+      element.reset()
+    }
+
+    // 事件监听示例
+    window.playEventAnimation = () => {
+      const element = document.getElementById('event-animation')
+      const log = document.getElementById('event-log')
+      
+      element.addEventListener('ready', () => {
+        log.innerHTML = '✅ 动画加载完成'
+      })
+      
+      element.addEventListener('complete', () => {
+        log.innerHTML = '🎉 动画播放完成！'
+      })
+      
+      element.play()
+    }
+
+    // 动态创建示例
+    window.createDynamicAnimation = () => {
+      const container = document.getElementById('dynamic-container')
+      
+      // 清空容器
+      container.innerHTML = ''
+      
+      // 创建新元素
+      const lottie = document.createElement('lottie-animation')
+      lottie.setAttribute('src', '../assets/loading.json')
+      lottie.setAttribute('loop', 'true')
+      lottie.setAttribute('autoplay', 'true')
+      lottie.style.width = '300px'
+      lottie.style.height = '300px'
+      lottie.style.margin = '0 auto'
+      
+      container.appendChild(lottie)
+    }
+
+    window.removeDynamicAnimation = () => {
+      const container = document.getElementById('dynamic-container')
+      container.innerHTML = ''
+    }
+
+    // 页面加载提示
+    console.log('🎉 Lottie Web Components 示例已加载')
+    console.log('💡 这些组件可以在任何框架中使用，甚至纯 HTML！')
+  </script>
+</body>
+</html>
+
+

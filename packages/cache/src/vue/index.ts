@@ -1,6 +1,7 @@
 // 类型导出
 export type { CacheOptions, UseCacheOptions } from '../types'
 export {
+  CACHE_MANAGER_KEY,
   CacheProvider,
   provideCacheManager,
   useCacheManager,

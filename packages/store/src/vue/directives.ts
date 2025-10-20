@@ -212,7 +212,7 @@ export const vLoading = {
     }
 
     // 监听动作执行状态
-    const unsubscribe = store.$onAction(({ name, after, onError }) => {
+    const unsubscribe = store.$onAction(({ after, onError }) => {
       // 动作开始时显示加载状态
       el.classList.add('loading')
       el.setAttribute('data-loading', 'true')

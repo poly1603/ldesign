@@ -1,3 +1,5 @@
+import { CACHE_SIZE, TIME_INTERVALS } from '../constants/performance'
+
 /**
  * 序列化缓存工具
  *
@@ -17,7 +19,7 @@
  * - 自动 LRU 淘汰，避免内存泄漏
  * - 默认 5 秒 TTL，平衡性能和新鲜度
  *
- * @internal 这是一个内部工具模块，通常不需要直接使用
+ * @internal
  */
 
 /**
@@ -82,8 +84,8 @@ export class SerializationCache<T = string> {
    */
   constructor(config: SerializationCacheConfig = {}) {
     this.cache = new Map()
-    this.maxSize = config.maxSize ?? 500
-    this.ttl = config.ttl ?? 5000 // 默认 5 秒
+    this.maxSize = config.maxSize ?? CACHE_SIZE.SERIALIZATION_DEFAULT
+    this.ttl = config.ttl ?? TIME_INTERVALS.SERIALIZATION_TTL_DEFAULT
     this.enableStats = config.enableStats ?? true
   }
 
@@ -133,13 +135,16 @@ export class SerializationCache<T = string> {
   set(key: string, value: T): void {
     const now = Date.now()
 
-    // 如果已存在，更新
+    // 如果已存在，删除旧的并重新添加到末尾（LRU更新）
     const existing = this.cache.get(key)
     if (existing) {
-      existing.value = value
-      existing.timestamp = now
-      existing.lastAccess = now
-      existing.accessCount++
+      this.cache.delete(key)
+      this.cache.set(key, {
+        value,
+        timestamp: now,
+        accessCount: existing.accessCount + 1,
+        lastAccess: now,
+      })
       return
     }
 
@@ -208,24 +213,17 @@ export class SerializationCache<T = string> {
   }
 
   /**
-   * 淘汰 LRU 条目
+   * 淘汰 LRU 条目（优化版本）
    * 
-   * 使用 LRU 策略淘汰最近最少使用的条目
+   * 使用 Map 的迭代顺序特性，第一个元素就是最久未访问的
+   * Map 保持插入顺序，当我们更新时会移到末尾
    */
   private evictLRU(): void {
-    let oldestKey: string | null = null
-    let oldestTime = Infinity
-
-    // 找到最久未访问的条目
-    for (const [key, entry] of this.cache) {
-      if (entry.lastAccess < oldestTime) {
-        oldestTime = entry.lastAccess
-        oldestKey = key
-      }
-    }
-
-    if (oldestKey !== null) {
-      this.cache.delete(oldestKey)
+    // Map的第一个元素是最久未访问的
+    const firstKey = this.cache.keys().next().value
+    
+    if (firstKey !== undefined) {
+      this.cache.delete(firstKey)
       if (this.enableStats) {
         this.evictions++
       }
@@ -336,16 +334,16 @@ export function createSerializationCache<T = string>(
  * 全局序列化缓存实例（用于序列化操作）
  */
 export const globalSerializeCache = createSerializationCache<string>({
-  maxSize: 1000,
-  ttl: 10000, // 10 秒
+  maxSize: CACHE_SIZE.SIZE_CACHE_LIMIT,
+  ttl: TIME_INTERVALS.SERIALIZATION_TTL_MAX,
 })
 
 /**
  * 全局反序列化缓存实例（用于反序列化操作）
  */
 export const globalDeserializeCache = createSerializationCache<unknown>({
-  maxSize: 1000,
-  ttl: 10000, // 10 秒
+  maxSize: CACHE_SIZE.SIZE_CACHE_LIMIT,
+  ttl: TIME_INTERVALS.SERIALIZATION_TTL_MAX,
 })
 
 /**

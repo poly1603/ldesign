@@ -2,7 +2,7 @@
  * TemplateLoader 测试用例
  */
 
-import type { TemplateInfo, TemplateMetadata } from '../../src/types'
+import type { Template, TemplateMetadata, TemplateRegistryItem } from '../../src/types'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { TemplateLoader } from '../../src/core/loader'
 
@@ -13,7 +13,7 @@ describe('templateLoader', () => {
     loader = new TemplateLoader()
   })
 
-  const mockTemplateInfo: TemplateInfo = {
+  const mockTemplateInfo: TemplateRegistryItem = {
     name: 'Classic Login',
     category: 'login',
     deviceType: 'desktop',

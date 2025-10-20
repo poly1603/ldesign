@@ -1,3 +1,5 @@
+import { COMPRESSION, DATA_SIZE, PERFORMANCE_THRESHOLDS } from '../constants/performance'
+
 /**
  * 压缩算法类型
  */
@@ -49,8 +51,8 @@ export class Compressor {
     this.options = {
       enabled: options.enabled ?? true,
       algorithm: options.algorithm ?? 'gzip',
-      minSize: options.minSize ?? 1024, // 默认1KB以上才压缩
-      level: options.level ?? 6,
+      minSize: options.minSize ?? DATA_SIZE.COMPRESSION_MIN_SIZE,
+      level: options.level ?? COMPRESSION.DEFAULT_LEVEL,
       customCompress: options.customCompress,
       customDecompress: options.customDecompress,
     } as Required<CompressionOptions>
@@ -323,26 +325,34 @@ export class Compressor {
   }
 
   /**
-   * ArrayBuffer 转 Base64
+   * ArrayBuffer 转 Base64（优化版本）
    */
   private arrayBufferToBase64(buffer: ArrayBuffer): string {
     const bytes = new Uint8Array(buffer)
-    let binary = ''
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i])
+    const chunkSize = DATA_SIZE.COMPRESSION_CHUNK_SIZE
+    const chunks: string[] = []
+    
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length))
+      chunks.push(String.fromCharCode.apply(null, Array.from(chunk)))
     }
-    return btoa(binary)
+    
+    return btoa(chunks.join(''))
   }
 
   /**
-   * Base64 转 ArrayBuffer
+   * Base64 转 ArrayBuffer（优化版本）
    */
   private base64ToArrayBuffer(base64: string): ArrayBuffer {
     const binary = atob(base64)
-    const bytes = new Uint8Array(binary.length)
-    for (let i = 0; i < binary.length; i++) {
+    const len = binary.length
+    const bytes = new Uint8Array(len)
+    
+    // 批量处理以提高性能
+    for (let i = 0; i < len; i++) {
       bytes[i] = binary.charCodeAt(i)
     }
+    
     return bytes.buffer
   }
 
@@ -356,7 +366,7 @@ export class Compressor {
     
     // 检查熵值（压缩数据通常有较高的熵）
     const entropy = this.calculateEntropy(data)
-    return entropy > 7.5 // 压缩数据的熵值通常接近8
+    return entropy > DATA_SIZE.COMPRESSION_ENTROPY_THRESHOLD
   }
 
   /**
@@ -399,7 +409,7 @@ export class Compressor {
     else if (this.isCompressed(data)) {
       recommendedAlgorithm = 'none'
     }
-    else if (originalSize < 10240) { // < 10KB
+    else if (originalSize < PERFORMANCE_THRESHOLDS.SMALL_FILE_SIZE) {
       recommendedAlgorithm = 'deflate'
     }
     else {
@@ -407,7 +417,7 @@ export class Compressor {
     }
 
     // 估算压缩后大小（基于典型压缩率）
-    const estimatedRatio = recommendedAlgorithm === 'none' ? 1 : 0.3
+    const estimatedRatio = recommendedAlgorithm === 'none' ? COMPRESSION.NO_COMPRESSION_RATIO : COMPRESSION.TYPICAL_RATIO
     const potentialSavings = originalSize * (1 - estimatedRatio)
 
     return {

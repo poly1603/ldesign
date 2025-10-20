@@ -12,24 +12,24 @@ import type {
   ApiPlugin,
   CacheStats,
   DebounceManager,
-  DeduplicationManager,
+  DeduplicationManager, ErrorMiddleware, RequestMiddleware, ResponseMiddleware 
 } from '../types'
 import type { ErrorReporter } from '../utils/ErrorReporter'
 import type { PerformanceMonitor } from '../utils/PerformanceMonitor'
-import type { ErrorMiddleware, RequestMiddleware, ResponseMiddleware } from '../types'
+
 import { createHttpClient } from '@ldesign/http'
 import { ApiError, ApiErrorFactory } from '../utils/ApiError'
 import { CacheManager } from '../utils/CacheManager'
 import { DebounceManagerImpl } from '../utils/DebounceManager'
 import { DeduplicationManagerImpl } from '../utils/DeduplicationManager'
 import { getGlobalErrorReporter } from '../utils/ErrorReporter'
-import { getGlobalPerformanceMonitor } from '../utils/PerformanceMonitor'
 import { LRUCache } from '../utils/LRUCache'
+import { getGlobalPerformanceMonitor } from '../utils/PerformanceMonitor'
 import { RequestQueueManager } from '../utils/RequestQueue'
 import { version as libVersion } from '../version'
 
 /**
- * 默认配置常量
+ * 默认配置常量（优化：使用具体数值避免运行时计算）
  */
 const DEFAULT_CONFIG = {
   HTTP_TIMEOUT: 10000,
@@ -38,11 +38,11 @@ const DEFAULT_CONFIG = {
   DEBOUNCE_DELAY: 300,
   DEFAULT_CONCURRENCY: 5,
   CIRCUIT_CLEANUP_INTERVAL: 3600000, // 1小时
-  CIRCUIT_EXPIRE_TIME: 24 * 60 * 60 * 1000, // 24小时
+  CIRCUIT_EXPIRE_TIME: 86400000, // 24小时 (24 * 60 * 60 * 1000)
 } as const
 
 /**
- * 断路器默认配置
+ * 断路器默认配置（优化：使用常量避免重复创建）
  */
 const DEFAULT_FAILURE_THRESHOLD = 5
 const DEFAULT_HALF_OPEN_AFTER = 30000
@@ -81,6 +81,18 @@ export class ApiEngineImpl implements ApiEngine {
 
   /** 断路器状态 */
   private readonly circuitStates = new Map<string, { state: 'closed' | 'open' | 'half-open', failureCount: number, successCount: number, nextTryAt: number }>()
+
+  /** 对象池 - 用于复用常用对象（优化版：增加容量和类型） */
+  private readonly objectPool = {
+    contexts: [] as Array<{ methodName: string, params: unknown, engine: ApiEngine }>,
+    configs: [] as Array<Record<string, unknown>>,
+    cacheKeys: [] as string[], // 缓存键字符串池
+    arrays: [] as any[][], // 通用数组池
+    maxContexts: 200, // 上下文池最大容量
+    maxConfigs: 200, // 配置池最大容量
+    maxCacheKeys: 500, // 缓存键池最大容量
+    maxArrays: 100, // 数组池最大容量
+  }
 
   /** 错误报告器 */
   private errorReporter: ErrorReporter | null = null
@@ -127,10 +139,10 @@ export class ApiEngineImpl implements ApiEngine {
     }
 
     // 创建 HTTP 客户端
-    this.httpClient = createHttpClient(this.config?.http!)
+    this.httpClient = createHttpClient(this.config.http)
 
     // 创建管理器
-    this.cacheManager = new CacheManager(this.config?.cache!)
+    this.cacheManager = new CacheManager(this.config.cache!)
     this.debounceManager = new DebounceManagerImpl()
     this.deduplicationManager = new DeduplicationManagerImpl()
 
@@ -314,7 +326,7 @@ export class ApiEngineImpl implements ApiEngine {
       delay: 0,
       backoff: 'fixed' as 'fixed' | 'exponential',
       maxDelay: undefined as number | undefined,
-      retryOn: (error: unknown, _attempt: number) => true,
+      retryOn: (_error: unknown, _attempt: number) => true,
       ...this.config?.retry,
       ...methodConfig.retry,
       ...options.retry,
@@ -546,7 +558,11 @@ export class ApiEngineImpl implements ApiEngine {
       // 计算重试配置
       const retryConfig = this.buildRetryConfig(methodConfig, options)
 
-      const ctx = { methodName, params, engine: this }
+      // 从对象池获取或创建上下文
+      const ctx = this.objectPool.contexts.pop() || {} as { methodName: string, params: unknown, engine: ApiEngine }
+      ctx.methodName = methodName
+      ctx.params = params
+      ctx.engine = this
 
       const performOnce = async (): Promise<T> => {
         // 生成请求配置
@@ -722,7 +738,17 @@ export class ApiEngineImpl implements ApiEngine {
       }
 
       // 直接执行
-      return await executeWithRetry()
+      const result = await executeWithRetry()
+      
+      // 将上下文放回对象池（使用配置的最大容量）
+      if (this.objectPool.contexts.length < this.objectPool.maxContexts) {
+        ctx.methodName = ''
+        ctx.params = null
+        // 保留 engine 引用以供复用
+        this.objectPool.contexts.push(ctx)
+      }
+      
+      return result
     }
     catch (error) {
       this.log(`Error calling method "${methodName}":`, error)
@@ -810,6 +836,9 @@ export class ApiEngineImpl implements ApiEngine {
       return
     }
 
+    // 设置销毁标志，防止后续操作
+    this.destroyed = true
+
     // 清理断路器状态定时器
     if (this.circuitStatesCleanupTimer) {
       clearInterval(this.circuitStatesCleanupTimer)
@@ -821,6 +850,12 @@ export class ApiEngineImpl implements ApiEngine {
 
     // 清理中间件缓存
     this.middlewareCache.destroy()
+
+    // 清理请求队列管理器
+    if (this.requestQueueManager) {
+      this.requestQueueManager.clear()
+      this.requestQueueManager = null
+    }
 
     // 优先调用管理器的销毁方法以清理定时器等资源
     if (typeof (this.cacheManager as unknown as { destroy?: () => void }).destroy === 'function') {
@@ -839,40 +874,87 @@ export class ApiEngineImpl implements ApiEngine {
       this.deduplicationManager.clear()
     }
 
+    // 卸载所有插件
+    for (const [name, plugin] of this.plugins) {
+      if (plugin.uninstall) {
+        try {
+          plugin.uninstall(this)
+        }
+        catch (err) {
+          console.error(`Error uninstalling plugin ${name}:`, err)
+        }
+      }
+    }
+
     this.plugins.clear()
     this.methods.clear()
 
-    this.destroyed = true
+    // 清理错误报告器和性能监控器的引用
+    this.errorReporter = null
+    this.performanceMonitor = null
+    
+    // 清理对象池
+    this.objectPool.contexts = []
+    this.objectPool.configs = []
+    this.objectPool.cacheKeys = []
+    this.objectPool.arrays = []
+    
+    // 注意：WeakMap 会自动清理，无需手动清理 paramsStringCache
+
     this.log('API Engine destroyed')
   }
 
   /**
-   * 生成缓存键
+   * 缓存参数序列化结果，避免重复计算
+   */
+  private paramsStringCache = new WeakMap<object, string>()
+  
+  /**
+   * 高效序列化参数（带缓存）
+   */
+  private serializeParams(params?: unknown): string {
+    if (!params) return '{}'
+    if (typeof params !== 'object' || params === null) {
+      return String(params)
+    }
+    
+    // 尝试从缓存获取
+    const cached = this.paramsStringCache.get(params as object)
+    if (cached !== undefined) return cached
+    
+    // 序列化并缓存
+    const serialized = JSON.stringify(params)
+    this.paramsStringCache.set(params as object, serialized)
+    return serialized
+  }
+
+  /**
+   * 生成缓存键（优化版：减少重复序列化）
    */
   private generateCacheKey(methodName: string, params?: unknown): string {
     const keyGenerator = this.config?.cache?.keyGenerator
     if (keyGenerator) {
       return keyGenerator(methodName, params)
     }
-    return `${methodName}:${JSON.stringify(params || {})}`
+    return `${methodName}:${this.serializeParams(params)}`
   }
 
   /**
-   * 生成防抖键
+   * 生成防抖键（优化版：减少重复序列化）
    */
   private generateDebounceKey(methodName: string, params?: unknown): string {
-    return `${methodName}:${JSON.stringify(params || {})}`
+    return `${methodName}:${this.serializeParams(params)}`
   }
 
   /**
-   * 生成去重键
+   * 生成去重键（优化版：减少重复序列化）
    */
   private generateDeduplicationKey(methodName: string, params?: unknown): string {
     const keyGenerator = this.config?.deduplication?.keyGenerator
     if (keyGenerator) {
       return keyGenerator(methodName, params)
     }
-    return `${methodName}:${JSON.stringify(params || {})}`
+    return `${methodName}:${this.serializeParams(params)}`
   }
 
   /**
@@ -1049,22 +1131,23 @@ export class ApiEngineImpl implements ApiEngine {
   } {
     // 如果 options 中有中间件，不使用缓存
     if (options.middlewares) {
+      // 优化：避免每次创建新数组
+      const globalRequest = this.config?.middlewares?.request
+      const methodRequest = methodConfig.middlewares?.request
+      const optionsRequest = options.middlewares?.request
+      
+      const globalResponse = this.config?.middlewares?.response
+      const methodResponse = methodConfig.middlewares?.response
+      const optionsResponse = options.middlewares?.response
+      
+      const globalError = this.config?.middlewares?.error
+      const methodError = methodConfig.middlewares?.error
+      const optionsError = options.middlewares?.error
+      
       return {
-        request: [
-          ...(this.config?.middlewares?.request || []),
-          ...(methodConfig.middlewares?.request || []),
-          ...(options.middlewares?.request || []),
-        ],
-        response: [
-          ...(this.config?.middlewares?.response || []),
-          ...(methodConfig.middlewares?.response || []),
-          ...(options.middlewares?.response || []),
-        ],
-        error: [
-          ...(this.config?.middlewares?.error || []),
-          ...(methodConfig.middlewares?.error || []),
-          ...(options.middlewares?.error || []),
-        ],
+        request: this.concatMiddlewares(globalRequest, methodRequest, optionsRequest),
+        response: this.concatMiddlewares(globalResponse, methodResponse, optionsResponse),
+        error: this.concatMiddlewares(globalError, methodError, optionsError),
       }
     }
 
@@ -1076,19 +1159,19 @@ export class ApiEngineImpl implements ApiEngine {
     }
 
     // 创建新的中间件数组
+    const globalRequest = this.config?.middlewares?.request
+    const methodRequest = methodConfig.middlewares?.request
+    
+    const globalResponse = this.config?.middlewares?.response
+    const methodResponse = methodConfig.middlewares?.response
+    
+    const globalError = this.config?.middlewares?.error
+    const methodError = methodConfig.middlewares?.error
+    
     const middlewares = {
-      request: [
-        ...(this.config?.middlewares?.request || []),
-        ...(methodConfig.middlewares?.request || []),
-      ],
-      response: [
-        ...(this.config?.middlewares?.response || []),
-        ...(methodConfig.middlewares?.response || []),
-      ],
-      error: [
-        ...(this.config?.middlewares?.error || []),
-        ...(methodConfig.middlewares?.error || []),
-      ],
+      request: this.concatMiddlewares(globalRequest, methodRequest),
+      response: this.concatMiddlewares(globalResponse, methodResponse),
+      error: this.concatMiddlewares(globalError, methodError),
     }
 
     // 存入缓存
@@ -1098,14 +1181,45 @@ export class ApiEngineImpl implements ApiEngine {
   }
 
   /**
+   * 合并中间件数组（优化版）
+   */
+  private concatMiddlewares<T>(...arrays: (T[] | undefined)[]): T[] {
+    let totalLength = 0
+    const validArrays: T[][] = []
+    
+    for (const arr of arrays) {
+      if (arr && arr.length > 0) {
+        totalLength += arr.length
+        validArrays.push(arr)
+      }
+    }
+    
+    if (totalLength === 0) return []
+    if (validArrays.length === 1) return validArrays[0]
+    
+    // 预分配数组空间，避免动态扩容
+    const result: T[] = new Array<T>(totalLength)
+    let index = 0
+    
+    for (const arr of validArrays) {
+      for (let i = 0; i < arr.length; i++) {
+        result[index++] = arr[i]
+      }
+    }
+    
+    return result
+  }
+
+  /**
    * 启动断路器状态清理定时器
    */
   private startCircuitBreakerCleanup(): void {
     // 每小时清理一次过期的断路器状态
     this.circuitStatesCleanupTimer = setInterval(() => {
       const now = Date.now()
-      const expiredKeys: string[] = []
-
+      
+      // 使用更高效的清理策略
+      // 只遍历一次，直接删除
       for (const [methodName, state] of this.circuitStates.entries()) {
         // 清理24小时未使用的状态（closed 且 failureCount 为 0）
         if (
@@ -1113,18 +1227,11 @@ export class ApiEngineImpl implements ApiEngine {
           && state.failureCount === 0
           && now - state.nextTryAt > DEFAULT_CONFIG.CIRCUIT_EXPIRE_TIME
         ) {
-          expiredKeys.push(methodName)
+          this.circuitStates.delete(methodName)
         }
       }
-
-      // 批量删除过期项
-      expiredKeys.forEach((key) => {
-        this.circuitStates.delete(key)
-      })
-
-      if (expiredKeys.length > 0) {
-        this.log(`Cleaned up ${expiredKeys.length} expired circuit breaker states`)
-      }
+      
+      this.log(`Circuit breaker cleanup completed, current states: ${this.circuitStates.size}`)
     }, DEFAULT_CONFIG.CIRCUIT_CLEANUP_INTERVAL)
   }
 

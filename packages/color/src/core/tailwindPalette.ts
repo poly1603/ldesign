@@ -5,8 +5,8 @@
  * This creates 12-level color scales by adjusting only lightness while preserving hue and saturation
  */
 
+import type { ColorInput } from '../types';
 import { Color } from './Color';
-import { ColorInput } from '../types';
 
 /**
  * Default Tailwind shade configuration with optimized lightness values
@@ -93,7 +93,7 @@ export function generateTailwindSemanticColors(primaryColor: ColorInput): {
   // Define semantic color bases based on primary color characteristics
   // These create harmonious relationships while maintaining semantic meaning
   const semanticBases = {
-    primary: primary,
+    primary,
     
     // Success: green hue with saturation based on primary
     success: Color.fromHSL(
@@ -258,7 +258,7 @@ export function generatePaletteCssVars(
     }
     
     // Auto-add dash after prefix if prefix is provided and doesn't already end with a dash
-    const prefixWithDash = prefix ? (prefix.endsWith('-') ? prefix : prefix + '-') : '';
+    const prefixWithDash = prefix ? (prefix.endsWith('-') ? prefix : `${prefix  }-`) : '';
     const varName = `--${prefixWithDash}${name}-color-${suffix}`;
     cssVars.push(`  ${varName}: ${color};`);
   });
@@ -293,7 +293,7 @@ export function generateThemeCssVars(
   // Generate variables for grays if present
   if (theme.grays) {
     // Also check if gray has a custom name mapping
-    const grayName = nameMap['gray'] || nameMap['grays'] || 'gray';
+    const grayName = nameMap.gray || nameMap.grays || 'gray';
     cssVars.push(generatePaletteCssVars(theme.grays, grayName, options));
   }
   

@@ -260,7 +260,7 @@ export function usePerformance() {
 
   const measure = (name: string, fn: () => void | Promise<void>) => {
     // 使用 startEvent/endEvent 来模拟 measure
-    // eslint-disable-next-line ts/no-explicit-any
+     
     const eventId = performance.startEvent('custom' as any, name)
     try {
       const result = fn()
@@ -278,7 +278,7 @@ export function usePerformance() {
   const mark = (name: string) => {
     // 使用 recordEvent 来模拟 mark
     performance.recordEvent({
-      // eslint-disable-next-line ts/no-explicit-any
+       
       type: 'custom' as any,
       name,
       startTime: Date.now(),

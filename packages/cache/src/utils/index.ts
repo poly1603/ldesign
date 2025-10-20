@@ -14,8 +14,11 @@ export * from './batch-helpers'
 // 数据压缩工具
 export * from './compressor'
 
-// 序列化缓存工具
-export * from './serialization-cache'
+// 错误处理工具
+export * from './error-handler'
+
+// 事件发射器
+export { EventEmitter } from './event-emitter'
 
 // 事件节流工具
 export * from './event-throttle'
@@ -23,23 +26,20 @@ export * from './event-throttle'
 // 最小堆数据结构
 export * from './min-heap'
 
-// 性能分析工具
-export * from './performance-profiler'
-
-// 错误处理工具
-export * from './error-handler'
-
-// 事件发射器
-export { EventEmitter } from './event-emitter'
-
 // 对象池
 export * from './object-pool'
+
+// 性能分析工具
+export * from './performance-profiler'
 
 // 智能预取器
 export * from './prefetcher'
 
 // 重试和容错机制
 export * from './retry-manager'
+
+// 序列化缓存工具
+export * from './serialization-cache'
 
 // 数据验证工具
 export * from './validator'
@@ -80,9 +80,13 @@ export function isBrowser(): boolean {
  */
 export function isNode(): boolean {
   return (
-    typeof process !== 'undefined'
-    && typeof process.versions === 'object'
-    && Boolean(process.versions.node)
+    typeof globalThis !== 'undefined'
+    // eslint-disable-next-line node/prefer-global/process
+    && typeof (globalThis as any).process !== 'undefined'
+    // eslint-disable-next-line node/prefer-global/process
+    && typeof (globalThis as any).process?.versions === 'object'
+    // eslint-disable-next-line node/prefer-global/process
+    && Boolean((globalThis as any).process?.versions?.node)
   )
 }
 
@@ -93,7 +97,7 @@ export function isNode(): boolean {
  */
 export function isWebWorker(): boolean {
   return (
-    typeof self !== 'undefined'
+    typeof globalThis !== 'undefined'
     && typeof (globalThis as any).importScripts === 'function'
     && typeof navigator !== 'undefined'
   )

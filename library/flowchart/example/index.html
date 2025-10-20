@@ -18,8 +18,94 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    #flowchart-container {
+    .app-container {
+      display: flex;
       width: 100vw;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: #fff;
+      border-right: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #e0e0e0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .sidebar-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 5px 0;
+    }
+
+    .sidebar-header p {
+      font-size: 13px;
+      opacity: 0.9;
+      margin: 0;
+    }
+
+    .workflow-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+    }
+
+    .workflow-item {
+      padding: 15px;
+      margin-bottom: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+    }
+
+    .workflow-item:hover {
+      border-color: #667eea;
+      background: #f8f9ff;
+      transform: translateX(3px);
+    }
+
+    .workflow-item.active {
+      border-color: #667eea;
+      background: #f0f2ff;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+    }
+
+    .workflow-item h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin: 0 0 5px 0;
+    }
+
+    .workflow-item p {
+      font-size: 12px;
+      color: #666;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .workflow-item .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #667eea;
+      color: white;
+      font-size: 11px;
+      border-radius: 3px;
+      margin-top: 8px;
+    }
+
+    #flowchart-container {
+      flex: 1;
       height: 100vh;
     }
 
@@ -99,7 +185,21 @@
   </style>
 </head>
 <body>
-  <div id="flowchart-container"></div>
+  <div class="app-container">
+    <!-- 左侧流程图列表 -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h2>流程图示例</h2>
+        <p>点击切换不同的流程图</p>
+      </div>
+      <div class="workflow-list" id="workflowList">
+        <!-- 动态生成 -->
+      </div>
+    </div>
+
+    <!-- 右侧画布 -->
+    <div id="flowchart-container"></div>
+  </div>
   
   <div class="help-tip" id="helpTip">
     <button class="close-btn" onclick="closeHelp()">×</button>

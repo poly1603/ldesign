@@ -1,7 +1,8 @@
-import { inject, onUnmounted, computed, ref, watch } from 'vue'
 import type { Ref } from 'vue'
-import { FormRouteManager, FormState, FormRouteOptions, MultiStepFormConfig } from '../managers/FormRouteManager'
-import { useRoute, useRouter } from '../composables'
+import type { FormRouteOptions, FormState, MultiStepFormConfig } from '../managers/FormRouteManager';
+import { computed, inject, onUnmounted, watch } from 'vue'
+import { useRoute } from '../composables'
+import { FormRouteManager } from '../managers/FormRouteManager'
 
 export interface UseFormRouteOptions extends FormRouteOptions {
   formId?: string
@@ -56,10 +57,9 @@ export interface UseMultiStepFormReturn extends UseFormReturn {
 export function useFormRoute(options: UseFormRouteOptions = {}): UseFormReturn {
   const manager = inject<FormRouteManager>('formRouteManager', new FormRouteManager())
   const route = useRoute()
-  const router = useRouter()
   
   // 生成表单ID
-  const formId = options.formId || route.path
+  const formId = options.formId || route.value.path
   
   // 初始化表单
   const initializeForm = () => {
@@ -82,18 +82,18 @@ export function useFormRoute(options: UseFormRouteOptions = {}): UseFormReturn {
   }
   
   // 初始化表单状态
-  const formState = ref(initializeForm())
+  initializeForm()
   
   // 计算属性
   const form = computed(() => manager.getForm(formId))
   const isDirty = computed(() => form.value?.isDirty ?? false)
-  const errors = computed(() => form.value?.errors ?? {})
-  const touched = computed(() => form.value?.touched ?? new Set())
+  const errors = computed<Record<string, string[]>>(() => form.value?.errors ?? ({} as Record<string, string[]>))
+  const touched = computed<Set<string>>(() => form.value?.touched ?? new Set<string>())
   const isValid = computed(() => Object.keys(errors.value).length === 0)
   
   // 监听路由变化
   if (options.watchRoute) {
-    watch(() => route.path, (newPath, oldPath) => {
+    watch(() => route.value.path, (newPath, oldPath) => {
       if (newPath !== oldPath) {
         // 路由变化时检查是否需要保存
         if (isDirty.value && options.autoSave) {
@@ -103,6 +103,19 @@ export function useFormRoute(options: UseFormRouteOptions = {}): UseFormReturn {
     })
   }
   
+  // 预声明，供后续 watch 使用，避免 no-use-before-define
+  const saveForm = async () => {
+    const saved = await manager.saveForm(formId)
+
+    // 清除本地存储
+    if (saved && options.persistToStorage) {
+      const storageKey = options.storageKey || `form_${formId}`
+      localStorage.removeItem(storageKey)
+    }
+
+    return saved
+  }
+
   // 自动保存到本地存储
   if (options.persistToStorage) {
     watch(
@@ -142,17 +155,6 @@ export function useFormRoute(options: UseFormRouteOptions = {}): UseFormReturn {
     manager.resetForm(formId)
   }
   
-  const saveForm = async () => {
-    const saved = await manager.saveForm(formId)
-    
-    // 清除本地存储
-    if (saved && options.persistToStorage) {
-      const storageKey = options.storageKey || `form_${formId}`
-      localStorage.removeItem(storageKey)
-    }
-    
-    return saved
-  }
   
   const clearForm = () => {
     // 清除本地存储
@@ -220,7 +222,7 @@ export function useMultiStepForm(
   const route = useRoute()
   
   // 生成表单ID
-  const formId = options.formId || `multi-step-${route.path}`
+  const formId = options.formId || `multi-step-${route.value.path}`
   
   // 初始化多步骤表单
   manager.initMultiStepForm(formId, config)
@@ -300,7 +302,7 @@ export const validators = {
   
   email: (message = 'Invalid email address') => {
     return (value: string): string[] => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      const emailRegex = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
       if (value && !emailRegex.test(value)) {
         return [message]
       }
@@ -374,9 +376,11 @@ export const FormRoutePlugin = {
     
     // 全局混入
     app.mixin({
-      beforeRouteLeave(to: any, from: any, next: any) {
+      beforeRouteLeave(_to: any, _from: any, next: any) {
         // 检查所有表单的脏状态
-        const dirtyForms = manager.getDirtyForms()
+        const dirtyForms = Array.from(manager.forms.values())
+          .filter(form => form.isDirty)
+          .map((form: any) => form.id)
         
         if (dirtyForms.length > 0) {
           const confirmed = window.confirm(
@@ -385,7 +389,7 @@ export const FormRoutePlugin = {
           
           if (confirmed) {
             // 清理表单
-            dirtyForms.forEach(formId => {
+            dirtyForms.forEach((formId: string) => {
               manager.clearForm(formId)
             })
             next()
@@ -422,8 +426,16 @@ export function useFormField(
     if (validators && validators.length > 0) {
       const composedValidator = validators.length === 1
         ? validators[0]
-        : validators.compose(...validators)
+        : async (val: any) => {
+            const allErrors: string[] = []
+            for (const validator of validators) {
+              const errors = await validator(val)
+              allErrors.push(...errors)
+            }
+            return allErrors
+          }
       
+      if (!composedValidator) return true
       const errors = await composedValidator(value.value)
       formReturn.setFieldError(fieldName, errors)
       return errors.length === 0

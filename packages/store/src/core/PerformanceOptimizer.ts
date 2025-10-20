@@ -93,10 +93,15 @@ export class PersistenceManager {
   }
 
   /**
-   * 保存状态
+   * 保存状态（优化版：减少序列化开销）
    */
   save(key: string, state: any, paths?: string[]): void {
     try {
+      // 快速检查：如果状态为空则跳过
+      if (!state || (typeof state === 'object' && Object.keys(state).length === 0)) {
+        return
+      }
+      
       // 检查状态是否有效
       if (state === undefined || state === null) {
         this.storage.removeItem(key)
@@ -144,7 +149,7 @@ export class PersistenceManager {
       // 清理无效的存储数据
       try {
         this.storage.removeItem(key)
-      } catch (cleanupError) {
+      } catch {
         // 忽略清理错误
       }
       return null

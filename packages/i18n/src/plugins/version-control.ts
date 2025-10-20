@@ -3,99 +3,30 @@
  * Git-like version control for translations with branching, merging, and history
  */
 
-import { EventEmitter } from 'events';
-import * as crypto from 'crypto';
+import crypto from 'node:crypto';
+import { EventEmitter } from 'node:events';
 
-interface Commit {
-  hash: string;
-  parent: string | null;
-  author: string;
-  email: string;
-  timestamp: number;
-  message: string;
-  changes: Change[];
-  tree: string; // Hash of the translation tree at this point
-}
-
-interface Change {
-  type: 'add' | 'modify' | 'delete';
-  locale: string;
-  key: string;
-  oldValue?: string;
-  newValue?: string;
-  diff?: Diff;
-}
-
-interface Diff {
-  added: string[];
-  removed: string[];
-  context: string[];
-}
-
-interface Branch {
-  name: string;
-  head: string; // Commit hash
-  created: number;
-  author: string;
-  description?: string;
-  upstream?: string;
-}
-
-interface Tag {
-  name: string;
-  commit: string;
-  author: string;
-  timestamp: number;
-  message?: string;
-  signed?: boolean;
-}
-
-interface MergeConflict {
-  locale: string;
-  key: string;
-  ours: string;
-  theirs: string;
-  base?: string;
-  resolved?: boolean;
-  resolution?: string;
-}
-
-interface Stash {
-  id: string;
-  message: string;
-  timestamp: number;
-  author: string;
-  changes: Change[];
-  branch: string;
-}
-
-interface Remote {
-  name: string;
-  url: string;
-  branches: Map<string, string>; // branch name -> commit hash
-  lastFetch: number;
-}
-
-export class TranslationVersionControl extends EventEmitter {
-  private commits: Map<string, Commit> = new Map();
-  private branches: Map<string, Branch> = new Map();
-  private tags: Map<string, Tag> = new Map();
-  private currentBranch: string = 'main';
-  private head: string | null = null;
-  private workingTree: Map<string, Map<string, string>> = new Map(); // locale -> key -> value
-  private stagingArea: Change[] = [];
-  private stashes: Stash[] = [];
-  private remotes: Map<string, Remote> = new Map();
-  private mergeConflicts: MergeConflict[] = [];
-  private config: {
-    author: string;
-    email: string;
-    autoStash: boolean;
-    autoMerge: boolean;
-  };
+class TranslationVersionControl extends EventEmitter {
 
   constructor() {
     super();
+    this.setMaxListeners(50);
+    
+    // Initialize properties
+    this.commits = new Map();
+    this.branches = new Map();
+    this.tags = new Map();
+    this.currentBranch = 'main';
+    this.head = null;
+    this.workingTree = new Map(); // locale -> key -> value
+    this.stagingArea = [];
+    this.stashes = [];
+    this.remotes = new Map();
+    this.mergeConflicts = [];
+    this.maxCommits = 1000;
+    this.maxStashes = 20;
+    this.maxStagingSize = 100;
+    this.cleanupTimer = undefined;
     
     this.config = {
       author: 'User',
@@ -106,11 +37,17 @@ export class TranslationVersionControl extends EventEmitter {
 
     // Initialize with main branch
     this.initRepository();
+    
+    // Periodic cleanup
+    this.cleanupTimer = setInterval(() => {
+      this.pruneOldCommits();
+      this.limitStashes();
+    }, 60000); // Every minute
   }
 
-  private initRepository(): void {
+  initRepository() {
     // Create initial empty commit
-    const initialCommit: Commit = {
+    const initialCommit = {
       hash: this.generateHash('initial'),
       parent: null,
       author: 'System',
@@ -124,7 +61,7 @@ export class TranslationVersionControl extends EventEmitter {
     this.commits.set(initialCommit.hash, initialCommit);
     
     // Create main branch
-    const mainBranch: Branch = {
+    const mainBranch = {
       name: 'main',
       head: initialCommit.hash,
       created: Date.now(),
@@ -140,18 +77,18 @@ export class TranslationVersionControl extends EventEmitter {
 
   // Configuration
 
-  setConfig(config: Partial<typeof this.config>): void {
+  setConfig(config) {
     this.config = { ...this.config, ...config };
     this.emit('config:update', this.config);
   }
 
   // Working tree operations
 
-  getTranslation(locale: string, key: string): string | undefined {
+  getTranslation(locale, key) {
     return this.workingTree.get(locale)?.get(key);
   }
 
-  setTranslation(locale: string, key: string, value: string): void {
+  setTranslation(locale, key, value) {
     if (!this.workingTree.has(locale)) {
       this.workingTree.set(locale, new Map());
     }
@@ -160,7 +97,7 @@ export class TranslationVersionControl extends EventEmitter {
     this.workingTree.get(locale)!.set(key, value);
 
     // Track change
-    const change: Change = {
+    const change = {
       type: oldValue === undefined ? 'add' : 'modify',
       locale,
       key,
@@ -175,12 +112,12 @@ export class TranslationVersionControl extends EventEmitter {
     this.emit('translation:change', change);
   }
 
-  deleteTranslation(locale: string, key: string): void {
+  deleteTranslation(locale, key) {
     const oldValue = this.workingTree.get(locale)?.get(key);
     if (oldValue !== undefined) {
       this.workingTree.get(locale)!.delete(key);
       
-      const change: Change = {
+      const change = {
         type: 'delete',
         locale,
         key,
@@ -195,14 +132,14 @@ export class TranslationVersionControl extends EventEmitter {
 
   // Staging operations
 
-  add(pattern?: string | RegExp): void {
+  add(pattern) {
     // Add changes to staging area
     // Pattern can be used to selectively stage changes
     
     this.emit('stage:add', { pattern, count: this.stagingArea.length });
   }
 
-  reset(pattern?: string | RegExp): void {
+  reset(pattern) {
     // Remove from staging area
     if (pattern) {
       const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern);
@@ -218,7 +155,7 @@ export class TranslationVersionControl extends EventEmitter {
 
   // Commit operations
 
-  commit(message: string, options?: { amend?: boolean; author?: string; email?: string }): string {
+  commit(message, options) {
     if (this.stagingArea.length === 0 && !options?.amend) {
       throw new Error('Nothing to commit');
     }
@@ -228,7 +165,7 @@ export class TranslationVersionControl extends EventEmitter {
       ? [...(this.getCommit(this.head!)?.changes || []), ...this.stagingArea]
       : this.stagingArea;
 
-    const commit: Commit = {
+    const commit = {
       hash: this.generateHash(message + Date.now()),
       parent,
       author: options?.author || this.config?.author,
@@ -239,6 +176,11 @@ export class TranslationVersionControl extends EventEmitter {
       tree: this.generateTreeHash()
     };
 
+    // Limit number of commits
+    if (this.commits.size >= this.maxCommits) {
+      this.pruneOldCommits();
+    }
+    
     this.commits.set(commit.hash, commit);
     this.head = commit.hash;
     
@@ -257,14 +199,14 @@ export class TranslationVersionControl extends EventEmitter {
 
   // Branch operations
 
-  branch(name: string, options?: { from?: string; checkout?: boolean }): void {
+  branch(name, options) {
     if (this.branches.has(name)) {
       throw new Error(`Branch '${name}' already exists`);
     }
 
     const startPoint = options?.from || this.head!;
     
-    const branch: Branch = {
+    const branch = {
       name,
       head: startPoint,
       created: Date.now(),
@@ -280,7 +222,7 @@ export class TranslationVersionControl extends EventEmitter {
     this.emit('branch:create', branch);
   }
 
-  checkout(target: string, options?: { force?: boolean; createNew?: boolean }): void {
+  checkout(target, options) {
     // Check for uncommitted changes
     if (this.stagingArea.length > 0 && !options?.force) {
       if (this.config?.autoStash) {
@@ -315,7 +257,7 @@ export class TranslationVersionControl extends EventEmitter {
     this.emit('checkout', { target, branch: this.currentBranch, head: this.head });
   }
 
-  merge(branch: string, options?: { strategy?: 'recursive' | 'ours' | 'theirs'; noCommit?: boolean }): void {
+  merge(branch, options) {
     const sourceBranch = this.branches.get(branch);
     if (!sourceBranch) {
       throw new Error(`Branch '${branch}' not found`);
@@ -364,7 +306,7 @@ export class TranslationVersionControl extends EventEmitter {
     this.emit('merge:complete', { from: branch, to: this.currentBranch, conflicts: conflicts.length });
   }
 
-  resolveConflict(locale: string, key: string, resolution: string): void {
+  resolveConflict(locale, key, resolution) {
     const conflict = this.mergeConflicts.find(c => c.locale === locale && c.key === key);
     if (conflict) {
       conflict.resolved = true;
@@ -387,8 +329,8 @@ export class TranslationVersionControl extends EventEmitter {
 
   // History operations
 
-  log(options?: { limit?: number; since?: number; author?: string; branch?: string }): Commit[] {
-    let commits: Commit[] = [];
+  log(options) {
+    const commits = [];
     let current = options?.branch 
       ? this.branches.get(options.branch)?.head 
       : this.head;
@@ -411,7 +353,7 @@ export class TranslationVersionControl extends EventEmitter {
     return commits;
   }
 
-  diff(from?: string, to?: string): Change[] {
+  diff(from, to) {
     const fromCommit = from ? this.commits.get(from) : null;
     const toCommit = to ? this.commits.get(to) : this.commits.get(this.head!);
 
@@ -423,9 +365,9 @@ export class TranslationVersionControl extends EventEmitter {
     return this.calculateTreeDiff(fromTree, toTree);
   }
 
-  blame(locale: string, key: string): { commit: Commit; line: string }[] {
+  blame(locale, key) {
     // Track changes to a specific translation through history
-    const blameInfo: { commit: Commit; line: string }[] = [];
+    const blameInfo = [];
     
     let current = this.head;
     while (current) {
@@ -448,13 +390,13 @@ export class TranslationVersionControl extends EventEmitter {
 
   // Stash operations
 
-  stash(message?: string): string {
+  stash(message) {
     if (this.stagingArea.length === 0) {
       throw new Error('No changes to stash');
     }
 
-    const stash: Stash = {
-      id: this.generateHash('stash' + Date.now()),
+    const stash = {
+      id: this.generateHash(`stash${  Date.now()}`),
       message: message || `WIP on ${this.currentBranch}`,
       timestamp: Date.now(),
       author: this.config?.author,
@@ -469,7 +411,7 @@ export class TranslationVersionControl extends EventEmitter {
     return stash.id;
   }
 
-  stashPop(index: number = 0): void {
+  stashPop(index = 0) {
     if (index >= this.stashes.length) {
       throw new Error('Invalid stash index');
     }
@@ -490,18 +432,18 @@ export class TranslationVersionControl extends EventEmitter {
     this.emit('stash:pop', stash);
   }
 
-  stashList(): Stash[] {
+  stashList() {
     return [...this.stashes];
   }
 
   // Tag operations
 
-  tag(name: string, options?: { message?: string; commit?: string; signed?: boolean }): void {
+  tag(name, options) {
     if (this.tags.has(name)) {
       throw new Error(`Tag '${name}' already exists`);
     }
 
-    const tag: Tag = {
+    const tag = {
       name,
       commit: options?.commit || this.head!,
       author: this.config?.author,
@@ -516,12 +458,12 @@ export class TranslationVersionControl extends EventEmitter {
 
   // Remote operations
 
-  addRemote(name: string, url: string): void {
+  addRemote(name, url) {
     if (this.remotes.has(name)) {
       throw new Error(`Remote '${name}' already exists`);
     }
 
-    const remote: Remote = {
+    const remote = {
       name,
       url,
       branches: new Map(),
@@ -532,8 +474,8 @@ export class TranslationVersionControl extends EventEmitter {
     this.emit('remote:add', remote);
   }
 
-  fetch(remoteName: string = 'origin'): Promise<void> {
-    return new Promise((resolve, reject) => {
+  fetch(remoteName = 'origin') {
+    return new Promise<void>((resolve, reject) => {
       const remote = this.remotes.get(remoteName);
       if (!remote) {
         reject(new Error(`Remote '${remoteName}' not found`));
@@ -550,8 +492,8 @@ export class TranslationVersionControl extends EventEmitter {
     });
   }
 
-  push(remoteName: string = 'origin', branch?: string): Promise<void> {
-    return new Promise((resolve, reject) => {
+  push(remoteName = 'origin', branch) {
+    return new Promise<void>((resolve, reject) => {
       const remote = this.remotes.get(remoteName);
       if (!remote) {
         reject(new Error(`Remote '${remoteName}' not found`));
@@ -574,31 +516,33 @@ export class TranslationVersionControl extends EventEmitter {
     });
   }
 
-  pull(remoteName: string = 'origin', branch?: string): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        await this.fetch(remoteName);
-        
-        const remote = this.remotes.get(remoteName);
-        const branchToPull = branch || this.currentBranch;
-        const remoteHead = remote?.branches.get(branchToPull);
-        
-        if (remoteHead) {
-          // Merge remote branch
-          this.merge(`${remoteName}/${branchToPull}`);
+  pull(remoteName = 'origin', branch) {
+    return new Promise<void>((resolve, reject) => {
+      (async () => {
+        try {
+          await this.fetch(remoteName);
+          
+          const remote = this.remotes.get(remoteName);
+          const branchToPull = branch || this.currentBranch;
+          const remoteHead = remote?.branches.get(branchToPull);
+          
+          if (remoteHead) {
+            // Merge remote branch
+            this.merge(`${remoteName}/${branchToPull}`);
+          }
+          
+          this.emit('pull:complete', { remote: remoteName, branch: branchToPull });
+          resolve();
+        } catch (error) {
+          reject(error);
         }
-        
-        this.emit('pull:complete', { remote: remoteName, branch: branchToPull });
-        resolve();
-      } catch (error) {
-        reject(error);
-      }
+      })();
     });
   }
 
   // Cherry-pick
 
-  cherryPick(commitHash: string): void {
+  cherryPick(commitHash) {
     const commit = this.commits.get(commitHash);
     if (!commit) {
       throw new Error(`Commit '${commitHash}' not found`);
@@ -624,7 +568,7 @@ export class TranslationVersionControl extends EventEmitter {
 
   // Rebase
 
-  rebase(onto: string, options?: { interactive?: boolean }): void {
+  rebase(onto, options) {
     // Simplified rebase implementation
     const targetBranch = this.branches.get(onto);
     if (!targetBranch) {
@@ -669,33 +613,39 @@ export class TranslationVersionControl extends EventEmitter {
 
   // Helper methods
 
-  private trackChange(change: Change): void {
+  trackChange(change) {
     // Remove any existing change for the same key
     this.stagingArea = this.stagingArea.filter(
       c => !(c.locale === change.locale && c.key === change.key)
     );
+    
+    // Limit staging area size
+    if (this.stagingArea.length >= this.maxStagingSize) {
+      this.stagingArea.shift(); // Remove oldest
+    }
+    
     this.stagingArea.push(change);
   }
 
-  private generateHash(input: string): string {
+  generateHash(input) {
     return crypto.createHash('sha256').update(input).digest('hex').substring(0, 7);
   }
 
-  private generateTreeHash(): string {
+  generateTreeHash() {
     const treeContent = JSON.stringify(Array.from(this.workingTree.entries()));
     return this.generateHash(treeContent);
   }
 
-  private getCommit(hash: string): Commit | undefined {
+  getCommit(hash) {
     return this.commits.get(hash);
   }
 
-  private loadTreeFromCommit(commitHash: string): void {
+  loadTreeFromCommit(commitHash) {
     // Reconstruct working tree from commit history
     this.workingTree.clear();
     
-    let current: string | null = commitHash;
-    const changes: Change[] = [];
+    let current = commitHash;
+    const changes = [];
     
     while (current) {
       const commit = this.commits.get(current);
@@ -718,11 +668,11 @@ export class TranslationVersionControl extends EventEmitter {
     }
   }
 
-  private getTreeFromCommit(commitHash: string): Map<string, Map<string, string>> {
-    const tree: Map<string, Map<string, string>> = new Map();
+  getTreeFromCommit(commitHash) {
+    const tree = new Map();
     
-    let current: string | null = commitHash;
-    const changes: Change[] = [];
+    let current = commitHash;
+    const changes = [];
     
     while (current) {
       const commit = this.commits.get(current);
@@ -746,11 +696,8 @@ export class TranslationVersionControl extends EventEmitter {
     return tree;
   }
 
-  private calculateTreeDiff(
-    fromTree: Map<string, Map<string, string>>,
-    toTree: Map<string, Map<string, string>>
-  ): Change[] {
-    const changes: Change[] = [];
+  calculateTreeDiff(fromTree, toTree) {
+    const changes = [];
 
     // Check for additions and modifications
     for (const [locale, toKeys] of toTree) {
@@ -798,10 +745,10 @@ export class TranslationVersionControl extends EventEmitter {
     return changes;
   }
 
-  private calculateDiff(oldValue?: string, newValue?: string): Diff {
+  calculateDiff(oldValue, newValue) {
     // Simplified diff calculation
     // In real implementation, would use proper diff algorithm
-    const diff: Diff = {
+    const diff = {
       added: [],
       removed: [],
       context: []
@@ -826,8 +773,8 @@ export class TranslationVersionControl extends EventEmitter {
     return diff;
   }
 
-  private findCommonAncestor(hash1: string, hash2: string): string | null {
-    const ancestors1 = new Set<string>();
+  findCommonAncestor(hash1, hash2) {
+    const ancestors1 = new Set();
     let current = hash1;
     
     while (current) {
@@ -848,20 +795,15 @@ export class TranslationVersionControl extends EventEmitter {
     return null;
   }
 
-  private performThreeWayMerge(
-    base: string | null,
-    ours: string,
-    theirs: string,
-    strategy: 'recursive' | 'ours' | 'theirs'
-  ): MergeConflict[] {
-    const conflicts: MergeConflict[] = [];
+  performThreeWayMerge(base, ours, theirs, strategy) {
+    const conflicts = [];
     
     const baseTree = base ? this.getTreeFromCommit(base) : new Map();
     const ourTree = this.getTreeFromCommit(ours);
     const theirTree = this.getTreeFromCommit(theirs);
 
     // Process all keys
-    const allKeys = new Set<string>();
+    const allKeys = new Set();
     for (const [locale, keys] of [...ourTree, ...theirTree, ...baseTree]) {
       for (const key of keys.keys()) {
         allKeys.add(`${locale}:${key}`);
@@ -908,24 +850,76 @@ export class TranslationVersionControl extends EventEmitter {
               base: baseValue
             });
           }
-        }
       }
     }
-
+    }
+    
     return conflicts;
   }
 
-  // Status and info
+  pruneOldCommits() {
+    if (this.commits.size <= this.maxCommits) return;
+    
+    const sortedCommits = Array.from(this.commits.values())
+      .sort((a, b) => a.timestamp - b.timestamp);
+    
+    // Keep recent commits and those referenced by branches/tags
+    const referencedCommits = new Set();
+    
+    // Add branch heads
+    this.branches.forEach(branch => {
+      if (branch.head) referencedCommits.add(branch.head);
+    });
+    
+    // Add tagged commits
+    this.tags.forEach(tag => {
+      referencedCommits.add(tag.commit);
+    });
+    
+    // Add current HEAD
+    if (this.head) referencedCommits.add(this.head);
+    
+    // Remove oldest unreferenced commits
+    const toRemove = sortedCommits
+      .filter(c => !referencedCommits.has(c.hash))
+      .slice(0, Math.max(0, this.commits.size - this.maxCommits));
+    
+    toRemove.forEach(commit => {
+      this.commits.delete(commit.hash);
+    });
+  }
 
-  status(): {
-    branch: string;
-    head: string | null;
-    staged: number;
-    conflicts: number;
-    stashes: number;
-    ahead: number;
-    behind: number;
-  } {
+  limitStashes() {
+    if (this.stashes.length > this.maxStashes) {
+      // Remove oldest stashes
+      this.stashes = this.stashes.slice(-this.maxStashes);
+    }
+  }
+
+  destroy() {
+    // Clear timer
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = undefined;
+    }
+    
+    // Remove all event listeners
+    this.removeAllListeners();
+    
+    // Clear all data structures
+    this.commits.clear();
+    this.branches.clear();
+    this.tags.clear();
+    this.workingTree.clear();
+    this.remotes.clear();
+    this.stagingArea = [];
+    this.stashes = [];
+    this.mergeConflicts = [];
+    this.head = null;
+  }
+
+  // Status and info
+  status() {
     // Calculate ahead/behind for current branch
     let ahead = 0;
     let behind = 0;
@@ -964,8 +958,7 @@ export class TranslationVersionControl extends EventEmitter {
   }
 
   // Export/Import
-
-  export(): string {
+  export() {
     const data = {
       commits: Array.from(this.commits.entries()),
       branches: Array.from(this.branches.entries()),
@@ -977,7 +970,7 @@ export class TranslationVersionControl extends EventEmitter {
     return JSON.stringify(data, null, 2);
   }
 
-  import(data: string): void {
+  import(data) {
     const parsed = JSON.parse(data);
     
     this.commits = new Map(parsed.commits);
@@ -992,17 +985,4 @@ export class TranslationVersionControl extends EventEmitter {
   }
 }
 
-// Export singleton instance
-export const versionControl = new TranslationVersionControl();
-
-// Type exports
-export type {
-  Commit,
-  Change,
-  Diff,
-  Branch,
-  Tag,
-  MergeConflict,
-  Stash,
-  Remote
-};
+module.exports = { TranslationVersionControl };

@@ -3,8 +3,8 @@
  */
 
 import type { App, ComponentPublicInstance } from 'vue'
-import type { Template, TemplateConfig } from '../types'
-import { reactive, ref, computed, watch } from 'vue'
+import type { Template } from '../types'
+import { reactive, ref } from 'vue'
 
 /**
  * 开发工具配置
@@ -223,7 +223,7 @@ export class TemplateDebugger {
    */
   private shouldBreak(category: string): boolean {
     // 检查是否有对应的断点
-    for (const [templateId, points] of this.breakpoints) {
+for (const points of this.breakpoints.values()) {
       if (points.has(category) || points.has('*')) {
         return true
       }
@@ -400,12 +400,13 @@ export class TemplateInspector {
     return {
       id: template.id,
       name: template.name,
-      type: template.type,
       category: template.category,
-      props: template.props,
-      events: template.events,
-      slots: template.slots,
-      metadata: template.metadata
+      metadata: template.metadata,
+      config: template.config,
+      component: template.component,
+      content: template.content,
+      createdAt: template.createdAt,
+      updatedAt: template.updatedAt
     }
   }
   
@@ -421,7 +422,7 @@ export class TemplateInspector {
       methods: this.getMethods(component),
       refs: component.$refs,
       parent: component.$parent?.$options.name || null,
-      children: (component.$children || []).map(c => c.$options.name || 'Anonymous')
+      children: []  // $children is not available in Vue 3
     }
   }
   
@@ -436,7 +437,7 @@ export class TemplateInspector {
       for (const key of Object.keys(options)) {
         try {
           computed[key] = (component as any)[key]
-        } catch (e) {
+        } catch {
           computed[key] = '<Error>'
         }
       }
@@ -660,7 +661,7 @@ export class ConsoleEnhancer {
       type,
       timestamp: Date.now(),
       args,
-      stack: new Error().stack
+stack: new Error('Stack').stack
     }
     
     this.logs.push(log)
@@ -708,22 +709,27 @@ export class ConsoleEnhancer {
  * 开发工具管理器
  */
 export class DevToolsManager {
-  private static instance: DevToolsManager
+  private static instance: DevToolsManager | null = null
   private config: DevToolsConfig
-  private templateDebugger: TemplateDebugger
-  private profiler: TemplateProfiler
-  private inspector: TemplateInspector
-  private networkMonitor: NetworkMonitor
-  private consoleEnhancer: ConsoleEnhancer
+  private templateDebugger: TemplateDebugger | null = null
+  private profiler: TemplateProfiler | null = null
+  private inspector: TemplateInspector | null = null
+  private networkMonitor: NetworkMonitor | null = null
+  private consoleEnhancer: ConsoleEnhancer | null = null
   private app: App | null = null
+  private disposed = false
   
   private constructor(config: DevToolsConfig) {
     this.config = reactive(config)
-    this.templateDebugger = new TemplateDebugger()
-    this.profiler = new TemplateProfiler()
-    this.inspector = new TemplateInspector()
-    this.networkMonitor = new NetworkMonitor()
-    this.consoleEnhancer = new ConsoleEnhancer()
+    
+    // 只在开发环境创建工具实例
+if (import.meta.env.DEV && config.enabled) {
+      this.templateDebugger = new TemplateDebugger()
+      this.profiler = new TemplateProfiler()
+      this.inspector = new TemplateInspector()
+      this.networkMonitor = new NetworkMonitor()
+      this.consoleEnhancer = new ConsoleEnhancer()
+    }
   }
   
   /**
@@ -759,36 +765,41 @@ export class DevToolsManager {
     app.config.globalProperties.$devTools = this
     
     // 增强控制台
-    if (this.config.features?.console) {
+    if (this.config.features?.console && this.consoleEnhancer) {
       this.consoleEnhancer.enhance()
     }
     
     // 添加全局错误处理
     app.config.errorHandler = (err, instance, info) => {
-      this.templateDebugger.log({
-        type: 'error',
-        category: 'global',
-        message: err.message || String(err),
-        data: {
-          error: err,
-          instance,
-          info
-        },
-        stack: err.stack
-      })
+      if (this.templateDebugger) {
+        const error = err as Error
+        this.templateDebugger.log({
+          type: 'error',
+          category: 'global',
+          message: error.message || String(err),
+          data: {
+            error: err,
+            instance,
+            info
+          },
+          stack: error.stack
+        })
+      }
     }
     
     // 添加警告处理
     app.config.warnHandler = (msg, instance, trace) => {
-      this.templateDebugger.log({
-        type: 'warning',
-        category: 'global',
-        message: msg,
-        data: {
-          instance,
-          trace
-        }
-      })
+      if (this.templateDebugger) {
+        this.templateDebugger.log({
+          type: 'warning',
+          category: 'global',
+          message: msg,
+          data: {
+            instance,
+            trace
+          }
+        })
+      }
     }
   }
   
@@ -796,7 +807,9 @@ export class DevToolsManager {
    * 卸载
    */
   uninstall() {
-    if (this.config.features?.console) {
+    if (this.disposed) return
+    
+    if (this.config.features?.console && this.consoleEnhancer) {
       this.consoleEnhancer.restore()
     }
     
@@ -806,40 +819,76 @@ export class DevToolsManager {
       this.app.config.warnHandler = undefined
       this.app = null
     }
+    
+    // 清理所有工具实例
+    this.dispose()
+  }
+  
+  /**
+   * 销毁实例
+   */
+  private dispose() {
+    this.disposed = true
+    
+    // 清理所有工具
+    if (this.templateDebugger) {
+      this.templateDebugger.clearLogs()
+      this.templateDebugger = null
+    }
+    if (this.profiler) {
+      this.profiler.clearMetrics()
+      this.profiler = null
+    }
+    if (this.inspector) {
+      this.inspector = null
+    }
+    if (this.networkMonitor) {
+      this.networkMonitor.clearRequests()
+      this.networkMonitor = null
+    }
+    if (this.consoleEnhancer) {
+      this.consoleEnhancer.clearLogs()
+      this.consoleEnhancer = null
+    }
+    
+    // 清理单例引用
+    if (DevToolsManager.instance === this) {
+      DevToolsManager.instance = null
+    }
   }
   
   /**
    * 获取调试器
    */
-  getDebugger(): TemplateDebugger {
+  getDebugger(): TemplateDebugger | null {
     return this.templateDebugger
   }
   
   /**
    * 获取性能分析器
    */
-  getProfiler(): TemplateProfiler {
+  getProfiler(): TemplateProfiler | null {
     return this.profiler
   }
   
   /**
    * 获取检查器
    */
-  getInspector(): TemplateInspector {
+  getInspector(): TemplateInspector | null {
     return this.inspector
   }
   
   /**
    * 获取网络监控器
    */
-  getNetworkMonitor(): NetworkMonitor {
+  getNetworkMonitor(): NetworkMonitor | null {
     return this.networkMonitor
   }
   
   /**
    * 获取控制台增强器
    */
-  getConsoleEnhancer(): ConsoleEnhancer {
+  getConsoleEnhancer(): ConsoleEnhancer | null {
     return this.consoleEnhancer
   }
   
@@ -864,9 +913,9 @@ export class DevToolsManager {
     this.config.enabled = enabled
     
     if (!enabled) {
-      this.consoleEnhancer.restore()
+      this.consoleEnhancer?.restore()
     } else if (this.config.features?.console) {
-      this.consoleEnhancer.enhance()
+      this.consoleEnhancer?.enhance()
     }
   }
 }

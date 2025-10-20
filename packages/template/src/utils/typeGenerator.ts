@@ -62,10 +62,11 @@ export function inferTypeFromComponent(component: Component): TemplateTypeDefini
   }
 
   // 推断 props
-  if (component.props) {
-    if (Array.isArray(component.props)) {
+  const componentProps = (component as any).props
+  if (componentProps) {
+    if (Array.isArray(componentProps)) {
       // 数组形式的 props
-      component.props.forEach((prop) => {
+      componentProps.forEach((prop: any) => {
         definition.props![prop] = {
           type: 'any',
           required: false,
@@ -73,7 +74,7 @@ export function inferTypeFromComponent(component: Component): TemplateTypeDefini
       })
     } else {
       // 对象形式的 props
-      Object.entries(component.props).forEach(([key, value]) => {
+      Object.entries(componentProps).forEach(([key, value]) => {
         if (typeof value === 'function') {
           // 构造函数
           definition.props![key] = {
@@ -104,15 +105,16 @@ export function inferTypeFromComponent(component: Component): TemplateTypeDefini
   }
 
   // 推断 emits
-  if (component.emits) {
-    if (Array.isArray(component.emits)) {
-      component.emits.forEach((emit) => {
+  const componentEmits = (component as any).emits
+  if (componentEmits) {
+    if (Array.isArray(componentEmits)) {
+      componentEmits.forEach((emit: any) => {
         definition.emits![emit] = {
           payload: 'any',
         }
       })
     } else {
-      Object.entries(component.emits).forEach(([key, value]) => {
+      Object.entries(componentEmits).forEach(([key, value]) => {
         definition.emits![key] = {
           payload: 'any',
           description: typeof value === 'object' ? (value as any).description : undefined,
@@ -131,13 +133,13 @@ export function generateTypeScriptInterface(
   definition: TemplateTypeDefinition,
   options: TypeGeneratorOptions = {}
 ): string {
-  const { includeComments = true, strict = true } = options
+const { includeComments = true } = options
   const lines: string[] = []
 
   // 添加注释
   if (includeComments && definition.metadata) {
     lines.push('/**')
-    lines.push(` * ${definition.metadata.title || definition.name}`)
+    lines.push(` * ${definition.metadata.displayName || definition.name}`)
     if (definition.metadata.description) {
       lines.push(` * ${definition.metadata.description}`)
     }
@@ -404,11 +406,20 @@ export function generateJSONSchema(definition: TemplateTypeDefinition): object {
  */
 export class TemplateTypeGenerator {
   private definitions: Map<string, TemplateTypeDefinition> = new Map()
+  private maxDefinitions = 1000 // 防止无限增长
 
   /**
    * 注册模板定义
    */
   register(definition: TemplateTypeDefinition) {
+    // 限制定义数量，防止内存泄漏
+    if (this.definitions.size >= this.maxDefinitions) {
+      // 删除最早的定义
+      const firstKey = this.definitions.keys().next().value
+      if (firstKey) {
+        this.definitions.delete(firstKey)
+      }
+    }
     this.definitions.set(definition.name, definition)
   }
 
@@ -469,5 +480,31 @@ export class TemplateTypeGenerator {
   }
 }
 
-// 导出单例实例
-export const typeGenerator = new TemplateTypeGenerator()
+// 导出单例实例 - 使用懒加载
+let _typeGenerator: TemplateTypeGenerator | null = null
+
+export function getTypeGenerator(): TemplateTypeGenerator {
+  if (!_typeGenerator) {
+    _typeGenerator = new TemplateTypeGenerator()
+  }
+  return _typeGenerator
+}
+
+// 清理单例实例
+export function destroyTypeGenerator() {
+  if (_typeGenerator) {
+    _typeGenerator.clear()
+    _typeGenerator = null
+  }
+}
+
+// 使用getter延迟加载，避免立即创建实例
+let _typeGeneratorProxy: TemplateTypeGenerator | null = null
+export const typeGenerator = new Proxy({} as TemplateTypeGenerator, {
+  get(target, prop) {
+    if (!_typeGeneratorProxy) {
+      _typeGeneratorProxy = getTypeGenerator()
+    }
+    return (_typeGeneratorProxy as any)[prop]
+  }
+})

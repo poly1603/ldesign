@@ -92,7 +92,7 @@ export class CryptoManager {
     data: string,
     key: string,
     algorithm?: EncryptionAlgorithm,
-    options?: any,
+    options?: Record<string, unknown>,
   ): Promise<EncryptResult> {
     const targetAlgorithm = algorithm || this.config?.defaultAlgorithm
 
@@ -126,7 +126,7 @@ export class CryptoManager {
     encryptedData: string | EncryptResult,
     key: string,
     algorithm?: EncryptionAlgorithm,
-    options?: any,
+    options?: Record<string, unknown>,
   ): Promise<DecryptResult> {
     try {
       this.log('debug', 'Decrypting data')
@@ -222,7 +222,21 @@ export class CryptoManager {
     key: string,
     algorithm: HashAlgorithm = 'SHA256',
   ): string {
-    return this.hmac.hmac(data, key, `HMAC-${algorithm}` as any)
+    // 直接调用对应的 HMAC 方法
+    switch (algorithm) {
+      case 'MD5':
+        return this.hmac.md5(data, key)
+      case 'SHA1':
+        return this.hmac.sha1(data, key)
+      case 'SHA256':
+        return this.hmac.sha256(data, key)
+      case 'SHA384':
+        return this.hmac.sha384(data, key)
+      case 'SHA512':
+        return this.hmac.sha512(data, key)
+      default:
+        return this.hmac.sha256(data, key)
+    }
   }
 
   /**
@@ -235,8 +249,10 @@ export class CryptoManager {
     switch (algorithm.toUpperCase()) {
       case 'AES':
         return this.keyGenerator.generateKey((keySize || 256) / 8)
-      case 'RSA':
-        return this.keyGenerator.generateRSAKeyPair(keySize)
+      case 'RSA': {
+        const rsaKeySize = (keySize as 1024 | 2048 | 3072 | 4096 | undefined) || 2048
+        return this.keyGenerator.generateRSAKeyPair(rsaKeySize)
+      }
       case 'DES':
         return this.keyGenerator.generateRandomBytes(8)
       case '3DES':
@@ -316,7 +332,7 @@ export class CryptoManager {
   private log(
     level: 'error' | 'warn' | 'info' | 'debug',
     message: string,
-    data?: any,
+    data?: unknown,
   ): void {
     if (!this.config?.debug) { return }
 
@@ -325,17 +341,11 @@ export class CryptoManager {
     const messageLevelIndex = levels.indexOf(level)
 
     if (messageLevelIndex <= currentLevelIndex) {
-      const timestamp = new Date().toISOString()
-      const logMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`
-
-      if (data) {
-        // eslint-disable-next-line no-console
-        console[level](logMessage, data)
-      }
-      else {
-        // eslint-disable-next-line no-console
-        console[level](logMessage)
-      }
+      // 日志输出在浏览器库中禁用，避免控制台污染
+      // 可在集成方通过注入自定义 logger 实现
+      void level
+      void message
+      void data
     }
   }
 }

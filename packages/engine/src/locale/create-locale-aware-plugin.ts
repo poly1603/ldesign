@@ -87,7 +87,7 @@ export function createLocaleAwarePlugin<T extends LocaleAwarePlugin>(
       const app = (engine as any).app as App
       if (typeof (plugin as any).install === 'function') {
         (plugin as any).install(app)
-        (engine as any).logger?.debug(`Plugin "${name}" installed`, { syncLocale })
+        ;(engine as any).logger?.debug(`Plugin \"${name}\" installed`, { syncLocale })
       }
 
       // 2. 注册到 LocaleManager（如果启用同步且 LocaleManager 存在）

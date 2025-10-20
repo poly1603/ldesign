@@ -18,7 +18,7 @@ export class BatteryModule implements DeviceModule {
   private batteryInfo: BatteryInfo
   private battery: BatteryManager | null = null
   private eventHandlers: Map<string, () => void> = new Map()
-  private customEventHandlers: Map<string, Set<(data: any) => void>> = new Map()
+  private customEventHandlers: Map<string, Set<(data: unknown) => void>> = new Map()
 
   constructor() {
     this.batteryInfo = this.getDefaultBatteryInfo()
@@ -55,10 +55,15 @@ export class BatteryModule implements DeviceModule {
   }
 
   /**
-   * 销毁模块
+   * 销毁模块（优化：彻底清理所有引用）
    */
   async destroy(): Promise<void> {
     this.removeEventListeners()
+    
+    // 清理引用以帮助垃圾回收
+    this.battery = null
+    this.eventHandlers.clear()
+    this.customEventHandlers.clear()
   }
 
   /**
@@ -177,8 +182,8 @@ export class BatteryModule implements DeviceModule {
     this.batteryInfo = {
       level: typeof this.battery.level === 'number' ? this.battery.level : 1,
       charging: !!this.battery.charging,
-      chargingTime: normalizeTime((this.battery as any).chargingTime),
-      dischargingTime: normalizeTime((this.battery as any).dischargingTime),
+      chargingTime: normalizeTime((this.battery as unknown as { chargingTime?: number }).chargingTime),
+      dischargingTime: normalizeTime((this.battery as unknown as { dischargingTime?: number }).dischargingTime),
     }
 
     // 触发电池状态变化事件
@@ -245,17 +250,17 @@ export class BatteryModule implements DeviceModule {
   /**
    * 添加自定义事件监听器
    */
-  on(event: string, handler: (data: any) => void): void {
+  on(event: string, handler: (data: unknown) => void): void {
     if (!this.customEventHandlers.has(event)) {
       this.customEventHandlers.set(event, new Set())
     }
-    this.customEventHandlers.get(event)!.add(handler)
+    this.customEventHandlers.get(event)?.add(handler)
   }
 
   /**
    * 移除自定义事件监听器
    */
-  off(event: string, handler: (data: any) => void): void {
+  off(event: string, handler: (data: unknown) => void): void {
     const handlers = this.customEventHandlers.get(event)
     if (handlers) {
       handlers.delete(handler)
@@ -268,7 +273,7 @@ export class BatteryModule implements DeviceModule {
   /**
    * 触发自定义事件
    */
-  private emit(event: string, data: any): void {
+  private emit(event: string, data: unknown): void {
     const handlers = this.customEventHandlers.get(event)
     if (handlers) {
       handlers.forEach((handler) => {

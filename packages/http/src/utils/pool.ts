@@ -96,27 +96,36 @@ export class RequestPool {
   }
 
   /**
-   * 获取或创建连接
+   * 获取或创建连接（优化版）
    */
   async getConnection(config: RequestConfig): Promise<ConnectionInfo> {
     const key = this.getConnectionKey(config)
-    const connections = this.connections.get(key) || []
+    const connections = this.connections.get(key)
 
-    // 查找可用的空闲连接
-    const idleConnection = connections.find(conn =>
-      conn.state === 'idle'
-      && this.isConnectionValid(conn),
-    )
-
-    if (idleConnection) {
-      // 复用现有连接
-      this.markConnectionActive(idleConnection)
-      this.stats.connectionReuse++
-      return idleConnection
+    if (connections) {
+      // 查找可用的空闲连接（使用for循环优化性能）
+      const len = connections.length
+      for (let i = 0; i < len; i++) {
+        const conn = connections[i]!
+        if (conn.state === 'idle' && this.isConnectionValid(conn)) {
+          // 复用现有连接
+          this.markConnectionActive(conn)
+          this.stats.connectionReuse++
+          return conn
+        }
+      }
     }
 
-    // 检查是否达到最大连接数
-    const activeCount = connections.filter(c => c.state === 'active').length
+    // 检查是否达到最大连接数（优化版：使用计数器而非filter）
+    const connectionList = connections || []
+    let activeCount = 0
+    const len = connectionList.length
+    for (let i = 0; i < len; i++) {
+      if (connectionList[i]!.state === 'active') {
+        activeCount++
+      }
+    }
+
     if (activeCount >= this.config?.maxConnections) {
       // 等待连接释放
       return this.waitForConnection(key, config)
@@ -124,8 +133,8 @@ export class RequestPool {
 
     // 创建新连接
     const newConnection = await this.createConnection(config)
-    connections.push(newConnection)
-    this.connections.set(key, connections)
+    connectionList.push(newConnection)
+    this.connections.set(key, connectionList)
 
     return newConnection
   }

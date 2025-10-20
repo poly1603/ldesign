@@ -25,10 +25,10 @@ export enum PersistenceStrategy {
  * 存储引擎接口
  */
 export interface StorageEngine {
-  getItem(key: string): Promise<string | null> | string | null
-  setItem(key: string, value: string): Promise<void> | void
-  removeItem(key: string): Promise<void> | void
-  clear?(): Promise<void> | void
+  getItem: (key: string) => Promise<string | null> | string | null
+  setItem: (key: string, value: string) => Promise<void> | void
+  removeItem: (key: string) => Promise<void> | void
+  clear?: () => Promise<void> | void
 }
 
 /**
@@ -114,13 +114,14 @@ export class EnhancedPersistenceManager<T extends StateDefinition = StateDefinit
           this.saveTimer = window.setTimeout(() => this.doSave(state), delay)
           break
 
-        case PersistenceStrategy.THROTTLED:
+        case PersistenceStrategy.THROTTLED: {
           const now = Date.now()
           if (now - this.lastSaveTime >= delay) {
             await this.doSave(state)
             this.lastSaveTime = now
           }
           break
+        }
 
         case PersistenceStrategy.MANUAL:
           // 手动模式不自动保存

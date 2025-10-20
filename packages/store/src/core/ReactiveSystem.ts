@@ -3,8 +3,8 @@
  * 提供批量更新、智能缓存、虚拟代理等优化功能
  */
 
-import { reactive, readonly, shallowRef, triggerRef, customRef } from 'vue'
-import type { UnwrapRef, ReactiveEffect } from 'vue'
+import type { ReactiveEffect, UnwrapRef } from 'vue'
+import { customRef, reactive, readonly, shallowRef, triggerRef } from 'vue'
 
 /**
  * 批量更新管理器
@@ -32,17 +32,28 @@ export class BatchUpdateManager {
   }
 
   /**
-   * 调度刷新
+   * 调度刷新 - 使用queueMicrotask优化性能
    */
   private scheduleFlush(): void {
     if (!this.isFlushPending) {
       this.isFlushPending = true
-      this.flushPromise = Promise.resolve().then(() => this.flush())
+      // 使用 queueMicrotask 代替 Promise.resolve 提升性能
+      if (typeof queueMicrotask !== 'undefined') {
+        this.flushPromise = new Promise<void>(resolve => {
+          queueMicrotask(() => {
+            this.flush()
+            resolve()
+          })
+        })
+      } else {
+        // 降级到 Promise.resolve
+        this.flushPromise = Promise.resolve().then(() => this.flush())
+      }
     }
   }
 
   /**
-   * 执行所有更新
+   * 执行所有更新（优化版：减少迭代开销）
    */
   private flush(): void {
     const updates = Array.from(this.updateQueue)
@@ -50,14 +61,15 @@ export class BatchUpdateManager {
     this.isFlushPending = false
     this.flushPromise = null
 
-    // 批量执行更新
-    updates.forEach(update => {
+    // 优化：使用 for 循环替代 forEach（性能更好）
+    const len = updates.length
+    for (let i = 0; i < len; i++) {
       try {
-        update()
+        updates[i]()
       } catch (error) {
         console.error('Batch update error:', error)
       }
-    })
+    }
   }
 
   /**
@@ -410,20 +422,30 @@ export class ReactiveOptimizer {
  * 自动清理未使用的响应式对象
  */
 export class MemoryManager {
+  private cleanupCallbacks = new Map<string, () => void>()
   private registry = typeof (globalThis as any).FinalizationRegistry !== 'undefined'
-    ? new (globalThis as any).FinalizationRegistry((heldValue: any) => {
-        // 清理回调
-        
+    ? new (globalThis as any).FinalizationRegistry((id: string) => {
+        // 执行注册的清理回调
+        const callback = this.cleanupCallbacks.get(id)
+        if (callback) {
+          try {
+            callback()
+          } catch (error) {
+            console.error(`Memory cleanup error for ${id}:`, error)
+          } finally {
+            this.cleanupCallbacks.delete(id)
+          }
+        }
       })
     : null
 
-  private weakRefs = new WeakMap<object, any>()
+  private weakRefs = new Map<object, any>()
   private cleanupTimers = new Map<string, NodeJS.Timeout>()
 
   /**
    * 注册对象进行自动清理
    */
-  register(obj: object, id: string): void {
+  register(obj: object, id: string, cleanup?: () => void): void {
     // 创建弱引用
     if (typeof (globalThis as any).WeakRef !== 'undefined') {
       const weakRef = new (globalThis as any).WeakRef(obj)
@@ -432,10 +454,13 @@ export class MemoryManager {
 
     // 注册清理回调
     if (this.registry) {
-      this.registry.register(obj, id)
+      this.registry.register(obj, id, obj) // 传入token用于后续unregister
+      if (cleanup) {
+        this.cleanupCallbacks.set(id, cleanup)
+      }
     }
 
-    // 设置定时检查
+    // 设置定时检查（减少频率到5分钟）
     this.scheduleCleanup(id)
   }
 
@@ -459,11 +484,11 @@ export class MemoryManager {
       clearTimeout(existingTimer)
     }
 
-    // 设置新的定时器
+    // 设置新的定时器（延长到5分钟以减少性能开销）
     const timer = setTimeout(() => {
       this.performCleanup(id)
       this.cleanupTimers.delete(id)
-    }, 60000) // 60秒后检查
+    }, 300000) // 5分钟后检查
 
     this.cleanupTimers.set(id, timer)
   }
@@ -472,16 +497,47 @@ export class MemoryManager {
    * 执行清理
    */
   private performCleanup(id: string): void {
-    // 检查并清理未使用的对象
-    
+    // 检查弱引用是否还有效
+    for (const [obj, weakRef] of Array.from(this.weakRefs.entries())) {
+      if (weakRef && typeof weakRef.deref === 'function') {
+        const target = weakRef.deref()
+        if (!target) {
+          // 对象已被垃圾回收，清理相关资源
+          this.weakRefs.delete(obj)
+          const cleanup = this.cleanupCallbacks.get(id)
+          if (cleanup) {
+            try {
+              cleanup()
+            } catch (error) {
+              console.error(`Cleanup error for ${id}:`, error)
+            }
+            this.cleanupCallbacks.delete(id)
+          }
+        }
+      }
+    }
   }
 
   /**
-   * 清理所有定时器
+   * 清理所有资源
    */
   dispose(): void {
+    // 清理所有定时器
     this.cleanupTimers.forEach(timer => clearTimeout(timer))
     this.cleanupTimers.clear()
+    
+    // 执行所有待清理的回调
+    for (const [id, cleanup] of this.cleanupCallbacks.entries()) {
+      try {
+        cleanup()
+      } catch (error) {
+        console.error(`Dispose cleanup error for ${id}:`, error)
+      }
+    }
+    this.cleanupCallbacks.clear()
+    
+    // 清理弱引用
+    this.weakRefs = new Map()
   }
 }
 
@@ -514,22 +570,35 @@ export class DependencyTracker {
   }
 
   /**
-   * 触发更新
+   * 触发更新（优化版：减少 Set 复制开销）
    */
   trigger(target: object, key: string): void {
     const id = this.getTargetKey(target, key)
     const effects = this.dependencies.get(id)
 
-    if (effects) {
-      // 复制一份避免循环依赖
-      const effectsToRun = new Set(effects)
-      effectsToRun.forEach(effect => {
+    if (effects && effects.size > 0) {
+      // 优化：直接遍历，只在需要时复制
+      if (effects.size === 1) {
+        // 单个 effect 时不需要复制
+        const effect = effects.values().next().value
         if (effect.scheduler) {
           effect.scheduler()
         } else {
           effect.run()
         }
-      })
+      } else {
+        // 多个 effects 时才复制避免循环依赖
+        const effectsToRun = Array.from(effects)
+        const len = effectsToRun.length
+        for (let i = 0; i < len; i++) {
+          const effect = effectsToRun[i]
+          if (effect.scheduler) {
+            effect.scheduler()
+          } else {
+            effect.run()
+          }
+        }
+      }
     }
   }
 

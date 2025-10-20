@@ -5,7 +5,7 @@
 
 import type { App, Component } from '@vue/runtime-dom'
 // 使用实现定义以保证与实际工厂函数一致
-import type { CacheManager } from '../cache/unified-cache-manager'
+import type { CacheManager } from '../cache/cache-manager'
 import type { EnvironmentManager } from '../environment/environment-manager'
 import type { LifecycleManager } from '../lifecycle/lifecycle-manager'
 import type { PerformanceManager } from '../performance/performance-manager'
@@ -22,7 +22,7 @@ import type { ErrorManager } from './error'
 import type { EventManager } from './event'
 import type { Logger } from './logger'
 import type { MiddlewareManager } from './middleware'
-import type { UnifiedNotificationSystem } from '../notifications/unified-notification-system'
+import type { NotificationSystem } from '../notifications/notification-system'
 import type { Plugin, PluginManager } from './plugin'
 import type { StateManager } from './state'
 
@@ -41,7 +41,7 @@ export interface Engine {
   readonly directives: DirectiveManager
   readonly errors: ErrorManager
   readonly logger: Logger
-  readonly notifications: UnifiedNotificationSystem
+  readonly notifications: NotificationSystem
 
   // 扩展接口
   router?: RouterAdapter

@@ -1,13 +1,7 @@
 import type { ActionDecoratorOptions, DecoratorMetadata } from '../types'
 import { DECORATOR_METADATA_KEY } from '../types/decorators'
-import { LRUCache, fastHash } from '../utils/cache'
+import { fastHash, LRUCache } from '../utils/cache'
 import 'reflect-metadata'
-
-/**
- * 缓存清理器管理
- * 用于管理装饰器创建的定时器，防止内存泄漏
- */
-const cacheCleanupTimers = new WeakMap<any, Map<string, NodeJS.Timeout>>()
 
 /**
  * Action 装饰器

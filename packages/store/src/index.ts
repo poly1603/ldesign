@@ -17,36 +17,136 @@ export  *  from  './core'
 //  装饰器
 export  *  from  './decorators'
 
-//  Hooks
-export  *  from  './hooks'
-
-//  Vue  集成
-export  *  from  './vue'
+//  DevTools（额外导出，方便直接使用）
+export  {
+        ConsoleFormatter,
+        DevToolsConnection,
+        StoreDevTools,
+        VisualInspector
+}  from  './DevTools'
 
 //  Engine  集成
 export  *  from  './engine'
+
+//  Hooks
+export  *  from  './hooks'
 
 //  ============================================
 //  工具函数导出
 //  ============================================
 
-//  缓存工具
+//  性能监控（额外导出，方便直接使用）
 export  {
-        LRUCache,
-        fastHash,
-        ObjectPool,
-}  from  './utils/cache'
-//  缓存接口
+        PerformanceMonitor
+}  from  './PerformanceMonitoring'
 export  type  {
-  ICache,
-  IStatisticalCache,
-  IWarmableCache,
-}  from  "./utils/cache-interface"
+        ActionContext,
+        ActionDefinition,
+        //  配置类型
+        CacheOptions,
+        //  元数据类型
+        DecoratorMetadata,
+        GetterDefinition,
+        //  Store  接口
+        IBaseStore,
+
+        MutationCallback,
+        PersistOptions,
+        //  基础类型
+        StateDefinition,
+
+        StoreOptions,
+        StrictActionDefinition,
+        StrictGetterDefinition,
+
+        StrictStateDefinition,
+}  from  './types'
+
+// Type exports - 明确导出以避免重复
+export type {
+  CacheStrategy,
+  InferActions,
+  InferGetters,
+  InferState,
+  ProviderOptions,
+  SafeActionDefinition,
+  SafeGetterDefinition,
+  SafeStateDefinition,
+  UseStoreReturn,
+} from './types'
+
+//  实用类型定义导出
+export  type  {
+        AbstractClass,
+        //  函数类型
+        AnyFunction,
+        //  对象类型
+        AnyObject,
+        //  数组类型
+        ArrayElement,
+        ArrayType,
+
+        AsyncFunction,
+        Class,
+        DeepMerge,
+
+        DeepMutable,
+        DeepPartial,
+        //  深度类型
+        DeepReadonly,
+        DeepRequired,
+
+        EmptyObject,
+        Equals,
+        Flatten,
+        FunctionArgs,
+
+        FunctionKeys,
+        FunctionReturn,
+        //  条件类型
+        If,
+
+        JSONArray,
+        JSONObject,
+
+        //  JSON  类型
+        JSONValue,
+        KeyOf,
+
+        KeysOfType,
+        Maybe,
+        Merge,
+        //  修饰类型
+        Mutable,
+        NonFunctionKeys,
+        NonPrimitive,
+        //  可空类型
+        Nullable,
+        NullableBy,
+        Optional,
+
+        OptionalBy,
+        OptionalKeys,
+        Override,
+        PartialBy,
+
+        //  路径类型
+        PathsOf,
+        PathValue,
+        //  其他实用类型
+        Primitive,
+        ReadonlyBy,
+        RequiredBy,
+        RequiredKeys,
+        Serializable,
+        ValueOf,
+        WritableBy,
+}  from  './types/utility-types'
 
 //  高级缓存
 export  {
-        CacheAnalyzer,
         AdaptiveCache,
+        CacheAnalyzer,
         CacheWarmer,
         MultiLevelCache,
 }  from  './utils/advanced-cache'
@@ -55,167 +155,85 @@ export  type  {
         CacheStats,
 }  from  './utils/advanced-cache'
 
-//  验证和错误处理工具
+//  缓存工具
 export  {
-        Validator,
-        ValidationError,
-        StoreConfigValidator,
-        TypeGuards,
-        Assert,
-        AssertionError,
-        ErrorHandler,
-        safeJsonParse,
-        safeJsonStringify,
-}  from  './utils/validation'
+        fastHash,
+        LRUCache,
+        ObjectPool,
+}  from  './utils/cache'
 
+//  缓存接口
 export  type  {
-        ValidationRule,
-        ValidationResult,
-}  from  './utils/validation'
+  ICache,
+  IStatisticalCache,
+  IWarmableCache,
+}  from  "./utils/cache-interface"
+
+// 快速序列化工具（性能优化）
+export {
+  fastEqual,
+  fastParse,
+  fastStringify,
+  safeCopy,
+  shallowCopy,
+} from './utils/fast-serializer'
 
 //  辅助工具函数
 export  {
-        deepClone,
-        deepMerge,
-        deepFreeze,
-        getDeepValue,
-        setDeepValue,
-        deleteDeepValue,
-        deepEqual,
-        pick,
-        omit,
-        flattenObject,
-        unflattenObject,
-        debounce,
-        throttle,
-        delay,
-        retry,
-        memoize,
         batch,
-        pLimit,
-        generateId,
+        chunk,
+        debounce,
+        deepClone,
+        deepEqual,
+        deepFreeze,
+        deepMerge,
+        delay,
+        deleteDeepValue,
+        flattenObject,
         formatBytes,
         formatDuration,
+        generateId,
+        getDeepValue,
+        groupBy,
+        memoize,
+        omit,
+        pick,
+        pLimit,
+        retry,
+        safeEntries,
         safeKeys,
         safeValues,
-        safeEntries,
+        setDeepValue,
+        throttle,
+        unflattenObject,
         unique,
-        groupBy,
-        chunk,
 }  from  './utils/helpers'
-
-//  性能监控（额外导出，方便直接使用）
-export  {
-        PerformanceMonitor
-}  from  './PerformanceMonitoring'
-
-//  DevTools（额外导出，方便直接使用）
-export  {
-        StoreDevTools,
-        DevToolsConnection,
-        ConsoleFormatter,
-        VisualInspector
-}  from  './DevTools'
 
 //  ============================================
 //  类型定义导出
 //  类型定义导出
 
+//  验证和错误处理工具
+export  {
+        Assert,
+        AssertionError,
+        ErrorHandler,
+        safeJsonParse,
+        safeJsonStringify,
+        StoreConfigValidator,
+        TypeGuards,
+        ValidationError,
+        Validator,
+}  from  './utils/validation'
+
 export  type  {
-        //  基础类型
-        StateDefinition,
-        ActionDefinition,
-        GetterDefinition,
-        StrictStateDefinition,
-        StrictActionDefinition,
-        StrictGetterDefinition,
-
-        //  配置类型
-        CacheOptions,
-        StoreOptions,
-        PersistOptions,
-
-        //  元数据类型
-        DecoratorMetadata,
-        MutationCallback,
-        ActionContext,
-
-        //  Store  接口
-        IBaseStore,
-        BaseStore  as  IBaseStoreAlias,
-}  from  './types'
-
-//  实用类型定义导出
-export  type  {
-        //  深度类型
-        DeepReadonly,
-        DeepPartial,
-        DeepRequired,
-        DeepMutable,
-        DeepMerge,
-
-        //  可空类型
-        Nullable,
-        Optional,
-        Maybe,
-
-        //  函数类型
-        AnyFunction,
-        AsyncFunction,
-        FunctionArgs,
-        FunctionReturn,
-
-        //  对象类型
-        AnyObject,
-        EmptyObject,
-        ValueOf,
-        KeyOf,
-
-        //  数组类型
-        ArrayElement,
-        ArrayType,
-        Flatten,
-
-        //  路径类型
-        PathsOf,
-        PathValue,
-
-        //  条件类型
-        If,
-        Equals,
-
-        //  修饰类型
-        Mutable,
-        Merge,
-        Override,
-        PartialBy,
-        RequiredBy,
-        ReadonlyBy,
-        WritableBy,
-        NullableBy,
-        OptionalBy,
-
-        //  JSON  类型
-        JSONValue,
-        JSONObject,
-        JSONArray,
-        Serializable,
-
-        //  其他实用类型
-        Primitive,
-        NonPrimitive,
-        Class,
-        AbstractClass,
-        RequiredKeys,
-        OptionalKeys,
-        KeysOfType,
-        FunctionKeys,
-        NonFunctionKeys,
-}  from  './types/utility-types'
+        ValidationResult,
+        ValidationRule,
+}  from  './utils/validation'
 
 //  版本信息
 export  const  version  =  '0.1.0'
 
 
-// Type exports
-export * from './types'
+//  Vue  集成
+export  *  from  './vue'

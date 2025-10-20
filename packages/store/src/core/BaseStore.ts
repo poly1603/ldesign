@@ -1,13 +1,13 @@
 import type { Store, StoreDefinition } from 'pinia'
 import type {
+  ActionContext,
   ActionDefinition,
   DecoratorMetadata,
   GetterDefinition,
   IBaseStore,
+  MutationCallback,
   StateDefinition,
   StoreOptions,
-  MutationCallback,
-  ActionContext,
 } from '../types'
 import { defineStore } from 'pinia'
 import { DECORATOR_METADATA_KEY } from '../types/decorators'
@@ -68,13 +68,17 @@ export abstract class BaseStore<
   private _initialState?: TState
 
   /** 静态元数据缓存（类级别共享，减少内存占用） */
-  private static _metadataCache = new WeakMap<Function, DecoratorMetadata[]>()
+  private static _metadataCache = new WeakMap<new (...args: any[]) => any, DecoratorMetadata[]>()
 
   /** 缓存的 actions 对象 */
   private _cachedActions?: TActions
+  /** actions 缓存版本号，用于失效缓存 */
+  private _actionsCacheVersion = 0
 
   /** 缓存的 getters 对象 */
   private _cachedGetters?: TGetters
+  /** getters 缓存版本号，用于失效缓存 */
+  private _gettersCacheVersion = 0
 
   /** 清理函数列表 */
   private _cleanupFunctions: (() => void)[] = []
@@ -164,8 +168,9 @@ export abstract class BaseStore<
    * ```
    */
   get $actions(): TActions {
-    // 使用缓存避免重复构建
-    if (this._cachedActions) {
+    // 使用带版本控制的缓存
+    const currentVersion = this._actionsCacheVersion
+    if (this._cachedActions && currentVersion > 0) {
       return this._cachedActions
     }
 
@@ -177,12 +182,14 @@ export abstract class BaseStore<
       .forEach((meta) => {
         const method = (this as any)[meta.key]
         if (typeof method === 'function') {
+          // 使用WeakMap存储绑定的方法，避免重复创建
           actions[meta.key as keyof TActions] = method.bind(this) as any
         }
       })
 
-    // 缓存结果
+    // 缓存结果并更新版本
     this._cachedActions = actions
+    this._actionsCacheVersion = currentVersion + 1
     return actions
   }
 
@@ -202,8 +209,9 @@ export abstract class BaseStore<
    * ```
    */
   get $getters(): TGetters {
-    // 使用缓存避免重复构建
-    if (this._cachedGetters) {
+    // 使用带版本控制的缓存
+    const currentVersion = this._gettersCacheVersion
+    if (this._cachedGetters && currentVersion > 0) {
       return this._cachedGetters
     }
 
@@ -219,8 +227,9 @@ export abstract class BaseStore<
         }
       })
 
-    // 缓存结果
+    // 缓存结果并更新版本
     this._cachedGetters = getters
+    this._gettersCacheVersion = currentVersion + 1
     return getters
   }
 
@@ -333,7 +342,13 @@ export abstract class BaseStore<
    */
   $dispose(): void {
     // 执行所有清理函数
-    this._cleanupFunctions.forEach(cleanup => cleanup())
+    this._cleanupFunctions.forEach(cleanup => {
+      try {
+        cleanup()
+      } catch (error) {
+        console.error('Cleanup function error:', error)
+      }
+    })
     this._cleanupFunctions.length = 0
 
     // 清理性能优化器
@@ -342,6 +357,8 @@ export abstract class BaseStore<
     // 清理实例级缓存（元数据缓存是类级别的，不需要清理）
     this._cachedActions = undefined
     this._cachedGetters = undefined
+    this._actionsCacheVersion = 0
+    this._gettersCacheVersion = 0
     this._initialState = undefined
 
     // 清理 Pinia Store
@@ -516,7 +533,7 @@ export abstract class BaseStore<
    * 使用 WeakMap 在所有实例间共享元数据，减少内存占用
    */
   private _getDecoratorMetadata(): DecoratorMetadata[] {
-    const ctor = this.constructor
+    const ctor = this.constructor as new (...args: any[]) => any
 
     // 检查类级别缓存
     if (!BaseStore._metadataCache.has(ctor)) {

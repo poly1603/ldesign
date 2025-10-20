@@ -6,7 +6,7 @@ import type {
   UseStoreReturn,
 } from '../types'
 import { defineStore } from 'pinia'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, shallowRef, watch } from 'vue'
 
 /**
  * 创建 Store 的 Hook 工厂函数
@@ -116,7 +116,7 @@ export function createState<T>(initialValue: T): () => {
 
     const setValue = (newValue: T | ((oldValue: T) => T)) => {
       if (typeof newValue === 'function') {
-        value.value = (newValue as Function)(value.value)
+        value.value = (newValue as (oldValue: T) => T)(value.value)
       }
       else {
         value.value = newValue
@@ -172,7 +172,7 @@ export function createAsyncAction<T extends (...args: any[]) => Promise<any>>(
   return function useAsyncAction() {
     const loading = ref(false)
     const error = ref<Error | null>(null)
-    const data = ref<Awaited<ReturnType<T>> | null>(null)
+    const data = shallowRef<Awaited<ReturnType<T>> | null>(null)
 
     const execute = async (
       ...args: Parameters<T>
@@ -264,7 +264,7 @@ export function createPersistedState<T>(
 
     const setValue = (newValue: T | ((oldValue: T) => T)) => {
       if (typeof newValue === 'function') {
-        value.value = (newValue as Function)(value.value)
+        value.value = (newValue as (oldValue: T) => T)(value.value)
       }
       else {
         value.value = newValue

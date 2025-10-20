@@ -3,8 +3,8 @@
  * 解决内存泄漏、循环依赖、异步竞态等问题
  */
 
+import type { EffectScope, WatchStopHandle } from 'vue'
 import { effectScope, onScopeDispose } from 'vue'
-import type { WatchStopHandle, EffectScope } from 'vue'
 
 /**
  * 循环依赖检测器
@@ -637,7 +637,7 @@ interface ErrorContext {
 }
 
 interface TypeValidator<T> {
-  validate(value: unknown): value is T
+  validate: (value: unknown) => value is T
 }
 
 interface Constructor<T> {
@@ -652,7 +652,7 @@ type CleanupTask = () => void | Promise<void>
 
 interface Disposable<T> {
   resource: T
-  dispose(): Promise<void>
+  dispose: () => Promise<void>
 }
 
 // 导出便捷函数

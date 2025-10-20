@@ -14,6 +14,10 @@ import type {
 } from '../types'
 import { OPTIONAL_PARAM_RE, PARAM_RE } from './constants'
 
+// ==================== LRU 缓存实现 ====================
+// 使用独立的 LRU 缓存模块
+import { LRUCache } from './matcher/lru-cache'
+
 // ==================== 匹配器节点类型 ====================
 
 /**
@@ -54,16 +58,6 @@ interface MatchResult {
   segments: string[]
 }
 
-/**
- * LRU 缓存节点
- */
-interface LRUNode {
-  key: string
-  value: MatchResult | null
-  prev: LRUNode | null
-  next: LRUNode | null
-  timestamp: number
-}
 
 /**
  * 路径预编译结果
@@ -77,194 +71,6 @@ interface CompiledPath {
   isStatic: boolean
   /** 路径权重 */
   weight: number
-}
-
-// ==================== LRU 缓存实现 ====================
-
-/**
- * LRU 缓存实现（优化版 - 支持动态容量调整）
- */
-class LRUCache {
-  private capacity: number
-  private size: number
-  private cache: Map<string, LRUNode>
-  private head: LRUNode
-  private tail: LRUNode
-
-  // 性能指标
-  private hits: number = 0
-  private misses: number = 0
-  private lastOptimizeTime: number = Date.now()
-
-  // 动态容量配置
-  private readonly minCapacity: number = 50
-  private readonly maxCapacity: number = 500
-  private readonly optimizeInterval: number = 60000 // 1分钟
-
-  constructor(capacity: number = 50) {
-    this.capacity = Math.max(this.minCapacity, Math.min(capacity, this.maxCapacity))
-    this.size = 0
-    this.cache = new Map()
-
-    // 创建虚拟头尾节点
-    this.head = { key: '', value: null, timestamp: 0, prev: null, next: null }
-    this.tail = { key: '', value: null, timestamp: 0, prev: null, next: null }
-    this.head.next = this.tail
-    this.tail.prev = this.head
-  }
-
-  get(key: string): MatchResult | null | undefined {
-    const node = this.cache.get(key)
-    if (!node) {
-      this.misses++
-      this.tryOptimizeCapacity()
-      return undefined
-    }
-
-    this.hits++
-    // 移动到头部（最近使用）
-    this.moveToHead(node)
-    node.timestamp = Date.now()
-    this.tryOptimizeCapacity()
-    return node.value
-  }
-
-  set(key: string, value: MatchResult | null): void {
-    const existingNode = this.cache.get(key)
-
-    if (existingNode) {
-      // 更新现有节点
-      existingNode.value = value
-      existingNode.timestamp = Date.now()
-      this.moveToHead(existingNode)
-    }
-    else {
-      // 创建新节点
-      const newNode: LRUNode = {
-        key,
-        value,
-        timestamp: Date.now(),
-        prev: null,
-        next: null,
-      }
-
-      if (this.size >= this.capacity) {
-        // 移除最少使用的节点
-        const tail = this.removeTail()
-        if (tail) {
-          this.cache.delete(tail.key)
-          this.size--
-        }
-      }
-
-      this.cache.set(key, newNode)
-      this.addToHead(newNode)
-      this.size++
-    }
-  }
-
-  clear(): void {
-    this.cache.clear()
-    this.size = 0
-    this.head.next = this.tail
-    this.tail.prev = this.head
-  }
-
-  private addToHead(node: LRUNode): void {
-    node.prev = this.head
-    node.next = this.head.next
-    if (this.head.next) {
-      this.head.next.prev = node
-    }
-    this.head.next = node
-  }
-
-  private removeNode(node: LRUNode): void {
-    if (node.prev) {
-      node.prev.next = node.next
-    }
-    if (node.next) {
-      node.next.prev = node.prev
-    }
-  }
-
-  private moveToHead(node: LRUNode): void {
-    this.removeNode(node)
-    this.addToHead(node)
-  }
-
-  private removeTail(): LRUNode | null {
-    const lastNode = this.tail.prev
-    if (lastNode && lastNode !== this.head) {
-      this.removeNode(lastNode)
-      return lastNode
-    }
-    return null
-  }
-
-  getStats(): { size: number, capacity: number, hitRate: number, hits: number, misses: number } {
-    const total = this.hits + this.misses
-    return {
-      size: this.size,
-      capacity: this.capacity,
-      hitRate: total > 0 ? this.hits / total : 0,
-      hits: this.hits,
-      misses: this.misses,
-    }
-  }
-
-  /**
-   * 尝试优化缓存容量（基于命中率动态调整）
-   */
-  private tryOptimizeCapacity(): void {
-    const now = Date.now()
-    // 每分钟最多优化一次
-    if (now - this.lastOptimizeTime < this.optimizeInterval) {
-      return
-    }
-
-    this.lastOptimizeTime = now
-    const total = this.hits + this.misses
-
-    // 需要至少100次访问才进行优化
-    if (total < 100) {
-      return
-    }
-
-    const hitRate = this.hits / total
-
-    // 命中率低于70%且未达到最大容量，增加容量
-    if (hitRate < 0.7 && this.capacity < this.maxCapacity) {
-      const newCapacity = Math.min(
-        Math.floor(this.capacity * 1.5),
-        this.maxCapacity,
-      )
-      this.capacity = newCapacity
-      // .toFixed(2)}%`)
-    }
-    // 命中率高于95%且超过最小容量，减少容量
-    else if (hitRate > 0.95 && this.capacity > this.minCapacity) {
-      const newCapacity = Math.max(
-        Math.floor(this.capacity * 0.8),
-        this.minCapacity,
-      )
-      this.capacity = newCapacity
-
-      // 如果缓存项超过新容量，需要清理
-      while (this.size > this.capacity) {
-        const removed = this.removeTail()
-        if (removed) {
-          this.cache.delete(removed.key)
-          this.size--
-        }
-      }
-      // .toFixed(2)}%`)
-    }
-
-    // 重置统计数据
-    this.hits = 0
-    this.misses = 0
-  }
 }
 
 // ==================== 路由匹配器类 ====================
@@ -288,17 +94,28 @@ export class RouteMatcher {
     totalMatches: 0,
     averageMatchTime: 0,
   }
+  
+  // 优化：预分配的对象池，减少GC压力
+  private readonly objectPool = {
+    matchResults: [] as MatchResult[],
+    segments: [] as string[][],
+  }
 
-  constructor(cacheSize: number = 50) {
+  constructor(cacheSize: number = 100) {
     this.root = this.createNode()
     this.routes = new Map()
     this.rawRoutes = new Map()
     this.lruCache = new LRUCache(cacheSize)
     this.compiledPaths = new Map()
+    
+    // 预分配对象池
+    for (let i = 0; i < 10; i++) {
+      this.objectPool.segments.push([])
+    }
   }
 
   /**
-   * 创建新节点
+   * 创建新节点 - 优化：减少初始内存分配
    */
   private createNode(): TrieNode {
     return {
@@ -309,14 +126,21 @@ export class RouteMatcher {
   }
 
   /**
-   * 获取缓存键（优化版：减少字符串拼接）
+   * 获取缓存键（优化版：使用更高效的键生成）
    */
   private getCacheKey(path: string, query?: Record<string, unknown>): string {
     // 优化：大多数情况下没有query，避免不必要的JSON.stringify
     if (!query || Object.keys(query).length === 0) {
       return path
     }
-    return `${path}?${JSON.stringify(query)}`
+    // 使用更快的查询字符串序列化
+    const queryParts: string[] = []
+    for (const [key, value] of Object.entries(query)) {
+      if (value !== undefined && value !== null) {
+        queryParts.push(`${key}=${value}`)
+      }
+    }
+    return queryParts.length ? `${path}?${queryParts.join('&')}` : path
   }
 
   /**
@@ -399,6 +223,9 @@ export class RouteMatcher {
       totalMatches: 0,
       averageMatchTime: 0,
     }
+    // 清理对象池
+    this.objectPool.matchResults.length = 0
+    this.objectPool.segments.forEach(arr => arr.length = 0)
   }
 
   /**
@@ -501,6 +328,16 @@ export class RouteMatcher {
     }
 
     this.stats.cacheMisses++
+    
+    // 优化：对于根路径直接处理
+    if (path === '/' || path === '') {
+      const rootMatch = this.matchRootPath()
+      if (rootMatch) {
+        this.lruCache.set(cacheKey, rootMatch)
+        this.updateAverageMatchTime(performance.now() - startTime)
+        return rootMatch
+      }
+    }
 
     // 尝试快速正则匹配（对于简单路径）
     // 但是跳过可能有嵌套路由的路径，因为快速匹配不支持嵌套路由
@@ -515,15 +352,64 @@ export class RouteMatcher {
       }
     }
 
-    // 回退到 Trie 树匹配
-    const segments = this.parsePathSegments(path)
+    // 优化：重用segments数组
+    const segments = this.getPooledSegments()
+    this.fillSegments(segments, path)
     const result = this.matchSegments(this.root, segments, 0, {}, [], [])
+    this.releasePooledSegments(segments)
 
     // 缓存结果
     this.lruCache.set(cacheKey, result)
     this.updateAverageMatchTime(performance.now() - startTime)
 
     return result
+  }
+  
+  /**
+   * 优化：快速匹配根路径
+   */
+  private matchRootPath(): MatchResult | null {
+    if (this.root.record) {
+      const matched = [this.root.record]
+      let finalRecord = this.root.record
+      
+      if (this.root.defaultChild) {
+        matched.push(this.root.defaultChild)
+        finalRecord = this.root.defaultChild
+      }
+      
+      return {
+        record: finalRecord,
+        matched,
+        params: {},
+        segments: [],
+      }
+    }
+    return null
+  }
+  
+  /**
+   * 优化：使用对象池管理segments数组
+   */
+  private getPooledSegments(): string[] {
+    return this.objectPool.segments.pop() || []
+  }
+  
+  private releasePooledSegments(segments: string[]): void {
+    segments.length = 0
+    if (this.objectPool.segments.length < 20) {
+      this.objectPool.segments.push(segments)
+    }
+  }
+  
+  private fillSegments(segments: string[], path: string): void {
+    const parts = path.split('/')
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i]
+      if (part && part !== '') {
+        segments.push(part)
+      }
+    }
   }
 
   /**

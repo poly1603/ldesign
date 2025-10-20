@@ -22,7 +22,7 @@ export interface SecureStorageOptions {
 /**
  * 存储项
  */
-interface StorageItem<T = any> {
+interface StorageItem {
   /** 加密的数据 */
   data: string
   /** 创建时间戳 */
@@ -72,7 +72,7 @@ export class SecureStorage {
    * @param ttl 过期时间（毫秒，可选）
    * @returns 是否成功
    */
-  set<T = any>(key: string, value: T, ttl?: number): boolean {
+  set<T>(key: string, value: T, ttl?: number): boolean {
     try {
       const now = Date.now()
       const expiresAt = ttl || this.defaultTTL ? now + (ttl || this.defaultTTL) : 0
@@ -115,7 +115,7 @@ export class SecureStorage {
    * @param defaultValue 默认值（可选）
    * @returns 值或默认值
    */
-  get<T = any>(key: string, defaultValue?: T): T | undefined {
+  get<T>(key: string, defaultValue?: T): T | undefined {
     try {
       const itemStr = this.storage.getItem(this.prefix + key)
       if (!itemStr) {
@@ -285,7 +285,7 @@ export class SecureStorage {
   updateKey(newKey: string): boolean {
     try {
       const keys = this.keys()
-      const tempData: Map<string, any> = new Map()
+      const tempData: Map<string, unknown> = new Map()
 
       // 使用旧密钥解密所有数据
       for (const key of keys) {

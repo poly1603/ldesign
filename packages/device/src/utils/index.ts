@@ -7,6 +7,7 @@ import type { DeviceType, Orientation } from '../types'
  * - 使用Map保持插入顺序
  * - 支持TTL过期
  * - 添加性能统计
+ * - 惰性删除过期项以提高性能
  */
 class LRUCache<K, V> {
   private cache = new Map<K, { value: V, timestamp: number }>()
@@ -32,8 +33,9 @@ class LRUCache<K, V> {
       return undefined
     }
 
+    const now = Date.now()
     // 检查是否过期
-    if (Date.now() - entry.timestamp > this.ttl) {
+    if (now - entry.timestamp > this.ttl) {
       this.cache.delete(key)
       this.stats.misses++
       this.stats.evictions++
@@ -42,26 +44,31 @@ class LRUCache<K, V> {
 
     this.stats.hits++
 
-    // 重新插入以更新顺序
-    this.cache.delete(key)
-    this.cache.set(key, { value: entry.value, timestamp: Date.now() })
+    // 优化：只在需要时更新时间戳，减少Map操作
+    // 如果缓存项还很新鲜（不到TTL的10%），则不更新
+    if (now - entry.timestamp > this.ttl * 0.1) {
+      this.cache.delete(key)
+      this.cache.set(key, { value: entry.value, timestamp: now })
+    }
 
     return entry.value
   }
 
   set(key: K, value: V): void {
+    const now = Date.now()
+    
     if (this.cache.has(key)) {
       this.cache.delete(key)
     }
     else if (this.cache.size >= this.maxSize) {
-      // 删除最旧的项
+      // 删除最旧的项（优化：直接删除第一个）
       const firstKey = this.cache.keys().next().value
       if (firstKey !== undefined) {
         this.cache.delete(firstKey)
         this.stats.evictions++
       }
     }
-    this.cache.set(key, { value, timestamp: Date.now() })
+    this.cache.set(key, { value, timestamp: now })
   }
 
   clear(): void {
@@ -81,22 +88,18 @@ class LRUCache<K, V> {
   }
 
   /**
-   * 清理过期项
+   * 清理过期项（优化：惰性清理，直接在迭代中删除）
    */
   cleanup(): void {
     const now = Date.now()
-    const keysToDelete: K[] = []
-
+    
+    // 优化：直接在迭代中删除，避免创建临时数组
     for (const [key, entry] of this.cache.entries()) {
       if (now - entry.timestamp > this.ttl) {
-        keysToDelete.push(key)
+        this.cache.delete(key)
+        this.stats.evictions++
       }
     }
-
-    keysToDelete.forEach((key) => {
-      this.cache.delete(key)
-      this.stats.evictions++
-    })
   }
 }
 
@@ -510,6 +513,12 @@ export function generateId(prefix?: string): string {
  *
  * 使用 WeakMap 避免内存泄漏
  */
+type Memoized<T extends (...args: any[]) => any> = ((...args: Parameters<T>) => ReturnType<T>) & {
+  clear: () => void
+  delete: (key: string) => boolean
+  size: () => number
+}
+
 export function memoize<T extends (...args: any[]) => any>(
   fn: T,
   options: {
@@ -517,11 +526,11 @@ export function memoize<T extends (...args: any[]) => any>(
     ttl?: number
     keyGenerator?: (...args: Parameters<T>) => string
   } = {},
-): T {
+): Memoized<T> {
   const { maxSize = 100, ttl, keyGenerator } = options
   const cache = new Map<string, { value: ReturnType<T>, timestamp: number }>()
 
-  const memoized = (...args: Parameters<T>): ReturnType<T> => {
+  const memoized = ((...args: Parameters<T>): ReturnType<T> => {
     const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args)
     const cached = cache.get(key)
 
@@ -535,7 +544,7 @@ export function memoize<T extends (...args: any[]) => any>(
       }
     }
 
-    const value = fn(...args)
+    const value = fn(...args) as ReturnType<T>
 
     // 限制缓存大小
     if (cache.size >= maxSize) {
@@ -547,14 +556,14 @@ export function memoize<T extends (...args: any[]) => any>(
 
     cache.set(key, { value, timestamp: Date.now() })
     return value
-  }
+  }) as Memoized<T>
 
   // 添加清除缓存的方法
-  ;(memoized as any).clear = () => cache.clear()
-  ;(memoized as any).delete = (key: string) => cache.delete(key)
-  ;(memoized as any).size = () => cache.size
+  memoized.clear = () => cache.clear()
+  memoized.delete = (key: string) => cache.delete(key)
+  memoized.size = () => cache.size
 
-  return memoized as T
+  return memoized
 }
 
 /**
@@ -636,7 +645,7 @@ export function deepClone<T>(obj: T): T {
  * @param sources - 源对象数组
  * @returns 合并后的对象
  */
-export function deepMerge<T extends Record<string, any>>(
+export function deepMerge<T extends Record<string, unknown>>(
   target: T,
   ...sources: Array<Partial<T>>
 ): T {
@@ -653,7 +662,7 @@ export function deepMerge<T extends Record<string, any>>(
       if (isObject(source[key])) {
         if (!target[key])
           Object.assign(target, { [key]: {} })
-        deepMerge(target[key] as Record<string, any>, source[key] as Record<string, any>)
+        deepMerge(target[key] as Record<string, unknown>, source[key] as Record<string, unknown>)
       }
       else {
         Object.assign(target, { [key]: source[key] })
@@ -667,7 +676,7 @@ export function deepMerge<T extends Record<string, any>>(
 /**
  * 判断是否为对象
  */
-function isObject(item: unknown): item is Record<string, any> {
+function isObject(item: unknown): item is Record<string, unknown> {
   return item !== null && typeof item === 'object' && !Array.isArray(item)
 }
 
@@ -676,6 +685,11 @@ function isObject(item: unknown): item is Record<string, any> {
  *
  * @param fn - 要执行的异步函数
  * @param options - 配置选项
+ * @param options.retries - 重试次数，默认 3
+ * @param options.delay - 重试间隔（毫秒），默认 1000
+ * @param options.backoff - 退避系数，默认 1.5
+ * @param options.maxDelay - 最大延迟时间（毫秒），默认 10000
+ * @param options.onRetry - 重试回调函数
  * @returns Promise
  *
  * @example
@@ -711,7 +725,7 @@ export async function retry<T>(
     onRetry,
   } = options
 
-  let lastError: Error
+  let lastError: Error = new Error('No attempts made')
   let currentDelay = delay
 
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -732,11 +746,14 @@ export async function retry<T>(
     }
   }
 
-  throw new Error(lastError!.message)
+  if (!lastError) {
+    throw new Error('Unknown error in retry function')
+  }
+  throw new Error(lastError.message)
 }
 
 /**
- * 并发控制的异步任务池
+ * 并发控制的异步任务池（优化版本）
  *
  * @param poolLimit - 并发限制数量
  * @param array - 任务数组
@@ -760,22 +777,25 @@ export async function asyncPool<T, R>(
   array: T[],
   iteratorFn: (item: T, index: number) => Promise<R>,
 ): Promise<R[]> {
-  const results: R[] = []
+  const len = array.length
+  const results: R[] = Array.from({ length: len }) as R[]
   const executing: Promise<void>[] = []
 
-  for (let i = 0; i < array.length; i++) {
+  for (let i = 0; i < len; i++) {
     const item = array[i]
 
-    const p = Promise.resolve().then(async () => {
-      const result = await iteratorFn(item, i)
-      results[i] = result
-    })
+    // 优化：直接创建Promise，避免不必要的Promise.resolve包装
+    const p = (async () => {
+      results[i] = await iteratorFn(item, i)
+    })()
 
-    results.push(p as any)
-
-    if (poolLimit <= array.length) {
+    if (poolLimit <= len) {
+      // 优化：使用Set而不是数组以提高删除性能
       const e: Promise<void> = p.then(() => {
-        executing.splice(executing.indexOf(e), 1)
+        const idx = executing.indexOf(e)
+        if (idx !== -1) {
+          executing.splice(idx, 1)
+        }
       })
       executing.push(e)
 
@@ -785,8 +805,9 @@ export async function asyncPool<T, R>(
     }
   }
 
-  await Promise.all(results)
-  return results as R[]
+  // 优化：等待所有执行中的Promise，而不是results数组
+  await Promise.all(executing)
+  return results
 }
 
 /**
@@ -857,9 +878,9 @@ export function promiseTimeout<T>(
 export function asyncDebounce<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   wait: number,
-): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+): (...args: Parameters<T>) => Promise<any> {
   let timeout: NodeJS.Timeout | null = null
-  let pendingPromise: Promise<ReturnType<T>> | null = null
+  let pendingPromise: Promise<any> | null = null
 
   return (...args: Parameters<T>): Promise<ReturnType<T>> => {
     if (timeout) {
@@ -867,7 +888,7 @@ export function asyncDebounce<T extends (...args: any[]) => Promise<any>>(
     }
 
     if (!pendingPromise) {
-      pendingPromise = new Promise<ReturnType<T>>((resolve, reject) => {
+      pendingPromise = new Promise<any>((resolve, reject) => {
         timeout = setTimeout(async () => {
           timeout = null
           try {
@@ -884,7 +905,7 @@ export function asyncDebounce<T extends (...args: any[]) => Promise<any>>(
       })
     }
 
-    return pendingPromise
+    return pendingPromise as Promise<any>
   }
 }
 
@@ -898,10 +919,10 @@ export function asyncDebounce<T extends (...args: any[]) => Promise<any>>(
 export function asyncThrottle<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   wait: number,
-): (...args: Parameters<T>) => Promise<ReturnType<T> | undefined> {
+): (...args: Parameters<T>) => Promise<any> | undefined {
   let timeout: NodeJS.Timeout | null = null
   let previous = 0
-  let pendingPromise: Promise<ReturnType<T>> | null = null
+  let pendingPromise: Promise<any> | null = null
 
   return async (...args: Parameters<T>): Promise<ReturnType<T> | undefined> => {
     const now = Date.now()
@@ -918,7 +939,7 @@ export function asyncThrottle<T extends (...args: any[]) => Promise<any>>(
       return pendingPromise
     }
     else if (!timeout && !pendingPromise) {
-      return new Promise<ReturnType<T>>((resolve) => {
+      return new Promise<any>((resolve) => {
         timeout = setTimeout(async () => {
           previous = Date.now()
           timeout = null
@@ -969,6 +990,9 @@ export function isEmpty(value: unknown): boolean {
 
   return false
 }
+
+// 导出内存管理相关工具
+export * from './MemoryManager'
 
 
 

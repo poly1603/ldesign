@@ -86,7 +86,7 @@ export class ErrorAnalyzer {
       }
 
       // 记录时间范围
-      const timestamp = error.timestamp || Date.now()
+      const timestamp = (error as any).timestamp || Date.now()
       minTime = Math.min(minTime, timestamp)
       maxTime = Math.max(maxTime, timestamp)
 
@@ -306,8 +306,8 @@ export class ErrorAnalyzer {
     }
 
     // 将错误按时间排序
-    const sortedErrors = [...errors].sort((a, b) => 
-      (a.timestamp || 0) - (b.timestamp || 0)
+const sortedErrors = [...errors].sort((a, b) => 
+      (((a as any).timestamp) || 0) - (((b as any).timestamp) || 0)
     )
 
     // 计算前半部分和后半部分的错误率

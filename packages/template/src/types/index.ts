@@ -77,6 +77,30 @@ export interface TemplateConfig extends Omit<TemplateMetadata, 'category' | 'dev
 }
 
 /**
+ * 模板接口
+ */
+export interface Template {
+  /** 模板ID */
+  id: string
+  /** 模板名称 */
+  name: string
+  /** 模板分类 */
+  category?: string
+  /** 模板组件 */
+  component?: Component | any
+  /** 模板内容 */
+  content?: string
+  /** 模板元数据 */
+  metadata?: TemplateMetadata
+  /** 模板配置 */
+  config?: TemplateConfig
+  /** 创建时间 */
+  createdAt?: number
+  /** 更新时间 */
+  updatedAt?: number
+}
+
+/**
  * 模板组件
  */
 export interface TemplateComponent {
@@ -211,4 +235,58 @@ export interface TemplateManagerOptions {
   preload?: boolean
   /** 预加载策略 */
   preloadStrategy?: 'lazy' | 'eager' | 'smart'
+}
+
+/**
+ * 性能报告
+ */
+export interface PerformanceReport {
+  timestamp: number
+  duration: number
+  templates: Array<{
+    id: string
+    name?: string
+    renderTime: number
+    updateTime?: number
+    memoryUsage?: number
+    domNodes?: number
+    componentCount?: number
+  }>
+  summary?: {
+    totalRenderTime: number
+    averageRenderTime: number
+    slowestTemplate: string
+    fastestTemplate: string
+    totalMemoryUsage?: number
+    totalDomNodes?: number
+  }
+}
+
+/**
+ * 模板事件
+ */
+export interface TemplateEvents {
+  onLoad?: (template: Template) => void
+  onError?: (error: Error) => void
+  onUpdate?: (template: Template) => void
+  onRemove?: (id: string) => void
+  onChange?: (template: Template) => void
+  onStateChange?: (state: any) => void
+  onRender?: () => void
+  onUnmount?: () => void
+}
+
+/**
+ * 模板属性
+ */
+export interface TemplateProps {
+  id: string
+  name?: string
+  category?: string
+  data?: Record<string, any>
+  config?: TemplateConfig
+  events?: TemplateEvents
+  className?: string
+  style?: Record<string, any>
+  slots?: TemplateSlots
 }

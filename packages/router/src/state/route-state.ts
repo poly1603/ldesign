@@ -75,7 +75,7 @@ export class RouteStateManager {
     )
 
     // 监听导航开始
-    this.router.beforeEach((to, from, next) => {
+    this.router.beforeEach((_to, _from, next) => {
       this.state.isNavigating = true
       this.state.isLoading = true
       this.state.error = undefined

@@ -54,6 +54,9 @@ export {
   type LocaleManagerOptions
 } from './locale'
 
+// 性能监控模块
+export * from './performance/performance-monitor'
+
 // ==================== 插件导出 ====================
 export { createI18nEnginePlugin } from './plugins/i18n'
 
@@ -84,7 +87,6 @@ export type {
   MiddlewareRequest,
   MiddlewareResponse
 } from './types/middleware'
-
 // 插件系统类型
 export type {
   Plugin,
@@ -93,6 +95,7 @@ export type {
   PluginMetadata,
   PluginStatus
 } from './types/plugin'
+
 // 常用工具函数
 export {
   debounce,

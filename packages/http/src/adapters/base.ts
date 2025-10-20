@@ -15,7 +15,7 @@ export abstract class BaseAdapter implements HttpAdapter {
   /**
    * 发送请求的抽象方法
    */
-  abstract request<T = any>(config: RequestConfig): Promise<ResponseData<T>>
+  abstract request<T = unknown>(config: RequestConfig): Promise<ResponseData<T>>
 
   /**
    * 检查是否支持当前环境
@@ -153,6 +153,7 @@ export abstract class BaseAdapter implements HttpAdapter {
     }
 
     if (validSignals.length === 1) {
+      // 已检查数组长度，安全断言
       return validSignals[0]!
     }
 
@@ -189,7 +190,10 @@ export abstract class BaseAdapter implements HttpAdapter {
     }
     else {
       Object.keys(headers).forEach((key) => {
-        result[key.toLowerCase()] = headers[key]!
+        const value = headers[key]
+        if (value !== undefined) {
+          result[key.toLowerCase()] = value
+        }
       })
     }
 

@@ -3,13 +3,15 @@
  * 提供类型安全的加密工具函数
  */
 
+import CryptoJS from 'crypto-js'
+
 /**
  * CryptoJS加密配置接口
  */
 export interface CryptoJSConfig {
-  mode: any
-  padding?: any
-  iv?: any
+  mode: unknown
+  padding?: unknown
+  iv?: unknown
 }
 
 /**
@@ -17,17 +19,15 @@ export interface CryptoJSConfig {
  * @param mode 模式名称
  * @returns CryptoJS模式对象
  */
-export function getCryptoJSMode(mode: string): any {
-  const CryptoJSLib = require('crypto-js')
-  const modeMap: Record<string, any> = {
-    CBC: CryptoJSLib.mode.CBC,
-    CFB: CryptoJSLib.mode.CFB,
-    CTR: CryptoJSLib.mode.CTR,
-    OFB: CryptoJSLib.mode.OFB,
-    ECB: CryptoJSLib.mode.ECB,
-    GCM: CryptoJSLib.mode.GCM,
+export function getCryptoJSMode(mode: string): unknown {
+  const modeMap: Record<string, unknown> = {
+    CBC: CryptoJS.mode.CBC,
+    CFB: CryptoJS.mode.CFB,
+    CTR: CryptoJS.mode.CTR,
+    OFB: CryptoJS.mode.OFB,
+    ECB: CryptoJS.mode.ECB,
   }
-  return modeMap[mode.toUpperCase()] || CryptoJSLib.mode.CBC
+  return modeMap[mode.toUpperCase()] || CryptoJS.mode.CBC
 }
 
 /**
@@ -35,22 +35,24 @@ export function getCryptoJSMode(mode: string): any {
  * @param padding 填充方式名称
  * @returns CryptoJS填充对象
  */
-export function getCryptoJSPadding(padding: string): any {
-  const CryptoJSLib = require('crypto-js')
-  const paddingMap: Record<string, any> = {
-    Pkcs7: CryptoJSLib.pad.Pkcs7,
-    AnsiX923: CryptoJSLib.pad.AnsiX923,
-    Iso10126: CryptoJSLib.pad.Iso10126,
-    Iso97971: CryptoJSLib.pad.Iso97971,
-    ZeroPadding: CryptoJSLib.pad.ZeroPadding,
-    NoPadding: CryptoJSLib.pad.NoPadding,
+export function getCryptoJSPadding(padding: string): unknown {
+  const paddingMap: Record<string, unknown> = {
+    Pkcs7: CryptoJS.pad.Pkcs7,
+    AnsiX923: CryptoJS.pad.AnsiX923,
+    Iso10126: CryptoJS.pad.Iso10126,
+    Iso97971: CryptoJS.pad.Iso97971,
+    ZeroPadding: CryptoJS.pad.ZeroPadding,
+    NoPadding: CryptoJS.pad.NoPadding,
   }
-  return paddingMap[padding] || CryptoJSLib.pad.Pkcs7
+  return paddingMap[padding] || CryptoJS.pad.Pkcs7
 }
 
 /**
  * 创建类型安全的加密配置
  * @param options 配置选项
+ * @param options.mode 加密模式
+ * @param options.padding 填充方式
+ * @param options.iv 初始化向量
  * @returns CryptoJS配置对象
  */
 export function createCryptoJSConfig(options: {
@@ -58,7 +60,6 @@ export function createCryptoJSConfig(options: {
   padding?: string
   iv?: string
 }): CryptoJSConfig {
-  const CryptoJSLib = require('crypto-js')
   const config: CryptoJSConfig = {
     mode: getCryptoJSMode(options.mode || 'CBC'),
   }
@@ -68,7 +69,7 @@ export function createCryptoJSConfig(options: {
   }
 
   if (options.iv && options.mode !== 'ECB') {
-    config.iv = CryptoJSLib.enc.Utf8.parse(options.iv)
+    config.iv = CryptoJS.enc.Utf8.parse(options.iv)
   }
 
   return config

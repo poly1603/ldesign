@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>菱形节点智能路由测试</title>
+  <style>
+    body {
+      font-family: 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f7f8fa;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+    
+    .description {
+      color: #666;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    #flowchart {
+      width: 100%;
+      height: 600px;
+      border: 1px solid #e8e8e8;
+      border-radius: 4px;
+      background: #fafafa;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      background: #1890ff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    
+    button:hover {
+      background: #40a9ff;
+    }
+    
+    button:active {
+      background: #096dd9;
+    }
+    
+    button.secondary {
+      background: #f0f2f5;
+      color: #333;
+    }
+    
+    button.secondary:hover {
+      background: #e6e8eb;
+    }
+    
+    .info {
+      padding: 12px;
+      background: #e6f7ff;
+      border: 1px solid #91d5ff;
+      border-radius: 4px;
+      color: #0050b3;
+      margin-bottom: 15px;
+    }
+    
+    .legend {
+      display: flex;
+      gap: 20px;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #e8e8e8;
+      font-size: 13px;
+      color: #666;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .legend-icon {
+      width: 24px;
+      height: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔷 菱形节点智能路由演示</h1>
+  <div class="description">
+    展示优化后的菱形节点连线系统，确保每个角只有一条线，并使用智能折线路由。
+  </div>
+  
+  <div class="container">
+    <div class="info">
+      💡 <strong>特性说明：</strong>菱形节点的四个顶点作为连接点，根据相对位置智能选择最佳连接路径。避免了多条线连接到同一个角的问题。
+    </div>
+    
+    <div class="controls">
+      <button onclick="loadExample1()">示例1: 审批流程</button>
+      <button onclick="loadExample2()">示例2: 复杂判断</button>
+      <button onclick="loadExample3()">示例3: 多重条件</button>
+      <button onclick="toggleAnimation()" class="secondary">切换动画</button>
+      <button onclick="resetView()" class="secondary">重置视图</button>
+    </div>
+    
+    <div id="flowchart"></div>
+    
+    <div class="legend">
+      <div class="legend-item">
+        <svg class="legend-icon" viewBox="0 0 24 16">
+          <rect x="2" y="4" width="20" height="8" rx="2" fill="#e6f7ff" stroke="#1890ff"/>
+        </svg>
+        <span>普通节点</span>
+      </div>
+      <div class="legend-item">
+        <svg class="legend-icon" viewBox="0 0 24 16">
+          <path d="M12 2 L22 8 L12 14 L2 8 Z" fill="#fff6e6" stroke="#fa8c16"/>
+        </svg>
+        <span>条件节点（菱形）</span>
+      </div>
+      <div class="legend-item">
+        <svg class="legend-icon" viewBox="0 0 24 16">
+          <path d="M2 8 L22 8" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+          <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <polygon points="0 0, 10 3, 0 6" fill="#666"/>
+            </marker>
+          </defs>
+        </svg>
+        <span>智能折线连接</span>
+      </div>
+    </div>
+  </div>
+  
+  <script src="../dist/flowchart.js"></script>
+  <script>
+    let flowChart;
+    let animationEnabled = true;
+    
+    // 初始化流程图
+    function initFlowChart() {
+      flowChart = new FlowChart.FlowChart({
+        container: document.getElementById('flowchart'),
+        enableZoom: true,
+        enablePan: true,
+        enableNodeDrag: true,
+        autoLayout: false, // 使用手动布局以精确控制位置
+        zoom: {
+          initialScale: 1,
+          minScale: 0.5,
+          maxScale: 2,
+          centerOnInit: true
+        }
+      });
+      
+      // 默认加载示例1
+      loadExample1();
+    }
+    
+    // 示例1: 审批流程
+    function loadExample1() {
+      flowChart.clear();
+      
+      // 添加节点
+      flowChart.addNode({
+        id: 'start',
+        type: 'start',
+        label: '退回修改',
+        position: { x: 400, y: 50 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'manager',
+        type: 'approval',
+        label: '部门主管审批',
+        position: { x: 400, y: 150 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'condition1',
+        type: 'condition',
+        label: '金额判断',
+        position: { x: 200, y: 280 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'small-amount',
+        type: 'process',
+        label: '小额报销',
+        position: { x: 100, y: 400 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'reject',
+        type: 'end',
+        label: '审批拒绝',
+        position: { x: 600, y: 280 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'finance',
+        type: 'approval',
+        label: '财务审核',
+        position: { x: 200, y: 520 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'gm-approval',
+        type: 'approval',
+        label: '总经理审批',
+        position: { x: 600, y: 520 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'approved',
+        type: 'end',
+        label: '审批通过',
+        position: { x: 400, y: 650 },
+        manualPosition: true
+      });
+      
+      // 添加连线
+      flowChart.addEdge({
+        id: 'e1',
+        source: 'start',
+        target: 'manager',
+        label: '退回修改'
+      });
+      
+      flowChart.addEdge({
+        id: 'e2',
+        source: 'manager',
+        target: 'condition1',
+        label: '同意'
+      });
+      
+      flowChart.addEdge({
+        id: 'e3',
+        source: 'manager',
+        target: 'reject',
+        label: '拒绝'
+      });
+      
+      flowChart.addEdge({
+        id: 'e4',
+        source: 'condition1',
+        target: 'small-amount',
+        label: '小额报销'
+      });
+      
+      flowChart.addEdge({
+        id: 'e5',
+        source: 'small-amount',
+        target: 'finance'
+      });
+      
+      flowChart.addEdge({
+        id: 'e6',
+        source: 'condition1',
+        target: 'finance',
+        label: '审核不通过'
+      });
+      
+      flowChart.addEdge({
+        id: 'e7',
+        source: 'finance',
+        target: 'approved',
+        label: '批准'
+      });
+      
+      flowChart.addEdge({
+        id: 'e8',
+        source: 'reject',
+        target: 'gm-approval',
+        label: '不批准'
+      });
+      
+      flowChart.addEdge({
+        id: 'e9',
+        source: 'gm-approval',
+        target: 'approved'
+      });
+      
+      flowChart.render();
+    }
+    
+    // 示例2: 复杂判断流程
+    function loadExample2() {
+      flowChart.clear();
+      
+      // 添加节点
+      flowChart.addNode({
+        id: 'input',
+        type: 'start',
+        label: '用户输入',
+        position: { x: 400, y: 50 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'validate',
+        type: 'process',
+        label: '数据验证',
+        position: { x: 400, y: 150 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'check1',
+        type: 'condition',
+        label: '格式检查',
+        position: { x: 400, y: 280 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'format-error',
+        type: 'process',
+        label: '格式错误处理',
+        position: { x: 200, y: 380 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'check2',
+        type: 'condition',
+        label: '权限检查',
+        position: { x: 600, y: 380 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'permission-denied',
+        type: 'end',
+        label: '权限不足',
+        position: { x: 750, y: 480 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'process-data',
+        type: 'process',
+        label: '处理数据',
+        position: { x: 400, y: 480 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'check3',
+        type: 'condition',
+        label: '结果验证',
+        position: { x: 400, y: 580 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'success',
+        type: 'end',
+        label: '处理成功',
+        position: { x: 250, y: 680 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'retry',
+        type: 'process',
+        label: '重试处理',
+        position: { x: 550, y: 680 },
+        manualPosition: true
+      });
+      
+      // 添加连线
+      flowChart.addEdge({
+        id: 'e1',
+        source: 'input',
+        target: 'validate'
+      });
+      
+      flowChart.addEdge({
+        id: 'e2',
+        source: 'validate',
+        target: 'check1'
+      });
+      
+      flowChart.addEdge({
+        id: 'e3',
+        source: 'check1',
+        target: 'format-error',
+        label: '格式错误'
+      });
+      
+      flowChart.addEdge({
+        id: 'e4',
+        source: 'check1',
+        target: 'check2',
+        label: '格式正确'
+      });
+      
+      flowChart.addEdge({
+        id: 'e5',
+        source: 'format-error',
+        target: 'validate',
+        label: '修正后重试'
+      });
+      
+      flowChart.addEdge({
+        id: 'e6',
+        source: 'check2',
+        target: 'permission-denied',
+        label: '无权限'
+      });
+      
+      flowChart.addEdge({
+        id: 'e7',
+        source: 'check2',
+        target: 'process-data',
+        label: '有权限'
+      });
+      
+      flowChart.addEdge({
+        id: 'e8',
+        source: 'process-data',
+        target: 'check3'
+      });
+      
+      flowChart.addEdge({
+        id: 'e9',
+        source: 'check3',
+        target: 'success',
+        label: '验证通过'
+      });
+      
+      flowChart.addEdge({
+        id: 'e10',
+        source: 'check3',
+        target: 'retry',
+        label: '需要重试'
+      });
+      
+      flowChart.addEdge({
+        id: 'e11',
+        source: 'retry',
+        target: 'process-data'
+      });
+      
+      flowChart.render();
+    }
+    
+    // 示例3: 多重条件判断
+    function loadExample3() {
+      flowChart.clear();
+      
+      // 中心菱形节点
+      flowChart.addNode({
+        id: 'center',
+        type: 'condition',
+        label: '多重判断',
+        position: { x: 400, y: 300 },
+        manualPosition: true
+      });
+      
+      // 四周的节点
+      flowChart.addNode({
+        id: 'top',
+        type: 'process',
+        label: '条件A处理',
+        position: { x: 400, y: 150 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'right',
+        type: 'process',
+        label: '条件B处理',
+        position: { x: 600, y: 300 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'bottom',
+        type: 'process',
+        label: '条件C处理',
+        position: { x: 400, y: 450 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'left',
+        type: 'process',
+        label: '条件D处理',
+        position: { x: 200, y: 300 },
+        manualPosition: true
+      });
+      
+      // 第二层菱形
+      flowChart.addNode({
+        id: 'diamond2',
+        type: 'condition',
+        label: '二次判断',
+        position: { x: 600, y: 150 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'result1',
+        type: 'end',
+        label: '结果1',
+        position: { x: 750, y: 150 },
+        manualPosition: true
+      });
+      
+      flowChart.addNode({
+        id: 'result2',
+        type: 'end',
+        label: '结果2',
+        position: { x: 600, y: 50 },
+        manualPosition: true
+      });
+      
+      // 添加连线 - 展示菱形的四个方向连接
+      flowChart.addEdge({
+        id: 'e1',
+        source: 'center',
+        target: 'top',
+        label: 'A'
+      });
+      
+      flowChart.addEdge({
+        id: 'e2',
+        source: 'center',
+        target: 'right',
+        label: 'B'
+      });
+      
+      flowChart.addEdge({
+        id: 'e3',
+        source: 'center',
+        target: 'bottom',
+        label: 'C'
+      });
+      
+      flowChart.addEdge({
+        id: 'e4',
+        source: 'center',
+        target: 'left',
+        label: 'D'
+      });
+      
+      // 从top节点到第二个菱形
+      flowChart.addEdge({
+        id: 'e5',
+        source: 'top',
+        target: 'diamond2'
+      });
+      
+      // 第二个菱形的输出
+      flowChart.addEdge({
+        id: 'e6',
+        source: 'diamond2',
+        target: 'result1',
+        label: '是'
+      });
+      
+      flowChart.addEdge({
+        id: 'e7',
+        source: 'diamond2',
+        target: 'result2',
+        label: '否'
+      });
+      
+      // 其他节点的回环
+      flowChart.addEdge({
+        id: 'e8',
+        source: 'right',
+        target: 'bottom'
+      });
+      
+      flowChart.addEdge({
+        id: 'e9',
+        source: 'bottom',
+        target: 'left'
+      });
+      
+      flowChart.addEdge({
+        id: 'e10',
+        source: 'left',
+        target: 'top'
+      });
+      
+      flowChart.render();
+    }
+    
+    // 切换动画
+    function toggleAnimation() {
+      animationEnabled = !animationEnabled;
+      // 这里可以添加动画切换的逻辑
+      console.log('动画状态:', animationEnabled ? '开启' : '关闭');
+    }
+    
+    // 重置视图
+    function resetView() {
+      if (flowChart) {
+        const renderer = flowChart.getRenderer();
+        if (renderer && renderer.resetZoom) {
+          renderer.resetZoom();
+        }
+        flowChart.render();
+      }
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', initFlowChart);
+  </script>
+</body>
+</html>

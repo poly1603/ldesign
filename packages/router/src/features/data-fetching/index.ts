@@ -4,8 +4,8 @@
  * 提供路由级数据加载、并行数据获取、数据缓存策略
  */
 
-import type { RouteLocationNormalized, Router, NavigationGuard } from '../../types'
-import { ref, shallowRef, markRaw, type Ref } from 'vue'
+import type { NavigationGuard, RouteLocationNormalized, Router } from '../../types'
+import { markRaw, ref, type Ref, shallowRef } from 'vue'
 import { logger } from '../../utils/logger'
 
 // ==================== 类型定义 ====================
@@ -113,8 +113,11 @@ class DataCache {
     // 检查缓存大小限制
     if (this.maxSize && this.cache.size >= this.maxSize) {
       // 删除最旧的缓存
-      const oldestKey = Array.from(this.cache.entries())
-        .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0]
+      const entries = Array.from(this.cache.entries())
+      const sorted = entries.sort((a, b) => a[1].timestamp - b[1].timestamp)
+      const oldest = sorted[0]
+      if (!oldest) return
+      const oldestKey = oldest[0]
       this.cache.delete(oldestKey)
     }
     
@@ -236,7 +239,7 @@ export class DataFetchingManager {
    * 设置导航守卫
    */
   private setupNavigationGuards(): void {
-    const guard: NavigationGuard = async (to, from, next) => {
+    const guard: NavigationGuard = async (to, _from, next) => {
       // 取消之前的请求
       if (this.abortController) {
         this.abortController.abort()
@@ -481,7 +484,7 @@ export class DataFetchingManager {
         // 如果不是最后一次尝试，等待后重试
         if (attempt < maxRetries) {
           const delay = backoff === 'exponential'
-            ? retryDelay * Math.pow(2, attempt)
+            ? retryDelay * 2**attempt
             : retryDelay * (attempt + 1)
           
           await new Promise(resolve => setTimeout(resolve, delay))

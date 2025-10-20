@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Viewer 测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .toolbar {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button, input[type="file"] {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      background: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #f5f5f5;
+    }
+
+    #viewer {
+      height: 600px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: auto;
+    }
+
+    .status {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📄 Word Viewer 测试</h1>
+
+    <div class="toolbar">
+      <input type="file" id="fileInput" accept=".docx,.doc" />
+      <button onclick="testZoomIn()">放大 +</button>
+      <button onclick="testZoomOut()">缩小 -</button>
+      <button onclick="testInfo()">文档信息</button>
+    </div>
+
+    <div id="viewer"></div>
+
+    <div id="status" class="status"></div>
+  </div>
+
+  <script type="module">
+    // 直接引用核心包的 dist 输出
+    import { WordViewer } from '../packages/core/dist/index.esm.js';
+
+    let viewer;
+
+    try {
+      // 初始化查看器
+      viewer = new WordViewer('#viewer', {
+        theme: 'light',
+        editable: false,
+      });
+
+      showStatus('✅ 查看器初始化成功！', 'success');
+
+      // 绑定事件
+      viewer.on('loaded', (data) => {
+        showStatus('✅ 文档加载成功！', 'success');
+        console.log('文档已加载', data);
+      });
+
+      viewer.on('error', (error) => {
+        showStatus('❌ 错误: ' + error.message, 'error');
+        console.error('错误', error);
+      });
+
+      viewer.on('progress', (progress) => {
+        showStatus(`⏳ 加载中... ${progress.percentage}%`, 'success');
+      });
+
+      // 文件选择
+      document.getElementById('fileInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file && viewer) {
+          try {
+            await viewer.loadFile(file);
+          } catch (error) {
+            console.error('加载失败', error);
+          }
+        }
+      });
+
+      // 全局测试函数
+      window.testZoomIn = () => {
+        if (viewer) {
+          const currentZoom = viewer.getZoom();
+          viewer.setZoom(currentZoom + 0.1);
+          showStatus(`🔍 缩放: ${Math.round(viewer.getZoom() * 100)}%`, 'success');
+        }
+      };
+
+      window.testZoomOut = () => {
+        if (viewer) {
+          const currentZoom = viewer.getZoom();
+          viewer.setZoom(currentZoom - 0.1);
+          showStatus(`🔍 缩放: ${Math.round(viewer.getZoom() * 100)}%`, 'success');
+        }
+      };
+
+      window.testInfo = () => {
+        if (viewer) {
+          const info = viewer.getDocumentInfo();
+          if (info) {
+            showStatus(`📊 页数: ${info.pageCount || '未知'}`, 'success');
+          } else {
+            showStatus('📊 请先加载文档', 'error');
+          }
+        }
+      };
+
+    } catch (error) {
+      showStatus('❌ 初始化失败: ' + error.message, 'error');
+      console.error('初始化错误', error);
+    }
+
+    function showStatus(message, type) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = `status show ${type}`;
+      setTimeout(() => {
+        status.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
+
+

@@ -1,31 +1,6 @@
-<template>
-  <div class="theme-mode-switcher">
-    <button @click="toggleDropdown" class="theme-mode-button" :title="currentModeLabel">
-      <component :is="currentIcon" class="theme-icon" />
-      <span class="theme-label">{{ currentModeLabel }}</span>
-      <ChevronDown class="arrow" :class="{ open: isOpen }" />
-    </button>
-    <transition name="dropdown">
-      <div v-if="isOpen" class="theme-dropdown" @click.stop>
-        <button
-          v-for="mode in modes"
-          :key="mode.value"
-          @click="changeMode(mode.value)"
-          class="theme-option"
-          :class="{ active: currentMode === mode.value }"
-        >
-          <component :is="mode.icon" class="option-icon" />
-          <span class="option-label">{{ mode.label }}</span>
-          <Check v-if="currentMode === mode.value" class="check-icon" />
-        </button>
-      </div>
-    </transition>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, inject } from 'vue'
-import { Sun, Moon, Monitor, Check, ChevronDown } from 'lucide-vue-next'
+import { Check, ChevronDown, Monitor, Moon, Sun } from 'lucide-vue-next'
+import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
 import { getLocale } from '../locales'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
@@ -61,7 +36,7 @@ const currentLocale = computed(() => {
 const locale = computed(() => getLocale(currentLocale.value))
 
 // 监听语言变化
-watch(currentLocale, (newLocale) => {
+watch(currentLocale, (_newLocale) => {
   // 响应式更新，无需日志
 })
 
@@ -170,6 +145,31 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
+
+<template>
+  <div class="theme-mode-switcher">
+    <button class="theme-mode-button" :title="currentModeLabel" @click="toggleDropdown">
+      <component :is="currentIcon" class="theme-icon" />
+      <span class="theme-label">{{ currentModeLabel }}</span>
+      <ChevronDown class="arrow" :class="{ open: isOpen }" />
+    </button>
+    <transition name="dropdown">
+      <div v-if="isOpen" class="theme-dropdown" @click.stop>
+        <button
+          v-for="mode in modes"
+          :key="mode.value"
+          class="theme-option"
+          :class="{ active: currentMode === mode.value }"
+          @click="changeMode(mode.value)"
+        >
+          <component :is="mode.icon" class="option-icon" />
+          <span class="option-label">{{ mode.label }}</span>
+          <Check v-if="currentMode === mode.value" class="check-icon" />
+        </button>
+      </div>
+    </transition>
+  </div>
+</template>
 
 <style scoped>
 .theme-mode-switcher {

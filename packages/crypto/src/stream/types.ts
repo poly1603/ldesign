@@ -22,7 +22,7 @@ export interface StreamEncryptionOptions {
   /**
    * 算法特定选项
    */
-  options?: Record<string, any>
+  options?: Record<string, unknown>
 
   /**
    * 分块大小（字节，默认 64KB）
@@ -57,7 +57,7 @@ export interface StreamDecryptionOptions {
   /**
    * 算法特定选项
    */
-  options?: Record<string, any>
+  options?: Record<string, unknown>
 
   /**
    * 分块大小（字节，默认 64KB）
@@ -157,7 +157,7 @@ export interface StreamEncryptionResult {
   /**
    * 元数据
    */
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 /**
@@ -197,7 +197,7 @@ export interface StreamDecryptionResult {
   /**
    * 元数据
    */
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 /**
@@ -247,22 +247,22 @@ export interface IStreamProcessor {
   /**
    * 处理数据块
    */
-  processChunk(chunk: Buffer): Promise<Buffer>
+  processChunk: (chunk: Uint8Array) => Promise<Uint8Array>
 
   /**
    * 完成处理
    */
-  finalize(): Promise<Buffer | null>
+  finalize: () => Promise<Uint8Array | null>
 
   /**
    * 重置处理器
    */
-  reset(): void
+  reset: () => void
 
   /**
    * 获取统计信息
    */
-  getStats(): {
+  getStats: () => {
     bytesProcessed: number
     chunksProcessed: number
     errors: number
@@ -281,7 +281,7 @@ export interface IStreamEncryptor extends IStreamProcessor {
   /**
    * 加密选项
    */
-  readonly options: Record<string, any>
+  readonly options: Record<string, unknown>
 }
 
 /**
@@ -296,5 +296,5 @@ export interface IStreamDecryptor extends IStreamProcessor {
   /**
    * 解密选项
    */
-  readonly options: Record<string, any>
+  readonly options: Record<string, unknown>
 }

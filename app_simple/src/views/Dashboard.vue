@@ -112,6 +112,39 @@
         </div>
       </div>
       
+      <!-- 缓存统计卡片 -->
+      <div class="dashboard-card">
+        <h3 class="card-title"><BarChart3 class="icon" /> 缓存统计</h3>
+        <div class="card-content">
+          <div class="performance-grid">
+            <div class="performance-item">
+              <div class="performance-value">{{ cacheStats.totalItems }}</div>
+              <div class="performance-label">缓存项数</div>
+            </div>
+            <div class="performance-item">
+              <div class="performance-value">{{ formatBytes(cacheStats.totalSize) }}</div>
+              <div class="performance-label">总大小</div>
+            </div>
+            <div class="performance-item">
+              <div class="performance-value">{{ cacheStats.hitRate }}%</div>
+              <div class="performance-label">命中率</div>
+            </div>
+            <div class="performance-item">
+              <div class="performance-value">{{ cacheStats.engines }}</div>
+              <div class="performance-label">存储引擎</div>
+            </div>
+          </div>
+          <div class="cache-actions">
+            <button @click="clearCache" class="action-button">
+              <Trash2 class="button-icon" /> 清空缓存
+            </button>
+            <button @click="refreshCacheStats" class="action-button">
+              <RefreshCw class="button-icon" /> 刷新统计
+            </button>
+          </div>
+        </div>
+      </div>
+      
       <!-- 路由列表卡片 -->
       <div class="dashboard-card wide">
         <h3 class="card-title"><FileText class="icon" /> {{ t('dashboard.allRoutes') || '所有路由' }}</h3>
@@ -155,11 +188,13 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from '@ldesign/router'
 import { useI18n } from '@/i18n'
+import { useAppCache } from '@/composables/useAppCache'
 import { MapPin, Settings, ScrollText, Rocket, Home, Info, RefreshCw, Trash2, BarChart3, FileText } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
+const cache = useAppCache()
 
 // 用户信息
 const username = ref('')
@@ -183,6 +218,14 @@ const performance = ref({
   memoryUsage: 0
 })
 
+// 缓存统计
+const cacheStats = ref({
+  totalItems: 0,
+  totalSize: 0,
+  hitRate: 0,
+  engines: 0
+})
+
 // 所有路由
 const allRoutes = ref<any[]>([])
 
@@ -202,23 +245,74 @@ const clearHistory = () => {
   localStorage.removeItem('routeHistory')
 }
 
+// 清空缓存
+const clearCache = async () => {
+  try {
+    await cache.clear()
+    await refreshCacheStats()
+    console.log('缓存已清空')
+  } catch (error) {
+    console.error('清空缓存失败:', error)
+  }
+}
+
+// 刷新缓存统计
+const refreshCacheStats = async () => {
+  try {
+    const stats = await cache.getStats()
+    if (stats) {
+      cacheStats.value = {
+        totalItems: stats.totalItems || 0,
+        totalSize: stats.totalSize || 0,
+        hitRate: stats.hits && stats.misses 
+          ? Math.round((stats.hits / (stats.hits + stats.misses)) * 100)
+          : 0,
+        engines: stats.engines ? Object.keys(stats.engines).length : 0
+      }
+    }
+  } catch (error) {
+    console.error('获取缓存统计失败:', error)
+  }
+}
+
+// 格式化字节数
+const formatBytes = (bytes: number): string => {
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+}
+
 // 更新路由历史
 const updateHistory = () => {
   const now = new Date()
   const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
+  
+  // 避免重复记录相同路径
+  if (routeHistory.value.length > 0 && routeHistory.value[0].path === route.path) {
+    return
+  }
   
   routeHistory.value.unshift({
     path: route.path,
     time: timeStr
   })
   
-  // 只保留最近10条记录
-  if (routeHistory.value.length > 10) {
-    routeHistory.value = routeHistory.value.slice(0, 10)
+  // 只保留最近5条记录（从10条减少到5条，减少内存占用）
+  const MAX_HISTORY = 5
+  if (routeHistory.value.length > MAX_HISTORY) {
+    routeHistory.value = routeHistory.value.slice(0, MAX_HISTORY)
   }
   
-  // 保存到 localStorage
-  localStorage.setItem('routeHistory', JSON.stringify(routeHistory.value))
+  // 使用 requestIdleCallback 延迟 localStorage 写入
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => {
+      localStorage.setItem('routeHistory', JSON.stringify(routeHistory.value))
+    })
+  } else {
+    localStorage.setItem('routeHistory', JSON.stringify(routeHistory.value))
+  }
 }
 
 // 更新性能数据
@@ -228,15 +322,15 @@ const updatePerformance = () => {
     navigationTime: Math.round(Math.random() * 100 + 50),
     cacheHitRate: Math.round(Math.random() * 30 + 70),
     totalNavigations: parseInt(localStorage.getItem('totalNavigations') || '0'),
-    memoryUsage: Math.round((performance.memory?.usedJSHeapSize || 0) / 1024 / 1024)
+    memoryUsage: Math.round(((window.performance as any).memory?.usedJSHeapSize || 0) / 1024 / 1024)
   }
 }
 
 // 性能监控定时器
-let performanceTimer: any = null
+let performanceTimer: number | null = null
 
 onMounted(() => {
-// 获取用户信息
+  // 获取用户信息
   username.value = localStorage.getItem('username') || t('common.guest')
   
   // 获取 Engine 信息
@@ -273,14 +367,21 @@ onMounted(() => {
   // 更新性能数据
   updatePerformance()
   
-  // 定时更新性能数据
-  performanceTimer = setInterval(updatePerformance, 3000)
+  // 刷新缓存统计
+  refreshCacheStats()
+  
+  // 定时更新性能数据 - 增加间隔到 10 秒以减少 CPU 和内存占用
+  performanceTimer = window.setInterval(() => {
+    updatePerformance()
+    refreshCacheStats()
+  }, 10000)
 })
 
 onBeforeUnmount(() => {
   // 清理定时器
-  if (performanceTimer) {
+  if (performanceTimer !== null) {
     clearInterval(performanceTimer)
+    performanceTimer = null
   }
 })
 </script>
@@ -428,6 +529,20 @@ onBeforeUnmount(() => {
 
 .action-button.danger:hover {
   background: var(--color-danger-hover);
+}
+
+/* 缓存操作按钮组 */
+.cache-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.cache-actions .action-button {
+  flex: 1;
+  margin-bottom: 0;
+  justify-content: center;
+  font-size: 14px;
 }
 
 /* 性能监控 */

@@ -10,7 +10,7 @@
  */
 
 import type { Logger } from '../types'
-import { type Component, computed, type ComputedRef, ref, type Ref, shallowRef, watchEffect } from 'vue'
+import { type Component, computed, type ComputedRef, onUnmounted, ref, type Ref, shallowRef, watchEffect } from 'vue'
 
 // 虚拟滚动项
 export interface VirtualItem<T = any> {
@@ -66,9 +66,11 @@ export class VirtualScroller<T = any> {
   private scrollSize = ref(0)
   private isScrolling = ref(false)
   
-  // 缓存
+  // 缓存 (with LRU eviction)
   private sizeCache = new Map<number, number>()
   private offsetCache = new Map<number, number>()
+  private cacheAccessOrder = new Set<number>()  // Track access order for LRU
+  private readonly maxCacheSize = 1000  // Maximum cache entries
   private lastMeasuredIndex = -1
   
   // 配置
@@ -80,8 +82,8 @@ export class VirtualScroller<T = any> {
   public readonly scrollState: ComputedRef<ScrollState>
   
   // 性能监控
-  private scrollTimer?: NodeJS.Timeout
-  private rafId?: number
+  private scrollTimer: NodeJS.Timeout | null = null
+  private rafId: number | null = null
   private lastScrollTime = 0
   private scrollVelocity = 0
   
@@ -146,11 +148,15 @@ export class VirtualScroller<T = any> {
     
     if (this.scrollTimer) {
       clearTimeout(this.scrollTimer)
+      this.scrollTimer = null
     }
     
     this.scrollTimer = setTimeout(() => {
       this.isScrolling.value = false
       this.scrollVelocity = 0
+      // 清理远离视口的缓存
+      this.cleanupDistantCache()
+      this.scrollTimer = null
     }, 150)
     
     // 预测滚动
@@ -178,7 +184,7 @@ export class VirtualScroller<T = any> {
       case 'end':
         offset = targetOffset - this.clientSize.value + itemSize
         break
-      case 'auto':
+      case 'auto': {
         const currentOffset = this.scrollOffset.value
         const currentEnd = currentOffset + this.clientSize.value
         
@@ -190,6 +196,7 @@ export class VirtualScroller<T = any> {
           return // 已在视口内
         }
         break
+      }
     }
     
     this.smoothScrollTo(Math.max(0, offset))
@@ -219,6 +226,7 @@ export class VirtualScroller<T = any> {
     
     if (this.rafId) {
       cancelAnimationFrame(this.rafId)
+      this.rafId = null
     }
     
     animate()
@@ -308,6 +316,7 @@ export class VirtualScroller<T = any> {
   private getItemSize(index: number): number {
     // 检查缓存
     if (this.sizeCache.has(index)) {
+      this.updateCacheAccess(index)
       return this.sizeCache.get(index)!
     }
     
@@ -316,7 +325,7 @@ export class VirtualScroller<T = any> {
     if (typeof itemHeight === 'function') {
       const item = this.items.value[index]
       const size = itemHeight(index, item) || estimateSize
-      this.sizeCache.set(index, size)
+      this.setCacheWithEviction(index, size, 'size')
       return size
     }
     
@@ -333,6 +342,7 @@ export class VirtualScroller<T = any> {
     
     // 检查缓存
     if (this.offsetCache.has(index)) {
+      this.updateCacheAccess(index)
       return this.offsetCache.get(index)!
     }
     
@@ -352,7 +362,7 @@ export class VirtualScroller<T = any> {
       }
     }
     
-    this.offsetCache.set(index, offset)
+    this.setCacheWithEviction(index, offset, 'offset')
     this.lastMeasuredIndex = Math.max(this.lastMeasuredIndex, index)
     
     return offset
@@ -414,7 +424,52 @@ export class VirtualScroller<T = any> {
   private resetCache(): void {
     this.sizeCache.clear()
     this.offsetCache.clear()
+    this.cacheAccessOrder.clear()
     this.lastMeasuredIndex = -1
+  }
+
+  /**
+   * 更新缓存访问顺序 (LRU)
+   */
+  private updateCacheAccess(index: number): void {
+    this.cacheAccessOrder.delete(index)
+    this.cacheAccessOrder.add(index)
+  }
+
+  /**
+   * 设置缓存并进行LRU驱逐
+   */
+  private setCacheWithEviction(index: number, value: number, type: 'size' | 'offset'): void {
+    const cache = type === 'size' ? this.sizeCache : this.offsetCache
+    
+    // 如果缓存已满，驱逐最少使用的项
+    if (cache.size >= this.maxCacheSize && !cache.has(index)) {
+      const lruIndex = this.cacheAccessOrder.values().next().value
+      if (lruIndex !== undefined) {
+        this.sizeCache.delete(lruIndex)
+        this.offsetCache.delete(lruIndex)
+        this.cacheAccessOrder.delete(lruIndex)
+      }
+    }
+    
+    cache.set(index, value)
+    this.updateCacheAccess(index)
+  }
+
+  /**
+   * 清理远离当前视口的缓存
+   */
+  private cleanupDistantCache(): void {
+    const { start, end } = this.visibleRange.value
+    const keepDistance = 100  // Keep items within 100 indices
+    
+    for (const index of this.cacheAccessOrder) {
+      if (index < start - keepDistance || index > end + keepDistance) {
+        this.sizeCache.delete(index)
+        this.offsetCache.delete(index)
+        this.cacheAccessOrder.delete(index)
+      }
+    }
   }
 
   /**
@@ -425,10 +480,12 @@ export class VirtualScroller<T = any> {
     
     if (oldSize !== size) {
       this.sizeCache.set(index, size)
+      this.updateCacheAccess(index)
       
       // 清除后续偏移缓存
       for (let i = index + 1; i <= this.lastMeasuredIndex; i++) {
         this.offsetCache.delete(i)
+        this.cacheAccessOrder.delete(i)
       }
       
       this.updateScrollSize()
@@ -441,13 +498,24 @@ export class VirtualScroller<T = any> {
   dispose(): void {
     if (this.scrollTimer) {
       clearTimeout(this.scrollTimer)
+      this.scrollTimer = null
     }
     
     if (this.rafId) {
       cancelAnimationFrame(this.rafId)
+      this.rafId = null
     }
     
     this.resetCache()
+    
+    // 重置状态
+    this.items.value = []
+    this.scrollOffset.value = 0
+    this.clientSize.value = 0
+    this.scrollSize.value = 0
+    this.isScrolling.value = false
+    this.scrollVelocity = 0
+    this.lastScrollTime = 0
   }
 }
 
@@ -459,6 +527,8 @@ export class ComponentLazyLoader {
   private loadingComponents = new Map<string, Promise<Component>>()
   private componentCache = new Map<string, Component>()
   private observers = new Map<string, IntersectionObserver>()
+  private readonly maxCacheSize = 50  // Limit component cache size
+  private loadTimeouts = new Map<string, NodeJS.Timeout>()
   
   constructor(
     private config: LazyComponentConfig = {},
@@ -497,6 +567,16 @@ export class ComponentLazyLoader {
     
     try {
       const component = await loadPromise
+      
+      // 缓存大小限制
+      if (this.componentCache.size >= this.maxCacheSize) {
+        const firstKey = this.componentCache.keys().next().value
+        if (firstKey) {
+          this.componentCache.delete(firstKey)
+          this.loadedComponents.delete(firstKey)
+        }
+      }
+      
       this.componentCache.set(key, component)
       this.loadedComponents.add(key)
       this.loadingComponents.delete(key)
@@ -524,16 +604,24 @@ export class ComponentLazyLoader {
     try {
       // 延迟加载
       if (delay && attempt === 1) {
-        await new Promise(resolve => setTimeout(resolve, delay))
+        await new Promise(resolve => {
+          const timer = setTimeout(resolve, delay)
+          this.loadTimeouts.set(`${key}_delay`, timer)
+        })
+        this.loadTimeouts.delete(`${key}_delay`)
       }
       
       // 超时控制
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Load timeout')), timeout)
+        const timer = setTimeout(() => reject(new Error('Load timeout')), timeout)
+        this.loadTimeouts.set(`${key}_timeout`, timer)
       })
       
-      return await Promise.race([loader(), timeoutPromise])
+      const result = await Promise.race([loader(), timeoutPromise])
+      this.clearTimeout(`${key}_timeout`)
+      return result
     } catch (error) {
+      this.clearTimeout(`${key}_timeout`)
       if (attempt < retries!) {
         this.logger?.debug(`Retrying component load: ${key} (attempt ${attempt + 1})`)
         
@@ -548,6 +636,17 @@ export class ComponentLazyLoader {
       throw error
     }
   }
+  
+  /**
+   * Clear timeout helper
+   */
+  private clearTimeout(key: string): void {
+    const timeout = this.loadTimeouts.get(key)
+    if (timeout) {
+      clearTimeout(timeout)
+      this.loadTimeouts.delete(key)
+    }
+  }
 
   /**
    * 观察元素并自动加载
@@ -558,6 +657,12 @@ export class ComponentLazyLoader {
     key: string
   ): void {
     const { distance, preload } = this.config
+    
+    // 清理旧观察器
+    const oldObserver = this.observers.get(key)
+    if (oldObserver) {
+      oldObserver.disconnect()
+    }
     
     // 创建观察器
     const observer = new IntersectionObserver(
@@ -571,6 +676,7 @@ export class ComponentLazyLoader {
             
             // 停止观察
             observer.unobserve(element)
+            observer.disconnect()
             this.observers.delete(key)
           }
         }
@@ -623,10 +729,31 @@ export class ComponentLazyLoader {
       keys.forEach(key => {
         this.componentCache.delete(key)
         this.loadedComponents.delete(key)
+        this.loadingComponents.delete(key)
+        
+        // Clear observer for specific key
+        const observer = this.observers.get(key)
+        if (observer) {
+          observer.disconnect()
+          this.observers.delete(key)
+        }
+        
+        // Clear timeouts for specific key
+        this.clearTimeout(`${key}_timeout`)
+        this.clearTimeout(`${key}_delay`)
       })
     } else {
       this.componentCache.clear()
       this.loadedComponents.clear()
+      this.loadingComponents.clear()
+      
+      // Clear all observers
+      this.observers.forEach(observer => observer.disconnect())
+      this.observers.clear()
+      
+      // Clear all timeouts
+      this.loadTimeouts.forEach(timeout => clearTimeout(timeout))
+      this.loadTimeouts.clear()
     }
   }
 
@@ -634,14 +761,15 @@ export class ComponentLazyLoader {
    * 销毁
    */
   dispose(): void {
-    // 断开所有观察器
-    for (const observer of this.observers.values()) {
-      observer.disconnect()
-    }
-    
-    this.observers.clear()
+    // Clear all caches and observers
     this.clearCache()
-    this.loadingComponents.clear()
+    
+    // Clear all pending timeouts
+    this.loadTimeouts.forEach(timeout => clearTimeout(timeout))
+    this.loadTimeouts.clear()
+    
+    // Clear logger reference
+    this.logger = undefined
   }
 }
 
@@ -852,6 +980,9 @@ export function useVirtualScroll<T = any>(
   watchEffect(() => {
     scroller.setItems(items.value)
   })
+  
+  // 组件卸载时自动清理
+  onUnmounted(() => scroller.dispose())
   
   return {
     scroller,

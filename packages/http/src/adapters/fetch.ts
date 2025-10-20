@@ -20,7 +20,7 @@ export class FetchAdapter extends BaseAdapter {
   /**
    * 发送请求
    */
-  async request<T = any>(config: RequestConfig): Promise<ResponseData<T>> {
+  async request<T = unknown>(config: RequestConfig): Promise<ResponseData<T>> {
     const processedConfig = this.processConfig(config)
 
     try {

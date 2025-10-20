@@ -8,12 +8,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ldesign/api": "workspace:*",
+    "@ldesign/cache": "workspace:*",
     "@ldesign/color": "workspace:*",
+    "@ldesign/crypto": "workspace:*",
     "@ldesign/engine": "workspace:*",
+    "@ldesign/http": "workspace:*",
     "@ldesign/i18n": "workspace:*",
     "@ldesign/router": "workspace:*",
+    "@ldesign/store": "workspace:*",
     "@ldesign/template": "workspace:*",
     "lucide-vue-next": "^0.545.0",
+    "pinia": "^2.1.0",
     "vue": "^3.5.0"
   },
   "devDependencies": {

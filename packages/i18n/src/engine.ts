@@ -7,9 +7,10 @@
  * 新项目建议使用 plugin.ts 中的 createI18nPlugin
  */
 
-import { ref, type Ref } from 'vue';
 import type { App } from 'vue';
 import type { I18nConfig, I18nInstance } from './types';
+import { ref } from 'vue';
+
 import { createVueI18n } from './adapters/vue';
 
 export interface I18nEnginePluginOptions extends I18nConfig {
@@ -45,10 +46,10 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
 
   let i18nInstance: I18nInstance;
   let vuePlugin: any;
-  
+
   // 确定初始 locale
   let initialLocale = i18nConfig.locale || 'zh-CN';
-  
+
   // 从 localStorage 恢复（优先级最高）
   if (persistLanguage && typeof window !== 'undefined') {
     const savedLocale = localStorage.getItem(storageKey);
@@ -56,7 +57,7 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
       initialLocale = savedLocale;
     }
   }
-  
+
   // 自动检测浏览器语言（优先级次之）
   if (detectBrowserLanguage && !i18nConfig.locale && typeof window !== 'undefined') {
     const browserLang = navigator.language; // 使用完整的语言代码，如 zh-CN
@@ -64,7 +65,7 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
       initialLocale = browserLang;
     }
   }
-  
+
   // 响应式的 locale 状态 - 作为唯一的语言状态源
   const localeRef = ref(initialLocale);
 
@@ -80,10 +81,10 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
     // 监听语言变化，持久化到 localStorage
     i18nInstance.on('localeChanged', ({ locale }) => {
       if (!locale) return;
-      
+
       // 更新响应式 locale (单一状态源)
       localeRef.value = locale;
-      
+
       if (persistLanguage && typeof window !== 'undefined') {
         localStorage.setItem(storageKey, locale);
       }
@@ -108,23 +109,23 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
   return {
     name: '@ldesign/i18n',
     version: '3.0.0',
-    
+
     // 暴露响应式 locale - 其他插件可以直接使用
     localeRef,
-    
+
     // Engine 插件的 install 方法
     async install(context: any) {
       const { i18nInstance: instance } = initialize();
-      
+
       // 将 API 添加到 context
       if (context.engine) {
         context.engine.i18n = instance;
-        
+
         // 初始化时同步当前语言到 engine.state
         if (context.engine.state && instance.locale) {
           context.engine.state.set('locale', instance.locale);
         }
-        
+
         // 监听语言变化，同步到 engine.state
         instance.on('localeChanged', ({ locale }) => {
           if (context.engine.state && locale) {
@@ -133,7 +134,7 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
         });
       }
     },
-    
+
     // Vue 插件安装函数
     setupVueApp(app: App) {
       const { vuePlugin: plugin } = initialize();
@@ -147,25 +148,25 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
       get i18n() {
         return i18nInstance;
       },
-      
+
       get vuePlugin() {
         return vuePlugin;
       },
-      
+
       async changeLocale(locale: string) {
         if (i18nInstance) {
           await i18nInstance.setLocale(locale);
         }
       },
-      
+
       t(key: string, params?: Record<string, any>) {
         return i18nInstance?.t(key, params) || key;
       },
-      
+
       getCurrentLocale() {
         return i18nInstance?.locale;
       },
-      
+
       getAvailableLocales() {
         return i18nInstance?.getAvailableLocales() || [];
       }

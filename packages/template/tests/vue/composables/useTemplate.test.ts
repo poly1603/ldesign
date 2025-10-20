@@ -2,9 +2,9 @@
  * useTemplate 组合式函数测试用例
  */
 
-import type { TemplateManagerConfig } from '../../../src/types'
+import type { TemplateManagerOptions } from '../../../src/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useTemplate } from '../../../src/vue/composables/useTemplate'
+import { useTemplate } from '../../../src/composables/useTemplate'
 
 // Mock Vue
 vi.mock('vue', () => ({

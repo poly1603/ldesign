@@ -550,7 +550,7 @@ export class KeyGenerator {
    * 生成 RSA 密钥对
    */
   generateRSAKeyPair(
-    keySize: number = CONSTANTS.RSA.DEFAULT_KEY_SIZE,
+    keySize: 1024 | 2048 | 3072 | 4096 = CONSTANTS.RSA.DEFAULT_KEY_SIZE,
   ): RSAKeyPair {
     return rsa.generateKeyPair(keySize)
   }

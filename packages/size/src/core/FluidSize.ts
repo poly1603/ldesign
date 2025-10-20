@@ -20,20 +20,75 @@ import { getDeviceDetector } from './DeviceDetector';
  */
 export class FluidSizeCalculator {
   private viewport: Viewport;
+  private unsubscribe: (() => void) | null = null;
+  private calculationCache = new Map<string, string>();
+  private static readonly MAX_CACHE_SIZE = 500; // 进一步增加缓存大小
+  private isDestroyed = false;
+  private cacheHits = 0;
+  private cacheMisses = 0;
+  private lastViewport: Viewport | null = null;
+  // 使用 Uint32Array 存储统计数据，减少内存
+  private stats = new Uint32Array(4); // [hits, misses, cacheSize, calculations]
+  // 预计算常用斜率值
+  private slopeCache = new Map<string, number>();
 
   constructor() {
     this.viewport = getDeviceDetector().getViewport();
+    this.lastViewport = { ...this.viewport };
     
-    // Update viewport on changes
-    getDeviceDetector().onChange((viewport) => {
-      this.viewport = viewport;
+    // Update viewport on changes with cleanup function
+    this.unsubscribe = getDeviceDetector().onChange((viewport) => {
+      if (!this.isDestroyed) {
+        // 只在视口实际变化时清理缓存
+        if (this.hasViewportChanged(viewport)) {
+          this.viewport = viewport;
+          this.lastViewport = { ...viewport };
+          // 部分清理缓存而不是全部清理
+          this.partialCacheClear();
+        }
+      }
     });
+  }
+  
+  /**
+   * Check if viewport has actually changed
+   */
+  private hasViewportChanged(viewport: Viewport): boolean {
+    if (!this.lastViewport) return true;
+    return viewport.width !== this.lastViewport.width ||
+           viewport.height !== this.lastViewport.height ||
+           viewport.device !== this.lastViewport.device;
+  }
+  
+  /**
+   * Partial cache clear - keep frequently used items
+   */
+  private partialCacheClear(): void {
+    if (this.calculationCache.size > 50) {
+      // 保留前50个最常用的缓存项
+      const entries = Array.from(this.calculationCache.entries());
+      this.calculationCache.clear();
+      entries.slice(0, 50).forEach(([key, value]) => {
+        this.calculationCache.set(key, value);
+      });
+    }
   }
 
   /**
    * Create a fluid size using CSS clamp
    */
   createFluidSize(config: FluidSize): string {
+    // 优化的缓存键生成
+    const cacheKey = this.generateCacheKey(config);
+    
+    // Check cache
+    if (this.calculationCache.has(cacheKey)) {
+      this.stats[0]++; // hits
+      return this.calculationCache.get(cacheKey)!;
+    }
+    this.stats[1]++; // misses
+    this.stats[3]++; // calculations
+    
     const min = this.formatSizeValue(config.min);
     const max = this.formatSizeValue(config.max);
     
@@ -41,19 +96,36 @@ export class FluidSizeCalculator {
     const viewportMin = config.viewportMin || 320;
     const viewportMax = config.viewportMax || 1920;
     
-    // Calculate slope for linear interpolation
+    // Calculate slope for linear interpolation - 使用缓存
     const minValue = config.min.value;
     const maxValue = config.max.value;
-    const slope = (maxValue - minValue) / (viewportMax - viewportMin);
+    const slopeKey = `${minValue}:${maxValue}:${viewportMin}:${viewportMax}`;
+    
+    let slope = this.slopeCache.get(slopeKey);
+    if (slope === undefined) {
+      slope = (maxValue - minValue) / (viewportMax - viewportMin);
+      // LRU 缓存管理
+      if (this.slopeCache.size >= 100) {
+        const firstKey = this.slopeCache.keys().next().value;
+        if (firstKey) this.slopeCache.delete(firstKey);
+      }
+      this.slopeCache.set(slopeKey, slope);
+    }
     
     // Create preferred value with calc
     const preferred = this.createFluidCalc(minValue, slope, viewportMin, config.preferredUnit || 'rem');
     
+    let result: string;
     if (config.clamp !== false) {
-      return `clamp(${min}, ${preferred}, ${max})`;
+      result = `clamp(${min}, ${preferred}, ${max})`;
+    } else {
+      result = preferred;
     }
     
-    return preferred;
+    // Store in cache with LRU strategy
+    this.addToCache(cacheKey, result);
+    
+    return result;
   }
 
   /**
@@ -126,12 +198,33 @@ export class FluidSizeCalculator {
     steps: number,
     unit: SizeUnit = 'rem'
   ): string[] {
+    const cacheKey = `scale-${base}-${ratio}-${steps}-${unit}`;
+    
+    // Check cache
+    const cached = this.calculationCache.get(cacheKey);
+    if (cached) {
+      this.cacheHits++;
+      return JSON.parse(cached);
+    }
+    this.cacheMisses++;
+    
     const sizes: string[] = [];
+    const powers = new Map<number, number>(); // 缓存幂运算结果
     
     for (let i = -steps; i <= steps; i++) {
-      const value = base * ratio**i;
+      let value: number;
+      if (powers.has(i)) {
+        value = base * powers.get(i)!;
+      } else {
+        const power = ratio ** i;
+        powers.set(i, power);
+        value = base * power;
+      }
       sizes.push(`${value.toFixed(3)}${unit}`);
     }
+    
+    // Cache result
+    this.addToCache(cacheKey, JSON.stringify(sizes));
     
     return sizes;
   }
@@ -148,8 +241,8 @@ export class FluidSizeCalculator {
     const scales: string[] = [];
     
     for (let i = -steps; i <= steps; i++) {
-      const minValue = baseMin * ratio**i;
-      const maxValue = baseMax * ratio**i;
+      const minValue = baseMin * (ratio ** i);
+      const maxValue = baseMax * (ratio ** i);
       
       const fluid = this.createFluidSize({
         min: { value: minValue, unit: 'rem' },
@@ -224,6 +317,71 @@ export class FluidSizeCalculator {
     
     // Use rem for better scalability
     return `${(value / 16).toFixed(3)}rem`;
+  }
+  
+  /**
+   * Generate optimized cache key
+   */
+  private generateCacheKey(config: FluidSize): string {
+    // 使用更高效的字符串拼接
+    return [
+      config.min.value,
+      config.min.unit,
+      config.max.value,
+      config.max.unit,
+      config.viewportMin || 320,
+      config.viewportMax || 1920,
+      config.clamp !== false ? 1 : 0
+    ].join('|');
+  }
+  
+  /**
+   * Add to cache with LRU management
+   */
+  private addToCache(key: string, value: string): void {
+    // 删除旧值（如果存在）以便移到末尾
+    this.calculationCache.delete(key);
+    
+    // 检查缓存大小限制
+    if (this.calculationCache.size >= FluidSizeCalculator.MAX_CACHE_SIZE) {
+      const firstKey = this.calculationCache.keys().next().value;
+      if (firstKey) {
+        this.calculationCache.delete(firstKey);
+      }
+    }
+    
+    this.calculationCache.set(key, value);
+  }
+  
+  /**
+   * Get cache statistics
+   */
+  getCacheStats() {
+    return {
+      size: this.calculationCache.size,
+      hits: this.cacheHits,
+      misses: this.cacheMisses,
+      hitRate: this.cacheHits / (this.cacheHits + this.cacheMisses) || 0
+    };
+  }
+  
+  /**
+   * Destroy and clean up resources
+   */
+  destroy(): void {
+    if (this.isDestroyed) return;
+    
+    this.isDestroyed = true;
+    
+    // Unsubscribe from viewport changes
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
+    
+    // Clear cache
+    this.calculationCache.clear();
+    this.lastViewport = null;
   }
 }
 

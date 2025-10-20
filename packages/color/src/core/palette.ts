@@ -4,12 +4,12 @@
  * Functions for generating color palettes, scales, and CSS variables
  */
 
-import { Color } from './Color';
-import { ColorInput } from '../types';
+import type { ColorInput } from '../types';
 import { clamp } from '../utils/math';
+import { Color } from './Color';
 
 /**
- * Generate a color scale with multiple shades
+ * Generate a color scale with multiple shades - Optimized
  */
 export function generateScale(
   baseColor: ColorInput,
@@ -22,28 +22,32 @@ export function generateScale(
   const { mode = 'lightness', curve = 'linear' } = options;
   const color = new Color(baseColor);
   const hsl = color.toHSL();
-  const colors: Color[] = [];
+  const colors = Array.from<Color, Color>({ length: steps }, () => null as any);
+  const alpha = color.alpha;
+  
+  // Pre-calculate factors
+  const invSteps = 1 / (steps - 1);
+  const baseH = hsl.h;
+  const baseS = hsl.s;
+  const baseL = hsl.l;
   
   for (let i = 0; i < steps; i++) {
-    const t = i / (steps - 1);
+    const t = i * invSteps;
     const factor = applyCurve(t, curve);
     
-    let h = hsl.h;
-    let s = hsl.s;
-    let l = hsl.l;
+    let s = baseS;
+    let l = baseL;
     
     if (mode === 'lightness' || mode === 'both') {
-      // Generate from dark to light
       l = 10 + (90 * factor);
     }
     
     if (mode === 'saturation' || mode === 'both') {
-      // Reduce saturation at extremes
       const centerDistance = Math.abs(factor - 0.5) * 2;
-      s = hsl.s * (1 - centerDistance * 0.3);
+      s = baseS * (1 - centerDistance * 0.3);
     }
     
-    colors.push(Color.fromHSL(h, s, l, color.alpha));
+    colors[i] = Color.fromHSL(baseH, s, l, alpha);
   }
   
   return colors;
@@ -66,7 +70,7 @@ function applyCurve(t: number, curve: string): number {
 }
 
 /**
- * Generate a numbered color palette (like Ant Design)
+ * Generate a numbered color palette - Optimized
  */
 export function generateNumberedPalette(
   baseColor: ColorInput,
@@ -76,35 +80,39 @@ export function generateNumberedPalette(
   } = {}
 ): { [key: number]: string } {
   const {
-    lightSteps = [95, 90, 80, 70, 60], // 1-5: lighter
-    darkSteps = [40, 30, 20, 10, 5]     // 7-11: darker
+    lightSteps = [95, 90, 80, 70, 60],
+    darkSteps = [40, 30, 20, 10, 5]
   } = options;
   
   const color = new Color(baseColor);
-  const palette: { [key: number]: string } = {};
+  const hsl = color.toHSL(); // Compute HSL once
+  const palette: { [key: number]: string } = Object.create(null);
+  const baseH = hsl.h;
+  const baseS = hsl.s;
   
-  // Generate lighter colors (1-5)
-  lightSteps.forEach((lightness, index) => {
-    const hsl = color.toHSL();
-    palette[index + 1] = Color.fromHSL(
-      hsl.h,
-      Math.max(10, hsl.s * (1 - index * 0.1)), // Slightly reduce saturation
-      lightness
+  // Generate lighter colors
+  for (let i = 0; i < lightSteps.length; i++) {
+    palette[i + 1] = Color.fromHSL(
+      baseH,
+      Math.max(10, baseS * (1 - i * 0.1)),
+      lightSteps[i]
     ).toHex();
-  });
+  }
   
-  // Base color (6)
+  // Base color
   palette[6] = color.toHex();
   
-  // Generate darker colors (7-11)
-  darkSteps.forEach((lightness, index) => {
-    const hsl = color.toHSL();
-    palette[index + 7] = Color.fromHSL(
-      hsl.h,
-      Math.min(100, hsl.s * (1 + index * 0.05)), // Slightly increase saturation
-      lightness
+  // Generate darker colors
+  for (let i = 0; i < darkSteps.length; i++) {
+    palette[i + 7] = Color.fromHSL(
+      baseH,
+      Math.min(100, baseS * (1 + i * 0.05)),
+      darkSteps[i]
     ).toHex();
-  });
+  }
+  
+  // Dispose temporary colors
+  color.dispose();
   
   return palette;
 }

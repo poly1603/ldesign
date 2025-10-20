@@ -1,4 +1,6 @@
 module.exports = {
+  root: true,
+  ignorePatterns: ['package.json'],
   rules: {
     // 允许使用 any 类型（在某些情况下必要）
     '@typescript-eslint/no-explicit-any': 'off',
@@ -41,6 +43,15 @@ module.exports = {
     'regexp/no-super-linear-backtracking': 'warn',
     
     // 多行语法
-    'no-unexpected-multiline': 'off'
-  }
+'no-unexpected-multiline': 'off'
+  },
+  overrides: [
+    {
+      files: ['package.json'],
+      rules: {
+        'jsonc/sort-keys': 'off',
+        'jsonc/sort-array-values': 'off'
+      }
+    }
+  ]
 }

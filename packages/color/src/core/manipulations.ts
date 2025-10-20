@@ -4,7 +4,7 @@
  * Functions for manipulating colors including mixing and blending
  */
 
-import type { RGB, BlendMode } from '../types';
+import type { BlendMode, RGB } from '../types';
 import { clamp } from '../utils/math';
 
 /**
@@ -161,25 +161,30 @@ export function blend(base: RGB, overlay: RGB, mode: BlendMode): RGB {
   };
 }
 
+// 预定义常量颜色，避免每次调用创建新对象
+const WHITE_RGB: RGB = Object.freeze({ r: 255, g: 255, b: 255 });
+const BLACK_RGB: RGB = Object.freeze({ r: 0, g: 0, b: 0 });
+const GRAY_RGB: RGB = Object.freeze({ r: 128, g: 128, b: 128 });
+
 /**
  * Apply tint to a color (mix with white)
  */
 export function tint(rgb: RGB, amount: number): RGB {
-  return mix(rgb, { r: 255, g: 255, b: 255 }, amount);
+  return mix(rgb, WHITE_RGB, amount);
 }
 
 /**
  * Apply shade to a color (mix with black)
  */
 export function shade(rgb: RGB, amount: number): RGB {
-  return mix(rgb, { r: 0, g: 0, b: 0 }, amount);
+  return mix(rgb, BLACK_RGB, amount);
 }
 
 /**
  * Apply tone to a color (mix with gray)
  */
 export function tone(rgb: RGB, amount: number): RGB {
-  return mix(rgb, { r: 128, g: 128, b: 128 }, amount);
+  return mix(rgb, GRAY_RGB, amount);
 }
 
 /**
@@ -217,38 +222,49 @@ export function gammaCorrection(rgb: RGB, gamma: number): RGB {
   const invGamma = 1 / gamma;
   
   return {
-    r: Math.round(255 * Math.pow(rgb.r / 255, invGamma)),
-    g: Math.round(255 * Math.pow(rgb.g / 255, invGamma)),
-    b: Math.round(255 * Math.pow(rgb.b / 255, invGamma))
+    r: Math.round(255 * (rgb.r / 255)**invGamma),
+    g: Math.round(255 * (rgb.g / 255)**invGamma),
+    b: Math.round(255 * (rgb.b / 255)**invGamma)
   };
 }
 
 /**
- * Apply sepia tone to a color
+ * Apply sepia tone to a color - Optimized with precomputed constants
  */
+const SEPIA_R = [0.393, 0.769, 0.189];
+const SEPIA_G = [0.349, 0.686, 0.168];
+const SEPIA_B = [0.272, 0.534, 0.131];
+const INV_255 = 1 / 255;
+
 export function sepia(rgb: RGB, amount = 1): RGB {
   amount = clamp(amount, 0, 1);
   
-  const r = rgb.r / 255;
-  const g = rgb.g / 255;
-  const b = rgb.b / 255;
+  const r = rgb.r * INV_255;
+  const g = rgb.g * INV_255;
+  const b = rgb.b * INV_255;
   
-  const sr = (0.393 * r + 0.769 * g + 0.189 * b);
-  const sg = (0.349 * r + 0.686 * g + 0.168 * b);
-  const sb = (0.272 * r + 0.534 * g + 0.131 * b);
+  const sr = SEPIA_R[0] * r + SEPIA_R[1] * g + SEPIA_R[2] * b;
+  const sg = SEPIA_G[0] * r + SEPIA_G[1] * g + SEPIA_G[2] * b;
+  const sb = SEPIA_B[0] * r + SEPIA_B[1] * g + SEPIA_B[2] * b;
+  
+  const inv_amount = 1 - amount;
   
   return {
-    r: Math.round(clamp((r + (sr - r) * amount) * 255, 0, 255)),
-    g: Math.round(clamp((g + (sg - g) * amount) * 255, 0, 255)),
-    b: Math.round(clamp((b + (sb - b) * amount) * 255, 0, 255))
+    r: Math.round(clamp((r * inv_amount + sr * amount) * 255, 0, 255)),
+    g: Math.round(clamp((g * inv_amount + sg * amount) * 255, 0, 255)),
+    b: Math.round(clamp((b * inv_amount + sb * amount) * 255, 0, 255))
   };
 }
 
 /**
- * Apply grayscale to a color
+ * Apply grayscale to a color - Optimized with constants
  */
+const GRAY_R = 0.299;
+const GRAY_G = 0.587;
+const GRAY_B = 0.114;
+
 export function grayscale(rgb: RGB): RGB {
-  const gray = Math.round(0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b);
+  const gray = Math.round(GRAY_R * rgb.r + GRAY_G * rgb.g + GRAY_B * rgb.b);
   return { r: gray, g: gray, b: gray };
 }
 

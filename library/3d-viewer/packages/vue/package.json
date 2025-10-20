@@ -1,0 +1,52 @@
+{
+  "name": "@panorama-viewer/vue",
+  "version": "1.0.0",
+  "description": "Vue 3 wrapper for panorama viewer",
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/PanoramaViewer.vue.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js"
+    },
+    "./dist/style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "panorama",
+    "vue",
+    "vue3",
+    "3d"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "vue": "^3.3.0",
+    "three": "^0.160.0",
+    "@panorama-viewer/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vue/compiler-sfc": "^3.3.0",
+    "rollup": "^4.9.0",
+    "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-vue": "^6.0.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3",
+    "vue": "^3.3.0"
+  },
+  "dependencies": {
+    "@panorama-viewer/core": "workspace:*"
+  }
+}
+

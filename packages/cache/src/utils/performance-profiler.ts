@@ -435,7 +435,7 @@ export class PerformanceProfiler {
 
     this.reportTimer = setInterval(() => {
       if (this.config?.verbose) {
-        )
+        console.info(this.generateReport())
       }
     }, this.config?.reportInterval)
   }

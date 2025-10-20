@@ -2,16 +2,25 @@
  * React Hook for theme management
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { ThemeManager, ThemeState, ThemeOptions } from '../themes/themeManager'
-import { presetThemes, PresetTheme } from '../themes/presets'
+/**
+ * Create a theme provider context
+ */
+import type { ReactNode } from 'react';
+import type { PresetTheme } from '../themes/presets';
+import type { ThemeOptions, ThemeState } from '../themes/themeManager';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState  } from 'react'
+
+
+import { presetThemes } from '../themes/presets'
+import { ThemeManager } from '../themes/themeManager'
 
 export interface UseThemeOptions extends ThemeOptions {
   immediate?: boolean
 }
 
 export function useTheme(options: UseThemeOptions = {}) {
-  const [themeManager] = useState(() => new ThemeManager(options))
+  // 使用 useMemo 创建稳定的 ThemeManager 实例
+  const themeManager = useMemo(() => new ThemeManager(options), [])
   const [currentTheme, setCurrentTheme] = useState<ThemeState | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -81,11 +90,15 @@ export function useTheme(options: UseThemeOptions = {}) {
       setCurrentTheme(theme)
     })
 
-    // Cleanup
+    // Cleanup - 销毁 themeManager 以防止内存泄漏
     return () => {
       unsubscribe()
+      // 组件卸载时销毁 themeManager
+      if (themeManager && typeof themeManager.destroy === 'function') {
+        themeManager.destroy()
+      }
     }
-  }, [themeManager, options.immediate])
+  }, []) // 移除依赖项，只在挂载时执行一次
 
   return {
     // State
@@ -104,11 +117,6 @@ export function useTheme(options: UseThemeOptions = {}) {
     getCurrentTheme
   }
 }
-
-/**
- * Create a theme provider context
- */
-import { createContext, useContext, ReactNode } from 'react'
 
 interface ThemeContextValue {
   currentTheme: ThemeState | null
@@ -134,8 +142,22 @@ export interface ThemeProviderProps {
 export function ThemeProvider({ children, options = {} }: ThemeProviderProps) {
   const theme = useTheme(options)
   
+  // 使用 memo 优化，防止不必要的重新渲染
+  const contextValue = useMemo(() => theme, [
+    theme.currentTheme,
+    theme.isLoading,
+    theme.primaryColor,
+    theme.themeName,
+    theme.isDark,
+    theme.applyTheme,
+    theme.applyPresetTheme,
+    theme.restoreTheme,
+    theme.clearTheme,
+    theme.getCurrentTheme
+  ])
+  
   return (
-    <ThemeContext.Provider value={theme}>
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   )

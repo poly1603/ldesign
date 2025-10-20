@@ -3,7 +3,8 @@
  * 根据错误类型自动选择重试策略
  */
 import type { ApiPlugin, ErrorMiddleware } from '../types'
-import { ApiErrorCode, isRetryableError } from '../utils/ErrorCodes'
+import type { ApiErrorCode} from '../utils/ErrorCodes';
+import { isRetryableError } from '../utils/ErrorCodes'
 
 export interface SmartRetryOptions {
  /** 最大重试次数 */
@@ -38,7 +39,7 @@ function calculateDelay(
 
  switch (strategy) {
   case 'exponential':
-   delay = initialDelay * Math.pow(2, attempt)
+   delay = initialDelay * 2**attempt
    break
   case 'linear':
    delay = initialDelay * (attempt + 1)

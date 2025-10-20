@@ -223,7 +223,7 @@ export class GamifiedSizing {
         icon: '⚡',
         points: 40,
         unlocked: false,
-        condition: (stats) => false // Checked during challenge completion
+        condition: (_stats) => false // Checked during challenge completion
       },
       {
         id: 'persistent',
@@ -320,7 +320,7 @@ export class GamifiedSizing {
     if (!this.config.enableSounds || typeof window === 'undefined') return;
 
     // Create simple sound effects using Web Audio API
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    // const audioContext = new (window.AudioContext || (window as any).webkitAudioContext()); // Unused
 
     this.createSound('adjust', 440, 0.1); // A4 note
     this.createSound('achievement', 523.25, 0.2); // C5 note
@@ -331,7 +331,7 @@ export class GamifiedSizing {
   /**
    * Create a simple sound effect
    */
-  private createSound(name: string, frequency: number, duration: number): void {
+  private createSound(name: string, _frequency: number, _duration: number): void {
     // Simple placeholder for sound creation
     // In production, load actual audio files
     const audio = new Audio();

@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitest/config'
 import { resolve } from 'node:path'
+import { defineConfig } from 'vitest/config'
 
 /**
  * 本地开发使用的 Vitest 配置
@@ -158,7 +158,8 @@ export default defineConfig({
   define: {
     __DEV__: true,
     __TEST__: true,
-    __VERSION__: JSON.stringify(process.env.npm_package_version || '0.1.0'),
+    // eslint-disable-next-line node/prefer-global/process
+    __VERSION__: JSON.stringify((typeof globalThis !== 'undefined' && (globalThis as any).process?.env?.npm_package_version) || '0.1.0'),
   },
 
   // 优化配置

@@ -328,6 +328,9 @@ export function createTimingMiddleware(
  * 缓存中间件执行结果
  * 
  * @param options - 缓存选项
+ * @param options.ttl - 缓存过期时间（毫秒），默认60000
+ * @param options.keyGenerator - 缓存键生成函数
+ * @param options.middleware - 要缓存的中间件
  * @returns 缓存中间件
  * 
  * @example
@@ -376,6 +379,10 @@ export function createCacheMiddleware<TContext>(options: {
  * 自动重试失败的中间件
  * 
  * @param options - 重试选项
+ * @param options.maxAttempts - 最大重试次数，默认3次
+ * @param options.delay - 重试延迟（毫秒），默认1000
+ * @param options.shouldRetry - 判断是否应该重试的函数
+ * @param options.middleware - 要重试的中间件
  * @returns 重试中间件
  * 
  * @example

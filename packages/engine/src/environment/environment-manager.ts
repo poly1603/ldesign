@@ -373,10 +373,9 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
 
   private detectEnv(): Environment {
     try {
-      // eslint-disable-next-line ts/no-require-imports
-      const nodeProcess = require('node:process')
-      if (typeof nodeProcess !== 'undefined' && nodeProcess.env) {
-        const nodeEnv = nodeProcess.env.NODE_ENV
+      // 尝试访问 Node.js 环境变量
+      if (typeof process !== 'undefined' && process.env) {
+        const nodeEnv = process.env.NODE_ENV
         if (nodeEnv === 'production') return 'production'
         if (nodeEnv === 'test') return 'test'
       }
@@ -421,9 +420,8 @@ export class EnvironmentManagerImpl implements EnvironmentManager {
     }
 
     try {
-      // eslint-disable-next-line ts/no-require-imports
-      const nodeProcess = require('node:process')
-      if (typeof nodeProcess !== 'undefined' && nodeProcess.versions?.node) {
+      // 检测 Node.js 环境
+      if (typeof process !== 'undefined' && process.versions?.node) {
         return 'node'
       }
 

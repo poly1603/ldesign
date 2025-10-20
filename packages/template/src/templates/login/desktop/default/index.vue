@@ -123,8 +123,10 @@ const handleSocialLogin = (provider: SocialProvider) => {
             <span>或</span>
           </div>
           <div class="social-buttons">
-            <button v-for="provider in socialProviders" :key="provider.name" class="social-btn"
-              @click="handleSocialLogin(provider)">
+            <button
+              v-for="provider in socialProviders" :key="provider.name" class="social-btn"
+              @click="handleSocialLogin(provider)"
+            >
               {{ provider.label }}
             </button>
           </div>

@@ -5,7 +5,7 @@
 /**
  * AI 提供商类型
  */
-export type AIProvider = 'deepseek' | 'openai' | 'azure' | 'anthropic' | 'custom'
+export type AIProvider = 'deepseek' | 'openai' | 'claude' | 'azure' | 'custom'
 
 /**
  * AI 模型配置
@@ -113,7 +113,7 @@ export const defaultAIConfig: AIConfig = {
     deepseek: {
       provider: 'deepseek',
       model: 'deepseek-chat',
-      apiKey: 'sk-37b7e5f545814da1923cae055b498c9a',
+      apiKey: '',
       apiEndpoint: 'https://api.deepseek.com/v1',
       temperature: 0.7,
       maxTokens: 2000,
@@ -126,6 +126,15 @@ export const defaultAIConfig: AIConfig = {
       apiEndpoint: 'https://api.openai.com/v1',
       temperature: 0.7,
       maxTokens: 2000,
+      stream: false
+    },
+    claude: {
+      provider: 'claude',
+      model: 'claude-3-sonnet-20240229',
+      apiKey: '',
+      apiEndpoint: 'https://api.anthropic.com/v1',
+      temperature: 0.7,
+      maxTokens: 4000,
       stream: false
     }
   },

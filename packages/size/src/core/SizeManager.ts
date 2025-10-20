@@ -60,6 +60,12 @@ export class SizeManager {
   private styleElement: HTMLStyleElement | null = null
   private currentPresetName: string = 'default'
   private storageKey: string
+  private isDestroyed = false
+  private cssCache = new Map<string, string>() // CSS缓存
+  private lastGeneratedCSS = '' // 上次生成的CSS
+  private pendingListenerNotifications: SizeChangeListener[] = [] // 待通知的监听器
+  private notificationScheduled = false // 防止重复调度
+  private readonly MAX_CACHE_SIZE = 50 // 限制缓存大小
 
   constructor(options: { storageKey?: string; presets?: SizePreset[] } = {}) {
     this.storageKey = options.storageKey || DEFAULT_STORAGE_KEY
@@ -68,6 +74,7 @@ export class SizeManager {
     }
 
     this.presets = new Map()
+    // 使用 Set 管理监听器，通过 destroy 方法确保正确清理
     this.listeners = new Set()
 
     // Add default presets
@@ -127,10 +134,14 @@ export class SizeManager {
       return
     }
 
+    console.info(`[SizeManager] 应用预设: ${presetName}, baseSize: ${preset.baseSize}px`)
     this.currentPresetName = presetName
+    // 清除 lastGeneratedCSS 以确保 CSS 会被重新应用
+    this.lastGeneratedCSS = ''
     this.setConfig({
       baseSize: preset.baseSize
     })
+    console.info(`[SizeManager] 预设应用完成: ${presetName}`)
   }
 
   getCurrentPreset(): string {
@@ -162,26 +173,80 @@ export class SizeManager {
 
     const css = this.generateCSS()
 
+    // 首先检查是否已存在 style 元素（处理 HMR 或多实例情况）
     if (!this.styleElement) {
-      this.styleElement = document.createElement('style')
-      this.styleElement.id = 'ldesign-size-styles'
-      document.head.appendChild(this.styleElement)
+      const existingElement = document.getElementById('ldesign-size-styles')
+      if (existingElement && existingElement instanceof HTMLStyleElement) {
+        this.styleElement = existingElement
+      } else {
+        this.styleElement = document.createElement('style')
+        this.styleElement.id = 'ldesign-size-styles'
+        document.head.appendChild(this.styleElement)
+      }
     }
 
+    // 如果CSS没有变化，避免重新渲染
+    if (css === this.lastGeneratedCSS && this.styleElement.textContent === css) {
+      return
+    }
+
+    // 使用 textContent 比 innerHTML 更快
     this.styleElement.textContent = css
+    this.lastGeneratedCSS = css
   }
 
   private generateCSS(): string {
     const { baseSize } = this.config
-    // 确保所有计算出来的值都是整数
-    const s = (multiplier: number) => {
-      const value = Math.round(baseSize * multiplier)
-      return value === 0 ? '0' : `${value}px`
+
+    // 检查CSS缓存
+    const cacheKey = `${baseSize}:${this.currentPresetName}`
+    if (this.cssCache.has(cacheKey)) {
+      return this.cssCache.get(cacheKey)!
     }
 
-    const r = (value: number) => `${value / 16}rem`
+    // LRU 缓存策略：限制缓存大小
+    if (this.cssCache.size >= this.MAX_CACHE_SIZE) {
+      const firstKey = this.cssCache.keys().next().value
+      if (firstKey !== undefined) {
+        this.cssCache.delete(firstKey)
+      }
+    }
 
-    return `
+    // 使用 Uint16Array 预计算所有值，减少内存分配
+    const multipliers = [
+      0, 0.0625, 0.125, 0.25, 0.375, 0.5, 0.625, 0.6875, 0.75, 0.8125,
+      0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625, 1.75, 1.875, 2,
+      2.25, 2.5, 2.625, 2.75, 3, 3.5, 4, 4.5, 5, 6, 7, 8,
+      12, 16, 20, 24, 28, 32
+    ]
+
+    const values = new Uint16Array(multipliers.length)
+    for (let i = 0; i < multipliers.length; i++) {
+      values[i] = Math.round(baseSize * multipliers[i])
+    }
+
+    // 快速查找函数
+    const cache = new Map<string, string>()
+    const s = (multiplier: number) => {
+      const key = `${multiplier}`
+      if (cache.has(key)) return cache.get(key)!
+      const idx = multipliers.indexOf(multiplier)
+      if (idx !== -1) {
+        const value = values[idx]
+        const result = value === 0 ? '0' : `${value}px`
+        cache.set(key, result)
+        return result
+      }
+      const value = Math.round(baseSize * multiplier)
+      const result = value === 0 ? '0' : `${value}px`
+      cache.set(key, result)
+      return result
+    }
+
+    // const r = (value: number) => `${value / 16}rem` // rem converter - unused
+
+    // 生成CSS字符串
+    const css = `
       :root {
         /* Base Configuration */
         --size-base: ${baseSize}px;
@@ -484,6 +549,19 @@ export class SizeManager {
         --size-container-xxl: 1536px;
       }
     `
+
+    // 缓存生成的CSS
+    if (this.cssCache.size > 20) {
+      // 限制缓存大小
+      const firstKey = this.cssCache.keys().next().value
+      if (firstKey !== undefined) {
+        this.cssCache.delete(firstKey)
+      }
+    }
+    this.cssCache.set(cacheKey, css)
+    this.lastGeneratedCSS = css
+
+    return css
   }
 
   private loadFromStorage(): void {
@@ -520,12 +598,17 @@ export class SizeManager {
   }
 
   subscribe(listener: SizeChangeListener): () => void {
-    if (!this.listeners) {
-      console.warn('SizeManager listeners not initialized')
+    if (!this.listeners || this.isDestroyed) {
+      console.warn('SizeManager listeners not initialized or destroyed')
       return () => { }
     }
     this.listeners.add(listener)
-    return () => this.listeners.delete(listener)
+    // 返回清理函数，确保内存正确释放
+    return () => {
+      if (this.listeners && !this.isDestroyed) {
+        this.listeners.delete(listener)
+      }
+    }
   }
 
   onChange(listener: SizeChangeListener): () => void {
@@ -533,14 +616,66 @@ export class SizeManager {
   }
 
   private notifyListeners(): void {
-    this.listeners.forEach(listener => listener(this.config))
+    // 批量处理监听器通知，避免阻塞主线程
+    if (!this.notificationScheduled && this.pendingListenerNotifications.length === 0) {
+      this.pendingListenerNotifications = Array.from(this.listeners)
+      this.notificationScheduled = true
+
+      // 使用微任务异步通知
+      queueMicrotask(() => {
+        const listeners = this.pendingListenerNotifications
+        this.pendingListenerNotifications = []
+        this.notificationScheduled = false
+
+        // 批量执行，每次最多处理10个，避免阻塞太久
+        const batchSize = 10
+        let index = 0
+
+        const processBatch = () => {
+          const end = Math.min(index + batchSize, listeners.length)
+          for (; index < end; index++) {
+            try {
+              listeners[index](this.config)
+            } catch (error) {
+              console.error('[SizeManager] Listener error:', error)
+            }
+          }
+
+          if (index < listeners.length) {
+            // 还有更多监听器，继续处理
+            queueMicrotask(processBatch)
+          }
+        }
+
+        processBatch()
+      })
+    }
   }
 
   destroy(): void {
-    if (this.styleElement && this.styleElement.parentNode) {
+    if (this.isDestroyed) return
+
+    // 清理 DOM 元素
+    if (this.styleElement?.parentNode) {
       this.styleElement.parentNode.removeChild(this.styleElement)
+      this.styleElement = null
     }
-    this.listeners.clear()
+
+    // 清理监听器
+    if (this.listeners instanceof Set) {
+      this.listeners.clear()
+    }
+    this.pendingListenerNotifications = []
+
+    // 清理 presets
+    this.presets.clear()
+
+    // 清理缓存
+    this.cssCache.clear()
+    this.lastGeneratedCSS = ''
+
+    // 标记为已销毁
+    this.isDestroyed = true
   }
 }
 

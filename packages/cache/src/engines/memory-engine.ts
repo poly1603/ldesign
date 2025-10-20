@@ -1,4 +1,5 @@
 import type { StorageEngineConfig } from '../types'
+import { CACHE_SIZE, ENGINE_CONFIG, MEMORY_CONFIG, UTF8_SIZE } from '../constants/performance'
 import { type EvictionStrategy, EvictionStrategyFactory } from '../strategies/eviction-strategies'
 
 import { BaseStorageEngine } from './base-engine'
@@ -56,10 +57,10 @@ export class MemoryEngine extends BaseStorageEngine {
   private cleanupTimer?: number
   /** 淘汰计数 */
   private evictionCount = 0
-  /** 大小计算缓存（LRU缓存，最多1000个条目） */
+  /** 大小计算缓存（LRU缓存） */
   private sizeCache: Map<string, number> = new Map()
   /** 大小缓存的最大条目数 */
-  private readonly SIZE_CACHE_LIMIT = 1000
+  private readonly SIZE_CACHE_LIMIT = CACHE_SIZE.SIZE_CACHE_LIMIT
 
   /**
    * 构造函数
@@ -68,10 +69,10 @@ export class MemoryEngine extends BaseStorageEngine {
    */
   constructor(config?: StorageEngineConfig['memory']) {
     super()
-    // 设置最大内存大小，默认10MB
-    this.maxSize = config?.maxSize || 10 * 1024 * 1024
-    // 设置最大项数，默认1000
-    this.maxItems = config?.maxItems || 1000
+    // 设置最大内存大小
+    this.maxSize = config?.maxSize || ENGINE_CONFIG.MEMORY_MAX_SIZE_DEFAULT
+    // 设置最大项数
+    this.maxItems = config?.maxItems || ENGINE_CONFIG.MEMORY_MAX_ITEMS_DEFAULT
     
     // 初始化淘汰策略，默认使用 LRU
     const strategyName = config?.evictionStrategy || 'LRU'
@@ -302,22 +303,20 @@ export class MemoryEngine extends BaseStorageEngine {
       return cached
     }
 
-    // 计算大小
+    // 计算大小 - 优化版本
     let size = 0
-    for (let i = 0; i < str.length; i++) {
+    const len = str.length
+    
+    for (let i = 0; i < len; i++) {
       const code = str.charCodeAt(i)
-      if (code < 128) {
-        size += 1
-      }
-      else if (code < 2048) {
-        size += 2
-      }
-      else if (code < 65536) {
-        size += 3
-      }
-      else {
-        size += 4
-      }
+      // 优化：使用常量减少分支
+      size += code < UTF8_SIZE.ASCII_MAX 
+        ? UTF8_SIZE.ONE_BYTE 
+        : code < UTF8_SIZE.TWO_BYTE_MAX 
+          ? UTF8_SIZE.TWO_BYTES 
+          : code < UTF8_SIZE.THREE_BYTE_MAX 
+            ? UTF8_SIZE.THREE_BYTES 
+            : UTF8_SIZE.FOUR_BYTES
     }
 
     // 更新缓存（LRU策略）
@@ -353,7 +352,7 @@ export class MemoryEngine extends BaseStorageEngine {
    */
   private async evictUntilSpaceAvailable(requiredSpace: number): Promise<void> {
     let freedSpace = 0
-    const maxEvictions = Math.min(this.storage.size, Math.ceil(this.storage.size * 0.3)) // 最多淘汰30%的项
+    const maxEvictions = Math.min(this.storage.size, Math.ceil(this.storage.size * MEMORY_CONFIG.MAX_EVICTION_RATIO))
     let evictionCount = 0
 
     while (freedSpace < requiredSpace && evictionCount < maxEvictions) {
@@ -403,7 +402,7 @@ export class MemoryEngine extends BaseStorageEngine {
     // 如果仍然空间不足，删除更多项
     if (freedSpace < requiredSpace && keysToDelete.length < items.length) {
       // 删除一半的项
-      const halfLength = Math.ceil(items.length / 2)
+      const halfLength = Math.ceil(items.length * MEMORY_CONFIG.HALF_EVICTION_RATIO)
       for (let i = keysToDelete.length; i < halfLength; i++) {
         if (items[i]) {
           const [key, item] = items[i]

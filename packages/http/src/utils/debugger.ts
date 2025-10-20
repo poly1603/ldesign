@@ -234,7 +234,7 @@ export class HttpDebugger {
 
     // 控制台输出
     if (this.config?.console && this.config?.level >= DebugLevel.DEBUG) {
-      console.log(`[HTTP Request] ${config.method} ${config.url}`, log)
+      console.debug(`[HTTP Request] ${config.method} ${config.url}`, log)
     }
   }
 
@@ -285,7 +285,7 @@ export class HttpDebugger {
 
     // 控制台输出
     if (this.config?.console && this.config?.level >= DebugLevel.DEBUG) {
-      console.log(`[HTTP Response] ${response.config.method} ${response.config.url} - ${response.status} (${duration}ms)`, log)
+      console.debug(`[HTTP Response] ${response.config.method} ${response.config.url} - ${response.status} (${duration}ms)`, log)
     }
   }
 

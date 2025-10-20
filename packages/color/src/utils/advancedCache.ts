@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @ldesign/color - Advanced Cache Utilities
  * 
  * Advanced caching with LRU/LFU strategies, persistence and prewarming
@@ -40,6 +40,9 @@ export class AdvancedColorCache<T = any> {
   private strategy: CacheStrategy;
   private stats: { hits: number; misses: number };
   private persistKey?: string;
+  private persistTimer: number | null = null;
+  private isDirty = false;
+  private persistDelay = 5000; // 5秒延迟持久化
   // private prewarmed: boolean = false; // Kept for future use
 
   constructor(maxSize = 100, strategy: CacheStrategy = 'LRU', persistKey?: string) {
@@ -48,7 +51,7 @@ export class AdvancedColorCache<T = any> {
     this.strategy = strategy;
     this.stats = { hits: 0, misses: 0 };
     this.persistKey = persistKey;
-    
+
     // 尝试从持久化存储恢复缓存
     if (persistKey) {
       this.restore();
@@ -64,13 +67,13 @@ export class AdvancedColorCache<T = any> {
       this.stats.hits++;
       item.frequency++;
       item.lastAccess = Date.now();
-      
+
       // LRU: 移动到末尾
       if (this.strategy === 'LRU') {
         this.cache.delete(key);
         this.cache.set(key, item);
       }
-      
+
       return item.value;
     }
     this.stats.misses++;
@@ -82,12 +85,12 @@ export class AdvancedColorCache<T = any> {
    */
   set(key: string, value: T): void {
     const now = Date.now();
-    
+
     // 如果缓存已满，根据策略移除项目
     if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
       this.evict();
     }
-    
+
     const existing = this.cache.get(key);
     const item: CacheItem<T> = {
       value,
@@ -95,39 +98,74 @@ export class AdvancedColorCache<T = any> {
       lastAccess: now,
       createdAt: existing ? existing.createdAt : now
     };
-    
+
     this.cache.set(key, item);
-    
-    // 定期持久化
-    if (this.persistKey && this.cache.size % 10 === 0) {
-      this.persist();
+
+    // 标记为脏，延迟持久化（使用防抖）
+    if (this.persistKey) {
+      this.isDirty = true;
+      this.schedulePersist();
     }
   }
-  
+
+  /**
+   * 延迟持久化（防抖）
+   */
+  private schedulePersist(): void {
+    if (this.persistTimer !== null) {
+      clearTimeout(this.persistTimer);
+    }
+
+    // 避免直接使用 window.setTimeout，使用全局 setTimeout
+    this.persistTimer = (typeof window !== 'undefined' ? window.setTimeout : setTimeout)(() => {
+      if (this.isDirty) {
+        // 使用 requestIdleCallback 或直接执行，添加错误处理
+        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+          (window as any).requestIdleCallback(() => {
+            try {
+              this.persist();
+            } catch (error) {
+              console.warn('Cache persist failed:', error);
+            }
+          }, { timeout: 1000 }); // 添加超时限制
+        } else {
+          try {
+            this.persist();
+          } catch (error) {
+            console.warn('Cache persist failed:', error);
+          }
+        }
+        this.isDirty = false;
+      }
+      this.persistTimer = null;
+    }, this.persistDelay) as any;
+  }
+
   /**
    * 根据策略移除缓存项
    */
   private evict(): void {
     let keyToRemove: string | undefined;
-    
+
     switch (this.strategy) {
-      case 'LFU': // 最不经常使用
+      case 'LFU': { // 最不经常使用
         let minFreq = Infinity;
         let oldestTime = Infinity;
-        
+
         for (const [key, item] of this.cache.entries()) {
-          if (item.frequency < minFreq || 
-              (item.frequency === minFreq && item.lastAccess < oldestTime)) {
+          if (item.frequency < minFreq ||
+            (item.frequency === minFreq && item.lastAccess < oldestTime)) {
             minFreq = item.frequency;
             oldestTime = item.lastAccess;
             keyToRemove = key;
           }
         }
         break;
-        
-      case 'FIFO': // 先进先出
+      }
+
+      case 'FIFO': { // 先进先出
         let oldestCreate = Infinity;
-        
+
         for (const [key, item] of this.cache.entries()) {
           if (item.createdAt < oldestCreate) {
             oldestCreate = item.createdAt;
@@ -135,14 +173,15 @@ export class AdvancedColorCache<T = any> {
           }
         }
         break;
-        
+      }
+
       case 'LRU': // 最近最少使用
       default:
         // Map保持插入顺序，第一个就是最旧的
         keyToRemove = this.cache.keys().next().value;
         break;
     }
-    
+
     if (keyToRemove) {
       this.cache.delete(keyToRemove);
     }
@@ -191,7 +230,7 @@ export class AdvancedColorCache<T = any> {
       utilization: (this.cache.size / this.maxSize) * 100
     };
   }
-  
+
   /**
    * 缓存预热
    */
@@ -201,51 +240,68 @@ export class AdvancedColorCache<T = any> {
     }
     // this.prewarmed = true;
   }
-  
+
   /**
    * 持久化缓存到localStorage
    */
   persist(): void {
     if (!this.persistKey || typeof window === 'undefined') return;
-    
+
     try {
-      const data = Array.from(this.cache.entries()).map(([key, item]) => ({
-        key,
-        value: item.value,
-        frequency: item.frequency,
-        lastAccess: item.lastAccess,
-        createdAt: item.createdAt
-      }));
-      
-      localStorage.setItem(this.persistKey, JSON.stringify({
+      // 限制持久化数据大小，只保存最常用的前20个
+      const topItems = this.getMostFrequent(20); // Reduced from 50 to 20
+      const data = topItems.map(({ key }) => {
+        const item = this.cache.get(key)!;
+        return {
+          key,
+          value: item.value,
+          frequency: item.frequency,
+          lastAccess: item.lastAccess,
+          createdAt: item.createdAt
+        };
+      });
+
+      const serialized = JSON.stringify({
         data,
         stats: this.stats,
         strategy: this.strategy,
         timestamp: Date.now()
-      }));
+      });
+
+      // 检查数据大小，避免超过localStorage限制
+      if (serialized.length > 512 * 1024) { // 512KB 限制 (reduced from 1MB)
+        console.warn('Cache data too large, skipping persist');
+        return;
+      }
+
+      localStorage.setItem(this.persistKey, serialized);
     } catch (error) {
-      console.error('Failed to persist cache:', error);
+      // 静默处理错误，避免影响主流程
+      // eslint-disable-next-line node/prefer-global/process
+      if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
+        console.warn('Failed to persist cache:', error);
+      }
     }
   }
-  
+
   /**
    * 从localStorage恢复缓存
    */
   restore(): void {
     if (!this.persistKey || typeof window === 'undefined') return;
-    
+
     try {
       const stored = localStorage.getItem(this.persistKey);
       if (!stored) return;
-      
+
       const { data, stats, timestamp } = JSON.parse(stored);
-      
-      // 检查缓存是否过期（24小时）
-      if (Date.now() - timestamp > 24 * 60 * 60 * 1000) {
+
+      // 检查缓存是否过期（2小时）- reduced from 24 hours
+      if (Date.now() - timestamp > 2 * 60 * 60 * 1000) {
         localStorage.removeItem(this.persistKey);
         return;
       }
-      
+
       // 恢复缓存数据
       this.cache.clear();
       for (const { key, value, frequency, lastAccess, createdAt } of data) {
@@ -256,14 +312,14 @@ export class AdvancedColorCache<T = any> {
           createdAt
         });
       }
-      
+
       this.stats = stats;
       // this.prewarmed = true;
     } catch (error) {
       console.error('Failed to restore cache:', error);
     }
   }
-  
+
   /**
    * 获取最常用的缓存项
    */
@@ -277,7 +333,7 @@ export class AdvancedColorCache<T = any> {
         frequency: item.frequency
       }));
   }
-  
+
   /**
    * 优化缓存大小
    */
@@ -286,21 +342,21 @@ export class AdvancedColorCache<T = any> {
     const frequencies = Array.from(this.cache.values()).map(item => item.frequency);
     const avgFrequency = frequencies.reduce((a, b) => a + b, 0) / frequencies.length;
     const threshold = avgFrequency * 0.5;
-    
+
     for (const [key, item] of this.cache.entries()) {
       if (item.frequency < threshold) {
         this.cache.delete(key);
       }
     }
   }
-  
+
   /**
    * 设置缓存策略
    */
   setStrategy(strategy: CacheStrategy): void {
     this.strategy = strategy;
   }
-  
+
   /**
    * 获取缓存快照
    */
@@ -310,16 +366,55 @@ export class AdvancedColorCache<T = any> {
       value: item.value
     }));
   }
+
+  /**
+   * 清理所有资源，防止内存泄漏
+   */
+  destroy(): void {
+    // 清理持久化定时器
+    if (this.persistTimer !== null) {
+      clearTimeout(this.persistTimer);
+      this.persistTimer = null;
+    }
+
+    // 最后一次持久化
+    if (this.isDirty && this.persistKey) {
+      this.persist();
+      this.isDirty = false;
+    }
+
+    // 清空缓存
+    this.clear();
+  }
 }
 
 /**
  * Global cache instance with LFU strategy for shared caching
+ * 减少全局缓存大小，避免内存占用过高
  */
-export const globalColorCache = new AdvancedColorCache(1000, 'LFU', 'ldesign-color-cache');
+export const globalColorCache = new AdvancedColorCache(100, 'LFU', 'ldesign-color-cache'); // Reduced from 500 to 100
+
+// 添加全局清理函数
+if (typeof window !== 'undefined') {
+  // 页面卸载时清理缓存
+  window.addEventListener('beforeunload', () => {
+    globalColorCache.destroy();
+  }, { once: true });
+
+  // 页面隐藏时优化缓存
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      globalColorCache.optimize();
+    }
+  });
+}
 
 /**
  * Cache decorator for memoizing function results with advanced caching
  */
+// 使用 WeakMap 存储函数缓存，避免内存泄漏
+const functionCaches = new WeakMap<Function, AdvancedColorCache<any>>();
+
 export function memoize<T extends (...args: any[]) => any>(
   fn: T,
   options?: {
@@ -328,23 +423,40 @@ export function memoize<T extends (...args: any[]) => any>(
     getKey?: (...args: Parameters<T>) => string;
   }
 ): T {
-  const cache = new AdvancedColorCache<ReturnType<T>>(
-    options?.maxSize || 100,
-    options?.strategy || 'LRU'
-  );
-  
-  return ((...args: Parameters<T>): ReturnType<T> => {
+  // 重用已存在的缓存
+  let cache = functionCaches.get(fn) as AdvancedColorCache<ReturnType<T>>;
+  if (!cache) {
+    cache = new AdvancedColorCache<ReturnType<T>>(
+      options?.maxSize || 20, // 进一步减小默认缓存大小 from 50 to 20
+      options?.strategy || 'LRU'
+    );
+    functionCaches.set(fn, cache);
+  }
+
+  const memoized = ((...args: Parameters<T>): ReturnType<T> => {
     const key = options?.getKey ? options.getKey(...args) : JSON.stringify(args);
-    
+
     const cached = cache.get(key);
     if (cached !== undefined) {
       return cached;
     }
-    
+
     const result = fn(...args);
     cache.set(key, result);
     return result;
   }) as T;
+
+  // 添加清理方法
+  (memoized as any).clearCache = () => {
+    cache.clear();
+  };
+
+  (memoized as any).destroyCache = () => {
+    cache.destroy();
+    functionCaches.delete(fn);
+  };
+
+  return memoized;
 }
 
 /**

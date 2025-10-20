@@ -123,7 +123,7 @@ export class RouteVisualizer {
       const ctrlKey = keys.includes('ctrl') ? e.ctrlKey : true
       const shiftKey = keys.includes('shift') ? e.shiftKey : true
       const altKey = keys.includes('alt') ? e.altKey : true
-      const key = keys[keys.length - 1].toLowerCase()
+      const key = keys[keys.length - 1]?.toLowerCase() || ''
 
       if (ctrlKey && shiftKey && altKey && e.key.toLowerCase() === key) {
         e.preventDefault()
@@ -277,7 +277,7 @@ export class RouteTracer {
     })
 
     // 追踪导航完成
-    this.router.afterEach((to, from, failure) => {
+    this.router.afterEach((_to, _from, failure) => {
       const trace = this.history[this.history.length - 1]
       if (trace && trace.status === 'pending') {
         trace.status = failure ? 'failed' : 'success'
@@ -501,7 +501,7 @@ export class RoutePerformanceAnalyzer {
   }
 
   // 分析慢路由
-  private analyzeSlow(route: string, metric: PerformanceMetric): void {
+  private analyzeSlow(_route: string, metric: PerformanceMetric): void {
     const suggestions: string[] = []
 
     // 分析可能的原因
@@ -614,7 +614,7 @@ export class RoutePerformanceAnalyzer {
   private percentile(values: number[], p: number): number {
     const sorted = [...values].sort((a, b) => a - b)
     const index = Math.ceil((p / 100) * sorted.length) - 1
-    return sorted[Math.max(0, index)]
+    return sorted[Math.max(0, index)] ?? 0
   }
 
   // 清理
@@ -851,7 +851,7 @@ export class RouteDebugger {
       routes: this.router.getRoutes(),
       history: this.tracer?.getHistory() || [],
       errors: this.errorDiagnostics?.getErrors() || [],
-      performance: this.performanceAnalyzer?.generateReport(),
+      performance: this.performanceAnalyzer?.generateReport() || {} as any,
     }
   }
 

@@ -269,7 +269,7 @@ export class Scrypt {
     }).toString()
 
     // 步骤 2: ROMix (简化版)
-    const _blockSize = opts.memoryCost || 8
+    // const _blockSize = opts.memoryCost || 8 // 未使用，简化实现中省略
     const blocks: string[] = []
 
     // 生成内存块

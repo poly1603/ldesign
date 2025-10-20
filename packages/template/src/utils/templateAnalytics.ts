@@ -1,5 +1,4 @@
-import { ref, computed, readonly } from 'vue'
-import type { TemplateMetadata } from '../types'
+import { computed, onUnmounted, readonly } from 'vue'
 
 /**
  * 模板使用统计
@@ -74,6 +73,8 @@ export class TemplateAnalytics {
   private performanceMetrics: PerformanceMetrics[] = []
   private interactionEvents: InteractionEvent[] = []
   private sessionStartTime = Date.now()
+  private disposed = false
+  private cleanupTimer: ReturnType<typeof setTimeout> | null = null
 
   constructor(config: AnalyticsConfig = {}) {
     this.config = {
@@ -84,13 +85,16 @@ export class TemplateAnalytics {
       enableErrorTracking: config.enableErrorTracking ?? true,
       enableInteractionTracking: config.enableInteractionTracking ?? true,
     }
+    
+    // 定期清理老旧数据
+    this.scheduleCleanup()
   }
 
   /**
    * 判断是否应该记录事件（基于采样率）
    */
   private shouldRecord(): boolean {
-    if (!this.config.enabled) return false
+    if (this.disposed || !this.config.enabled) return false
     return Math.random() < this.config.sampleRate
   }
 
@@ -142,20 +146,22 @@ export class TemplateAnalytics {
    * 记录模板错误
    */
   trackError(templateId: string, templateName: string, error: Error) {
-    if (!this.config.enableErrorTracking) return
+    if (this.disposed || !this.config.enableErrorTracking) return
 
     const usage = this.getOrCreateUsage(templateId, templateName)
     usage.errorCount++
     usage.lastUsedAt = Date.now()
 
-    console.warn(`Template error tracked: ${templateId}`, error)
+if (import.meta.env.DEV) {
+      console.warn(`Template error tracked: ${templateId}`, error)
+    }
   }
 
   /**
    * 记录用户交互
    */
   trackInteraction(templateId: string, eventType: string, data?: any) {
-    if (!this.config.enableInteractionTracking || !this.shouldRecord()) return
+    if (this.disposed || !this.config.enableInteractionTracking || !this.shouldRecord()) return
 
     const event: InteractionEvent = {
       templateId,
@@ -251,26 +257,50 @@ export class TemplateAnalytics {
     const allUsage = this.getAllUsage()
     const totalUsage = allUsage.reduce((sum, u) => sum + u.renderCount, 0)
 
-    // 最常用的模板
-    const mostUsed = [...allUsage]
-      .sort((a, b) => b.renderCount - a.renderCount)
-      .slice(0, 5)
+    // 优化: 使用部分排序减少不必要的排序操作
+    const partialSort = <T>(arr: T[], compareFn: (a: T, b: T) => number, k: number): T[] => {
+      if (arr.length <= k) return [...arr].sort(compareFn)
+      
+      const result = arr.slice(0, k)
+      result.sort(compareFn)
+      
+      for (let i = k; i < arr.length; i++) {
+        const item = arr[i]
+        if (compareFn(item, result[k - 1]) < 0) {
+          result[k - 1] = item
+          result.sort(compareFn)
+        }
+      }
+      return result
+    }
 
-    // 最少用的模板
-    const leastUsed = [...allUsage]
-      .sort((a, b) => a.renderCount - b.renderCount)
-      .slice(0, 5)
+    // 最常用的模板
+    const mostUsed = partialSort(
+      allUsage,
+      (a, b) => b.renderCount - a.renderCount,
+      5
+    )
+
+    // 最少使用的模板
+    const leastUsed = partialSort(
+      allUsage,
+      (a, b) => a.renderCount - b.renderCount,
+      5
+    )
 
     // 最慢的模板
-    const slowest = [...allUsage]
-      .sort((a, b) => b.averageRenderTime - a.averageRenderTime)
-      .slice(0, 5)
+    const slowest = partialSort(
+      allUsage,
+      (a, b) => b.averageRenderTime - a.averageRenderTime,
+      5
+    )
 
     // 错误最多的模板
-    const errorProne = [...allUsage]
-      .filter((u) => u.errorCount > 0)
-      .sort((a, b) => b.errorCount - a.errorCount)
-      .slice(0, 5)
+    const errorProne = partialSort(
+      allUsage.filter((u) => u.errorCount > 0),
+      (a, b) => b.errorCount - a.errorCount,
+      5
+    )
 
     // 性能评分 (0-100)
     const averageLoadTime =
@@ -348,9 +378,52 @@ export class TemplateAnalytics {
    */
   clear() {
     this.usageMap.clear()
-    this.performanceMetrics = []
-    this.interactionEvents = []
+    this.performanceMetrics.length = 0
+    this.interactionEvents.length = 0
     this.sessionStartTime = Date.now()
+  }
+
+  /**
+   * 销毁分析器实例
+   */
+  dispose() {
+    this.disposed = true
+    if (this.cleanupTimer) {
+      clearTimeout(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
+    this.clear()
+    this.usageMap.clear()
+  }
+  
+  /**
+   * 定期清理老旧数据
+   */
+  private scheduleCleanup() {
+    if (this.cleanupTimer) {
+      clearTimeout(this.cleanupTimer)
+    }
+    
+    // 每10分钟清理一次老旧数据
+    this.cleanupTimer = setTimeout(() => {
+      if (!this.disposed) {
+        const now = Date.now()
+        const maxAge = 30 * 60 * 1000 // 30分钟
+        
+        // 清理老旧的性能指标
+        this.performanceMetrics = this.performanceMetrics.filter(
+          m => (now - m.timestamp) < maxAge
+        )
+        
+        // 清理老旧的交互事件
+        this.interactionEvents = this.interactionEvents.filter(
+          e => (now - e.timestamp) < maxAge
+        )
+        
+        // 递归调度下次清理
+        this.scheduleCleanup()
+      }
+    }, 10 * 60 * 1000)
   }
 
   /**
@@ -382,14 +455,42 @@ export class TemplateAnalytics {
   }
 }
 
-// 全局分析器实例
-export const globalAnalytics = new TemplateAnalytics()
+// 全局分析器实例 - 使用懒加载
+let _globalAnalytics: TemplateAnalytics | null = null
+
+export function getGlobalAnalytics(): TemplateAnalytics {
+  if (!_globalAnalytics) {
+    _globalAnalytics = new TemplateAnalytics()
+  }
+  return _globalAnalytics
+}
+
+// 清理全局实例
+export function destroyGlobalAnalytics() {
+  if (_globalAnalytics) {
+    _globalAnalytics.dispose()
+    _globalAnalytics = null
+  }
+}
+
+// 使用getter延迟加载，避免立即创建实例
+let _globalAnalyticsProxy: TemplateAnalytics | null = null
+export const globalAnalytics = new Proxy({} as TemplateAnalytics, {
+  get(target, prop) {
+    if (!_globalAnalyticsProxy) {
+      _globalAnalyticsProxy = getGlobalAnalytics()
+    }
+    return (_globalAnalyticsProxy as any)[prop]
+  }
+})
 
 /**
  * 使用模板分析 (组合式函数)
  */
 export function useTemplateAnalytics(config?: AnalyticsConfig) {
-  const analytics = config ? new TemplateAnalytics(config) : globalAnalytics
+  // Create a dedicated instance if config is provided
+  const analytics = config ? new TemplateAnalytics(config) : getGlobalAnalytics()
+  const isCustomInstance = !!config
 
   const allUsage = computed(() => analytics.getAllUsage())
   const report = computed(() => analytics.generateReport())
@@ -426,6 +527,13 @@ export function useTemplateAnalytics(config?: AnalyticsConfig) {
     analytics.clear()
   }
 
+  // Cleanup custom instance on unmount
+  if (isCustomInstance) {
+    onUnmounted(() => {
+      analytics.dispose()
+    })
+  }
+
   return {
     allUsage,
     report,
@@ -458,7 +566,8 @@ export function withPerformanceTracking<T extends (...args: any[]) => any>(
       if (result instanceof Promise) {
         return result.finally(() => {
           const duration = performance.now() - startTime
-          globalAnalytics.recordPerformanceMetric({
+          // Use private method through a workaround
+          ;(globalAnalytics as any).recordPerformanceMetric({
             templateId,
             metric,
             duration,
@@ -468,7 +577,8 @@ export function withPerformanceTracking<T extends (...args: any[]) => any>(
       }
       
       const duration = performance.now() - startTime
-      globalAnalytics.recordPerformanceMetric({
+      // Use private method through a workaround
+      ;(globalAnalytics as any).recordPerformanceMetric({
         templateId,
         metric,
         duration,
@@ -478,7 +588,8 @@ export function withPerformanceTracking<T extends (...args: any[]) => any>(
       return result
     } catch (error) {
       const duration = performance.now() - startTime
-      globalAnalytics.recordPerformanceMetric({
+      // Use private method through a workaround
+      ;(globalAnalytics as any).recordPerformanceMetric({
         templateId,
         metric,
         duration,

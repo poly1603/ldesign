@@ -252,6 +252,11 @@ export {
   DeduplicationKeyGenerator,
   DeduplicationManager,
   RateLimitManager,
+  DeduplicationManager as RequestDeduplicator,
+} from './utils/concurrency'
+
+export type {
+  DeduplicationStats,
 } from './utils/concurrency'
 
 // 导出去重相关类型
@@ -274,22 +279,6 @@ export type {
   RequestLog,
   ResponseLog,
 } from './utils/debugger'
-
-// 请求去重导出
-export {
-  DeduplicationManager as RequestDeduplicator,
-  DeduplicationStats,
-} from './utils/concurrency'
-
-export {
-  generateRequestKey,
-  DeduplicationKeyGenerator,
-  defaultKeyGenerator,
-} from './utils/request-dedup'
-
-export type {
-  DeduplicationKeyConfig,
-} from './utils/request-dedup'
 
 export {
   createDownloadChunks,
@@ -417,6 +406,17 @@ export type {
   PriorityQueueConfig,
   PriorityQueueStats,
 } from './utils/priority'
+
+// 请求去重导出
+export {
+  defaultKeyGenerator,
+  generateRequestKey,
+  DeduplicationKeyGenerator as RequestDeduplicationKeyGenerator,
+} from './utils/request-dedup'
+
+export type {
+  DeduplicationKeyConfig as RequestDeduplicationKeyConfig,
+} from './utils/request-dedup'
 
 // 签名功能导出
 export {

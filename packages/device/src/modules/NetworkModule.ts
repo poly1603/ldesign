@@ -56,10 +56,16 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
   }
 
   /**
-   * 销毁模块
+   * 销毁模块（优化：彻底清理所有引用）
    */
   async destroy(): Promise<void> {
     this.removeEventListeners()
+    
+    // 清理引用以帮助垃圾回收
+    this.connection = null
+    this.onlineHandler = undefined
+    this.offlineHandler = undefined
+    this.changeHandler = undefined
   }
 
   /**
@@ -82,7 +88,7 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
     }, null)
 
     const online = typeof navigator !== 'undefined' ? !!navigator.onLine : true
-    const effectiveType = connection?.effectiveType || (connection as any)?.type || 'unknown'
+    const effectiveType = connection?.effectiveType || (connection as unknown as { type?: string })?.type || 'unknown'
     const status: NetworkStatus = online ? 'online' : 'offline'
 
     const info: NetworkInfo = {
@@ -275,8 +281,8 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
     window.addEventListener('offline', this.offlineHandler)
 
     // 同时设置 ononline/onoffline，避免测试环境中 addEventListener 被 stub 后无法触发处理器
-    ; (window as any).ononline = this.onlineHandler
-    ; (window as any).onoffline = this.offlineHandler
+    ; (window as unknown as { ononline?: (() => void) | null }).ononline = this.onlineHandler
+    ; (window as unknown as { onoffline?: (() => void) | null }).onoffline = this.offlineHandler
 
     // 监听网络连接变化
     if (this.connection && 'addEventListener' in this.connection) {
@@ -298,13 +304,13 @@ export class NetworkModule extends EventEmitter<{ networkChange: NetworkInfo }> 
 
     if (this.onlineHandler) {
       window.removeEventListener('online', this.onlineHandler)
-      ; (window as any).ononline = null
+      ; (window as unknown as { ononline?: (() => void) | null }).ononline = null
       this.onlineHandler = undefined
     }
 
     if (this.offlineHandler) {
       window.removeEventListener('offline', this.offlineHandler)
-      ; (window as any).onoffline = null
+      ; (window as unknown as { onoffline?: (() => void) | null }).onoffline = null
       this.offlineHandler = undefined
     }
 

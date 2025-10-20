@@ -126,7 +126,8 @@ export function createOfflineCachePlugin(options: OfflineCachePluginOptions = {}
     catch {}
   }
 
-  const isOnline = () => typeof navigator === 'undefined' ? true : navigator.onLine
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  const _isOnline = () => typeof navigator === 'undefined' ? true : navigator.onLine
   const now = () => Date.now()
 
   async function readCache(key: string): Promise<Stored | null> {
@@ -140,7 +141,8 @@ export function createOfflineCachePlugin(options: OfflineCachePluginOptions = {}
       return await idbSet(key, v)
     return lsSet(key, v)
   }
-  async function deleteCache(key: string): Promise<void> {
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  async function _deleteCache(key: string): Promise<void> {
     if (idb)
       return await idbDelete(key)
     return lsDel(key)

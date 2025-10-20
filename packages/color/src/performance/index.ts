@@ -3,8 +3,8 @@
  * Web Workers支持、批量操作优化、懒加载
  */
 
-import { Color } from '../core/Color';
 import type { ColorInput } from '../types';
+import { Color } from '../core/Color';
 
 /**
  * 批量操作选项
@@ -40,7 +40,7 @@ export interface PerformanceMetrics {
 }
 
 /**
- * 批量颜色处理�?
+ * 批量颜色处理�?
  */
 export class BatchColorProcessor {
   private worker?: Worker;
@@ -83,22 +83,22 @@ export class BatchColorProcessor {
       }
       
       function lightenColor(color, amount) {
-        // 简化实�?
+        // 简化实�?
         return color;
       }
       
       function darkenColor(color, amount) {
-        // 简化实�?
+        // 简化实�?
         return color;
       }
       
       function saturateColor(color, amount) {
-        // 简化实�?
+        // 简化实�?
         return color;
       }
       
       function rotateHue(color, degrees) {
-        // 简化实�?
+        // 简化实�?
         return color;
       }
       
@@ -207,7 +207,7 @@ export class BatchColorProcessor {
           id: taskId,
           type: 'batch',
           data: {
-            colors: colors,
+            colors,
             operation: 'process',
             params: {}
           }
@@ -376,7 +376,7 @@ export class LazyColorLoader {
   private loadingPromises = new Map<string, Promise<any>>();
   
   /**
-   * 懒加载高级功能模�?
+   * 懒加载高级功能模�?
    */
   async loadModule(moduleName: string): Promise<any> {
     if (this.loadedModules.has(moduleName)) {
@@ -402,7 +402,7 @@ export class LazyColorLoader {
   }
   
   /**
-   * 动态导入模�?
+   * 动态导入模�?
    */
   private async dynamicImport(moduleName: string): Promise<any> {
     switch (moduleName) {
@@ -424,7 +424,7 @@ export class LazyColorLoader {
   }
   
   /**
-   * 预加载关键模�?
+   * 预加载关键模�?
    */
   async preloadCriticalModules(): Promise<void> {
     const criticalModules = ['gradient', 'schemes', 'accessibility'];
@@ -447,7 +447,7 @@ export class LazyColorLoader {
 }
 
 /**
- * 性能优化工具�?
+ * 性能优化工具�?
  */
 export class ColorPerformance {
   private static batchProcessor = new BatchColorProcessor();
@@ -464,7 +464,7 @@ export class ColorPerformance {
   };
   
   /**
-   * 懒加�?
+   * 懒加�?
    */
   static lazy = {
     load: this.lazyLoader.loadModule.bind(this.lazyLoader),

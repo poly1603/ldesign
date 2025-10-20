@@ -22,7 +22,7 @@ export class StorePool {
   >()
 
   private options: Required<StorePoolOptions> = {
-    maxSize: 50,
+    maxSize: 20, // 优化：降低最大池大小，减少内存占用
     maxIdleTime: 300000, // 5分钟
     enableGC: true,
   }
@@ -47,7 +47,7 @@ export class StorePool {
   }
 
   /**
-   * 获取 Store 实例
+   * 获取 Store 实例（优化版：快速路径优化）
    */
   getStore<T extends BaseStore>(
     storeClass: new (id: string, ...args: any[]) => T,
@@ -57,18 +57,29 @@ export class StorePool {
     const className = storeClass.name
     const pool = this.pools.get(className)
 
-    if (pool && pool.instances.length > 0) {
-      const instance = pool.instances.pop() as T
-      pool.lastUsed.set(instance, Date.now())
+    // 快速路径：从池中获取实例
+    if (pool) {
+      const instances = pool.instances
+      if (instances.length > 0) {
+        const instance = instances.pop() as T
+        pool.lastUsed.set(instance, Date.now())
 
-      // 重新初始化实例的ID（通过重新设置内部属性）
-      ;(instance as any).$id = id
+        // 使用更安全的方式重新初始化实例
+        // 调用内部的重置方法而不是直接修改私有属性
+        if (typeof (instance as any)._reinitialize === 'function') {
+          (instance as any)._reinitialize(id, ...args)
+        } else {
+          // 如果没有_reinitialize方法，调用$reset并重设状态
+          instance.$reset()
+        }
 
-      return instance
+        return instance
+      }
     }
 
-    // 创建新实例
-    const instance = new storeClass(id, ...args)
+    // 慢速路径：创建新实例
+    const StoreClass = storeClass
+    const instance = new StoreClass(id, ...args)
     this.trackInstance(className, instance)
     return instance
   }
@@ -234,7 +245,8 @@ export class StorePool {
     }
 
     for (let i = 0; i < count; i++) {
-      const instance = new storeClass(`warmup-${i}`, ...args)
+      const StoreClass = storeClass
+      const instance = new StoreClass(`warmup-${i}`, ...args)
       pool.instances.push(instance)
       pool.lastUsed.set(instance, Date.now())
     }

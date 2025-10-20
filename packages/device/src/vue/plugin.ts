@@ -90,7 +90,9 @@ export const DevicePlugin: Plugin = {
 export function createDevicePlugin(options: DevicePluginOptions = {}): Plugin {
   return {
     install(app: App) {
-      DevicePlugin.install!(app, options)
+      if (DevicePlugin.install) {
+        DevicePlugin.install(app, options)
+      }
     },
   }
 }

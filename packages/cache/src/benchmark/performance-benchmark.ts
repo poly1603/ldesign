@@ -122,7 +122,7 @@ export class PerformanceBenchmark {
     const results: BenchmarkResult[] = []
 
     for (const test of tests) {
-      // eslint-disable-next-line no-console
+       
       
       const result = await this.run(test.fn, {
         name: test.name,
@@ -226,8 +226,10 @@ export class PerformanceBenchmark {
     }
     
     // 检查 Node.js 环境
-    if (typeof process !== 'undefined' && typeof process.memoryUsage === 'function') {
-      return process.memoryUsage().heapUsed
+    // eslint-disable-next-line node/prefer-global/process
+    if (typeof globalThis !== 'undefined' && (globalThis as any).process && typeof (globalThis as any).process.memoryUsage === 'function') {
+      // eslint-disable-next-line node/prefer-global/process
+      return (globalThis as any).process.memoryUsage().heapUsed
     }
     
     return 0
@@ -397,8 +399,8 @@ export const standardBenchmarks = {
 export async function runStandardBenchmarks(cache: CacheManager): Promise<void> {
   const benchmark = createBenchmark(cache)
 
-  // eslint-disable-next-line no-console
-  
+   
+  console.info('开始运行标准基准测试...')
 
   // 运行所有测试
   await benchmark.runSuite(standardBenchmarks.basicOperations)
@@ -407,8 +409,8 @@ export async function runStandardBenchmarks(cache: CacheManager): Promise<void> 
   await benchmark.runSuite(standardBenchmarks.ttlOperations)
 
   // 生成报告
-  // eslint-disable-next-line no-console
-  
-  // eslint-disable-next-line no-console
-  )
+   
+  console.info('\n测试完成！生成报告...')
+   
+  console.info(benchmark.generateReport())
 }

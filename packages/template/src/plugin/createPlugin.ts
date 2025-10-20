@@ -4,9 +4,9 @@
  * Template management plugin for Vue 3 applications
  */
 
-import type { App, Component, Ref, ComputedRef } from 'vue'
-import { ref, inject } from 'vue'
+import type { App, Component, ComputedRef, Ref } from 'vue'
 import type { TemplateManagerOptions, TemplateMetadata, TemplateRegistryItem } from '../types'
+import { inject, ref } from 'vue'
 import { TemplateManager } from '../core/manager'
 import { loadStyles } from '../core/style-loader'
 import { getLocale, type TemplateLocale } from '../locales'
@@ -199,6 +199,11 @@ export interface TemplatePlugin {
    * Install the plugin
    */
   install: (app: App) => void
+  
+  /**
+   * Dispose the plugin and clean up resources
+   */
+  dispose: () => void
 }
 
 /**
@@ -217,17 +222,22 @@ const isRef = <T>(v: any): v is Ref<T> => {
  * 智能获取locale
  * 支持多种方式：传入值、inject、全局事件
  */
-function useSmartLocale(options: TemplatePluginOptions): Ref<string> {
+function useSmartLocale(options: TemplatePluginOptions): { locale: Ref<string>; cleanup: () => void } {
+  let eventListener: ((e: Event) => void) | null = null
+  
   // 优先级1：使用传入的locale
   if (options.locale) {
-    return isRef(options.locale) ? options.locale : ref(options.locale)
+    return { 
+      locale: isRef(options.locale) ? options.locale : ref(options.locale),
+      cleanup: () => {} // No cleanup needed for provided locale
+    }
   }
   
   // 优先级2：从Vue上下文inject（如果在组件内）
   try {
     const injected = inject<Ref<string>>('app-locale', null)
     if (injected && injected.value) {
-      return injected
+      return { locale: injected, cleanup: () => {} }
     }
   } catch {}
   
@@ -242,15 +252,24 @@ function useSmartLocale(options: TemplatePluginOptions): Ref<string> {
     }
     
     // 监听全局语言变化事件
-    window.addEventListener('app:locale-changed', (e: Event) => {
+    eventListener = (e: Event) => {
       const customEvent = e as CustomEvent<{ locale: string }>
       if (customEvent.detail?.locale) {
         locale.value = customEvent.detail.locale
       }
-    })
+    }
+    window.addEventListener('app:locale-changed', eventListener)
   }
   
-  return locale
+  return {
+    locale,
+    cleanup: () => {
+      if (eventListener && typeof window !== 'undefined') {
+        window.removeEventListener('app:locale-changed', eventListener)
+        eventListener = null
+      }
+    }
+  }
 }
 
 /**
@@ -269,11 +288,17 @@ const defaultDetectDevice = (): 'desktop' | 'tablet' | 'mobile' => {
  */
 export function createTemplatePlugin(options: TemplatePluginOptions = {}): TemplatePlugin {
   // 使用智能locale获取
-  const currentLocale = useSmartLocale(options)
+  const { locale: currentLocale, cleanup: localeCleanup } = useSmartLocale(options)
+  
+  // Plugin disposal state
+  let disposed = false
+  const cleanupHandlers: (() => void)[] = [localeCleanup]
+  let initializeTimeout: NodeJS.Timeout | null = null
   
   // 懒加载 locale 数据（性能优化）
   let localeCache: { key: string; data: any } | null = null
   const getLocaleData = () => {
+    if (disposed) return null
     if (!localeCache || localeCache.key !== currentLocale.value) {
       localeCache = { key: currentLocale.value, data: getLocale(currentLocale.value) }
     }
@@ -328,6 +353,10 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
 
   // Initialize function
   const initialize = async (): Promise<void> => {
+    if (disposed) {
+      throw new Error('Plugin has been disposed')
+    }
+    
     try {
       await manager.initialize()
       
@@ -347,6 +376,10 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
 
   // Load template with hooks
   const loadTemplate = async (category: string, device: string, name: string): Promise<Component> => {
+    if (disposed) {
+      throw new Error('Plugin has been disposed')
+    }
+    
     const templatePath = `${category}/${device}/${name}`
     
     try {
@@ -371,8 +404,9 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
     }
   }
 
-  // User preferences management
+  // User preferences management - limit size to prevent memory growth
   let preferences: TemplatePreferences = {}
+  const MAX_PREFERENCES = 100 // Limit number of stored preferences
 
   // Load preferences from storage
   const loadPreferences = (): TemplatePreferences => {
@@ -404,6 +438,13 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
   // Save user preference
   const savePreference = (category: string, device: string, templateName: string) => {
     if (!mergedOptions.rememberPreferences) return
+    
+    // Limit preferences size
+    const keys = Object.keys(preferences)
+    if (keys.length >= MAX_PREFERENCES && !preferences[category]) {
+      // Remove oldest preference
+      delete preferences[keys[0]]
+    }
     
     if (!preferences[category]) {
       preferences[category] = {}
@@ -449,12 +490,12 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
           if (templates.has(templateKey)) {
             return { name: userPref }
           } else {
-            if (process.env.NODE_ENV !== 'production') {
+            if (import.meta.env.DEV) {
               console.warn(`[Template Plugin] Preferred template ${userPref} not found, falling back to default`)
             }
           }
         } catch (error) {
-          if (process.env.NODE_ENV !== 'production') {
+          if (import.meta.env.DEV) {
             console.warn(`[Template Plugin] Failed to verify preferred template ${userPref}, falling back to default`, error)
           }
         }
@@ -476,6 +517,43 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
     loadPreferences()
   }
 
+  // Dispose function to clean up resources
+  const dispose = () => {
+    if (disposed) return
+    
+    disposed = true
+    
+    // Clear initialization timeout
+    if (initializeTimeout) {
+      clearTimeout(initializeTimeout)
+      initializeTimeout = null
+    }
+    
+    // Run all cleanup handlers
+    cleanupHandlers.forEach(handler => {
+      try {
+        handler()
+      } catch (error) {
+        console.error('[Template Plugin] Cleanup error:', error)
+      }
+    })
+    cleanupHandlers.length = 0
+    
+    // Clear cache
+    localeCache = null
+    preferences = {}
+    
+    // Clean up manager resources if it has dispose
+    if ('dispose' in manager && typeof manager.dispose === 'function') {
+      (manager as any).dispose()
+    }
+    
+    // Clear window reference
+    if (typeof window !== 'undefined') {
+      delete (window as any).__TEMPLATE_PLUGIN__
+    }
+  }
+  
   // Create plugin instance
   const plugin: TemplatePlugin = {
     manager,
@@ -489,9 +567,10 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
     savePreference,
     getPreferences,
     clearPreferences,
-    scanTemplates: () => manager.scanTemplates(),
-    clearCache: () => manager.clearCache(),
+    scanTemplates: () => disposed ? Promise.reject(new Error('Plugin disposed')) : manager.scanTemplates(),
+    clearCache: () => disposed ? undefined : manager.clearCache(),
     detectDevice: mergedOptions.detectDevice,
+    dispose,
 
     install(app: App) {
       // 智能共享：如果没有传入 Ref，尝试自动共享
@@ -547,18 +626,24 @@ export function createTemplatePlugin(options: TemplatePluginOptions = {}): Templ
       
       // Register template directive
       import('../directives').then(({ installTemplateDirective }) => {
-        installTemplateDirective(app)
+        if (!disposed) {
+          installTemplateDirective(app)
+        }
+      }).catch(err => {
+        console.warn('[Template Plugin] Failed to load directives:', err)
       })
 
       // Auto-initialize on install
       if (mergedOptions.autoInit) {
         if (typeof window !== 'undefined') {
           // Initialize after next tick to ensure DOM is ready
-          setTimeout(() => {
-            initialize().catch(error => {
-              console.error('[Template Plugin] Initialization failed:', error)
-              mergedOptions.hooks?.onError?.(error)
-            })
+          initializeTimeout = setTimeout(() => {
+            if (!disposed) {
+              initialize().catch(error => {
+                console.error('[Template Plugin] Initialization failed:', error)
+                mergedOptions.hooks?.onError?.(error)
+              })
+            }
           }, 0)
         }
       }

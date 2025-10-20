@@ -24,7 +24,7 @@
  * ```
  */
 
-import type { EncryptResult, DecryptResult, EncryptionAlgorithm } from '../types'
+import type { DecryptResult, EncryptionAlgorithm, EncryptResult } from '../types'
 import { aes } from '../algorithms'
 
 /**
@@ -191,8 +191,8 @@ export class KeyRotation {
    */
   encrypt(
     data: string,
-    algorithm: EncryptionAlgorithm = 'AES',
-    options?: any
+    _algorithm: EncryptionAlgorithm = 'AES', // 未使用，默认使用AES
+    options?: Record<string, unknown>
   ): EncryptResult & { keyVersion: string } {
     const activeKey = this.getActiveKey()
     if (!activeKey) {
@@ -212,8 +212,8 @@ export class KeyRotation {
    */
   decrypt(
     encryptedData: (EncryptResult & { keyVersion: string }) | string,
-    algorithm: EncryptionAlgorithm = 'AES',
-    options?: any
+    _algorithm: EncryptionAlgorithm = 'AES', // 未使用，默认使用AES
+    options?: Record<string, unknown>
   ): DecryptResult {
     let keyVersion: string
 
@@ -244,7 +244,7 @@ export class KeyRotation {
   async reencryptData(
     encryptedData: (EncryptResult & { keyVersion: string }) | string,
     algorithm: EncryptionAlgorithm = 'AES',
-    options?: any
+    options?: Record<string, unknown>
   ): Promise<ReencryptionResult> {
     try {
       // 解密数据
@@ -285,7 +285,7 @@ export class KeyRotation {
   async reencryptBatch(
     dataList: Array<(EncryptResult & { keyVersion: string }) | string>,
     algorithm: EncryptionAlgorithm = 'AES',
-    options?: any
+    options?: Record<string, unknown>
   ): Promise<ReencryptionResult[]> {
     const results: ReencryptionResult[] = []
 

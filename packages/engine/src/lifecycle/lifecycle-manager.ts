@@ -126,8 +126,12 @@ export class LifecycleManagerImpl<T = unknown> implements LifecycleManager<T> {
   > = []
 
   private hookIdCounter = 0
-  private maxHistorySize = 100
+  private maxHistorySize = 50 // 从100减少到50，降低内存占用
   private logger?: Logger
+
+  // 内存优化：限制钩子数量
+  private readonly MAX_HOOKS = 500
+  private readonly MAX_ERROR_CALLBACKS = 50
 
   constructor(logger?: Logger) {
     this.logger = logger
@@ -514,6 +518,12 @@ export class LifecycleManagerImpl<T = unknown> implements LifecycleManager<T> {
   onError(
     callback: (error: Error, context: LifecycleContext<T>) => void
   ): () => void {
+    // 检查回调数量限制
+    if (this.errorCallbacks.length >= this.MAX_ERROR_CALLBACKS) {
+      this.logger?.warn(`Maximum error callbacks limit (${this.MAX_ERROR_CALLBACKS}) reached, removing oldest`)
+      this.errorCallbacks.shift() // 移除最旧的回调
+    }
+
     this.errorCallbacks.push(callback)
 
     return () => {
@@ -566,16 +576,25 @@ export class LifecycleManagerImpl<T = unknown> implements LifecycleManager<T> {
   clear(): void {
     this.hooks.clear()
     this.phaseHooks.clear()
-    this.errorCallbacks = []
+    this.errorCallbacks.length = 0 // 更高效的数组清空
     this.logger?.debug('Lifecycle manager cleared')
   }
 
   reset(): void {
     this.clear()
-    this.history = []
+    this.history.length = 0 // 更高效的数组清空
     this.currentPhase = undefined
     this.hookIdCounter = 0
     this.logger?.debug('Lifecycle manager reset')
+  }
+
+  // 销毁方法
+  destroy(): void {
+    this.clear()
+    this.history.length = 0
+    this.currentPhase = undefined
+    this.hookIdCounter = 0
+    this.logger = undefined
   }
 
   // 私有方法
@@ -584,12 +603,31 @@ export class LifecycleManagerImpl<T = unknown> implements LifecycleManager<T> {
   }
 
   private addToHistory(event: LifecycleEvent): void {
-    this.history.push(event)
-
-    // 限制历史记录大小
-    if (this.history.length > this.maxHistorySize) {
-      this.history = this.history.slice(-this.maxHistorySize)
+    // 优化：使用环形缓冲区，避免 slice 创建新数组
+    if (this.history.length >= this.maxHistorySize) {
+      this.history.shift() // 移除最旧的
     }
+    this.history.push(event)
+  }
+
+  // 移除最旧的钩子
+  private removeOldestHooks(count: number): void {
+    const sortedHooks = Array.from(this.hooks.entries())
+      .sort((a, b) => a[1].registeredAt - b[1].registeredAt)
+      .slice(0, count)
+
+    sortedHooks.forEach(([hookId, hookInfo]) => {
+      this.hooks.delete(hookId)
+      const phaseHooks = this.phaseHooks.get(hookInfo.phase)
+      if (phaseHooks) {
+        phaseHooks.delete(hookId)
+        if (phaseHooks.size === 0) {
+          this.phaseHooks.delete(hookInfo.phase)
+        }
+      }
+    })
+
+    this.logger?.debug('Removed oldest hooks', { count: sortedHooks.length })
   }
 
   private isCriticalPhase(phase: LifecyclePhase): boolean {

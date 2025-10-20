@@ -8,25 +8,25 @@
     */
 export    interface    ICache<K    =    string,    V    =    any>    {
                 /**    设置缓存    */
-                set(key:    K,    value:    V,    ttl?:    number):    void
+                set: (key:    K,    value:    V,    ttl?:    number) => void
 
                 /**    获取缓存    */
-                get(key:    K):    V    |    undefined
+                get: (key:    K) => V    |    undefined
 
                 /**    检查缓存是否存在    */
-                has(key:    K):    boolean
+                has: (key:    K) => boolean
 
                 /**    删除缓存    */
-                delete(key:    K):    boolean
+                delete: (key:    K) => boolean
 
                 /**    清空缓存    */
-                clear():    void
+                clear: () => void
 
                 /**    获取缓存大小    */
-                size():    number
+                size: () => number
 
                 /**    销毁缓存    */
-                dispose():    void
+                dispose: () => void
 }
 
 /**
@@ -34,7 +34,7 @@ export    interface    ICache<K    =    string,    V    =    any>    {
     */
 export    interface    IStatisticalCache<K    =    string,    V    =    any>    extends    ICache<K,    V>    {
                 /**    获取统计信息    */
-                getStats():    {
+                getStats: () => {
                                 hits:    number
                                 misses:    number
                                 hitRate:    number
@@ -44,7 +44,7 @@ export    interface    IStatisticalCache<K    =    string,    V    =    any>    
                 }
 
                 /**    获取热门键    */
-                getHotKeys(limit?:    number):    K[]
+                getHotKeys: (limit?:    number) => K[]
 }
 
 /**
@@ -52,8 +52,8 @@ export    interface    IStatisticalCache<K    =    string,    V    =    any>    
     */
 export    interface    IWarmableCache<K    =    string,    V    =    any>    extends    ICache<K,    V>    {
                 /**    注册预热任务    */
-                registerWarmup(key:    K,    loader:    ()    =>    Promise<V>    |    V):    void
+                registerWarmup: (key:    K,    loader:    ()    =>    Promise<V>    |    V) => void
 
                 /**    执行预热    */
-                warmup(keys?:    K[]):    Promise<void>
+                warmup: (keys?:    K[]) => Promise<void>
 }

@@ -1,6 +1,6 @@
 import type { Store } from 'pinia'
 import type { ComputedRef, Ref } from 'vue'
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, shallowRef, watch } from 'vue'
 
 /**
  * 通用 Store Hook
@@ -82,7 +82,7 @@ export function useActionState<T extends (...args: any[]) => any>(
   } {
   const loading = ref(false)
   const error = ref<Error | null>(null)
-  const data = ref<ReturnType<T> | null>(null)
+  const data = shallowRef<ReturnType<T> | null>(null)
 
   const execute = async (...args: Parameters<T>): Promise<ReturnType<T>> => {
     loading.value = true

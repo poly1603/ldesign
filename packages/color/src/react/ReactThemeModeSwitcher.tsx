@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Sun, Moon, Monitor, Check, ChevronDown } from 'lucide-react'
+import { Check, ChevronDown, Monitor, Moon, Sun } from 'lucide-react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 

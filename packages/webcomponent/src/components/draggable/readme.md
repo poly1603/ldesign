@@ -46,7 +46,7 @@ ldesign-draggable
 | `maxScale`              | `max-scale`                |                                  | `number`                                                                               | `4`              |
 | `minScale`              | `min-scale`                | 最小/最大缩放                          | `number`                                                                               | `0.25`           |
 | `minimapPosition`       | `minimap-position`         | 缩略图导航位置                          | `"bottom-left" \| "bottom-right" \| "top-left" \| "top-right"`                         | `'bottom-right'` |
-| `presetViews`           | --                         | 预设视角                             | `{ name: string; scale: number; rotate: number; offsetX: number; offsetY: number; }[]` | `undefined`      |
+| `presetViews`           | `preset-views`             | 预设视角                             | `{ name: string; scale: number; rotate: number; offsetX: number; offsetY: number; }[]` | `undefined`      |
 | `rotateSnapDeg`         | `rotate-snap-deg`          | 旋转吸附角度（度）。大于 0 时在捏合旋转接近该步进的倍数会吸附 | `number`                                                                               | `0`              |
 | `rotateSnapEpsilon`     | `rotate-snap-epsilon`      | 旋转吸附阈值（度），仅当与最近倍数的差值不超过该阈值时生效    | `number`                                                                               | `3`              |
 | `showControls`          | `show-controls`            |                                  | `boolean`                                                                              | `false`          |

@@ -3,7 +3,7 @@
  * Improved error messages, debugging, and developer experience
  */
 
-import type { MessageKey, Locale, TranslateOptions } from '../types';
+import type { Locale, MessageKey, TranslateOptions } from '../types';
 
 /**
  * Error severity levels
@@ -539,7 +539,7 @@ export function createErrorBoundary(
       }
     );
 
-    globalErrorHandler.logError(i18nError);
+    (globalErrorHandler as any).logError(i18nError);
     
     return fallback;
   };

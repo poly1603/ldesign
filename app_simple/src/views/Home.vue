@@ -88,14 +88,32 @@ onMounted(() => {
   // Get route count
   routeCount.value = router.getRoutes().length
 
-  // Get visit count (from localStorage)
-  const visits = parseInt(localStorage.getItem('visitCount') || '0') + 1
-  localStorage.setItem('visitCount', visits.toString())
-  visitCount.value = visits
+  // Get visit count (from localStorage) - 优化：减少字符串转换
+  const currentVisits = parseInt(localStorage.getItem('visitCount') || '0', 10)
+  const newVisits = currentVisits + 1
+  visitCount.value = newVisits
+  
+  // 使用 requestIdleCallback 延迟非关键的 localStorage 写入
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => {
+      localStorage.setItem('visitCount', String(newVisits))
+    })
+  } else {
+    localStorage.setItem('visitCount', String(newVisits))
+  }
 
-  // Calculate cache size (example)
-  const cacheStr = JSON.stringify(localStorage)
-  cacheSize.value = Math.round(new Blob([cacheStr]).size / 1024)
+  // Calculate cache size (example) - 优化：使用更高效的方式计算
+  // 避免序列化整个 localStorage，只计算键值对大小
+  let totalSize = 0
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key) {
+      const value = localStorage.getItem(key) || ''
+      totalSize += key.length + value.length
+    }
+  }
+  // 估算为 UTF-16 编码（每个字符 2 字节）
+  cacheSize.value = Math.round(totalSize * 2 / 1024)
 })
 </script>
 

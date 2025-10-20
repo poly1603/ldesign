@@ -209,16 +209,13 @@ export class SignatureManager {
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
     }
 
-    // Node.js 环境使用 crypto 模块
-    if (typeof require !== 'undefined') {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const crypto = require('node:crypto')
-        return crypto.createHash(algorithm).update(data).digest('hex')
-      }
-      catch {
-        // 如果 crypto 模块不可用，使用简单的哈希
-      }
+    // Node.js 环境使用 crypto 模块（ESM 动态导入）
+    try {
+      const { createHash } = await import('node:crypto')
+      return createHash(algorithm).update(data).digest('hex')
+    }
+    catch {
+      // 如果 crypto 模块不可用，降级到简单哈希
     }
 
     // 降级方案：使用简单的哈希（不安全，仅用于开发）

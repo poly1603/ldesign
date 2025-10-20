@@ -134,7 +134,7 @@ export function createCacheEnginePlugin(
   const {
     name = 'cache',
     version = '1.0.0',
-    dependencies = [],
+    dependencies: _dependencies = [],
     autoInstall = true,
     enablePerformanceMonitoring = false,
     debug = false,

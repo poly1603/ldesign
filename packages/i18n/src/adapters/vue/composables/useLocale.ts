@@ -2,9 +2,9 @@
  * useLocale - Locale management hook
  */
 
-import { computed, ref, type ComputedRef, type Ref } from 'vue';
-import { useI18n } from './useI18n';
 import type { Locale } from '../../../types';
+import { type ComputedRef, ref, type Ref } from 'vue';
+import { useI18n } from './useI18n';
 
 export interface UseLocaleReturn {
   locale: Ref<Locale>;

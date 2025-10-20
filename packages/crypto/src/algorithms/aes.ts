@@ -1,10 +1,10 @@
-import CryptoJS from 'crypto-js'
 import type {
   AESOptions,
   DecryptResult,
   EncryptResult,
   IEncryptor,
 } from '../types'
+import CryptoJS from 'crypto-js'
 import { CONSTANTS, ErrorUtils, RandomUtils, ValidationUtils } from '../utils'
 import { LRUCache } from '../utils/lru-cache'
 
@@ -47,7 +47,15 @@ export class AESEncryptor implements IEncryptor {
     maxSize: 100,
     ttl: 5 * 60 * 1000,
     updateAgeOnGet: true,
+    maxMemorySize: 10 * 1024 * 1024, // 10MB 内存限制
   })
+  
+  // 模式对象缓存，避免重复创建
+  private static modeCache = new Map<string, typeof CryptoJS.mode.CBC>()
+  
+  // WordArray对象池，复用常用对象
+  private static wordArrayPool: CryptoJS.lib.WordArray[] = []
+  private static readonly MAX_POOL_SIZE = 50
 
   /**
    * AES 加密
@@ -155,7 +163,15 @@ export class AESEncryptor implements IEncryptor {
 
       // 如果是使用默认格式的字符串解密，直接返回结果
       if (decryptParams.isDefaultFormat) {
-        return decryptParams.result!
+        if (decryptParams.result) {
+          return decryptParams.result
+        }
+        return {
+          success: false,
+          data: '',
+          algorithm: 'AES',
+          error: 'Decryption failed',
+        }
       }
 
       // 执行标准解密流程
@@ -408,9 +424,9 @@ export class AESEncryptor implements IEncryptor {
     // 3. 避免彩虹表攻击
     const salt = CryptoJS.SHA256(key)
 
-    // ⚠️ 安全提升：迭代次数从 1,000 提升到 100,000 (OWASP 2023 推荐)
-    // 注意：此更改会显著影响性能，但大幅提升密钥安全性（抵抗暴力破解）
-    const iterations = 100000 // OWASP 推荐：100,000+ iterations
+    // 平衡安全性和性能：使用固定迭代次数
+    // OWASP 2023推荐：100,000次
+    const iterations = 100000
 
     keyWordArray = CryptoJS.PBKDF2(key, salt, {
       keySize: keySize / 32,
@@ -424,26 +440,73 @@ export class AESEncryptor implements IEncryptor {
   }
 
   /**
-   * 获取加密模式
+   * 获取加密模式（带缓存）
    */
   private getMode(mode?: string): typeof CryptoJS.mode.CBC {
     if (!mode) {
       return CryptoJS.mode.CBC
     }
-    switch (mode.toUpperCase()) {
-      case 'CBC':
-        return CryptoJS.mode.CBC
-      case 'ECB':
-        return CryptoJS.mode.ECB
-      case 'CFB':
-        return CryptoJS.mode.CFB
-      case 'OFB':
-        return CryptoJS.mode.OFB
-      case 'CTR':
-        return CryptoJS.mode.CTR
-      default:
-        return CryptoJS.mode.CBC
+    
+    const modeKey = mode.toUpperCase()
+    
+    // 检查缓存
+    const cachedMode = AESEncryptor.modeCache.get(modeKey)
+    if (cachedMode) {
+      return cachedMode
     }
+    
+    // 创建并缓存模式对象
+    let modeObject: typeof CryptoJS.mode.CBC
+    switch (modeKey) {
+      case 'CBC':
+        modeObject = CryptoJS.mode.CBC
+        break
+      case 'ECB':
+        modeObject = CryptoJS.mode.ECB
+        break
+      case 'CFB':
+        modeObject = CryptoJS.mode.CFB
+        break
+      case 'OFB':
+        modeObject = CryptoJS.mode.OFB
+        break
+      case 'CTR':
+        modeObject = CryptoJS.mode.CTR
+        break
+      default:
+        modeObject = CryptoJS.mode.CBC
+    }
+    
+    AESEncryptor.modeCache.set(modeKey, modeObject)
+    return modeObject
+  }
+  
+  /**
+   * 从对象池获取WordArray
+   */
+  private static getWordArrayFromPool(): CryptoJS.lib.WordArray | null {
+    return this.wordArrayPool.pop() || null
+  }
+  
+  /**
+   * 归还WordArray到对象池
+   */
+  private static returnWordArrayToPool(wordArray: CryptoJS.lib.WordArray): void {
+    if (this.wordArrayPool.length < this.MAX_POOL_SIZE) {
+      // 清理数据后放回池中
+      wordArray.words = []
+      wordArray.sigBytes = 0
+      this.wordArrayPool.push(wordArray)
+    }
+  }
+  
+  /**
+   * 清理静态资源（供外部调用）
+   */
+  static cleanup(): void {
+    this.keyCache.clear()
+    this.modeCache.clear()
+    this.wordArrayPool = []
   }
 }
 

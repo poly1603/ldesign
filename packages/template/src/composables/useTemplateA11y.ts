@@ -4,8 +4,7 @@
  * 提供键盘导航、屏幕阅读器支持、焦点管理等功能
  */
 
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import type { Ref, ComputedRef } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 /**
  * 无障碍配置
@@ -186,6 +185,7 @@ class FocusManager {
  */
 class ScreenReaderAnnouncer {
   private liveRegion: HTMLElement | null = null
+  private announceTimer: ReturnType<typeof setTimeout> | null = null
   
   /**
    * 初始化
@@ -211,14 +211,21 @@ class ScreenReaderAnnouncer {
   announce(message: string, delay: number = 100) {
     if (!this.liveRegion) return
     
-    // 清空内容
+    // 清理之前的定时器
+    if (this.announceTimer) {
+      clearTimeout(this.announceTimer)
+      this.announceTimer = null
+    }
+    
+    // 清空当前内容，确保变化能被检测到
     this.liveRegion.textContent = ''
     
     // 延迟后设置新内容，确保屏幕阅读器能够检测到变化
-    setTimeout(() => {
+    this.announceTimer = setTimeout(() => {
       if (this.liveRegion) {
         this.liveRegion.textContent = message
       }
+      this.announceTimer = null
     }, delay)
   }
   
@@ -226,6 +233,10 @@ class ScreenReaderAnnouncer {
    * 清理
    */
   cleanup() {
+    if (this.announceTimer) {
+      clearTimeout(this.announceTimer)
+      this.announceTimer = null
+    }
     if (this.liveRegion && this.liveRegion.parentNode) {
       this.liveRegion.parentNode.removeChild(this.liveRegion)
     }

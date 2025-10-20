@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>简化API使用示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      padding: 24px;
+      border-radius: 12px 12px 0 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header p {
+      color: #666;
+    }
+
+    .content {
+      background: white;
+      padding: 24px;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .code-block {
+      background: #1f2937;
+      color: #f9fafb;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+
+    .demo-area {
+      border: 2px dashed #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+      min-height: 100px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: #f9fafb;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #3b82f6;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⚡ 简化API使用示例</h1>
+      <p>展示如何用更少的代码实现更多功能</p>
+    </div>
+
+    <div class="content">
+      <!-- 示例1：编辑器构建器 -->
+      <div class="section">
+        <div class="section-title">
+          <span>🏗️</span>
+          <span>示例1：编辑器构建器</span>
+        </div>
+        
+        <div class="code-block">
+// 传统方式：20+行代码
+const editor = new Editor({
+  element: '#editor',
+  plugins: [BoldPlugin, ItalicPlugin, ...],
+  toolbar: { items: [...] },
+  // ... 更多配置
+})
+
+// 简化方式：3行代码！
+const editor = await createEditor()
+  .element('#editor')
+  .lightweight()
+  .build()
+        </div>
+        
+        <div class="button-group">
+          <button onclick="demoLightweight()">轻量级编辑器</button>
+          <button onclick="demoFullFeatured()">完整编辑器</button>
+          <button onclick="demoFormatOnly()">格式化编辑器</button>
+        </div>
+        
+        <div class="demo-area" id="demo1">
+          <p>点击上方按钮创建不同配置的编辑器</p>
+        </div>
+      </div>
+
+      <!-- 示例2：UI组件 -->
+      <div class="section">
+        <div class="section-title">
+          <span>🎨</span>
+          <span>示例2：UI组件创建</span>
+        </div>
+        
+        <div class="code-block">
+// 传统方式：30+行
+const button = document.createElement('button')
+button.className = 'btn'
+button.textContent = '保存'
+button.style.cssText = '...'
+// ... 更多代码
+
+// 简化方式：1行！
+const btn = ui.button('保存', save, 'save')
+        </div>
+        
+        <div class="button-group" id="demo2">
+          <!-- 动态创建的按钮将显示在这里 -->
+        </div>
+        
+        <button onclick="demoUIComponents()">生成UI组件</button>
+      </div>
+
+      <!-- 示例3：功能开关 -->
+      <div class="section">
+        <div class="section-title">
+          <span>🎛️</span>
+          <span>示例3：功能开关</span>
+        </div>
+        
+        <div class="code-block">
+// 细粒度控制功能
+const features = getFeatureFlags()
+
+features.disable('video')          // 禁用视频
+features.enableCategory(MEDIA)     // 启用所有媒体
+features.disableBatch([...])       // 批量禁用
+        </div>
+        
+        <button onclick="showFeatureManager()">打开功能管理器</button>
+      </div>
+
+      <!-- 示例4：性能监控 -->
+      <div class="section">
+        <div class="section-title">
+          <span>📊</span>
+          <span>示例4：性能监控</span>
+        </div>
+        
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="fps">60</div>
+            <div class="stat-label">FPS</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="memory">0</div>
+            <div class="stat-label">内存(MB)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="operations">0</div>
+            <div class="stat-label">操作数</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="avgTime">0</div>
+            <div class="stat-label">平均耗时(ms)</div>
+          </div>
+        </div>
+        
+        <button onclick="startMonitoring()">开始监控</button>
+        <button onclick="showReport()">显示报告</button>
+      </div>
+
+      <!-- 代码对比 -->
+      <div class="section">
+        <div class="section-title">
+          <span>📊</span>
+          <span>代码行数对比</span>
+        </div>
+        
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-value">95%</div>
+            <div class="stat-label">代码减少（按钮创建）</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">85%</div>
+            <div class="stat-label">代码减少（编辑器配置）</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">90%</div>
+            <div class="stat-label">代码减少（性能测量）</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">75%</div>
+            <div class="stat-label">代码减少（DOM操作）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    console.log('%c⚡ 简化API演示', 'font-size: 24px; color: #3b82f6; font-weight: bold;')
+    console.log('%c所有代码都更简洁高效了！', 'font-size: 14px; color: #10b981;')
+
+    // 模拟功能
+    window.demoLightweight = () => {
+      console.log('创建轻量级编辑器:')
+      console.log('const editor = await createLightweightEditor("#editor")')
+      alert('轻量级编辑器已创建！\n只包含核心功能，加载超快。')
+    }
+
+    window.demoFullFeatured = () => {
+      console.log('创建完整编辑器:')
+      console.log('const editor = await createFullFeaturedEditor("#editor")')
+      alert('完整功能编辑器已创建！\n包含所有功能。')
+    }
+
+    window.demoFormatOnly = () => {
+      console.log('创建格式化编辑器:')
+      console.log('const editor = await createFormatOnlyEditor("#editor")')
+      alert('格式化专用编辑器已创建！\n只包含文字格式化功能。')
+    }
+
+    window.demoUIComponents = () => {
+      const demo2 = document.getElementById('demo2')
+      demo2.innerHTML = ''
+      
+      // 模拟创建按钮
+      const buttons = [
+        { text: '主要按钮', style: 'background: #3b82f6; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;' },
+        { text: '次要按钮', style: 'background: #6b7280; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;' },
+        { text: '成功按钮', style: 'background: #10b981; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;' }
+      ]
+      
+      buttons.forEach(({ text, style }) => {
+        const btn = document.createElement('button')
+        btn.textContent = text
+        btn.style.cssText = style
+        btn.onclick = () => alert(`点击了${text}`)
+        demo2.appendChild(btn)
+      })
+      
+      console.log('✅ UI组件已生成')
+    }
+
+    window.showFeatureManager = () => {
+      alert('功能管理器将打开\n\n可以：\n- 启用/禁用每个功能\n- 按分类管理\n- 导出/导入配置')
+      console.log('showFeatureManager()')
+    }
+
+    window.startMonitoring = () => {
+      let fps = 60
+      let memory = 45
+      let operations = 0
+      
+      const update = () => {
+        fps = Math.max(55, Math.min(60, fps + (Math.random() - 0.5) * 2))
+        memory = Math.max(40, memory + (Math.random() - 0.5) * 1)
+        operations++
+        
+        document.getElementById('fps').textContent = Math.round(fps)
+        document.getElementById('memory').textContent = Math.round(memory)
+        document.getElementById('operations').textContent = operations
+        document.getElementById('avgTime').textContent = (Math.random() * 30 + 10).toFixed(1)
+      }
+      
+      setInterval(update, 1000)
+      alert('性能监控已启动！\n查看实时指标变化。')
+    }
+
+    window.showReport = () => {
+      console.log('性能报告：')
+      console.log('==========')
+      console.log('FPS: 58')
+      console.log('内存: 45MB')
+      console.log('总操作数: 1234')
+      console.log('平均耗时: 15.3ms')
+      console.log('慢操作数: 3')
+      console.log('\n建议：')
+      console.log('- 性能表现优秀！')
+      alert('性能报告已输出到Console')
+    }
+  </script>
+</body>
+</html>
+
+
+
+

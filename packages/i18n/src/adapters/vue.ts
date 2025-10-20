@@ -3,20 +3,10 @@
  * Vue 3 integration for the i18n library
  */
 
-// import type { App, InjectionKey, Plugin, ComputedRef, Ref } from 'vue';
-import { inject, provide, computed, ref, watch, reactive, h } from 'vue';
-// import type { I18nInstance, I18nConfig, Locale } from '../types';
-import { createI18n } from '../index';
-
-// Type aliases to avoid import issues
-type App = any;
-type InjectionKey<T> = any;
-type Plugin = any;
-type ComputedRef<T> = any;
-type Ref<T> = any;
-type I18nInstance = any;
-type I18nConfig = any;
-type Locale = string;
+import type { App, ComputedRef, InjectionKey, Plugin, Ref } from 'vue';
+import type { I18nConfig, I18nInstance, Locale } from '../types';
+import { computed, h, inject, ref } from 'vue';
+import { createI18n } from '../core';
 
 // Injection key for Vue
 export const I18N_INJECTION_KEY: InjectionKey<I18nInstance> = Symbol('i18n');
@@ -79,7 +69,7 @@ export function useI18n(config?: I18nConfig): UseI18nComposable {
   const isReady = ref(false);
 
   // Watch for locale changes
-  const unsubscribe = i18n.on('localeChanged', ({ locale: newLocale }) => {
+  i18n.on('localeChanged', ({ locale: newLocale }) => {
     if (newLocale) {
       locale.value = newLocale;
     }
@@ -107,9 +97,9 @@ export function useI18n(config?: I18nConfig): UseI18nComposable {
 
   // 让 t 对 locale 产生响应式依赖，切换语言时可触发组件重渲染
   const reactiveT: I18nInstance['t'] = ((key: any, params?: any) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ = locale.value;
-    return i18n.t(key, params);
+    // 使用 locale.value 建立依赖关系，但避免不必要的字符串拼接
+    void locale.value;
+    return i18n.t(key, params) as unknown as string;
   }) as any;
 
   return {
@@ -138,15 +128,15 @@ export const vI18n = {
     const { value, modifiers } = binding;
 
     if (typeof value === 'string') {
-      // Simple translation
-      el.textContent = i18n.t(value);
+    // Simple translation
+    el.textContent = i18n?.t(value) || value;
     } else if (typeof value === 'object') {
       // Translation with params
       const { key, params } = value;
       if (modifiers.html) {
-        el.innerHTML = i18n.t(key, params);
+        el.innerHTML = i18n?.t(key, params) || key;
       } else {
-        el.textContent = i18n.t(key, params);
+        el.textContent = i18n?.t(key, params) || key;
       }
     }
   },
@@ -157,13 +147,13 @@ export const vI18n = {
     const { value, modifiers } = binding;
 
     if (typeof value === 'string') {
-      el.textContent = i18n.t(value);
+      el.textContent = i18n?.t(value) || value;
     } else if (typeof value === 'object') {
       const { key, params } = value;
       if (modifiers.html) {
-        el.innerHTML = i18n.t(key, params);
+        el.innerHTML = i18n?.t(key, params) || key;
       } else {
-        el.textContent = i18n.t(key, params);
+        el.textContent = i18n?.t(key, params) || key;
       }
     }
   }
@@ -207,8 +197,8 @@ export function useTranslation(key: string, params?: Ref<Record<string, any>>) {
   const { t, locale } = useI18n();
 
   return computed(() => {
-    // Trigger reactivity on locale change
-    const _ = locale.value;
+    // 建立响应式依赖
+    void locale.value;
     return t(key, params?.value);
   });
 }
@@ -218,11 +208,8 @@ export function usePlural(key: string, count: Ref<number>, params?: Ref<Record<s
   const { i18n, locale } = useI18n();
 
   return computed(() => {
-    // Trigger reactivity on locale change
-    const _ = locale.value;
-    return i18n.plural(key, count.value, {
-      params: { ...params?.value, count: count.value }
-    });
+    void locale.value;
+    return i18n.plural(key, count.value, { params: { ...params?.value, count: count.value } });
   });
 }
 
@@ -231,8 +218,7 @@ export function useNumber(value: Ref<number>, options?: Intl.NumberFormatOptions
   const { i18n, locale } = useI18n();
 
   return computed(() => {
-    // Trigger reactivity on locale change
-    const _ = locale.value;
+    void locale.value;
     return i18n.number(value.value, options);
   });
 }
@@ -242,8 +228,7 @@ export function useDate(value: Ref<Date | string | number>, options?: Intl.DateT
   const { i18n, locale } = useI18n();
 
   return computed(() => {
-    // Trigger reactivity on locale change
-    const _ = locale.value;
+    void locale.value;
     return i18n.date(value.value, options);
   });
 }
@@ -253,8 +238,7 @@ export function useCurrency(value: Ref<number>, currency: string, options?: Intl
   const { i18n, locale } = useI18n();
 
   return computed(() => {
-    // Trigger reactivity on locale change
-    const _ = locale.value;
+    void locale.value;
     return i18n.currency(value.value, currency, options);
   });
 }
@@ -264,8 +248,7 @@ export function useRelativeTime(value: Ref<Date | string | number>, options?: In
   const { i18n, locale } = useI18n();
 
   return computed(() => {
-    // Trigger reactivity on locale change
-    const _ = locale.value;
+    void locale.value;
     return i18n.relativeTime(value.value, options);
   });
 }

@@ -23,11 +23,10 @@ export interface TemplateRouteResolverOptions {
  * 模板路由解析器
  */
 export class TemplateRouteResolver {
-  private router: Router
+  // Router reference removed
   private options: Required<TemplateRouteResolverOptions>
 
-  constructor(router: Router, options: TemplateRouteResolverOptions = {}) {
-    this.router = router
+  constructor(_router: Router, options: TemplateRouteResolverOptions = {}) {
     this.options = {
       enabled: true,
       defaultTemplate: 'default',

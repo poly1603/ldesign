@@ -6,7 +6,7 @@
 /**
  * 验证规则类型
  */
-export type ValidationRule<T = any> = {
+export interface ValidationRule<T = any> {
   required?: boolean
   type?: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'function'
   min?: number
@@ -199,7 +199,7 @@ export class StoreConfigValidator {
       type: 'string',
       min: 1,
       max: 100,
-      pattern: /^[a-zA-Z][a-zA-Z0-9_-]*$/,
+      pattern: /^[a-z][\w-]*$/i,
       message: 'Store ID must be a valid identifier (alphanumeric, -, _)',
     }, 'Invalid Store ID')
   }
@@ -289,7 +289,7 @@ export class TypeGuards {
   /**
    * 检查是否为函数
    */
-  static isFunction(value: any): value is Function {
+  static isFunction(value: any): value is (...args: any[]) => any {
     return typeof value === 'function'
   }
 
@@ -318,7 +318,7 @@ export class TypeGuards {
    * 检查是否为数字
    */
   static isNumber(value: any): value is number {
-    return typeof value === 'number' && !isNaN(value) && isFinite(value)
+    return typeof value === 'number' && !Number.isNaN(value) && Number.isFinite(value)
   }
 
   /**
@@ -428,7 +428,7 @@ export class Assert {
   static isFunction(
     value: any,
     message = 'Value must be a function'
-  ): asserts value is Function {
+  ): asserts value is (...args: any[]) => any {
     if (!TypeGuards.isFunction(value)) {
       throw new AssertionError(message)
     }

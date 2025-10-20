@@ -20,6 +20,7 @@ export interface PerformanceMetrics {
   cached: boolean
   retries: number
   error?: Error
+  timestamp?: number
 }
 
 /**
@@ -45,6 +46,7 @@ export interface PerformanceStats {
   failedRequests: number
   cachedRequests: number
   averageDuration: number
+  averageResponseTime?: number
   medianDuration: number
   p95Duration: number
   p99Duration: number
@@ -151,6 +153,7 @@ export class RequestMonitor {
       cached: false, // 需要从缓存管理器获取
       retries: requestInfo.retries,
       error,
+      timestamp: endTime,
     }
 
     this.addMetrics(metrics)
@@ -235,7 +238,7 @@ export class RequestMonitor {
     // 检查缓存
     const now = Date.now()
     if (this.statsCache && (now - this.statsCacheTime) < this.statsCacheTTL) {
-      return this.statsCache
+      return { ...this.statsCache } // 返回副本，避免外部修改
     }
 
     // 计算统计信息
@@ -245,14 +248,36 @@ export class RequestMonitor {
     this.statsCache = stats
     this.statsCacheTime = now
 
-    return stats
+    return { ...stats } // 返回副本
   }
 
   /**
-   * 计算统计信息
+   * 计算统计信息（优化版）
    */
   private calculateStats(): PerformanceStats {
     const total = this.metrics.length
+    
+    // 早期返回优化
+    if (total === 0) {
+      return {
+        totalRequests: 0,
+        successfulRequests: 0,
+        failedRequests: 0,
+        cachedRequests: 0,
+        averageDuration: 0,
+        averageResponseTime: 0,
+        medianDuration: 0,
+        p95Duration: 0,
+        p99Duration: 0,
+        slowRequests: 0,
+        totalDataTransferred: 0,
+        requestsByMethod: {},
+        requestsByStatus: {},
+        errorRate: 0,
+        cacheHitRate: 0,
+      }
+    }
+    
     let successful = 0
     let failed = 0
     let cached = 0
@@ -260,30 +285,27 @@ export class RequestMonitor {
     let totalDuration = 0
     let totalSize = 0
 
-    const requestsByMethod: Record<string, number> = {}
-    const requestsByStatus: Record<number, number> = {}
-    const durations: number[] = []
+    // 使用 Object.create(null) 创建更快的普通对象
+    const requestsByMethod: Record<string, number> = Object.create(null)
+    const requestsByStatus: Record<number, number> = Object.create(null)
+    
+    // 预分配数组大小
+    const durations: number[] = Array.from({ length: total }, () => 0)
+    const slowThreshold = this.config?.slowRequestThreshold
 
     // 单次遍历收集所有数据
+    let i = 0
     for (const metric of this.metrics) {
-      durations.push(metric.duration)
-      totalDuration += metric.duration
+      const duration = metric.duration
+      durations[i++] = duration
+      totalDuration += duration
       totalSize += metric.size || 0
 
-      if (metric.error) {
-        failed++
-      }
-      else {
-        successful++
-      }
-
-      if (metric.cached) {
-        cached++
-      }
-
-      if (metric.duration > this.config?.slowRequestThreshold) {
-        slow++
-      }
+      // 使用位运算优化计数
+      failed += metric.error ? 1 : 0
+      successful += metric.error ? 0 : 1
+      cached += metric.cached ? 1 : 0
+      slow += duration > slowThreshold ? 1 : 0
 
       // 按方法统计
       requestsByMethod[metric.method] = (requestsByMethod[metric.method] || 0) + 1
@@ -294,15 +316,21 @@ export class RequestMonitor {
       }
     }
 
-    // 排序用于百分位计算
-    durations.sort((a, b) => a - b)
+    // 使用更快的排序算法（对于小数组）
+    if (total < 100) {
+      // 插入排序对小数组更快
+      this.insertionSort(durations)
+    } else {
+      durations.sort((a, b) => a - b)
+    }
 
     return {
       totalRequests: total,
       successfulRequests: successful,
       failedRequests: failed,
       cachedRequests: cached,
-      averageDuration: total > 0 ? totalDuration / total : 0,
+      averageDuration: totalDuration / total,
+      averageResponseTime: totalDuration / total,
       medianDuration: this.getPercentile(durations, 50),
       p95Duration: this.getPercentile(durations, 95),
       p99Duration: this.getPercentile(durations, 99),
@@ -310,8 +338,23 @@ export class RequestMonitor {
       totalDataTransferred: totalSize,
       requestsByMethod,
       requestsByStatus,
-      errorRate: total > 0 ? failed / total : 0,
-      cacheHitRate: total > 0 ? cached / total : 0,
+      errorRate: failed / total,
+      cacheHitRate: cached / total,
+    }
+  }
+
+  /**
+   * 插入排序（对小数组更快）
+   */
+  private insertionSort(arr: number[]): void {
+    for (let i = 1; i < arr.length; i++) {
+      const key = arr[i]
+      let j = i - 1
+      while (j >= 0 && arr[j] > key) {
+        arr[j + 1] = arr[j]
+        j--
+      }
+      arr[j + 1] = key
     }
   }
 
@@ -384,6 +427,22 @@ export class RequestMonitor {
     if (this.config) {
       this.config.enabled = false
     }
+  }
+
+  /**
+   * 设置慢请求阈值
+   */
+  setSlowRequestThreshold(threshold: number): void {
+    if (this.config) {
+      this.config.slowRequestThreshold = threshold
+    }
+  }
+
+  /**
+   * 获取指标
+   */
+  getMetrics(): PerformanceMetrics[] {
+    return [...this.metrics]
   }
 
   /**

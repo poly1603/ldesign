@@ -4,121 +4,167 @@
  * Functions for converting between different color formats
  */
 
-import type { RGB, HSL, HSV, HWB } from '../types';
+import type { HSL, HSV, HWB, RGB } from '../types';
 import { clamp, round } from '../utils/math';
 
 /**
- * Convert RGB to Hex string
+ * Convert RGB to Hex string - Optimized with lookup table
  */
+const HEX_CHARS = '0123456789ABCDEF';
+const HEX_LOOKUP = Array.from({length: 256});
+// Pre-compute hex values
+for (let i = 0; i < 256; i++) {
+  HEX_LOOKUP[i] = HEX_CHARS[i >> 4] + HEX_CHARS[i & 0x0F];
+}
+
 export function rgbToHex(rgb: RGB): string {
-  const toHex = (n: number) => {
-    const hex = Math.round(clamp(n, 0, 255)).toString(16);
-    return hex.length === 1 ? '0' + hex : hex;
-  };
-  return `#${toHex(rgb.r)}${toHex(rgb.g)}${toHex(rgb.b)}`.toUpperCase();
+  const r = clamp(rgb.r | 0, 0, 255);
+  const g = clamp(rgb.g | 0, 0, 255);
+  const b = clamp(rgb.b | 0, 0, 255);
+  return `#${  HEX_LOOKUP[r]  }${HEX_LOOKUP[g]  }${HEX_LOOKUP[b]}`;
 }
 
 /**
- * Convert Hex string to RGB
+ * Convert Hex string to RGB - Optimized
  */
 export function hexToRgb(hex: string): RGB {
-  // Remove # if present
-  hex = hex.replace(/^#/, '');
+  // Fast path for common formats
+  if (hex[0] === '#') hex = hex.slice(1);
   
-  // Handle 3-char hex
+  let r: number, g: number, b: number, a: number | undefined;
+  
   if (hex.length === 3) {
-    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    // 3-char hex
+    r = Number.parseInt(hex[0] + hex[0], 16);
+    g = Number.parseInt(hex[1] + hex[1], 16);
+    b = Number.parseInt(hex[2] + hex[2], 16);
+  } else if (hex.length === 4) {
+    // 4-char hex with alpha
+    r = Number.parseInt(hex[0] + hex[0], 16);
+    g = Number.parseInt(hex[1] + hex[1], 16);
+    b = Number.parseInt(hex[2] + hex[2], 16);
+    a = Number.parseInt(hex[3] + hex[3], 16) / 255;
+  } else if (hex.length === 6) {
+    // 6-char hex - most common
+    const value = Number.parseInt(hex, 16);
+    r = (value >> 16) & 0xFF;
+    g = (value >> 8) & 0xFF;
+    b = value & 0xFF;
+  } else if (hex.length === 8) {
+    // 8-char hex with alpha
+    const value = Number.parseInt(hex.slice(0, 6), 16);
+    r = (value >> 16) & 0xFF;
+    g = (value >> 8) & 0xFF;
+    b = value & 0xFF;
+    a = Number.parseInt(hex.slice(6), 16) / 255;
+  } else {
+    return { r: 0, g: 0, b: 0 };
   }
   
-  // Handle 4-char hex (with alpha)
-  if (hex.length === 4) {
-    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
-  }
-  
-  const r = parseInt(hex.substr(0, 2), 16);
-  const g = parseInt(hex.substr(2, 2), 16);
-  const b = parseInt(hex.substr(4, 2), 16);
-  const a = hex.length === 8 ? parseInt(hex.substr(6, 2), 16) / 255 : undefined;
-  
-  return { r, g, b, ...(a !== undefined && { a }) };
+  const rgb: RGB = { r, g, b };
+  if (a !== undefined) rgb.a = a;
+  return rgb;
 }
 
+// Reusable HSL object pool
+const hslPool: HSL[] = [];
+
+function getHSLFromPool(): HSL {
+  return hslPool.pop() || { h: 0, s: 0, l: 0 };
+}
+
+// Function removed - not used currently
+// Can be added back if needed for optimization
+
 /**
- * Convert RGB to HSL
+ * Convert RGB to HSL - Optimized with object pooling
  */
 export function rgbToHsl(rgb: RGB): HSL {
-  const r = rgb.r / 255;
-  const g = rgb.g / 255;
-  const b = rgb.b / 255;
+  const r = rgb.r * 0.00392156862745098; // /255
+  const g = rgb.g * 0.00392156862745098;
+  const b = rgb.b * 0.00392156862745098;
   
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const delta = max - min;
+  const l = (max + min) * 0.5;
   
-  let h = 0;
-  let s = 0;
-  const l = (max + min) / 2;
+  const hsl = getHSLFromPool();
   
-  if (delta !== 0) {
-    s = l > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+  if (delta === 0) {
+    hsl.h = 0;
+    hsl.s = 0;
+  } else {
+    const s = delta / (l > 0.5 ? 2 - max - min : max + min);
     
-    switch (max) {
-      case r:
-        h = ((g - b) / delta + (g < b ? 6 : 0)) / 6;
-        break;
-      case g:
-        h = ((b - r) / delta + 2) / 6;
-        break;
-      case b:
-        h = ((r - g) / delta + 4) / 6;
-        break;
+    let h: number;
+    if (max === r) {
+      h = ((g - b) / delta + (g < b ? 6 : 0)) * 60;
+    } else if (max === g) {
+      h = ((b - r) / delta + 2) * 60;
+    } else {
+      h = ((r - g) / delta + 4) * 60;
     }
+    
+    hsl.h = Math.round(h);
+    hsl.s = Math.round(s * 100);
   }
   
-  return {
-    h: round(h * 360),
-    s: round(s * 100),
-    l: round(l * 100),
-    ...(rgb.a !== undefined && { a: rgb.a })
-  };
+  hsl.l = Math.round(l * 100);
+  
+  if (rgb.a !== undefined) hsl.a = rgb.a;
+  return hsl;
 }
 
+// Reusable RGB object pool to reduce allocations
+const rgbPool: RGB[] = [];
+
+function getRGBFromPool(): RGB {
+  return rgbPool.pop() || { r: 0, g: 0, b: 0 };
+}
+
+// Function removed - not used currently
+// Can be added back if needed for optimization
+
 /**
- * Convert HSL to RGB
+ * Convert HSL to RGB - Optimized inline calculations with object pooling
  */
 export function hslToRgb(hsl: HSL): RGB {
-  const h = hsl.h / 360;
-  const s = hsl.s / 100;
-  const l = hsl.l / 100;
+  const h = hsl.h * 0.002777777777777778; // /360
+  const s = hsl.s * 0.01;
+  const l = hsl.l * 0.01;
   
-  let r: number, g: number, b: number;
+  const rgb = getRGBFromPool();
   
   if (s === 0) {
-    r = g = b = l;
+    rgb.r = rgb.g = rgb.b = Math.round(l * 255);
   } else {
-    const hue2rgb = (p: number, q: number, t: number) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1/6) return p + (q - p) * 6 * t;
-      if (t < 1/2) return q;
-      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-      return p;
-    };
-    
     const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
     const p = 2 * l - q;
+    const hk = h;
     
-    r = hue2rgb(p, q, h + 1/3);
-    g = hue2rgb(p, q, h);
-    b = hue2rgb(p, q, h - 1/3);
+    // Inline hue2rgb calculations for performance
+    let t = hk + 0.3333333333333333;
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    rgb.r = Math.round((t < 0.16666666666666666 ? p + (q - p) * 6 * t :
+         t < 0.5 ? q :
+         t < 0.6666666666666666 ? p + (q - p) * (0.6666666666666666 - t) * 6 : p) * 255);
+    
+    t = hk;
+    rgb.g = Math.round((t < 0.16666666666666666 ? p + (q - p) * 6 * t :
+         t < 0.5 ? q :
+         t < 0.6666666666666666 ? p + (q - p) * (0.6666666666666666 - t) * 6 : p) * 255);
+    
+    t = hk - 0.3333333333333333;
+    if (t < 0) t += 1;
+    rgb.b = Math.round((t < 0.16666666666666666 ? p + (q - p) * 6 * t :
+         t < 0.5 ? q :
+         t < 0.6666666666666666 ? p + (q - p) * (0.6666666666666666 - t) * 6 : p) * 255);
   }
   
-  return {
-    r: round(r * 255),
-    g: round(g * 255),
-    b: round(b * 255),
-    ...(hsl.a !== undefined && { a: hsl.a })
-  };
+  if (hsl.a !== undefined) rgb.a = hsl.a;
+  return rgb;
 }
 
 /**
@@ -312,7 +358,7 @@ export function parseColorString(input: string): RGB | null {
   // RGB/RGBA
   const rgbMatch = input.match(/^rgba?\(([^)]+)\)/);
   if (rgbMatch) {
-    const values = rgbMatch[1].split(/,\s*/).map(v => parseFloat(v));
+    const values = rgbMatch[1].split(/,\s*/).map(v => Number.parseFloat(v));
     if (values.length >= 3) {
       return {
         r: clamp(values[0], 0, 255),
@@ -326,7 +372,7 @@ export function parseColorString(input: string): RGB | null {
   // HSL/HSLA
   const hslMatch = input.match(/^hsla?\(([^)]+)\)/);
   if (hslMatch) {
-    const values = hslMatch[1].split(/,\s*/).map(v => parseFloat(v));
+    const values = hslMatch[1].split(/,\s*/).map(v => Number.parseFloat(v));
     if (values.length >= 3) {
       return hslToRgb({
         h: values[0],

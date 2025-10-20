@@ -8,6 +8,7 @@ import type * as MainModule from '@ldesign/cache'
 // Vue 模块不存在
 
 // 类型测试
+// eslint-disable-next-line ts/no-unused-vars
 type _TestMainModule = keyof typeof MainModule
 // Vue 模块类型测试跳过
 

@@ -3,7 +3,7 @@
  * 高级格式化功能，提供丰富的数据格式化选项
  */
 
-import type { Locale, Formatter } from '../types';
+import type { Formatter, Locale } from '../types';
 
 export interface FormatOptions {
   locale?: Locale;
@@ -13,9 +13,14 @@ export interface FormatOptions {
 /**
  * 高级格式化器类
  */
+// 缓存 Intl 格式化器，避免重复创建
+const intlFormatterCache = new Map<string, Intl.NumberFormat | Intl.DateTimeFormat | Intl.RelativeTimeFormat>();
+const FORMATTER_CACHE_MAX = 100;
+
 export class AdvancedFormatter {
   private locale: Locale;
-  private customFormatters: Map<string, Formatter> = new Map();
+  private readonly customFormatters = new Map<string, Formatter>();
+  private readonly formatterCache = intlFormatterCache; // 共享缓存
 
   constructor(locale: Locale = 'en') {
     this.locale = locale;
@@ -88,13 +93,28 @@ export class AdvancedFormatter {
    */
   formatNumber(value: number, options: any = {}, locale?: Locale): string {
     const loc = locale || this.locale;
-    const formatter = new Intl.NumberFormat(loc, {
-      minimumFractionDigits: options.minimumFractionDigits,
-      maximumFractionDigits: options.maximumFractionDigits,
-      minimumIntegerDigits: options.minimumIntegerDigits,
-      useGrouping: options.useGrouping !== false,
-      ...options
-    });
+    const cacheKey = `number:${loc}:${JSON.stringify(options)}`;
+    
+    let formatter = this.formatterCache.get(cacheKey) as Intl.NumberFormat;
+    if (!formatter) {
+      formatter = new Intl.NumberFormat(loc, {
+        minimumFractionDigits: options.minimumFractionDigits,
+        maximumFractionDigits: options.maximumFractionDigits,
+        minimumIntegerDigits: options.minimumIntegerDigits,
+        useGrouping: options.useGrouping !== false,
+        ...options
+      });
+      
+      // 限制缓存大小
+      if (this.formatterCache.size >= FORMATTER_CACHE_MAX) {
+        const firstKey = this.formatterCache.keys().next().value;
+        if (firstKey !== undefined) {
+          this.formatterCache.delete(firstKey);
+        }
+      }
+      this.formatterCache.set(cacheKey, formatter);
+    }
+    
     return formatter.format(value);
   }
 
@@ -104,14 +124,28 @@ export class AdvancedFormatter {
   formatCurrency(value: number, options: any = {}, locale?: Locale): string {
     const loc = locale || this.locale;
     const currency = options.currency || 'USD';
-    const formatter = new Intl.NumberFormat(loc, {
-      style: 'currency',
-      currency: currency,
-      currencyDisplay: options.currencyDisplay || 'symbol',
-      minimumFractionDigits: options.minimumFractionDigits,
-      maximumFractionDigits: options.maximumFractionDigits,
-      ...options
-    });
+    const cacheKey = `currency:${loc}:${currency}:${JSON.stringify(options)}`;
+    
+    let formatter = this.formatterCache.get(cacheKey) as Intl.NumberFormat;
+    if (!formatter) {
+      formatter = new Intl.NumberFormat(loc, {
+        style: 'currency',
+        currency,
+        currencyDisplay: options.currencyDisplay || 'symbol',
+        minimumFractionDigits: options.minimumFractionDigits,
+        maximumFractionDigits: options.maximumFractionDigits,
+        ...options
+      });
+      
+      if (this.formatterCache.size >= FORMATTER_CACHE_MAX) {
+        const firstKey = this.formatterCache.keys().next().value;
+        if (firstKey !== undefined) {
+          this.formatterCache.delete(firstKey);
+        }
+      }
+      this.formatterCache.set(cacheKey, formatter);
+    }
+    
     return formatter.format(value);
   }
 
@@ -238,7 +272,7 @@ export class AdvancedFormatter {
   /**
    * 格式化持续时间
    */
-  formatDuration(value: number, options: any = {}, locale?: Locale): string {
+  formatDuration(value: number, _options: any = {}, locale?: Locale): string {
     const loc = locale || this.locale;
     const seconds = Math.floor(value / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -304,15 +338,15 @@ export class AdvancedFormatter {
       const k = value % 100;
       
       if (j === 1 && k !== 11) {
-        return value + 'st';
+        return `${value}st`;
       }
       if (j === 2 && k !== 12) {
-        return value + 'nd';
+        return `${value}nd`;
       }
       if (j === 3 && k !== 13) {
-        return value + 'rd';
+        return `${value}rd`;
       }
-      return value + 'th';
+      return `${value}th`;
     }
     
     // 中文等其他语言
@@ -352,7 +386,7 @@ export class AdvancedFormatter {
   /**
    * 格式化电话号码
    */
-  formatPhoneNumber(value: string, options: any = {}, locale?: Locale): string {
+  formatPhoneNumber(value: string, _options: any = {}, locale?: Locale): string {
     const cleaned = value.replace(/\D/g, '');
     
     // 简单的格式化逻辑，可以根据需要扩展
@@ -480,7 +514,7 @@ export class AdvancedFormatter {
           options[key] = true;
         } else if (value === 'false') {
           options[key] = false;
-        } else if (!isNaN(Number(value))) {
+        } else if (!Number.isNaN(Number(value))) {
           options[key] = Number(value);
         } else {
           options[key] = value;
@@ -520,9 +554,24 @@ export class AdvancedFormatter {
   }
 }
 
+// 单例模式，避免重复创建实例
+let formatterInstance: AdvancedFormatter | null = null;
+
 /**
- * 创建格式化器实例
+ * 创建格式化器实例 - 使用单例模式
  */
 export function createAdvancedFormatter(locale?: Locale): AdvancedFormatter {
-  return new AdvancedFormatter(locale);
+  if (!formatterInstance) {
+    formatterInstance = new AdvancedFormatter(locale);
+  } else if (locale) {
+    formatterInstance.setLocale(locale);
+  }
+  return formatterInstance;
+}
+
+/**
+ * 清理格式化器缓存
+ */
+export function clearFormatterCache(): void {
+  intlFormatterCache.clear();
 }

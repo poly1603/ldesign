@@ -1,4 +1,3 @@
-import forge from 'node-forge'
 import type {
   DecryptResult,
   EncryptResult,
@@ -6,6 +5,7 @@ import type {
   RSAKeyPair,
   RSAOptions,
 } from '../types'
+import forge from 'node-forge'
 import { CONSTANTS, ErrorUtils, ValidationUtils } from '../utils'
 
 /**
@@ -28,10 +28,10 @@ export class RSAEncryptor implements IEncryptor {
    * 生成 RSA 密钥对
    */
   generateKeyPair(
-    keySize: number = CONSTANTS.RSA.DEFAULT_KEY_SIZE,
+    keySize: 1024 | 2048 | 3072 | 4096 = CONSTANTS.RSA.DEFAULT_KEY_SIZE,
   ): RSAKeyPair {
     try {
-      if (!CONSTANTS.RSA.KEY_SIZES.includes(keySize as any)) {
+      if (!CONSTANTS.RSA.KEY_SIZES.includes(keySize)) {
         throw ErrorUtils.createEncryptionError(
           `Unsupported RSA key size: ${keySize}`,
           'RSA',
@@ -182,7 +182,7 @@ export class RSAEncryptor implements IEncryptor {
       const privateKeyObj = this.parsePrivateKey(privateKey)
 
       // 创建消息摘要
-      const md = (forge.md as any)[algorithm].create()
+      const md = this.getMessageDigest(algorithm)
       md.update(data, 'utf8')
 
       // 生成签名
@@ -219,7 +219,7 @@ export class RSAEncryptor implements IEncryptor {
       const publicKeyObj = this.parsePublicKey(publicKey)
 
       // 创建消息摘要
-      const md = (forge.md as any)[algorithm].create()
+      const md = this.getMessageDigest(algorithm)
       md.update(data, 'utf8')
 
       // 解码签名
@@ -274,7 +274,7 @@ export class RSAEncryptor implements IEncryptor {
   /**
    * 获取填充方案
    */
-  private getPaddingScheme(padding: string): any {
+  private getPaddingScheme(padding: string): 'RSA-OAEP' | 'RSAES-PKCS1-V1_5' {
     switch (padding.toUpperCase()) {
       case 'OAEP':
         return 'RSA-OAEP'
@@ -282,6 +282,21 @@ export class RSAEncryptor implements IEncryptor {
         return 'RSAES-PKCS1-V1_5'
       default:
         return 'RSA-OAEP'
+    }
+  }
+
+  private getMessageDigest(algorithm: string): forge.md.MessageDigest {
+    const alg = algorithm.toLowerCase()
+    switch (alg) {
+      case 'sha1':
+        return forge.md.sha1.create()
+      case 'sha256':
+        return forge.md.sha256.create()
+      case 'sha512':
+        return forge.md.sha512.create()
+      default:
+        // 默认 sha256
+        return forge.md.sha256.create()
     }
   }
 
@@ -362,7 +377,7 @@ export const rsa = {
   /**
    * 生成 RSA 密钥对
    */
-  generateKeyPair: (keySize?: number): RSAKeyPair => {
+  generateKeyPair: (keySize?: 1024 | 2048 | 3072 | 4096): RSAKeyPair => {
     const encryptor = new RSAEncryptor()
     return encryptor.generateKeyPair(keySize)
   },

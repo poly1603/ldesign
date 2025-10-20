@@ -3,7 +3,7 @@
  * 支持 Web Worker (浏览器) 和 Worker Threads (Node.js)
  */
 
-import type { EncryptResult, DecryptResult } from '../types'
+import type { DecryptResult, EncryptResult } from '../types'
 import type { WorkerMessage, WorkerResponse } from './crypto.worker'
 
 /**
@@ -39,7 +39,7 @@ interface WorkerTask {
   message: WorkerMessage
   resolve: (result: EncryptResult | DecryptResult) => void
   reject: (error: Error) => void
-  timeout?: NodeJS.Timeout
+  timeout?: number
 }
 
 /**
@@ -47,7 +47,7 @@ interface WorkerTask {
  */
 interface WorkerInstance {
   id: number
-  worker: Worker | any // Worker | NodeWorker
+  worker: Worker
   busy: boolean
   taskCount: number
 }
@@ -112,15 +112,11 @@ export class WorkerPool {
   }
 
   constructor(options: WorkerPoolOptions = {}) {
-    // 检测环境
-    this.isNodeEnv = typeof process !== 'undefined'
-      && process.versions != null
-      && process.versions.node != null
+    // Web环境
+    this.isNodeEnv = false
 
     // 默认配置
-    const defaultSize = this.isNodeEnv
-      ? require('os').cpus().length
-      : navigator.hardwareConcurrency || 4
+    const defaultSize = navigator.hardwareConcurrency || 4
 
     this.options = {
       size: options.size || defaultSize,
@@ -159,20 +155,10 @@ export class WorkerPool {
    */
   private createWorker(id: number): void {
     try {
-      let worker: any
-
-      if (this.isNodeEnv) {
-        // Node.js Worker Threads
-        const { Worker: NodeWorker } = require('worker_threads')
-        const workerPath = this.options.workerPath || require.resolve('./crypto.worker')
-        worker = new NodeWorker(workerPath)
-      }
-      else {
-        // Web Worker
-        // 注意：在实际使用中，需要配置打包工具正确处理 Worker 文件
-        const workerUrl = new URL('./crypto.worker.ts', import.meta.url)
-        worker = new Worker(workerUrl, { type: 'module' })
-      }
+      // Web Worker
+      // 注意：在实际使用中，需要配置打包工具正确处理 Worker 文件
+      const workerUrl = new URL('./crypto.worker.ts', import.meta.url)
+      const worker = new Worker(workerUrl, { type: 'module' })
 
       const instance: WorkerInstance = {
         id,
@@ -182,22 +168,12 @@ export class WorkerPool {
       }
 
       // 监听消息
-      if (this.isNodeEnv) {
-        worker.on('message', (response: WorkerResponse) => {
-          this.handleWorkerResponse(instance, response)
-        })
-        worker.on('error', (error: Error) => {
-          this.handleWorkerError(instance, error)
-        })
-      }
-      else {
-        worker.addEventListener('message', (event: MessageEvent<WorkerResponse>) => {
-          this.handleWorkerResponse(instance, event.data)
-        })
-        worker.addEventListener('error', (event: ErrorEvent) => {
-          this.handleWorkerError(instance, new Error(event.message))
-        })
-      }
+      worker.addEventListener('message', (event: MessageEvent<WorkerResponse>) => {
+        this.handleWorkerResponse(instance, event.data)
+      })
+      worker.addEventListener('error', (event: ErrorEvent) => {
+        this.handleWorkerError(instance, new Error(event.message))
+      })
 
       this.workers.push(instance)
     }
@@ -291,31 +267,29 @@ export class WorkerPool {
     this.activeTasks.set(task.id, task)
 
     // 设置超时
-    task.timeout = setTimeout(() => {
+    task.timeout = window.setTimeout(() => {
       this.activeTasks.delete(task.id)
       this.stats.failedTasks++
       worker.busy = false
       task.reject(new Error(`Task ${task.id} timeout after ${this.options.timeout}ms`))
       this.processNextTask()
-    }, this.options.timeout)
+    }, this.options.timeout) as unknown as number
 
     // 发送消息
     const startTime = Date.now()
-    if (this.isNodeEnv) {
-      worker.worker.postMessage(task.message)
-    }
-    else {
-      worker.worker.postMessage(task.message)
-    }
+    worker.worker.postMessage(task.message)
 
     // 记录开始时间
-    this.activeTasks.get(task.id)!.resolve = ((originalResolve) => {
-      return (result: EncryptResult | DecryptResult) => {
-        const elapsed = Date.now() - startTime
-        this.stats.totalTaskTime += elapsed
-        originalResolve(result)
-      }
-    })(task.resolve)
+    const activeTask = this.activeTasks.get(task.id)
+    if (activeTask) {
+      activeTask.resolve = ((originalResolve) => {
+        return (result: EncryptResult | DecryptResult) => {
+          const elapsed = Date.now() - startTime
+          this.stats.totalTaskTime += elapsed
+          originalResolve(result)
+        }
+      })(task.resolve)
+    }
   }
 
   /**
@@ -325,7 +299,7 @@ export class WorkerPool {
     data: string,
     key: string,
     algorithm: string,
-    options?: Record<string, any>,
+    options?: Record<string, unknown>,
   ): Promise<EncryptResult> {
     if (!this.isInitialized) {
       this.initialize()
@@ -344,7 +318,7 @@ export class WorkerPool {
           key,
           options,
         },
-        resolve: resolve as any,
+        resolve: resolve as (result: EncryptResult | DecryptResult) => void,
         reject,
       }
 
@@ -367,7 +341,7 @@ export class WorkerPool {
     data: string,
     key: string,
     algorithm: string,
-    options?: Record<string, any>,
+    options?: Record<string, unknown>,
   ): Promise<DecryptResult> {
     if (!this.isInitialized) {
       this.initialize()
@@ -386,7 +360,7 @@ export class WorkerPool {
           key,
           options,
         },
-        resolve: resolve as any,
+        resolve: resolve as (result: EncryptResult | DecryptResult) => void,
         reject,
       }
 
@@ -410,7 +384,7 @@ export class WorkerPool {
       data: string
       key: string
       algorithm: string
-      options?: Record<string, any>
+      options?: Record<string, unknown>
     }>,
   ): Promise<EncryptResult[]> {
     if (!this.isInitialized) {
@@ -432,7 +406,7 @@ export class WorkerPool {
       data: string
       key: string
       algorithm: string
-      options?: Record<string, any>
+      options?: Record<string, unknown>
     }>,
   ): Promise<DecryptResult[]> {
     if (!this.isInitialized) {

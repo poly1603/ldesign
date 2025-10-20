@@ -6,14 +6,14 @@
  */
 
 // 从 index.ts 导入通用工具函数，避免重复实现
-export { debounce, throttle, memoize } from './index'
+export { debounce, memoize, throttle } from './index'
 
 // 类型导出
-export type DebouncedFunction<T extends (...args: any[]) => any> = ((...args: Parameters<T>) => void) & {
+export type DebouncedFunction<T extends (...args: unknown[]) => unknown> = ((...args: Parameters<T>) => void) & {
  cancel: () => void
 }
 
-export type ThrottledFunction<T extends (...args: any[]) => any> = ((...args: Parameters<T>) => void) & {
+export type ThrottledFunction<T extends (...args: unknown[]) => unknown> = ((...args: Parameters<T>) => void) & {
  cancel: () => void
 }
 
@@ -22,7 +22,7 @@ export type ThrottledFunction<T extends (...args: any[]) => any> = ((...args: Pa
  *
  * 提供模块和资源的懒加载功能
  */
-export class LazyLoader<T = any> {
+export class LazyLoader<T = unknown> {
  private loaders: Map<string, () => Promise<T>>
  private cache: Map<string, T>
  private loading: Map<string, Promise<T>>
@@ -46,12 +46,14 @@ export class LazyLoader<T = any> {
  async load(name: string): Promise<T> {
   // 检查缓存
   if (this.cache.has(name)) {
-   return this.cache.get(name)!
+   const cached = this.cache.get(name)
+   if (cached !== undefined) return cached
   }
 
   // 检查是否正在加载
   if (this.loading.has(name)) {
-   return this.loading.get(name)!
+   const loading = this.loading.get(name)
+   if (loading) return loading
   }
 
   // 获取加载器
@@ -119,7 +121,7 @@ export class LazyLoader<T = any> {
  * @param callback 要节流的回调函数
  * @returns 节流后的函数
  */
-export function rafThrottle<T extends (...args: any[]) => any>(
+export function rafThrottle<T extends (...args: unknown[]) => unknown>(
  callback: T,
 ): ThrottledFunction<T> {
  let requestId: number | null = null
@@ -154,7 +156,7 @@ export class BatchExecutor<T, R> {
  private timer: ReturnType<typeof setTimeout> | null = null
  private promises: Array<{
   resolve: (value: R) => void
-  reject: (error: any) => void
+  reject: (error: unknown) => void
  }> = []
 
  constructor(
@@ -177,7 +179,7 @@ export class BatchExecutor<T, R> {
    this.promises.push({ resolve, reject })
 
    // 如果达到批处理大小限制，立即执行
-   if (this.batch.length >= this.options.maxBatchSize!) {
+   if (this.options.maxBatchSize && this.batch.length >= this.options.maxBatchSize) {
     this.flush()
    }
    else {
