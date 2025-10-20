@@ -462,7 +462,7 @@ const checkPasswordStrength = () => {
   
   try {
     const checker = new PasswordStrengthChecker()
-    const result = checker.check(passwordInput.value)
+    const result = checker.analyze(passwordInput.value)
     passwordStrength.value = result
     console.log('密码强度:', result)
   } catch (error: any) {

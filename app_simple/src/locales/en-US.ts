@@ -24,6 +24,8 @@ export default {
     home: 'Home',
     about: 'About',
     crypto: 'Crypto Demo',
+    http: 'HTTP Demo',
+    api: 'API Demo',
     dashboard: 'Dashboard',
     login: 'Login',
     logout: 'Logout',
@@ -166,6 +168,18 @@ export default {
   crypto: {
     title: 'Crypto Demo',
     subtitle: 'Experience @ldesign/crypto encryption features'
+  },
+
+  // HTTP Demo Page
+  http: {
+    title: 'HTTP Demo',
+    subtitle: 'Experience @ldesign/http network request features'
+  },
+
+  // API Demo Page
+  api: {
+    title: 'API Demo',
+    subtitle: 'Experience @ldesign/api interface management features'
   },
 
   // Dashboard Page

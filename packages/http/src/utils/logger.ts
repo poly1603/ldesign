@@ -3,7 +3,10 @@
  *
  * 替换所有console.log,提供更好的日志控制
  */
-import process from 'node:process'
+
+// 浏览器兼容的 process.env 访问
+const isBrowser = typeof window !== 'undefined'
+const env = isBrowser ? (import.meta.env || {}) : (globalThis.process?.env || {})
 
 export enum LogLevel {
   DEBUG = 0,
@@ -53,7 +56,7 @@ export class Logger {
   private isProduction: boolean
 
   constructor(config: LoggerConfig = {}) {
-    this.isProduction = process.env.NODE_ENV === 'production'
+    this.isProduction = env.NODE_ENV === 'production' || env.MODE === 'production'
 
     this.config = {
       level: config.level ?? (this.isProduction ? LogLevel.WARN : LogLevel.DEBUG),

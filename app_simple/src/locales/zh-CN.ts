@@ -24,6 +24,8 @@ export default {
     home: '首页',
     about: '关于',
     crypto: '加密演示',
+    http: 'HTTP 演示',
+    api: 'API 演示',
     dashboard: '仪表盘',
     login: '登录',
     logout: '退出登录',
@@ -134,6 +136,18 @@ export default {
   crypto: {
     title: '加密演示',
     subtitle: '体验 @ldesign/crypto 加密功能'
+  },
+
+  // HTTP 演示页面
+  http: {
+    title: 'HTTP 演示',
+    subtitle: '体验 @ldesign/http 网络请求功能'
+  },
+
+  // API 演示页面
+  api: {
+    title: 'API 演示',
+    subtitle: '体验 @ldesign/api 接口管理功能'
   },
 
   // 仪表盘页面

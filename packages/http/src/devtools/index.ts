@@ -5,8 +5,11 @@
  */
 
 import type { HttpClient, HttpError, RequestConfig, ResponseData } from '../types'
-import process from 'node:process'
 import { logger } from '../utils/logger'
+
+// 浏览器兼容的 process.env 访问
+const isBrowser = typeof window !== 'undefined'
+const env = isBrowser ? (import.meta.env || {}) : (globalThis.process?.env || {})
 
 /**
  * 请求记录
@@ -69,7 +72,7 @@ export class HttpDevTools {
 
   constructor(config: DevToolsConfig = {}) {
     this.config = {
-      enabled: config.enabled ?? (process.env.NODE_ENV !== 'production'),
+      enabled: config.enabled ?? (env.NODE_ENV !== 'production' && env.MODE !== 'production'),
       maxRecords: config.maxRecords ?? 100,
       showConsole: config.showConsole ?? true,
       logToConsole: config.logToConsole ?? true,
@@ -78,7 +81,7 @@ export class HttpDevTools {
 
     // 在浏览器中暴露到window
     if (typeof window !== 'undefined' && this.config?.enabled) {
-      ;(window as any).__HTTP_DEVTOOLS__ = this
+      ; (window as any).__HTTP_DEVTOOLS__ = this
     }
   }
 
@@ -148,8 +151,8 @@ export class HttpDevTools {
       status: 'pending',
     }
 
-    // 保存到配置中,用于后续匹配
-    ;(config as any).__devtools_id__ = id
+      // 保存到配置中,用于后续匹配
+      ; (config as any).__devtools_id__ = id
 
     this.addRecord(record)
 
@@ -378,7 +381,7 @@ export const globalDevTools = new HttpDevTools()
  * 在浏览器console中可用的快捷命令
  */
 if (typeof window !== 'undefined') {
-  ;(window as any).httpDevTools = {
+  ; (window as any).httpDevTools = {
     getRecords: () => globalDevTools.getRecords(),
     getStats: () => globalDevTools.getStats(),
     printStats: () => globalDevTools.printStats(),

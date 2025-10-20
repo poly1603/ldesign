@@ -12,6 +12,8 @@ const Login = () => import('@/views/Login.vue')
 const Dashboard = () => import('@/views/Dashboard.vue')
 const About = () => import('@/views/About.vue')
 const CryptoDemo = () => import('@/views/CryptoDemo.vue')
+const HttpDemo = () => import('@/views/HttpDemo.vue')
+const ApiDemo = () => import('@/views/ApiDemo.vue')
 
 /**
  * 公开路由
@@ -54,6 +56,26 @@ export const publicRoutes: RouteRecordRaw[] = [
         component: CryptoDemo,
         meta: {
           titleKey: 'nav.crypto',
+          requiresAuth: false,
+          layout: 'default'
+        }
+      },
+      {
+        path: 'http',
+        name: 'HttpDemo',
+        component: HttpDemo,
+        meta: {
+          titleKey: 'nav.http',
+          requiresAuth: false,
+          layout: 'default'
+        }
+      },
+      {
+        path: 'api',
+        name: 'ApiDemo',
+        component: ApiDemo,
+        meta: {
+          titleKey: 'nav.api',
           requiresAuth: false,
           layout: 'default'
         }

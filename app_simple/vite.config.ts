@@ -17,13 +17,17 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
+      '@ldesign/api': resolve(__dirname, '../packages/api/src'),
       '@ldesign/cache': resolve(__dirname, '../packages/cache/src'),
-      '@ldesign/engine': resolve(__dirname, '../packages/engine/src'),
-      '@ldesign/router': resolve(__dirname, '../packages/router/src'),
-      '@ldesign/i18n': resolve(__dirname, '../packages/i18n/src'),
       '@ldesign/color': resolve(__dirname, '../packages/color/src'),
-      '@ldesign/template': resolve(__dirname, '../packages/template/src'),
+      '@ldesign/crypto': resolve(__dirname, '../packages/crypto/src'),
+      '@ldesign/engine': resolve(__dirname, '../packages/engine/src'),
+      '@ldesign/http': resolve(__dirname, '../packages/http/src'),
+      '@ldesign/i18n': resolve(__dirname, '../packages/i18n/src'),
+      '@ldesign/router': resolve(__dirname, '../packages/router/src'),
       '@ldesign/size': resolve(__dirname, '../packages/size/src'),
+      '@ldesign/store': resolve(__dirname, '../packages/store/src'),
+      '@ldesign/template': resolve(__dirname, '../packages/template/src'),
     }
   },
   server: {

@@ -22,7 +22,13 @@
             {{ t('nav.about') }}
           </RouterLink>
           <RouterLink to="/crypto" class="nav-link" :class="{ active: $route.path === '/crypto' }">
-            {{ t('nav.crypto') || 'Crypto' }}
+            {{ t('nav.crypto') }}
+          </RouterLink>
+          <RouterLink to="/http" class="nav-link" :class="{ active: $route.path === '/http' }">
+            {{ t('nav.http') }}
+          </RouterLink>
+          <RouterLink to="/api" class="nav-link" :class="{ active: $route.path === '/api' }">
+            {{ t('nav.api') }}
           </RouterLink>
           <RouterLink v-if="isLoggedIn" to="/dashboard" class="nav-link"
             :class="{ active: $route.path === '/dashboard' }">

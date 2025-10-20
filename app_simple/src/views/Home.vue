@@ -13,8 +13,30 @@
         <RouterLink to="/about" class="btn btn-primary">
           {{ t('home.learnMore') }}
         </RouterLink>
-        <RouterLink to="/dashboard" class="btn btn-secondary">
+        <RouterLink to="/crypto" class="btn btn-secondary">
           {{ t('home.getStarted') }}
+        </RouterLink>
+      </div>
+    </div>
+
+    <!-- Demo Showcase -->
+    <div class="demos">
+      <h2 class="demos-title">功能演示</h2>
+      <div class="demos-grid">
+        <RouterLink to="/crypto" class="demo-card">
+          <Lock class="demo-icon" />
+          <h3>加密演示</h3>
+          <p>体验 AES、RSA、哈希算法等加密功能</p>
+        </RouterLink>
+        <RouterLink to="/http" class="demo-card">
+          <Globe class="demo-icon" />
+          <h3>HTTP 演示</h3>
+          <p>体验网络请求、拦截器、缓存等功能</p>
+        </RouterLink>
+        <RouterLink to="/api" class="demo-card">
+          <Server class="demo-icon" />
+          <h3>API 演示</h3>
+          <p>体验 API 引擎、插件系统、批量请求等功能</p>
         </RouterLink>
       </div>
     </div>
@@ -52,7 +74,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from '@ldesign/router'
 import { useI18n } from '@/i18n'
-import { Zap, Package, FileText } from 'lucide-vue-next'
+import { Zap, Package, FileText, Lock, Globe, Server } from 'lucide-vue-next'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -189,6 +211,63 @@ onMounted(() => {
 .btn-secondary:hover {
   background: var(--color-primary-default);
   color: var(--color-text-inverse);
+}
+
+/* Demo showcase */
+.demos {
+  margin-bottom: 40px;
+}
+
+.demos-title {
+  text-align: center;
+  font-size: 36px;
+  color: var(--color-text-primary);
+  margin: 0 0 40px 0;
+}
+
+.demos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.demo-card {
+  background: var(--color-bg-container);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  transition: all 0.3s;
+  text-decoration: none;
+  color: inherit;
+  border: 2px solid transparent;
+}
+
+.demo-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-default);
+}
+
+.demo-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 20px;
+  color: var(--color-primary-default);
+}
+
+.demo-card h3 {
+  font-size: 20px;
+  color: var(--color-text-primary);
+  margin: 0 0 10px 0;
+}
+
+.demo-card p {
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.6;
+  font-size: 14px;
 }
 
 /* Features display */
