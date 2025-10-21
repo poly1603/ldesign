@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//d/WorkBench/ldesign/library/**)"
-    ],
-    "deny": [],
-    "ask": []
-  }
-}

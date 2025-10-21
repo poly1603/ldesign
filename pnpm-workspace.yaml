@@ -2,8 +2,7 @@ packages:
   - packages/**
   - library/**
   - tools/**
-  - app
-  - app_simple
+  - apps/*
 
 catalog:
   # React 相关

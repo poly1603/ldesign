@@ -1,5 +1,0 @@
-esm
-lib
-dist
-node_modules
-types/**/*.d.ts

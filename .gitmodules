@@ -1,0 +1,114 @@
+[submodule "apps/app"]
+	path = apps/app
+	url = https://github.com/poly1603/ldesign-app.git
+[submodule "libraries/3d-viewer"]
+	path = libraries/3d-viewer
+	url = https://github.com/poly1603/ldesign-3d-viewer.git
+[submodule "libraries/chart"]
+	path = libraries/chart
+	url = https://github.com/poly1603/ldesign-chart.git
+[submodule "libraries/code-editor"]
+	path = libraries/code-editor
+	url = https://github.com/poly1603/ldesign-code-editor.git
+[submodule "libraries/cropper"]
+	path = libraries/cropper
+	url = https://github.com/poly1603/ldesign-cropper.git
+[submodule "libraries/editor"]
+	path = libraries/editor
+	url = https://github.com/poly1603/ldesign-editor.git
+[submodule "libraries/excel"]
+	path = libraries/excel
+	url = https://github.com/poly1603/ldesign-excel.git
+[submodule "libraries/flowchart"]
+	path = libraries/flowchart
+	url = https://github.com/poly1603/ldesign-flowchart.git
+[submodule "libraries/form"]
+	path = libraries/form
+	url = https://github.com/poly1603/ldesign-form.git
+[submodule "libraries/grid"]
+	path = libraries/grid
+	url = https://github.com/poly1603/ldesign-grid.git
+[submodule "libraries/lottie"]
+	path = libraries/lottie
+	url = https://github.com/poly1603/ldesign-lottie.git
+[submodule "libraries/lowcode"]
+	path = libraries/lowcode
+	url = https://github.com/poly1603/ldesign-lowcode.git
+[submodule "libraries/map"]
+	path = libraries/map
+	url = https://github.com/poly1603/ldesign-map.git
+[submodule "libraries/office-document"]
+	path = libraries/office-document
+	url = https://github.com/poly1603/ldesign-office-document.git
+[submodule "libraries/pdf"]
+	path = libraries/pdf
+	url = https://github.com/poly1603/ldesign-pdf.git
+[submodule "libraries/progress"]
+	path = libraries/progress
+	url = https://github.com/poly1603/ldesign-progress.git
+[submodule "libraries/qrcode"]
+	path = libraries/qrcode
+	url = https://github.com/poly1603/ldesign-qrcode.git
+[submodule "libraries/table"]
+	path = libraries/table
+	url = https://github.com/poly1603/ldesign-table.git
+[submodule "libraries/webcomponent"]
+	path = libraries/webcomponent
+	url = https://github.com/poly1603/ldesign-webcomponent.git
+[submodule "libraries/word"]
+	path = libraries/word
+	url = https://github.com/poly1603/ldesign-word.git
+[submodule "packages/api"]
+	path = packages/api
+	url = https://github.com/poly1603/ldesign-api.git
+[submodule "packages/cache"]
+	path = packages/cache
+	url = https://github.com/poly1603/ldesign-cache.git
+[submodule "packages/color"]
+	path = packages/color
+	url = https://github.com/poly1603/ldesign-color.git
+[submodule "packages/crypto"]
+	path = packages/crypto
+	url = https://github.com/poly1603/ldesign-crypto.git
+[submodule "packages/device"]
+	path = packages/device
+	url = https://github.com/poly1603/ldesign-device.git
+[submodule "packages/engine"]
+	path = packages/engine
+	url = https://github.com/poly1603/ldesign-engine.git
+[submodule "packages/http"]
+	path = packages/http
+	url = https://github.com/poly1603/ldesign-http.git
+[submodule "packages/i18n"]
+	path = packages/i18n
+	url = https://github.com/poly1603/ldesign-i18n.git
+[submodule "packages/size"]
+	path = packages/size
+	url = https://github.com/poly1603/ldesign-size.git
+[submodule "packages/store"]
+	path = packages/store
+	url = https://github.com/poly1603/ldesign-store.git
+[submodule "packages/template"]
+	path = packages/template
+	url = https://github.com/poly1603/ldesign-template.git
+[submodule "tools/builder"]
+	path = tools/builder
+	url = https://github.com/poly1603/ldesign-builder.git
+[submodule "tools/kit"]
+	path = tools/kit
+	url = https://github.com/poly1603/ldesign-kit.git
+[submodule "tools/launcher"]
+	path = tools/launcher
+	url = https://github.com/poly1603/ldesign-launcher.git
+[submodule "libraries/datepicker"]
+	path = libraries/datepicker
+	url = https://github.com/poly1603/ldesign-datepicker.git
+[submodule "packages/router"]
+	path = packages/router
+	url = https://github.com/poly1603/ldesign-router.git
+[submodule "packages/shared"]
+	path = packages/shared
+	url = https://github.com/poly1603/ldesign-shared.git
+[submodule "tools/cli"]
+	path = tools/cli
+	url = https://github.com/poly1603/ldesign-cli.git

@@ -1,6 +1,0 @@
-esm
-cjs
-lib
-dist
-node_modules
-types/**/*.d.ts

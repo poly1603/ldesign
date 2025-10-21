@@ -80,7 +80,7 @@ examples/dist
 examples/node_modules
 
 # Tools and playground directories
-tools/
+# tools/
 library/datepicker/playground/
 library/webcomponent/
 

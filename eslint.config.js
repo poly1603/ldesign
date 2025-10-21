@@ -10,6 +10,7 @@ export default antfu({
     '**/dist/**',
     '**/es/**',
     '**/lib/**',
+    '**/.rollup.cache/**',
     '**/types/**',
     '**/node_modules/**',
     '**/coverage/**',
