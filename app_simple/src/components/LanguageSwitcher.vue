@@ -25,8 +25,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useI18n } from '@/i18n'
-import { availableLocales } from '@/locales'
+import { useI18n } from '../i18n'
+import { availableLocales } from '../locales'
 import { ChevronDown, Check } from 'lucide-vue-next'
 
 const { locale, setLocale, t } = useI18n()

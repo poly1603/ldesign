@@ -190,18 +190,18 @@ export class PluginCommand implements CliCommandDefinition {
       }
 
       // 显示搜索结果
-      )
-      
+      console.log(`\n找到 ${results.length} 个插件:\n`)
+
       results.forEach((plugin, index) => {
         const official = plugin.official ? chalk.blue('[官方]') : ''
         const installed = plugin.installed ? chalk.green('[已安装]') : ''
         const rating = '★'.repeat(Math.round(plugin.rating))
-        
-        .toString().padStart(2))}. ${chalk.bold(plugin.name)} ${official} ${installed}`)
-        
-        } 下载 • ${rating} (${plugin.reviewCount})`)}`)
-        )}`)
-        
+
+        console.log(`${(index + 1).toString().padStart(2)}. ${chalk.bold(plugin.name)} ${official} ${installed}`)
+        console.log(`   ${chalk.gray(plugin.description)}`)
+        console.log(`   ${chalk.cyan(plugin.downloads)} 下载 • ${rating} (${plugin.reviewCount})`)
+        console.log(`   版本: ${plugin.version} • 作者: ${plugin.author}`)
+        console.log()
       })
 
     } catch (error) {
@@ -249,9 +249,9 @@ export class PluginCommand implements CliCommandDefinition {
       }
 
       logger.info(`正在卸载插件 ${name}...`)
-      
+
       await pluginMarket.uninstallPlugin(name)
-      
+
       logger.success(`插件 ${name} 卸载成功`)
 
     } catch (error) {
@@ -270,28 +270,28 @@ export class PluginCommand implements CliCommandDefinition {
       if (name) {
         // 更新指定插件
         logger.info(`正在更新插件 ${name}...`)
-        
+
         await pluginMarket.updatePlugin(name, options.version)
-        
+
         logger.success(`插件 ${name} 更新成功`)
       } else {
         // 更新所有插件
         logger.info('正在检查插件更新...')
-        
+
         const updates = await pluginMarket.checkUpdates()
-        
+
         if (updates.length === 0) {
           logger.info('所有插件都是最新版本')
           return
         }
 
         logger.info(`发现 ${updates.length} 个插件有更新，正在更新...`)
-        
+
         for (const update of updates) {
           logger.info(`正在更新 ${update.plugin.name}...`)
           await pluginMarket.updatePlugin(update.plugin.name)
         }
-        
+
         logger.success(`成功更新 ${updates.length} 个插件`)
       }
 
@@ -322,25 +322,23 @@ export class PluginCommand implements CliCommandDefinition {
           return
         }
 
-        )
-        
+        console.log(`\n找到 ${updates.length} 个可更新的插件:\n`)
+
         updates.forEach((update, index) => {
-          .toString().padStart(2))}. ${chalk.bold(update.plugin.name)}`)
-          }`)
-          }`)
-          
+          console.log(`${(index + 1).toString().padStart(2)}. ${chalk.bold(update.plugin.name)}`)
+          console.log(`   当前版本: ${update.currentVersion} → 最新版本: ${update.latestVersion}`)
+          console.log()
         })
 
       } else {
-        )
-        
+        console.log(`\n已安装插件:\n`)
+
         installedPlugins.forEach((plugin, index) => {
           const official = plugin.official ? chalk.blue('[官方]') : ''
-          
-          .toString().padStart(2))}. ${chalk.bold(plugin.name)} ${official}`)
-          
-          }`)
-          
+
+          console.log(`${(index + 1).toString().padStart(2)}. ${chalk.bold(plugin.name)} ${official}`)
+          console.log(`   版本: ${plugin.version}`)
+          console.log()
         })
       }
 
@@ -361,83 +359,70 @@ export class PluginCommand implements CliCommandDefinition {
       }
 
       logger.info(`正在获取插件信息: ${name}...`)
-      
+
       const plugin = await pluginMarket.getPluginInfo(name)
-      
+
 
       if (!plugin) {
-        logger.error(`插件不存在: ${name}`)
+        logger.error(`插件不存在: ${name} `)
         return
       }
 
       // 显示插件详细信息
-      
-      )
-      
+      console.log(`\n插件详情: ${chalk.bold(plugin.name)}`)
+      console.log('─'.repeat(50))
+
       const badges = []
       if (plugin.official) badges.push(chalk.blue('[官方]'))
       if (plugin.installed) badges.push(chalk.green('[已安装]'))
-      if (badges.length > 0) )
-      
-      
-      )
-      
-      
-      
-      )
-      
-      
-      
-      
-      
-      
-      
-      )
-      }`)
-      )} (${plugin.reviewCount} 评价)`)
-      .toLocaleDateString()}`)
-      
-      if (plugin.tags.length > 0) {
-        
-        )
-        }`)
-      }
-      
-      if (plugin.repository || plugin.homepage || plugin.documentation) {
-        
-        )
-        if (plugin.repository) 
-        if (plugin.homepage) 
-        if (plugin.documentation) 
+      if (badges.length > 0) {
+        console.log(`标签: ${badges.join(' ')}`)
       }
 
-      if (Object.keys(plugin.dependencies).length > 0) {
-        
-        )
+      console.log(`描述: ${plugin.description}`)
+      console.log(`版本: ${plugin.version}`)
+      console.log(`作者: ${plugin.author}`)
+      console.log(`下载量: ${plugin.downloads}`)
+      console.log(`评分: ${plugin.rating} (${plugin.reviewCount} 评论)`)
+
+      if (plugin.homepage) {
+        console.log(`主页: ${plugin.homepage}`)
+      }
+
+      if (plugin.repository) {
+        console.log(`仓库: ${plugin.repository}`)
+      }
+
+      console.log()
+
+      if (plugin.tags && plugin.tags.length > 0) {
+        console.log(`标签: ${plugin.tags.join(', ')}`)
+      }
+
+      if (plugin.publishedAt) {
+        console.log(`发布时间: ${new Date(plugin.publishedAt).toLocaleDateString()}`)
+      }
+
+      if (plugin.dependencies && Object.keys(plugin.dependencies).length > 0) {
+        console.log('\n依赖:')
         Object.entries(plugin.dependencies).forEach(([dep, version]) => {
-          
+          console.log(`  - ${dep}: ${version}`)
         })
       }
 
-      if (Object.keys(plugin.peerDependencies).length > 0) {
-        
-        )
+      if (plugin.peerDependencies && Object.keys(plugin.peerDependencies).length > 0) {
+        console.log('\n对等依赖:')
         Object.entries(plugin.peerDependencies).forEach(([dep, version]) => {
-          
+          console.log(`  - ${dep}: ${version}`)
         })
       }
 
       if (plugin.examples && plugin.examples.length > 0) {
-        
-        )
+        console.log('\n示例:')
         plugin.examples.forEach((example, index) => {
-          
-          
-          )}`)
+          console.log(`  ${index + 1}. ${example.title || example.name}`)
         })
       }
-
-      
 
     } catch (error) {
       logger.error('获取插件信息失败', error)

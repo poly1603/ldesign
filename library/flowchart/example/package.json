@@ -1,7 +1,7 @@
 {
-  "name": "flowchart-example",
-  "version": "1.0.0",
-  "description": "FlowChart Approval Plugin Example",
+  "name": "flowchart-examples",
+  "version": "2.0.0",
+  "description": "FlowChart 2.0 Examples",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,18 +9,6 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "vite": "^5.0.10"
+    "vite": "^5.0.0"
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-

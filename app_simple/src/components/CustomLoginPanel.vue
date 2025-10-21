@@ -7,7 +7,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from '@ldesign/router'
 import LoginPanelV2 from './login-panel/LoginPanelV2.vue'
-import { useAuth } from '@/composables/useAuth'
+import { useAuth } from '../composables/useAuth'
 import { setGlobalMessage, useMessage } from './login-panel/composables/useMessage'
 
 const router = useRouter()

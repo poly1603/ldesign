@@ -4,6 +4,7 @@
 
 ## 🚀 特性
 
+### 核心功能
 - **🛠️ 工具集合** - 丰富的实用工具函数
 - **📁 文件系统** - 完整的文件操作和管理
 - **💾 缓存系统** - 多层缓存解决方案
@@ -20,6 +21,19 @@
 - **🎨 控制台 UI** - 进度条、加载动画、状态指示器
 - **⚡ 构建工具** - Vite 和 Rollup 构建器封装
 
+### 新增功能 🆕
+- **📝 JSON 工具** - 安全解析、深度克隆、对象操作
+- **🔐 Base64 工具** - 编码解码、URL安全编码
+- **🌍 环境变量** - 类型安全读取、验证、.env支持
+- **🗂️ 数据结构** - Queue、Stack、LinkedList、LRU缓存
+- **🧪 测试工具** - Mock、Spy、Stub、数据生成
+- **🔒 安全工具** - 加密、哈希、Token生成、密码强度
+- **❌ 错误处理** - 统一错误系统、错误码、重试机制
+- **🚀 Promise 工具** - 并发控制、重试、超时、批处理
+- **📐 正则工具** - 常用正则、验证、提取、模糊匹配
+- **🎨 格式化工具** - 数字、货币、日期、文件大小格式化
+- **✨ 装饰器工具** - 缓存、防抖、节流、重试等装饰器
+
 ## 📦 安装
 
 ```bash
@@ -34,22 +48,21 @@ pnpm add @ldesign/kit
 
 ```typescript
 import {
+  // 核心工具
   StringUtils,
   FileSystem,
   CacheManager,
   Validator,
-  GitManager,
-  PackageManager,
-  SSLUtils,
-  NotificationUtils,
-  PerformanceUtils,
-  ScaffoldManager,
-  ProgressBar,
-  LoadingSpinner,
-  StatusIndicator,
-  ViteBuilder,
-  RollupBuilder,
-  BuilderFactory,
+  // 新增工具
+  JsonUtils,
+  Base64Utils,
+  EnvUtils,
+  ErrorUtils,
+  SecurityUtils,
+  HashUtils,
+  TokenUtils,
+  Queue,
+  LRUCache,
 } from '@ldesign/kit'
 
 // 字符串工具
@@ -59,48 +72,65 @@ const camelCase = StringUtils.camelCase('hello-world') // 'helloWorld'
 // 文件系统操作
 await FileSystem.ensureDir('./data')
 await FileSystem.writeFile('./data/config.json', JSON.stringify({ app: 'test' }))
-const files = await FileSystem.readDir('./src', { recursive: true })
+
+// JSON 工具 🆕
+const config = await JsonUtils.parseFile('./config.json')
+const merged = JsonUtils.deepMerge(defaultConfig, userConfig)
+
+// 环境变量 🆕
+const port = EnvUtils.getNumber('PORT', 3000)
+const debug = EnvUtils.getBoolean('DEBUG', false)
+await EnvUtils.load('.env')
 
 // 缓存管理
 const cache = CacheManager.create()
 await cache.set('user:123', { name: 'John', age: 30 }, 3600)
-const user = await cache.get('user:123')
 
-// 数据验证
-const validator = Validator.create()
-validator.addRule('email', ValidationRules.email())
-validator.addRule('age', ValidationRules.range(18, 100))
+// LRU 缓存 🆕
+const lruCache = new LRUCache<string, User>(1000)
+lruCache.set('user:123', user)
 
-const result = await validator.validate({
-  email: 'john@example.com',
-  age: 25,
+// 错误处理 🆕
+try {
+  await riskyOperation()
+} catch (error) {
+  await ErrorUtils.handle(error)
+}
+
+// 安全工具 🆕
+const encrypted = SecurityUtils.encrypt('secret data', 'key')
+const hash = await HashUtils.hashPassword('password123')
+const token = TokenUtils.generateToken(32)
+
+// Base64 编码 🆕
+const encoded = Base64Utils.encode('Hello World')
+const tokenData = Base64Utils.encodeObject({ userId: 123 })
+
+// 队列 🆕
+const queue = new Queue<Task>()
+queue.enqueue(task)
+const nextTask = queue.dequeue()
+
+// Promise 工具 🆕
+const results = await PromiseUtils.mapLimit(items, 5, async (item) => {
+  return await processItem(item)
 })
 
-// Git 操作
-const git = new GitManager('./my-project')
-await git.init()
-await git.add('.')
-await git.commit('Initial commit')
+// 正则验证 🆕
+const isValid = RegexUtils.isEmail('user@example.com')
+const urls = RegexUtils.extractUrls(text)
 
-// 包管理
-const packageManager = new PackageManager('./my-project')
-await packageManager.addDependency('lodash', '^4.17.21')
-await packageManager.runScript('build')
+// 格式化 🆕
+const size = FormatUtils.fileSize(1024 * 1024) // '1.00 MB'
+const price = FormatUtils.currency(1234.56, 'USD') // '$1,234.56'
 
-// SSL 证书
-const cert = await SSLUtils.generateQuickCertificate({
-  commonName: 'localhost',
-  organization: 'My Company',
-})
-
-// 系统通知
-await NotificationUtils.success('操作完成', '所有任务已成功执行')
-
-// 性能监控
-const duration = PerformanceUtils.time('expensive-operation', () => {
-  // 执行耗时操作
-  return computeExpensiveData()
-})
+// 装饰器 🆕
+class MyService {
+  @memoize({ ttl: 60000 })
+  async fetchData(id: number) {
+    return await api.get(`/data/${id}`)
+  }
+}
 ```
 
 ## 📚 模块文档
@@ -908,3 +938,28 @@ MIT License - 查看 [LICENSE](../../LICENSE) 文件了解详细信息。
 - [GitHub 仓库](https://github.com/ldesign/ldesign)
 - [问题反馈](https://github.com/ldesign/ldesign/issues)
 - [更新日志](./CHANGELOG.md)
+- [新功能指南](./docs/NEW_FEATURES.md) 🆕
+- [扩展功能指南](./docs/ADDITIONAL_FEATURES.md) 🆕
+- [优化总结](./docs/OPTIMIZATION_SUMMARY.md)
+- [使用示例](./examples/)
+
+## ⚡ 新功能亮点
+
+### 第一批功能
+查看 [新功能指南](./docs/NEW_FEATURES.md) 了解详细信息：
+
+- **JSON 工具** - 安全的 JSON 解析、深度克隆、对象操作
+- **Base64 工具** - 完整的 Base64 编码解码，支持 URL 安全格式
+- **环境变量工具** - 类型安全的环境变量读取和验证
+- **数据结构** - Queue、Stack、LinkedList、LRU 缓存
+- **测试工具** - Mock、Spy、Stub 和测试数据生成
+- **安全工具** - 加密、哈希、Token 生成、密码强度验证
+- **错误处理** - 统一的错误处理机制和错误码系统
+
+### 第二批功能
+查看 [扩展功能指南](./docs/ADDITIONAL_FEATURES.md) 了解详细信息：
+
+- **Promise 工具** - 并发控制、重试、超时、批处理、队列、限流
+- **正则工具** - 60+ 预定义正则、验证、提取、高亮、模糊匹配
+- **格式化工具** - 文件大小、货币、日期、电话、地址等格式化
+- **装饰器工具** - 缓存、防抖、节流、重试、日志、性能监控等装饰器

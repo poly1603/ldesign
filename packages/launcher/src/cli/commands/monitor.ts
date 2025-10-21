@@ -235,10 +235,10 @@ export class MonitorCommand {
 
       // 加载性能数据
       const data = await this.loadPerformanceData(options.period)
-      
+
       // 生成报告
       const report = await this.createReport(data, options.format)
-      
+
       // 保存报告
       const outputPath = `${options.output}.${options.format}`
       await this.saveReport(report, outputPath, options.format)
@@ -351,11 +351,12 @@ export class MonitorCommand {
         this.logger.success(`✅ 配置已更新: ${key} = ${value}`)
       } else if (options.get) {
         const value = await this.getConfig(options.get)
-              } else if (options.list) {
+        console.log(`${options.get}: ${value}`)
+      } else if (options.list) {
         const config = await this.getAllConfig()
-        )
+        console.log('\n监控配置:')
         Object.entries(config).forEach(([key, value]) => {
-          }: ${value}`)
+          console.log(`  ${key}: ${value}`)
         })
       }
     } catch (error) {
@@ -400,7 +401,7 @@ export class MonitorCommand {
     const timestamp = new Date().toISOString()
     const filename = `metrics-${timestamp.split('T')[0]}.json`
     const filepath = path.join(outputDir, filename)
-    
+
     // 追加到日志文件
     const logEntry = { timestamp, ...metrics }
     await fs.appendFile(filepath, JSON.stringify(logEntry) + '\n', 'utf-8')
@@ -408,20 +409,21 @@ export class MonitorCommand {
 
   private displayRealTimeMetrics(metrics: PerformanceMetrics, target: string): void {
     console.clear()
-    )
-    
+    console.log(`\n📊 实时性能监控 - ${target}`)
+    console.log('═'.repeat(60))
+
     // 显示 Web Vitals
-    )
-    }`)
-    }`)
-    }`)
-    
+    console.log('\n🎯 Web Vitals:')
+    console.log(`  LCP: ${metrics.lcp}ms`)
+    console.log(`  FID: ${metrics.fid}ms`)
+    console.log(`  CLS: ${metrics.cls}`)
+
     // 显示运行时指标
-    )
-    }`)
-    }`)
-    
-    .toLocaleTimeString()}`))
+    console.log('\n⚡ 运行时指标:')
+    console.log(`  CPU: ${metrics.cpu}%`)
+    console.log(`  内存: ${metrics.memory}MB`)
+
+    console.log(`\n最后更新: ${new Date().toLocaleTimeString()}`)
   }
 
   private formatMetric(value: number, unit: string): string {

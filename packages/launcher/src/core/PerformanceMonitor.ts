@@ -162,7 +162,7 @@ export class PerformanceMonitor extends EventEmitter {
     this.logger.info('性能监控结束', {
       totalTime: `${this.metrics.totalBuildTime?.toFixed(2)}ms`
     })
-    
+
     this.emit('monitoring:stop', this.metrics)
   }
 
@@ -201,7 +201,7 @@ export class PerformanceMonitor extends EventEmitter {
    */
   recordFileOperation(type: 'read' | 'write', duration: number): void {
     const stats = this.metrics.fileSystemStats!
-    
+
     if (type === 'read') {
       stats.reads++
       stats.totalReadTime += duration
@@ -216,7 +216,7 @@ export class PerformanceMonitor extends EventEmitter {
    */
   recordPluginPerformance(name: string, phase: string, duration: number): void {
     let pluginStat = this.metrics.pluginStats!.find(p => p.name === name)
-    
+
     if (!pluginStat) {
       pluginStat = {
         name,
@@ -426,7 +426,7 @@ export class PerformanceMonitor extends EventEmitter {
    */
   async saveReport(report: PerformanceReport, filePath?: string): Promise<string> {
     const defaultPath = filePath || `performance-report-${Date.now()}.json`
-    
+
     try {
       await FileSystem.writeFile(defaultPath, JSON.stringify(report, null, 2))
       this.logger.success(`性能报告已保存: ${defaultPath}`)
@@ -441,56 +441,51 @@ export class PerformanceMonitor extends EventEmitter {
    * 打印性能摘要
    */
   printSummary(report: PerformanceReport): void {
-    const { metrics, score, recommendations } = report
+    const { metrics, score, recommendations: reportRecommendations } = report
 
-    
-    )
+    console.log('\n📊 Performance Report')
+    console.log('─'.repeat(50))
 
-    
     if (metrics.totalBuildTime) {
-      .toFixed(2)}s`)
+      console.log(`⏱️  总构建时间: ${metrics.totalBuildTime.toFixed(2)}s`)
     }
 
     if (metrics.phases && Object.keys(metrics.phases).length > 0) {
-      
+      console.log('\n📊 构建阶段耗时 (前5名):')
       Object.entries(metrics.phases)
         .filter(([, time]) => time !== undefined)
-        .sort(([,a], [,b]) => (b || 0) - (a || 0))
+        .sort(([, a], [, b]) => (b || 0) - (a || 0))
         .slice(0, 5)
         .forEach(([phase, time]) => {
           if (time) {
-            .toFixed(2)}s`)
+            console.log(`  ${phase}: ${time.toFixed(2)} s`)
           }
         })
     }
 
     if (metrics.memoryUsage) {
-      
+      console.log('\n💾 内存使用:')
       const heapUsedMB = Math.round(metrics.memoryUsage.heapUsed / 1024 / 1024)
       const heapTotalMB = Math.round(metrics.memoryUsage.heapTotal / 1024 / 1024)
-      
+      console.log(`  堆内存: ${heapUsedMB}MB / ${heapTotalMB}MB`)
+
       if (metrics.memoryUsage.rss) {
-        }MB`)
+        const rssMB = Math.round(metrics.memoryUsage.rss / 1024 / 1024)
+        console.log(`  常驻内存: ${rssMB} MB`)
       }
     }
 
-    
-    
-    
-    
-    
-
-    if (recommendations.length > 0) {
-      
-      recommendations.forEach((rec, index) => {
-        const icon = rec.type === 'error' ? '❌' : rec.type === 'warning' ? '⚠️' : 'ℹ️'
-        
-        
-        
+    const metricsSuggestions = metrics.suggestions || []
+    const allRecommendations = [...(reportRecommendations || []), ...metricsSuggestions.map(s => ({ type: 'info', message: s }))]
+    if (allRecommendations.length > 0) {
+      console.log('\n💡 优化建议:')
+      allRecommendations.forEach((rec, index) => {
+        const type = (rec && typeof rec === 'object' && 'type' in rec) ? rec.type : 'info'
+        const icon = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'
+        const message = (rec && typeof rec === 'object' && 'message' in rec) ? rec.message : String(rec)
+        console.log(`  ${icon} ${message}`)
       })
     }
-
-    
   }
 
   /**

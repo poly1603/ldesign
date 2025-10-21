@@ -3,7 +3,7 @@
  * 提供统一的存储接口
  */
 
-import { appConfig } from '@/config/app.config'
+import { appConfig } from '../config/app.config'
 
 const { prefix, expire } = appConfig.storage
 
@@ -36,7 +36,7 @@ class Storage {
       timestamp: Date.now(),
       expire: ttl ? Date.now() + ttl : undefined
     }
-    
+
     try {
       localStorage.setItem(this.getKey(key), JSON.stringify(data))
     } catch (error) {
@@ -50,19 +50,19 @@ class Storage {
   get<T = any>(key: string, defaultValue?: T): T | undefined {
     try {
       const item = localStorage.getItem(this.getKey(key))
-      
+
       if (!item) {
         return defaultValue
       }
-      
+
       const data: StorageData<T> = JSON.parse(item)
-      
+
       // 检查是否过期
       if (data.expire && data.expire < Date.now()) {
         this.remove(key)
         return defaultValue
       }
-      
+
       return data.value
     } catch (error) {
       console.error('Storage get error:', error)
@@ -110,13 +110,13 @@ class Storage {
   keys(): string[] {
     const keys: string[] = []
     const prefixLength = this.prefix.length
-    
+
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith(this.prefix)) {
         keys.push(key.substring(prefixLength))
       }
     })
-    
+
     return keys
   }
 }
@@ -132,7 +132,7 @@ class SessionStorage extends Storage {
       timestamp: Date.now(),
       expire: ttl ? Date.now() + ttl : undefined
     }
-    
+
     try {
       sessionStorage.setItem(this.getKey(key), JSON.stringify(data))
     } catch (error) {
@@ -143,18 +143,18 @@ class SessionStorage extends Storage {
   get<T = any>(key: string, defaultValue?: T): T | undefined {
     try {
       const item = sessionStorage.getItem(this.getKey(key))
-      
+
       if (!item) {
         return defaultValue
       }
-      
+
       const data: StorageData<T> = JSON.parse(item)
-      
+
       if (data.expire && data.expire < Date.now()) {
         this.remove(key)
         return defaultValue
       }
-      
+
       return data.value
     } catch (error) {
       console.error('SessionStorage get error:', error)
@@ -190,16 +190,16 @@ class SessionStorage extends Storage {
   keys(): string[] {
     const keys: string[] = []
     const prefixLength = this.prefix.length
-    
+
     Object.keys(sessionStorage).forEach(key => {
       if (key.startsWith(this.prefix)) {
         keys.push(key.substring(prefixLength))
       }
     })
-    
+
     return keys
   }
-  
+
   private getKey(key: string): string {
     return `${this.prefix}${key}`
   }

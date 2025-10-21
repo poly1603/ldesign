@@ -1,0 +1,248 @@
+/**
+ * 低代码平台样式
+ */
+
+@import './variables.less';
+@import './mixins.less';
+@import './dark.less';
+
+// 全局样式
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// 全局过渡动画
+* {
+  transition: background-color @transition-duration @transition-function,
+    border-color @transition-duration @transition-function,
+    color @transition-duration @transition-function,
+    opacity @transition-duration @transition-function;
+}
+
+// 编辑器容器
+.lowcode-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  color: @text-color;
+  background: @bg-color;
+
+  .editor-toolbar {
+    height: @toolbar-height;
+    background: #fff;
+    border-bottom: 1px solid @border-color;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 8px;
+
+    .tool-button {
+      padding: 6px 12px;
+      border: 1px solid @border-color;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: @hover-bg;
+        border-color: @primary-color;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .editor-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+
+    .material-panel {
+      width: @panel-width;
+      background: #fff;
+      border-right: 1px solid @border-color;
+      overflow-y: auto;
+
+      .panel-header {
+        padding: 16px;
+        border-bottom: 1px solid @border-color;
+
+        h3 {
+          font-size: 16px;
+          font-weight: 600;
+          margin-bottom: 12px;
+        }
+      }
+
+      .material-category {
+        margin: 16px 0;
+
+        h4 {
+          padding: 8px 16px;
+          font-size: 14px;
+          font-weight: 500;
+          color: @text-secondary;
+          background: @bg-color;
+        }
+
+        .material-list {
+          padding: 8px;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+        }
+      }
+
+      .material-item {
+        padding: 12px;
+        border: 1px solid @border-color;
+        border-radius: 4px;
+        text-align: center;
+        cursor: move;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: @primary-color;
+          background: @hover-bg;
+        }
+
+        .material-icon {
+          font-size: 24px;
+          margin-bottom: 8px;
+        }
+
+        .material-title {
+          font-size: 12px;
+          color: @text-color;
+        }
+      }
+    }
+
+    .canvas-area {
+      flex: 1;
+      background: @canvas-bg;
+      overflow: auto;
+      position: relative;
+
+      .canvas-container {
+        min-height: 100%;
+        padding: 20px;
+
+        &.show-grid {
+          background-image:
+            linear-gradient(to right, @grid-color 1px, transparent 1px),
+            linear-gradient(to bottom, @grid-color 1px, transparent 1px);
+          background-size: @grid-size @grid-size;
+        }
+      }
+
+      .canvas-content {
+        background: #fff;
+        min-height: 600px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+
+      .drop-indicator {
+        position: absolute;
+        border: 2px dashed @primary-color;
+        background: rgba(@primary-color, 0.1);
+        pointer-events: none;
+        z-index: 1000;
+      }
+    }
+
+    .property-panel {
+      width: @panel-width;
+      background: #fff;
+      border-left: 1px solid @border-color;
+      overflow-y: auto;
+
+      .panel-header {
+        padding: 16px;
+        border-bottom: 1px solid @border-color;
+
+        h3 {
+          font-size: 16px;
+          font-weight: 600;
+        }
+      }
+
+      .property-group {
+        border-bottom: 1px solid @border-color;
+
+        .group-header {
+          padding: 12px 16px;
+          font-weight: 500;
+          cursor: pointer;
+          user-select: none;
+
+          &:hover {
+            background: @hover-bg;
+          }
+        }
+
+        .group-content {
+          padding: 16px;
+        }
+      }
+
+      .property-item {
+        margin-bottom: 16px;
+
+        label {
+          display: block;
+          margin-bottom: 8px;
+          font-size: 13px;
+          color: @text-secondary;
+        }
+
+        input,
+        select,
+        textarea {
+          width: 100%;
+          padding: 6px 12px;
+          border: 1px solid @border-color;
+          border-radius: 4px;
+          font-size: 14px;
+
+          &:focus {
+            outline: none;
+            border-color: @primary-color;
+          }
+        }
+      }
+    }
+  }
+
+  .status-bar {
+    height: @statusbar-height;
+    background: #fff;
+    border-top: 1px solid @border-color;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 16px;
+    font-size: 12px;
+    color: @text-secondary;
+  }
+}
+
+// 组件选中状态
+.component-selected {
+  outline: 2px solid @primary-color !important;
+  outline-offset: 2px;
+}
+
+.component-hovered {
+  outline: 1px solid @primary-color !important;
+  outline-offset: 1px;
+}

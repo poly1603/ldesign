@@ -4,7 +4,7 @@
  */
 
 import type { RouterEnginePlugin } from '@ldesign/router'
-import { auth } from '@/composables/useAuth'
+import { auth } from '../../composables/useAuth'
 
 const LOGIN_PATH = '/login'
 const DEFAULT_REDIRECT = '/'  // 默认重定向到首页而不是 dashboard
@@ -21,13 +21,13 @@ export function setupAuthGuard(router: RouterEnginePlugin) {
 
     // 检查路由是否需要认证
     const requiresAuth = to.meta?.requiresAuth === true
-    
+
     if (requiresAuth) {
       // 需要认证但未登录
       if (!auth.isLoggedIn.value) {
         // 记录原始访问路径，登录后重定向
         const redirect = to.fullPath !== LOGIN_PATH ? to.fullPath : DEFAULT_REDIRECT
-        
+
         next({
           path: LOGIN_PATH,
           query: { redirect }
@@ -35,7 +35,7 @@ export function setupAuthGuard(router: RouterEnginePlugin) {
         return
       }
     }
-    
+
     // 已登录用户访问登录页，重定向到首页或原始目标
     if (to.path === LOGIN_PATH && auth.isLoggedIn.value) {
       // 避免循环重定向，如果 redirect 是登录页本身，则跳转到首页
@@ -46,7 +46,7 @@ export function setupAuthGuard(router: RouterEnginePlugin) {
       next(redirect)
       return
     }
-    
+
     // 放行
     next()
   })

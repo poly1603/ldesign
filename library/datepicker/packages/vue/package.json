@@ -1,0 +1,44 @@
+{
+  "name": "@ldesign/datepicker-vue",
+  "version": "0.1.0",
+  "description": "Vue 3 wrapper for @ldesign/datepicker",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "keywords": ["datepicker", "vue", "vue3"],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "dependencies": {
+    "@ldesign/datepicker-core": "workspace:*",
+    "@ldesign/datepicker-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
+    "vite-plugin-dts": "^3.7.0",
+    "vue": "^3.4.0",
+    "vue-tsc": "^1.8.27"
+  }
+}
+
+
+
+
+

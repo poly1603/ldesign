@@ -26,10 +26,10 @@
   "peerDependencies": {
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
     "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0",
-    "@word-viewer/core": "^1.0.0"
+    "@word-viewer/core": "workspace:*"
   },
   "dependencies": {
-    "@word-viewer/core": "^1.0.0"
+    "@word-viewer/core": "workspace:*"
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",

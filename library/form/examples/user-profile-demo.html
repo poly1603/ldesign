@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户资料表单 - @ldesign/form 完整示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --ldesign-brand-color: #722ED1;
+      --ldesign-brand-color-hover: #5c24a8;
+      --ldesign-error-color: #ff4d4f;
+      --ldesign-success-color: #52c41a;
+      --ldesign-text-color-primary: rgba(0, 0, 0, 0.85);
+      --ldesign-bg-color: #fff;
+      --ldesign-border-color: #d9d9d9;
+      --ldesign-border-radius-base: 4px;
+      --ldesign-spacing-base: 16px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      background: var(--ldesign-bg-color);
+      padding: 24px;
+      border-radius: var(--ldesign-border-radius-base);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+      font-size: 24px;
+      color: var(--ldesign-brand-color);
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.65);
+    }
+
+    .demo-tabs {
+      display: flex;
+      gap: 12px;
+      background: var(--ldesign-bg-color);
+      padding: 12px;
+      border-radius: var(--ldesign-border-radius-base);
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .tab-button {
+      padding: 8px 16px;
+      font-size: 14px;
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ldesign-border-radius-base);
+      background: var(--ldesign-bg-color);
+      color: var(--ldesign-text-color-primary);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .tab-button:hover {
+      border-color: var(--ldesign-brand-color);
+      color: var(--ldesign-brand-color);
+    }
+
+    .tab-button.active {
+      background: var(--ldesign-brand-color);
+      border-color: var(--ldesign-brand-color);
+      color: #fff;
+    }
+
+    .form-container {
+      background: var(--ldesign-bg-color);
+      padding: 32px;
+      border-radius: var(--ldesign-border-radius-base);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-section {
+      margin-bottom: 32px;
+    }
+
+    .form-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ldesign-text-color-primary);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .form-grid--full {
+      grid-template-columns: 1fr;
+    }
+
+    .form-item {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--ldesign-text-color-primary);
+      font-weight: 500;
+    }
+
+    .form-label .required {
+      color: var(--ldesign-error-color);
+      margin-right: 4px;
+    }
+
+    .form-control {
+      position: relative;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 14px;
+      color: var(--ldesign-text-color-primary);
+      background: var(--ldesign-bg-color);
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ldesign-border-radius-base);
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .form-input:hover,
+    .form-select:hover,
+    .form-textarea:hover {
+      border-color: var(--ldesign-brand-color);
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--ldesign-brand-color);
+      box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.1);
+    }
+
+    .form-input.error,
+    .form-select.error,
+    .form-textarea.error {
+      border-color: var(--ldesign-error-color);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .error-message {
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--ldesign-error-color);
+    }
+
+    .help-text {
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.45);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      padding-top: 24px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      border: 1px solid var(--ldesign-border-color);
+      border-radius: var(--ldesign-border-radius-base);
+      background: var(--ldesign-bg-color);
+      color: var(--ldesign-text-color-primary);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      border-color: var(--ldesign-brand-color);
+      color: var(--ldesign-brand-color);
+    }
+
+    .btn-primary {
+      background: var(--ldesign-brand-color);
+      border-color: var(--ldesign-brand-color);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--ldesign-brand-color-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .avatar-upload {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .avatar-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid #f0f0f0;
+    }
+
+    .avatar-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avatar-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      color: rgba(0, 0, 0, 0.45);
+      font-size: 32px;
+    }
+
+    .dynamic-list {
+      border: 1px dashed #d9d9d9;
+      border-radius: var(--ldesign-border-radius-base);
+      padding: 16px;
+    }
+
+    .dynamic-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 12px;
+      padding: 12px;
+      background: #fafafa;
+      border-radius: var(--ldesign-border-radius-base);
+    }
+
+    .dynamic-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .btn-remove {
+      padding: 4px 12px;
+      color: var(--ldesign-error-color);
+      border-color: var(--ldesign-error-color);
+    }
+
+    .btn-remove:hover {
+      background: var(--ldesign-error-color);
+      color: #fff;
+    }
+
+    .btn-add {
+      width: 100%;
+      margin-top: 12px;
+      border-style: dashed;
+    }
+
+    .success-message {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      padding: 16px 24px;
+      background: var(--ldesign-bg-color);
+      border-left: 4px solid var(--ldesign-success-color);
+      border-radius: var(--ldesign-border-radius-base);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .validation-summary {
+      padding: 16px;
+      background: #fff7e6;
+      border: 1px solid #ffd591;
+      border-radius: var(--ldesign-border-radius-base);
+      margin-bottom: 24px;
+    }
+
+    .validation-summary h3 {
+      font-size: 14px;
+      color: #fa8c16;
+      margin-bottom: 8px;
+    }
+
+    .validation-summary ul {
+      margin: 0;
+      padding-left: 20px;
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.65);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1>🎉 @ldesign/form 完整功能演示</h1>
+      <p>展示表单系统的完整功能：字段类型、验证规则、动态字段、条件渲染、复杂布局等</p>
+    </div>
+
+    <!-- 标签切换 -->
+    <div class="demo-tabs">
+      <button class="tab-button active" onclick="switchTab('profile')">用户资料</button>
+      <button class="tab-button" onclick="switchTab('advanced')">高级查询</button>
+      <button class="tab-button" onclick="switchTab('validation')">验证规则</button>
+    </div>
+
+    <!-- 表单容器 -->
+    <div id="app"></div>
+  </div>
+
+  <script type="module">
+    import { createForm } from '../src/core/form-core.js'
+    import * as validators from '../src/utils/validation-rules.js'
+
+    let currentTab = 'profile'
+    let currentForm = null
+
+    // 切换标签
+    window.switchTab = (tab) => {
+      currentTab = tab
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.includes(getTabName(tab)))
+      })
+      renderCurrentTab()
+    }
+
+    function getTabName(tab) {
+      const names = {
+        profile: '用户资料',
+        advanced: '高级查询',
+        validation: '验证规则'
+      }
+      return names[tab]
+    }
+
+    // 渲染当前标签
+    function renderCurrentTab() {
+      const app = document.getElementById('app')
+
+      if (currentForm) {
+        currentForm.destroy()
+      }
+
+      if (currentTab === 'profile') {
+        renderProfileForm(app)
+      } else if (currentTab === 'advanced') {
+        renderAdvancedQueryForm(app)
+      } else if (currentTab === 'validation') {
+        renderValidationForm(app)
+      }
+    }
+
+    // 1. 用户资料表单
+    function renderProfileForm(container) {
+      const form = createForm({
+        initialValues: {
+          avatar: '',
+          username: '',
+          email: '',
+          phone: '',
+          gender: '',
+          birthday: '',
+          bio: '',
+          province: '',
+          city: '',
+          district: '',
+          address: '',
+          postalCode: '',
+          company: '',
+          position: '',
+          website: '',
+          socialAccounts: []
+        },
+        fields: [
+          // 基本信息
+          { name: 'avatar', label: '头像' },
+          {
+            name: 'username', label: '用户名', required: true, rules: [
+              { validator: validators.required, message: '请输入用户名' },
+              { validator: validators.minLength(3), message: '用户名至少3个字符' },
+              { validator: validators.maxLength(20), message: '用户名最多20个字符' }
+            ]
+          },
+          {
+            name: 'email', label: '邮箱', required: true, rules: [
+              { validator: validators.required, message: '请输入邮箱' },
+              { validator: validators.email, message: '请输入有效的邮箱地址' }
+            ]
+          },
+          {
+            name: 'phone', label: '手机号', required: true, rules: [
+              { validator: validators.required, message: '请输入手机号' },
+              { validator: validators.phone, message: '请输入有效的手机号码' }
+            ]
+          },
+          { name: 'gender', label: '性别' },
+          { name: 'birthday', label: '生日' },
+          { name: 'bio', label: '个人简介' },
+
+          // 地址信息
+          { name: 'province', label: '省份' },
+          { name: 'city', label: '城市' },
+          { name: 'district', label: '区县' },
+          { name: 'address', label: '详细地址' },
+          {
+            name: 'postalCode', label: '邮政编码', rules: [
+              { validator: validators.postalCode, message: '请输入有效的邮政编码' }
+            ]
+          },
+
+          // 工作信息
+          { name: 'company', label: '公司' },
+          { name: 'position', label: '职位' },
+          {
+            name: 'website', label: '网站', rules: [
+              { validator: validators.url, message: '请输入有效的URL地址' }
+            ]
+          }
+        ],
+        onSubmit: async (values) => {
+          console.log('提交数据:', values)
+          showSuccessMessage('保存成功！')
+        }
+      })
+
+      currentForm = form
+
+      container.innerHTML = `
+        <div class="form-container">
+          <!-- 基本信息 -->
+          <div class="form-section">
+            <h2 class="form-section-title">📝 基本信息</h2>
+            
+            <div class="form-item">
+              <label class="form-label">头像</label>
+              <div class="avatar-upload">
+                <div class="avatar-preview">
+                  <div class="avatar-placeholder" id="avatar-preview">👤</div>
+                </div>
+                <input type="file" id="avatar" accept="image/*" style="display: none;" />
+                <button type="button" class="btn" onclick="document.getElementById('avatar').click()">
+                  上传头像
+                </button>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-item">
+                <label class="form-label"><span class="required">*</span>用户名</label>
+                <div class="form-control">
+                  <input type="text" id="username" class="form-input" placeholder="请输入用户名" />
+                  <span id="username-error" class="error-message"></span>
+                  <span class="help-text">3-20个字符</span>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label"><span class="required">*</span>邮箱</label>
+                <div class="form-control">
+                  <input type="email" id="email" class="form-input" placeholder="请输入邮箱" />
+                  <span id="email-error" class="error-message"></span>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label"><span class="required">*</span>手机号</label>
+                <div class="form-control">
+                  <input type="tel" id="phone" class="form-input" placeholder="请输入手机号" />
+                  <span id="phone-error" class="error-message"></span>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label">性别</label>
+                <div class="form-control">
+                  <select id="gender" class="form-select">
+                    <option value="">请选择</option>
+                    <option value="male">男</option>
+                    <option value="female">女</option>
+                    <option value="other">其他</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label">生日</label>
+                <div class="form-control">
+                  <input type="date" id="birthday" class="form-input" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-grid form-grid--full">
+              <div class="form-item">
+                <label class="form-label">个人简介</label>
+                <div class="form-control">
+                  <textarea id="bio" class="form-textarea" placeholder="介绍一下自己..." rows="4"></textarea>
+                  <span class="help-text" id="bio-count">0 / 500</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 地址信息 -->
+          <div class="form-section">
+            <h2 class="form-section-title">📍 地址信息</h2>
+            
+            <div class="form-grid">
+              <div class="form-item">
+                <label class="form-label">省份</label>
+                <div class="form-control">
+                  <select id="province" class="form-select">
+                    <option value="">请选择省份</option>
+                    <option value="beijing">北京市</option>
+                    <option value="shanghai">上海市</option>
+                    <option value="guangdong">广东省</option>
+                    <option value="zhejiang">浙江省</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label">城市</label>
+                <div class="form-control">
+                  <select id="city" class="form-select">
+                    <option value="">请选择城市</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label">区县</label>
+                <div class="form-control">
+                  <select id="district" class="form-select">
+                    <option value="">请选择区县</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label">邮政编码</label>
+                <div class="form-control">
+                  <input type="text" id="postalCode" class="form-input" placeholder="6位邮政编码" maxlength="6" />
+                  <span id="postalCode-error" class="error-message"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-grid form-grid--full">
+              <div class="form-item">
+                <label class="form-label">详细地址</label>
+                <div class="form-control">
+                  <input type="text" id="address" class="form-input" placeholder="街道、门牌号等" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 工作信息 -->
+          <div class="form-section">
+            <h2 class="form-section-title">💼 工作信息</h2>
+            
+            <div class="form-grid">
+              <div class="form-item">
+                <label class="form-label">公司</label>
+                <div class="form-control">
+                  <input type="text" id="company" class="form-input" placeholder="公司名称" />
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label">职位</label>
+                <div class="form-control">
+                  <input type="text" id="position" class="form-input" placeholder="职位名称" />
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label">个人网站</label>
+                <div class="form-control">
+                  <input type="url" id="website" class="form-input" placeholder="https://example.com" />
+                  <span id="website-error" class="error-message"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 社交账号（动态数组） -->
+          <div class="form-section">
+            <h2 class="form-section-title">🔗 社交账号</h2>
+            
+            <div class="dynamic-list" id="socialAccounts">
+              <p style="text-align: center; color: rgba(0, 0, 0, 0.45);">暂无社交账号</p>
+            </div>
+            <button type="button" class="btn btn-add" onclick="addSocialAccount()">
+              + 添加社交账号
+            </button>
+          </div>
+
+          <!-- 验证摘要 -->
+          <div id="validation-summary" style="display: none;"></div>
+
+          <!-- 操作按钮 -->
+          <div class="form-actions">
+            <button type="button" id="submit-btn" class="btn btn-primary">保存</button>
+            <button type="button" id="reset-btn" class="btn">重置</button>
+            <button type="button" id="validate-btn" class="btn">验证</button>
+          </div>
+        </div>
+      `
+
+      bindFormEvents(form)
+    }
+
+    // 2. 高级查询表单
+    function renderAdvancedQueryForm(container) {
+      const form = createForm({
+        initialValues: {
+          keyword: '',
+          category: '',
+          status: '',
+          author: '',
+          startDate: '',
+          endDate: '',
+          minPrice: '',
+          maxPrice: '',
+          tags: []
+        },
+        expand: {
+          previewRows: 2,
+          defaultExpanded: false
+        },
+        onSubmit: (values) => {
+          console.log('查询条件:', values)
+          showSuccessMessage('查询成功！')
+        }
+      })
+
+      currentForm = form
+
+      container.innerHTML = `
+        <div class="form-container">
+          <h2 class="form-section-title">🔍 高级查询表单</h2>
+          
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">关键词</label>
+              <input type="text" id="keyword" class="form-input" placeholder="请输入关键词" />
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">分类</label>
+              <select id="category" class="form-select">
+                <option value="">全部</option>
+                <option value="tech">技术</option>
+                <option value="product">产品</option>
+                <option value="design">设计</option>
+              </select>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">状态</label>
+              <select id="status" class="form-select">
+                <option value="">全部</option>
+                <option value="active">启用</option>
+                <option value="inactive">禁用</option>
+              </select>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">作者</label>
+              <input type="text" id="author" class="form-input" placeholder="请输入作者" />
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">开始日期</label>
+              <input type="date" id="startDate" class="form-input" />
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">结束日期</label>
+              <input type="date" id="endDate" class="form-input" />
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">最低价格</label>
+              <input type="number" id="minPrice" class="form-input" placeholder="0" />
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">最高价格</label>
+              <input type="number" id="maxPrice" class="form-input" placeholder="999999" />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="submit-btn" class="btn btn-primary">查询</button>
+            <button type="button" id="reset-btn" class="btn">重置</button>
+            <button type="button" id="expand-btn" class="btn">展开更多</button>
+          </div>
+
+          <div id="query-result" style="display: none; margin-top: 24px; padding: 16px; background: #f0f0f0; border-radius: 4px;">
+            <h3 style="margin-bottom: 12px;">查询结果</h3>
+            <pre id="result-content" style="margin: 0; font-size: 13px;"></pre>
+          </div>
+        </div>
+      `
+
+      bindFormEvents(form, true)
+    }
+
+    // 3. 验证规则展示
+    function renderValidationForm(container) {
+      const form = createForm({
+        initialValues: {
+          requiredField: '',
+          emailField: '',
+          phoneField: '',
+          urlField: '',
+          numberField: '',
+          minField: '',
+          maxField: '',
+          minLengthField: '',
+          maxLengthField: '',
+          patternField: '',
+          password: '',
+          confirmPassword: '',
+          idCardField: '',
+          creditCardField: '',
+          ipField: '',
+          postalCodeField: ''
+        },
+        fields: [
+          {
+            name: 'requiredField', label: '必填字段', required: true, rules: [
+              { validator: validators.required, message: '此字段为必填项' }
+            ]
+          },
+          {
+            name: 'emailField', label: '邮箱验证', rules: [
+              { validator: validators.email, message: '请输入有效的邮箱地址' }
+            ]
+          },
+          {
+            name: 'phoneField', label: '手机号验证', rules: [
+              { validator: validators.phone, message: '请输入有效的手机号码' }
+            ]
+          },
+          {
+            name: 'urlField', label: 'URL验证', rules: [
+              { validator: validators.url, message: '请输入有效的URL地址' }
+            ]
+          },
+          {
+            name: 'numberField', label: '数字验证', rules: [
+              { validator: validators.number, message: '请输入有效的数字' }
+            ]
+          },
+          {
+            name: 'minField', label: '最小值验证 (≥10)', rules: [
+              { validator: validators.min(10), message: '值不能小于10' }
+            ]
+          },
+          {
+            name: 'maxField', label: '最大值验证 (≤100)', rules: [
+              { validator: validators.max(100), message: '值不能大于100' }
+            ]
+          },
+          {
+            name: 'minLengthField', label: '最小长度验证 (≥5)', rules: [
+              { validator: validators.minLength(5), message: '长度不能少于5个字符' }
+            ]
+          },
+          {
+            name: 'maxLengthField', label: '最大长度验证 (≤10)', rules: [
+              { validator: validators.maxLength(10), message: '长度不能超过10个字符' }
+            ]
+          },
+          {
+            name: 'patternField', label: '正则验证 (只能输入字母和数字)', rules: [
+              { validator: validators.pattern(/^[a-zA-Z0-9]+$/), message: '只能输入字母和数字' }
+            ]
+          },
+          {
+            name: 'password', label: '密码 (强度验证)', rules: [
+              { validator: validators.passwordStrength('medium'), message: '密码至少8个字符，且包含数字和字母' }
+            ]
+          },
+          {
+            name: 'confirmPassword', label: '确认密码', rules: [
+              { validator: validators.confirm('password'), message: '两次密码输入不一致' }
+            ]
+          },
+          {
+            name: 'idCardField', label: '身份证号验证', rules: [
+              { validator: validators.idCard, message: '请输入有效的身份证号码' }
+            ]
+          },
+          {
+            name: 'creditCardField', label: '信用卡号验证', rules: [
+              { validator: validators.creditCard, message: '请输入有效的信用卡号码' }
+            ]
+          },
+          {
+            name: 'ipField', label: 'IP地址验证', rules: [
+              { validator: validators.ip, message: '请输入有效的IP地址' }
+            ]
+          },
+          {
+            name: 'postalCodeField', label: '邮政编码验证', rules: [
+              { validator: validators.postalCode, message: '请输入有效的邮政编码' }
+            ]
+          }
+        ],
+        onSubmit: (values) => {
+          console.log('验证通过，提交数据:', values)
+          showSuccessMessage('所有验证规则通过！')
+        }
+      })
+
+      currentForm = form
+
+      const fieldNames = [
+        'requiredField', 'emailField', 'phoneField', 'urlField', 'numberField',
+        'minField', 'maxField', 'minLengthField', 'maxLengthField', 'patternField',
+        'password', 'confirmPassword', 'idCardField', 'creditCardField', 'ipField', 'postalCodeField'
+      ]
+
+      const fieldLabels = {
+        requiredField: '必填字段',
+        emailField: '邮箱验证',
+        phoneField: '手机号验证',
+        urlField: 'URL验证',
+        numberField: '数字验证',
+        minField: '最小值验证 (≥10)',
+        maxField: '最大值验证 (≤100)',
+        minLengthField: '最小长度验证 (≥5)',
+        maxLengthField: '最大长度验证 (≤10)',
+        patternField: '正则验证 (只能输入字母和数字)',
+        password: '密码 (强度验证)',
+        confirmPassword: '确认密码',
+        idCardField: '身份证号验证',
+        creditCardField: '信用卡号验证',
+        ipField: 'IP地址验证',
+        postalCodeField: '邮政编码验证'
+      }
+
+      const placeholders = {
+        requiredField: '此字段必须填写',
+        emailField: '例如：user@example.com',
+        phoneField: '例如：13800138000',
+        urlField: '例如：https://example.com',
+        numberField: '请输入数字',
+        minField: '请输入≥10的数字',
+        maxField: '请输入≤100的数字',
+        minLengthField: '至少5个字符',
+        maxLengthField: '最多10个字符',
+        patternField: '只能输入字母和数字',
+        password: '至少8个字符，包含数字和字母',
+        confirmPassword: '再次输入密码',
+        idCardField: '例如：110101199001011234',
+        creditCardField: '例如：4532015112830366',
+        ipField: '例如：192.168.1.1',
+        postalCodeField: '例如：100000'
+      }
+
+      let html = '<div class="form-container">'
+      html += '<h2 class="form-section-title">✅ 验证规则展示</h2>'
+      html += '<div class="form-grid">'
+
+      fieldNames.forEach(name => {
+        const isRequired = name === 'requiredField'
+        html += `
+          <div class="form-item">
+            <label class="form-label">
+              ${isRequired ? '<span class="required">*</span>' : ''}
+              ${fieldLabels[name]}
+            </label>
+            <div class="form-control">
+              <input 
+                type="${name.includes('password') ? 'password' : 'text'}"
+                id="${name}"
+                class="form-input"
+                placeholder="${placeholders[name]}"
+              />
+              <span id="${name}-error" class="error-message"></span>
+            </div>
+          </div>
+        `
+      })
+
+      html += '</div>'
+      html += '<div id="validation-summary" style="display: none;"></div>'
+      html += `
+        <div class="form-actions">
+          <button type="button" id="submit-btn" class="btn btn-primary">提交</button>
+          <button type="button" id="reset-btn" class="btn">重置</button>
+          <button type="button" id="validate-btn" class="btn">全部验证</button>
+        </div>
+      </div>`
+
+      container.innerHTML = html
+      bindFormEvents(form)
+    }
+
+    // 绑定表单事件
+    function bindFormEvents(form, hasExpand = false) {
+      const fieldNames = form.getFieldManager().getAllFieldNames()
+
+      fieldNames.forEach(field => {
+        const input = document.getElementById(field)
+        const errorEl = document.getElementById(`${field}-error`)
+
+        if (!input) return
+
+        input.addEventListener('input', (e) => {
+          form.setFieldValue(field, e.target.value)
+
+          // 字符计数
+          if (field === 'bio') {
+            const count = document.getElementById('bio-count')
+            if (count) {
+              count.textContent = `${e.target.value.length} / 500`
+            }
+          }
+        })
+
+        input.addEventListener('blur', async () => {
+          await form.validateField(field)
+          const state = form.getFieldState(field)
+
+          if (state && state.errors.length > 0) {
+            if (errorEl) {
+              errorEl.textContent = state.errors[0]
+              errorEl.style.display = 'block'
+            }
+            input.classList.add('error')
+          } else {
+            if (errorEl) {
+              errorEl.style.display = 'none'
+            }
+            input.classList.remove('error')
+          }
+        })
+      })
+
+      // 提交按钮
+      const submitBtn = document.getElementById('submit-btn')
+      if (submitBtn) {
+        submitBtn.addEventListener('click', async () => {
+          submitBtn.disabled = true
+          submitBtn.textContent = '提交中...'
+
+          try {
+            await form.submit()
+
+            // 显示查询结果
+            if (hasExpand) {
+              const resultDiv = document.getElementById('query-result')
+              const resultContent = document.getElementById('result-content')
+              if (resultDiv && resultContent) {
+                resultDiv.style.display = 'block'
+                resultContent.textContent = JSON.stringify(form.getFieldsValue(), null, 2)
+              }
+            }
+          } catch (error) {
+            console.error('提交失败:', error)
+            showValidationSummary(form)
+          } finally {
+            submitBtn.disabled = false
+            submitBtn.textContent = hasExpand ? '查询' : '保存'
+          }
+        })
+      }
+
+      // 重置按钮
+      const resetBtn = document.getElementById('reset-btn')
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          form.reset()
+          fieldNames.forEach(field => {
+            const input = document.getElementById(field)
+            const errorEl = document.getElementById(`${field}-error`)
+            if (input) {
+              input.value = ''
+              input.classList.remove('error')
+            }
+            if (errorEl) {
+              errorEl.style.display = 'none'
+            }
+          })
+          hideValidationSummary()
+        })
+      }
+
+      // 验证按钮
+      const validateBtn = document.getElementById('validate-btn')
+      if (validateBtn) {
+        validateBtn.addEventListener('click', async () => {
+          const result = await form.validate()
+          if (result.valid) {
+            showSuccessMessage('验证通过！')
+            hideValidationSummary()
+          } else {
+            showValidationSummary(form)
+          }
+        })
+      }
+
+      // 展开按钮
+      if (hasExpand) {
+        const expandBtn = document.getElementById('expand-btn')
+        if (expandBtn) {
+          expandBtn.addEventListener('click', () => {
+            form.toggleExpand()
+            expandBtn.textContent = form.isExpanded() ? '收起' : '展开更多'
+          })
+        }
+      }
+    }
+
+    // 添加社交账号
+    window.addSocialAccount = () => {
+      const container = document.getElementById('socialAccounts')
+      const index = container.querySelectorAll('.dynamic-item').length
+
+      if (index === 0) {
+        container.innerHTML = ''
+      }
+
+      const item = document.createElement('div')
+      item.className = 'dynamic-item'
+      item.innerHTML = `
+        <div class="form-item">
+          <label class="form-label">平台</label>
+          <select class="form-select social-platform-${index}">
+            <option value="">请选择</option>
+            <option value="github">GitHub</option>
+            <option value="twitter">Twitter</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="weibo">微博</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label class="form-label">账号</label>
+          <input type="text" class="form-input social-account-${index}" placeholder="请输入账号" />
+        </div>
+        <div>
+          <button type="button" class="btn btn-remove" onclick="removeSocialAccount(this)">
+            删除
+          </button>
+        </div>
+      `
+
+      container.appendChild(item)
+    }
+
+    window.removeSocialAccount = (btn) => {
+      btn.closest('.dynamic-item').remove()
+
+      const container = document.getElementById('socialAccounts')
+      if (container.querySelectorAll('.dynamic-item').length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: rgba(0, 0, 0, 0.45);">暂无社交账号</p>'
+      }
+    }
+
+    // 显示成功消息
+    function showSuccessMessage(message) {
+      const msgDiv = document.createElement('div')
+      msgDiv.className = 'success-message'
+      msgDiv.textContent = message
+      document.body.appendChild(msgDiv)
+
+      setTimeout(() => {
+        msgDiv.remove()
+      }, 3000)
+    }
+
+    // 显示验证摘要
+    function showValidationSummary(form) {
+      const summary = document.getElementById('validation-summary')
+      if (!summary) return
+
+      const state = form.getFormState()
+      const errors = []
+
+      form.getFieldManager().getAllFieldNames().forEach(field => {
+        const fieldState = form.getFieldState(field)
+        if (fieldState && fieldState.errors.length > 0) {
+          errors.push(`${field}: ${fieldState.errors[0]}`)
+        }
+      })
+
+      if (errors.length > 0) {
+        summary.innerHTML = `
+          <div class="validation-summary">
+            <h3>❌ 表单验证失败 (${errors.length}个错误)</h3>
+            <ul>
+              ${errors.map(err => `<li>${err}</li>`).join('')}
+            </ul>
+          </div>
+        `
+        summary.style.display = 'block'
+      }
+    }
+
+    function hideValidationSummary() {
+      const summary = document.getElementById('validation-summary')
+      if (summary) {
+        summary.style.display = 'none'
+      }
+    }
+
+    // 初始化
+    renderCurrentTab()
+  </script>
+</body>
+
+</html>
+
+
+

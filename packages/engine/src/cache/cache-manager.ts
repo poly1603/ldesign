@@ -83,13 +83,56 @@ export class CacheManager<T = unknown> {
   private preloadQueue = new Set<string>()
   private updateTimers = new Map<string, NodeJS.Timeout>()
 
+  // 缓存分片（减少单个Map的大小，提升性能）
+  private shards: Map<string, CacheItem<T>>[] = []
+  private readonly SHARD_COUNT = 16 // 分片数量
+  private useSharding = false // 是否启用分片
+
   constructor(config: CacheConfig<T> = {}, logger?: Logger) {
     this.logger = logger
     this.config = this.normalizeConfig(config)
     this.stats = this.initStats()
 
+    // 如果缓存大小超过阈值，启用分片
+    if (this.config.maxSize > 100) {
+      this.useSharding = true
+      this.initializeShards()
+    }
+
     this.initializeLayers()
     this.startCleanup()
+  }
+
+  /**
+   * 初始化缓存分片
+   */
+  private initializeShards(): void {
+    for (let i = 0; i < this.SHARD_COUNT; i++) {
+      this.shards.push(new Map())
+    }
+    this.logger?.debug(`Cache sharding enabled with ${this.SHARD_COUNT} shards`)
+  }
+
+  /**
+   * 根据key计算分片索引（使用简单哈希）
+   */
+  private getShardIndex(key: string): number {
+    let hash = 0
+    for (let i = 0; i < key.length; i++) {
+      hash = ((hash << 5) - hash) + key.charCodeAt(i)
+      hash = hash & hash // Convert to 32bit integer
+    }
+    return Math.abs(hash) % this.SHARD_COUNT
+  }
+
+  /**
+   * 获取缓存分片
+   */
+  private getShard(key: string): Map<string, CacheItem<T>> {
+    if (!this.useSharding) {
+      return this.cache
+    }
+    return this.shards[this.getShardIndex(key)]
   }
 
   /**
@@ -194,10 +237,11 @@ export class CacheManager<T = unknown> {
   }
 
   /**
-   * 从内存缓存获取
+   * 从内存缓存获取（支持分片）
    */
   private getFromMemory(key: string): T | undefined {
-    const item = this.cache.get(key)
+    const shard = this.getShard(key)
+    const item = shard.get(key)
 
     if (!item) {
       return undefined
@@ -246,8 +290,9 @@ export class CacheManager<T = unknown> {
       metadata
     }
 
-    // 存入内存缓存
-    this.cache.set(key, item)
+    // 存入内存缓存（使用分片）
+    const shard = this.getShard(key)
+    shard.set(key, item)
     this.totalMemory += size
 
     // 存入分层缓存
@@ -267,13 +312,14 @@ export class CacheManager<T = unknown> {
   }
 
   /**
-   * 删除缓存
+   * 删除缓存（支持分片）
    */
   async delete(key: string): Promise<boolean> {
-    const item = this.cache.get(key)
+    const shard = this.getShard(key)
+    const item = shard.get(key)
 
     if (item) {
-      this.cache.delete(key)
+      shard.delete(key)
       this.totalMemory -= item.size || 0
 
       // 从所有层删除
@@ -287,7 +333,7 @@ export class CacheManager<T = unknown> {
 
       if (this.config?.enableStats) {
         this.stats.deletes++
-        this.stats.size = this.cache.size
+        this.stats.size = this.getTotalSize()
       }
 
       return true
@@ -297,10 +343,24 @@ export class CacheManager<T = unknown> {
   }
 
   /**
-   * 清空缓存
+   * 获取总缓存大小（支持分片）
+   */
+  private getTotalSize(): number {
+    if (!this.useSharding) {
+      return this.cache.size
+    }
+    return this.shards.reduce((total, shard) => total + shard.size, 0)
+  }
+
+  /**
+   * 清空缓存（支持分片）
    */
   async clear(): Promise<void> {
-    this.cache.clear()
+    if (this.useSharding) {
+      this.shards.forEach(shard => shard.clear())
+    } else {
+      this.cache.clear()
+    }
     this.totalMemory = 0
 
     // 清空所有层
@@ -316,15 +376,26 @@ export class CacheManager<T = unknown> {
   }
 
   /**
-   * 按命名空间清理缓存键（前缀匹配）
+   * 按命名空间清理缓存键（前缀匹配，支持分片）
    */
   async clearNamespace(namespace: string): Promise<void> {
     const prefix = `${namespace}:`
     const keysToDelete: string[] = []
 
-    for (const key of this.cache.keys()) {
-      if (key.startsWith(prefix)) {
-        keysToDelete.push(key)
+    // 遍历所有分片查找匹配的键
+    if (this.useSharding) {
+      for (const shard of this.shards) {
+        for (const key of shard.keys()) {
+          if (key.startsWith(prefix)) {
+            keysToDelete.push(key)
+          }
+        }
+      }
+    } else {
+      for (const key of this.cache.keys()) {
+        if (key.startsWith(prefix)) {
+          keysToDelete.push(key)
+        }
       }
     }
 
@@ -437,17 +508,20 @@ export class CacheManager<T = unknown> {
   // ============================================
 
   /**
-   * 确保有足够的容量
+   * 确保有足够的容量（支持分片）
    */
   private async ensureCapacity(key: string, size: number): Promise<void> {
+    const shard = this.getShard(key)
+    const totalSize = this.getTotalSize()
+
     // 检查最大条目数
-    if (this.cache.size >= this.config?.maxSize && !this.cache.has(key)) {
+    if (totalSize >= this.config?.maxSize && !shard.has(key)) {
       await this.evict()
     }
 
     // 检查内存限制
     if (this.config?.maxMemory > 0) {
-      while (this.totalMemory + size > this.config?.maxMemory && this.cache.size > 0) {
+      while (this.totalMemory + size > this.config?.maxMemory && totalSize > 0) {
         await this.evict()
       }
     }
@@ -486,40 +560,50 @@ export class CacheManager<T = unknown> {
   }
 
   /**
-   * 查找最久未使用的项 - 优化版
+   * 查找最久未使用的项 - 支持分片
    */
   private findLRU(): string | undefined {
-    if (this.cache.size === 0) return undefined
+    const totalSize = this.getTotalSize()
+    if (totalSize === 0) return undefined
 
     let lruKey: string | undefined
     let lruTime = Infinity
 
-    // 优化：限制搜索数量，避免大缓存时的性能问题
+    // 优化：限制搜索数量
+    const maxSearch = Math.min(totalSize, 20)
     let searchCount = 0
-    const maxSearch = Math.min(this.cache.size, 20)
 
-    for (const [key, item] of this.cache) {
-      if (item.lastAccessed < lruTime) {
-        lruTime = item.lastAccessed
-        lruKey = key
+    // 遍历所有分片
+    const caches = this.useSharding ? this.shards : [this.cache]
+
+    for (const cache of caches) {
+      for (const [key, item] of cache) {
+        if (item.lastAccessed < lruTime) {
+          lruTime = item.lastAccessed
+          lruKey = key
+        }
+        if (++searchCount >= maxSearch) return lruKey
       }
-      if (++searchCount >= maxSearch) break
     }
 
     return lruKey
   }
 
   /**
-   * 查找最少使用的项
+   * 查找最少使用的项（支持分片）
    */
   private findLFU(): string | undefined {
     let lfuKey: string | undefined
     let lfuCount = Infinity
 
-    for (const [key, item] of this.cache) {
-      if (item.accessCount < lfuCount) {
-        lfuCount = item.accessCount
-        lfuKey = key
+    const caches = this.useSharding ? this.shards : [this.cache]
+
+    for (const cache of caches) {
+      for (const [key, item] of cache) {
+        if (item.accessCount < lfuCount) {
+          lfuCount = item.accessCount
+          lfuKey = key
+        }
       }
     }
 
@@ -527,14 +611,18 @@ export class CacheManager<T = unknown> {
   }
 
   /**
-   * 查找已过期的项
+   * 查找已过期的项（支持分片）
    */
   private findExpired(): string | undefined {
     const now = Date.now()
 
-    for (const [key, item] of this.cache) {
-      if (item.ttl && now - item.timestamp > item.ttl) {
-        return key
+    const caches = this.useSharding ? this.shards : [this.cache]
+
+    for (const cache of caches) {
+      for (const [key, item] of cache) {
+        if (item.ttl && now - item.timestamp > item.ttl) {
+          return key
+        }
       }
     }
 
@@ -542,33 +630,39 @@ export class CacheManager<T = unknown> {
   }
 
   /**
-   * 更新项顺序
+   * 更新项顺序（支持分片）
    */
   private updateItemOrder(key: string, item: CacheItem<T>): void {
     if (this.config?.strategy === CacheStrategy.LRU) {
       // 移到最后（最近使用）
-      this.cache.delete(key)
-      this.cache.set(key, item)
+      const shard = this.getShard(key)
+      shard.delete(key)
+      shard.set(key, item)
     }
   }
 
   /**
-   * 估算对象大小 - 优化版
-   * 使用更高效的内存估算算法
+   * 估算对象大小 - 极致优化版
+   * 使用更精确的采样策略和缓存机制
    */
   private estimateSize(obj: unknown, depth = 0, visited?: WeakSet<object>): number {
-    // 限制递归深度，避免栈溢出
-    if (depth > 3) return 100
-
+    // 快速路径：基本类型
     if (obj === null || obj === undefined) return 0
-    
+
     const type = typeof obj
-    if (type === 'string') return Math.min((obj as string).length * 2, 5000)
+    if (type === 'string') {
+      // 更精确的字符串大小估算（UTF-16编码）
+      return Math.min((obj as string).length * 2 + 24, 10000)
+    }
     if (type === 'number') return 8
     if (type === 'boolean') return 4
     if (type === 'bigint') return 16
     if (type === 'symbol') return 32
+    if (type === 'function') return 64
     if (type !== 'object') return 32
+
+    // 限制递归深度
+    if (depth > 5) return 100
 
     // 只在必要时创建 visited 集合
     if (!visited) {
@@ -579,40 +673,82 @@ export class CacheManager<T = unknown> {
     if (visited.has(obj as object)) return 0
     visited.add(obj as object)
 
-    // 数组优化：采样估算
+    // 特殊对象类型
+    if (obj instanceof Date) return 24
+    if (obj instanceof RegExp) return 48
+    if (obj instanceof Map) return 24 + (obj as Map<unknown, unknown>).size * 48
+    if (obj instanceof Set) return 24 + (obj as Set<unknown>).size * 32
+
+    // 数组优化：智能采样
     if (Array.isArray(obj)) {
       const len = obj.length
       if (len === 0) return 24
-      // 只采样前3个元素
-      const sampleSize = Math.min(len, 3)
-      let sampleSum = 0
-      for (let i = 0; i < sampleSize; i++) {
-        sampleSum += this.estimateSize(obj[i], depth + 1, visited)
+
+      // 自适应采样：小数组全扫描，大数组采样
+      if (len <= 10) {
+        let total = 24
+        for (let i = 0; i < len; i++) {
+          total += this.estimateSize(obj[i], depth + 1, visited)
+        }
+        return total
+      } else {
+        // 采样前5个、中间3个、最后2个
+        const samples: number[] = []
+        for (let i = 0; i < 5 && i < len; i++) {
+          samples.push(this.estimateSize(obj[i], depth + 1, visited))
+        }
+        const mid = Math.floor(len / 2)
+        for (let i = mid - 1; i <= mid + 1 && i < len; i++) {
+          if (i >= 0) samples.push(this.estimateSize(obj[i], depth + 1, visited))
+        }
+        for (let i = len - 2; i < len; i++) {
+          if (i >= 0) samples.push(this.estimateSize(obj[i], depth + 1, visited))
+        }
+
+        const avgSize = samples.reduce((a, b) => a + b, 0) / samples.length
+        return 24 + avgSize * len
       }
-      return 24 + (sampleSum / sampleSize) * len
     }
 
-    // 对象优化：快速估算
+    // 对象优化：智能估算
     try {
       const keys = Object.keys(obj)
       const keyCount = keys.length
       if (keyCount === 0) return 32
-      
-      // 只检查前5个属性
-      const checkCount = Math.min(keyCount, 5)
-      let size = 32 + keyCount * 16 // 基础开销
-      
-      for (let i = 0; i < checkCount; i++) {
-        const key = keys[i]
-        size += key.length * 2 + this.estimateSize((obj as any)[key], depth + 1, visited)
+
+      let size = 32 // 对象基础开销
+
+      // 小对象全扫描
+      if (keyCount <= 10) {
+        for (const key of keys) {
+          size += key.length * 2 + 16 // 键的开销
+          size += this.estimateSize((obj as any)[key], depth + 1, visited)
+        }
+      } else {
+        // 大对象采样估算（前7个、中间3个、最后3个）
+        const sampleKeys: string[] = []
+        for (let i = 0; i < 7 && i < keyCount; i++) {
+          sampleKeys.push(keys[i])
+        }
+        const mid = Math.floor(keyCount / 2)
+        for (let i = mid - 1; i <= mid + 1 && i < keyCount; i++) {
+          if (i >= 0) sampleKeys.push(keys[i])
+        }
+        for (let i = keyCount - 3; i < keyCount; i++) {
+          if (i >= 0) sampleKeys.push(keys[i])
+        }
+
+        let sampleSize = 0
+        for (const key of sampleKeys) {
+          sampleSize += key.length * 2 + 16
+          sampleSize += this.estimateSize((obj as any)[key], depth + 1, visited)
+        }
+
+        const avgKeySize = sampleSize / sampleKeys.length
+        size += avgKeySize * keyCount
       }
-      
-      // 估算剩余属性
-      if (keyCount > checkCount) {
-        size += (keyCount - checkCount) * 40 // 平均每个属性40字节
-      }
-      
-      return Math.min(size, 50000) // 限制最大大小
+
+      return Math.min(size, 100000) // 限制最大估算大小
     } catch {
       return 512 // 默认512B
     }
@@ -648,21 +784,26 @@ export class CacheManager<T = unknown> {
   }
 
   /**
-   * 清理过期项 - 优化版
+   * 清理过期项 - 优化版（支持分片）
    */
   private cleanup(): void {
     const now = Date.now()
     let expiredCount = 0
-    const maxCleanup = Math.min(30, Math.ceil(this.cache.size * 0.2))
+    const totalSize = this.getTotalSize()
+    const maxCleanup = Math.min(30, Math.ceil(totalSize * 0.2))
+
+    const caches = this.useSharding ? this.shards : [this.cache]
 
     // 收集并删除过期项（单次遍历）
-    for (const [key, item] of this.cache) {
-      if (item.ttl && now - item.timestamp > item.ttl) {
-        this.cache.delete(key)
-        this.totalMemory = Math.max(0, this.totalMemory - (item.size || 0))
-        expiredCount++
-        
-        if (expiredCount >= maxCleanup) break
+    outerLoop: for (const cache of caches) {
+      for (const [key, item] of cache) {
+        if (item.ttl && now - item.timestamp > item.ttl) {
+          cache.delete(key)
+          this.totalMemory = Math.max(0, this.totalMemory - (item.size || 0))
+          expiredCount++
+
+          if (expiredCount >= maxCleanup) break outerLoop
+        }
       }
     }
 
@@ -672,33 +813,34 @@ export class CacheManager<T = unknown> {
 
     // 检查内存压力并主动清理
     if (this.config?.maxMemory > 0 && this.totalMemory > this.config.maxMemory * 0.75) {
-      const targetSize = Math.floor(this.cache.size * 0.6) // 清理到60%
-      const toRemove = this.cache.size - targetSize
+      const currentSize = this.getTotalSize()
+      const targetSize = Math.floor(currentSize * 0.6) // 清理到60%
+      const toRemove = currentSize - targetSize
 
       if (toRemove > 0) {
-        // 优化：使用迭代器避免创建临时数组
-        let minAccess = Infinity
-        let minKey = ''
-        
-        // 找出并删除最少访问的项
-        for (let i = 0; i < toRemove && this.cache.size > targetSize; i++) {
-          minAccess = Infinity
-          minKey = ''
-          
-          // 找到最少访问的项（采样前20个）
+        // 优化：并行处理多个分片
+        for (let i = 0; i < toRemove && this.getTotalSize() > targetSize; i++) {
+          let minAccess = Infinity
+          let minKey = ''
+          let minShard: Map<string, CacheItem<T>> | undefined
+
+          // 找到最少访问的项（跨分片采样前20个）
           let checked = 0
-          for (const [key, item] of this.cache) {
-            if (item.lastAccessed < minAccess) {
-              minAccess = item.lastAccessed
-              minKey = key
+          outerSearch: for (const cache of caches) {
+            for (const [key, item] of cache) {
+              if (item.lastAccessed < minAccess) {
+                minAccess = item.lastAccessed
+                minKey = key
+                minShard = cache
+              }
+              if (++checked >= 20) break outerSearch
             }
-            if (++checked >= 20) break
           }
-          
-          if (minKey) {
-            const item = this.cache.get(minKey)
+
+          if (minKey && minShard) {
+            const item = minShard.get(minKey)
             if (item) {
-              this.cache.delete(minKey)
+              minShard.delete(minKey)
               this.totalMemory = Math.max(0, this.totalMemory - (item.size || 0))
             }
           }
@@ -708,7 +850,7 @@ export class CacheManager<T = unknown> {
 
     // 更新统计
     if (this.config?.enableStats) {
-      this.stats.size = this.cache.size
+      this.stats.size = this.getTotalSize()
       this.updateStats()
     }
   }
@@ -742,8 +884,13 @@ export class CacheManager<T = unknown> {
       delete self._eventListeners
     }
 
-    // 清理缓存
-    this.cache.clear()
+    // 清理缓存（包括分片）
+    if (this.useSharding) {
+      this.shards.forEach(shard => shard.clear())
+      this.shards = []
+    } else {
+      this.cache.clear()
+    }
     this.preloadQueue.clear()
 
     // 重置内存计数

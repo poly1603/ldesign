@@ -3,7 +3,7 @@
  * 使用 @ldesign/store 包
  */
 
-import { 
+import {
   createStoreEnginePlugin as createPackageStorePlugin,
   useStore as useVueStore,
   useState,
@@ -12,7 +12,7 @@ import {
   StoreFactory
 } from '@ldesign/store'
 import type { StoreEnginePluginOptions } from '@ldesign/store'
-import { storeConfig } from '@/config/store.config'
+import { storeConfig } from '../config/store.config'
 
 // 导出 Vue 专用的 hooks
 export const useStore = useVueStore

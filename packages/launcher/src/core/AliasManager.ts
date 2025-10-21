@@ -32,9 +32,18 @@ export interface AliasEntry {
  */
 export class AliasManager {
   private cwd: string
+  private logger: { debug: (message: string) => void }
 
   constructor(cwd: string = process.cwd()) {
     this.cwd = cwd
+    // 简单的logger实现
+    this.logger = {
+      debug: (message: string) => {
+        if (process.env.NODE_ENV === 'development' && process.argv.includes('--debug')) {
+          console.log(`[AliasManager] ${message}`)
+        }
+      }
+    }
   }
 
   /**
@@ -73,7 +82,8 @@ export class AliasManager {
     // 只在 debug 模式下输出详细调试信息
     const isDebug = process.env.NODE_ENV === 'development' && process.argv.includes('--debug')
     if (isDebug) {
-                      }
+      this.logger.debug(`开始过滤别名配置，目标阶段: ${stage}`)
+    }
 
     const filtered = aliases.filter(alias => {
       // 如果没有指定 stages，默认只在 dev 阶段生效
@@ -81,7 +91,7 @@ export class AliasManager {
       const shouldInclude = effectiveStages.includes(stage)
 
       if (isDebug && alias.find && typeof alias.find === 'string' && alias.find.startsWith('@ldesign')) {
-        }, 包含${stage}=${shouldInclude}`)
+        this.logger.debug(`别名 ${alias.find} - Include ${stage}=${shouldInclude}`)
       }
 
       return shouldInclude
@@ -90,7 +100,7 @@ export class AliasManager {
       const resolvedReplacement = this.resolveAlias(alias.replacement)
 
       if (isDebug && alias.find && typeof alias.find === 'string' && alias.find.startsWith('@ldesign')) {
-              }
+      }
 
       return {
         // 返回标准的 Vite AliasEntry 格式（不包含 stages 字段）
@@ -100,8 +110,8 @@ export class AliasManager {
     })
 
     if (isDebug) {
-            const ldesignFiltered = filtered.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
-          }
+      const ldesignFiltered = filtered.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
+    }
 
     return filtered
   }

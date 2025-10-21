@@ -73,7 +73,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from '@ldesign/router'
-import { useI18n } from '@/i18n'
+import { useI18n } from '../i18n'
 import { Zap, Package, FileText, Lock, Globe, Server } from 'lucide-vue-next'
 
 const router = useRouter()

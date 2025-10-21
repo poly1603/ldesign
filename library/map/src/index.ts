@@ -35,6 +35,11 @@ export { LayerManager } from './LayerManager';
 export { GeometryUtils } from './GeometryUtils';
 export { DataTransformer } from './DataTransformer';
 
+// v2.3 新增功能
+export { TrackPlayer, createTrackPlayer, createTrackFromGPS } from './TrackPlayer';
+export { GeoFence, createGeoFence, createFenceFromGeoJSON } from './GeoFence';
+export { POISearch, createPOISearch, createPOIsFromGeoJSON } from './POISearch';
+
 // 测量工具
 export {
   MeasurementTool,
@@ -173,3 +178,29 @@ export type {
   Point,
   Bounds
 } from './GeometryUtils';
+
+export type {
+  TrackPoint,
+  TrackData,
+  PlayOptions,
+  PlaybackState
+} from './TrackPlayer';
+
+export type {
+  FenceType,
+  FenceStatus,
+  FenceEventType,
+  GeoFenceOptions,
+  FenceEvent,
+  MonitorTarget,
+  FenceStatistics
+} from './GeoFence';
+
+export type {
+  POIType,
+  POIData,
+  SearchOptions,
+  SearchFilter,
+  SearchResult,
+  POICategoryConfig
+} from './POISearch';

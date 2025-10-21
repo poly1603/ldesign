@@ -79,17 +79,17 @@ export class EngineImpl implements Engine {
   /** 配置管理器 - 负责管理所有配置项 */
   readonly config: ConfigManager
 
-  /** 插件管理器 - 负责插件的加载、卸载和生命周期管理 */
-  plugins!: PluginManager
+  /** 插件管理器 - 负责插件的加载、卸载和生命周期管理（懒加载） */
+  private _plugins?: PluginManager
 
-  /** 中间件管理器 - 提供请求/响应处理管道 */
-  middleware!: MiddlewareManager
+  /** 中间件管理器 - 提供请求/响应处理管道（懒加载） */
+  private _middleware?: MiddlewareManager
 
-  /** 事件管理器 - 负责事件的发布订阅机制 */
-  events!: EventManager
+  /** 事件管理器 - 负责事件的发布订阅机制（懒加载） */
+  private _events?: EventManager
 
-  /** 状态管理器 - 管理应用的全局状态 */
-  state!: StateManager
+  /** 状态管理器 - 管理应用的全局状态（懒加载） */
+  private _state?: StateManager
 
   /** 环境管理器 - 检测和管理运行环境信息 */
   readonly environment: EnvironmentManager
@@ -97,17 +97,17 @@ export class EngineImpl implements Engine {
   /** 生命周期管理器 - 管理组件和应用的生命周期钩子 */
   readonly lifecycle: LifecycleManager
 
-  /** 指令管理器 - 管理Vue自定义指令 */
-  directives!: DirectiveManager
+  /** 指令管理器 - 管理Vue自定义指令（懒加载） */
+  private _directives?: DirectiveManager
 
-  /** 错误管理器 - 统一的错误处理和报告 */
-  errors!: ErrorManager
+  /** 错误管理器 - 统一的错误处理和报告（懒加载） */
+  private _errors?: ErrorManager
 
   /** 日志记录器 - 提供分级日志记录功能 */
   readonly logger: Logger
 
-  /** 通知管理器 - 管理用户通知和提示 */
-  notifications!: NotificationSystem
+  /** 通知管理器 - 管理用户通知和提示（懒加载） */
+  private _notifications?: NotificationSystem
 
   /** 缓存管理器实例 - 懒加载，提供多级缓存策略 */
   private _cache?: CacheManager
@@ -132,6 +132,106 @@ export class EngineImpl implements Engine {
 
   /** 主题适配器 - 可选的主题切换接口 */
   theme?: ThemeAdapter
+
+  /**
+   * 懒加载事件管理器访问器
+   */
+  get events(): EventManager {
+    if (!this._events) {
+      const startTime = Date.now()
+      this._events = createEventManager(this.logger)
+      const initTime = Date.now() - startTime
+      this.managerRegistry.markInitialized('events')
+      this.logger.debug('Event manager initialized lazily', { initTime: `${initTime}ms` })
+    }
+    return this._events
+  }
+
+  /**
+   * 懒加载状态管理器访问器
+   */
+  get state(): StateManager {
+    if (!this._state) {
+      const startTime = Date.now()
+      this._state = createStateManager(this.logger)
+      const initTime = Date.now() - startTime
+      this.managerRegistry.markInitialized('state')
+      this.logger.debug('State manager initialized lazily', { initTime: `${initTime}ms` })
+    }
+    return this._state
+  }
+
+  /**
+   * 懒加载错误管理器访问器
+   */
+  get errors(): ErrorManager {
+    if (!this._errors) {
+      const startTime = Date.now()
+      this._errors = createErrorManager()
+      const initTime = Date.now() - startTime
+      this.managerRegistry.markInitialized('errors')
+      this.logger.debug('Error manager initialized lazily', { initTime: `${initTime}ms` })
+      // 设置错误处理
+      this.ensureErrorHandling()
+    }
+    return this._errors
+  }
+
+  /**
+   * 懒加载指令管理器访问器
+   */
+  get directives(): DirectiveManager {
+    if (!this._directives) {
+      const startTime = Date.now()
+      this._directives = createDirectiveManager()
+      const initTime = Date.now() - startTime
+      this.managerRegistry.markInitialized('directives')
+      this.logger.debug('Directive manager initialized lazily', { initTime: `${initTime}ms` })
+    }
+    return this._directives
+  }
+
+  /**
+   * 懒加载通知管理器访问器
+   */
+  get notifications(): NotificationSystem {
+    if (!this._notifications) {
+      const startTime = Date.now()
+      this._notifications = createNotificationSystem(this)
+      const initTime = Date.now() - startTime
+      this.managerRegistry.markInitialized('notifications')
+      this.logger.debug('Notification system initialized lazily', { initTime: `${initTime}ms` })
+    }
+    return this._notifications
+  }
+
+  /**
+   * 懒加载中间件管理器访问器
+   */
+  get middleware(): MiddlewareManager {
+    if (!this._middleware) {
+      const startTime = Date.now()
+      this._middleware = createMiddlewareManager(this.logger)
+      const initTime = Date.now() - startTime
+      this.managerRegistry.markInitialized('middleware')
+      this.logger.debug('Middleware manager initialized lazily', { initTime: `${initTime}ms` })
+    }
+    return this._middleware
+  }
+
+  /**
+   * 懒加载插件管理器访问器
+   */
+  get plugins(): PluginManager {
+    if (!this._plugins) {
+      const startTime = Date.now()
+      this._plugins = createPluginManager(this)
+      const initTime = Date.now() - startTime
+      this.managerRegistry.markInitialized('plugins')
+      this.logger.debug('Plugin manager initialized lazily', { initTime: `${initTime}ms` })
+    }
+    return this._plugins
+  }
 
   /**
    * 懒加载缓存管理器访问器
@@ -254,11 +354,8 @@ export class EngineImpl implements Engine {
       // 5. 初始化生命周期管理器 - 管理整个应用的生命周期钩子
       this.lifecycle = createLifecycleManager(this.logger)
 
-      // 6. 按依赖顺序初始化核心管理器 - 确保依赖关系正确
-      this.initializeManagers()
-
-      // 设置全局错误处理机制
-      this.setupErrorHandling()
+      // 6. 不再立即初始化管理器，改为懒加载（大幅提升启动性能）
+      // 核心管理器（events、state、plugins等）将在首次访问时初始化
 
       // 设置配置变化监听器，实现响应式配置
       this.setupConfigWatchers()
@@ -278,28 +375,30 @@ export class EngineImpl implements Engine {
   }
 
   /**
-   * 设置全局错误处理机制
-   *
-   * 这个方法设置了一个统一的错误处理系统，能够：
-   * 1. 捕获所有未处理的错误
-   * 2. 记录错误日志供调试使用
-   * 3. 发送错误事件供其他模块监听
-   * 4. 在调试模式下显示用户友好的错误通知
-   *
+   * 确保错误处理已设置（延迟初始化）
    * @private
    */
-  private setupErrorHandling(): void {
+  private ensureErrorHandling(): void {
+    // 只在首次访问errors时设置一次
+    if (!this._errors) return
+
+    // 检查是否已经设置
+    if ((this._errors as any)._handlingSetup) return
+      ; (this._errors as any)._handlingSetup = true
+
     // 注册全局错误监听器
-    this.errors.onError(errorInfo => {
+    this._errors.onError(errorInfo => {
       // 1. 记录详细的错误信息到日志系统
       this.logger.error('Global error captured', errorInfo)
 
       // 2. 发送错误事件，允许其他模块做相应处理
-      this.events.emit('engine:error', errorInfo)
+      if (this._events) {
+        this._events.emit('engine:error', errorInfo)
+      }
 
       // 3. 在开发环境下显示错误通知，帮助开发者快速发现问题
-      if (this.config?.get('debug', false)) {
-        this.notifications.show({
+      if (this.config?.get('debug', false) && this._notifications) {
+        this._notifications.show({
           type: 'error',
           title: 'Error Captured',
           content: errorInfo.message,
@@ -319,7 +418,7 @@ export class EngineImpl implements Engine {
     if (!this.configWatchers) {
       this.configWatchers = new Map()
     }
-    
+
     // 使用防抖优化配置监听，避免频繁触发
     const debouncedDebugChange = this.debounce((newValue: unknown) => {
       this.logger.setLevel(newValue ? 'debug' : 'info')
@@ -344,7 +443,7 @@ export class EngineImpl implements Engine {
     // 监听日志级别变化
     this.config?.watch('logger.level', debouncedLevelChange)
   }
-  
+
   /** 存储配置监听器的防抖函数，用于清理 */
   private configWatchers?: Map<string, { cancel: () => void }>
 
@@ -361,18 +460,18 @@ export class EngineImpl implements Engine {
     wait: number
   ): ((...args: Parameters<T>) => void) & { cancel: () => void } {
     let timeoutId: number | undefined
-    
+
     const debounced = (...args: Parameters<T>): void => {
       if (timeoutId !== undefined) {
         clearTimeout(timeoutId)
       }
-      
+
       timeoutId = window.setTimeout(() => {
         func(...args)
         timeoutId = undefined
       }, wait)
     }
-    
+
     // 添加取消方法，用于清理
     debounced.cancel = (): void => {
       if (timeoutId !== undefined) {
@@ -380,7 +479,7 @@ export class EngineImpl implements Engine {
         timeoutId = undefined
       }
     }
-    
+
     return debounced
   }
 
@@ -444,17 +543,19 @@ export class EngineImpl implements Engine {
     // 提供引擎注入
     app.provide('engine', this)
 
-    // 注册全局指令
-    const directiveNames = this.directives.getNames()
-    directiveNames.forEach(name => {
-      const eng = this.directives.get(name)
-      if (eng) {
-        const vueDir = convertEngineToVueDirective(eng)
-        app.directive(name, vueDir as Directive)
-      }
-    })
+    // 注册全局指令（只在directives已初始化时）
+    if (this._directives) {
+      const directiveNames = this._directives.getNames()
+      directiveNames.forEach(name => {
+        const eng = this._directives!.get(name)
+        if (eng) {
+          const vueDir = convertEngineToVueDirective(eng)
+          app.directive(name, vueDir as Directive)
+        }
+      })
+    }
 
-    // 设置Vue错误处理
+    // 设置Vue错误处理（懒加载errors manager）
     app.config.errorHandler = (error, component, info) => {
       this.errors.captureError(error as Error, component || undefined, info)
     }
@@ -474,7 +575,10 @@ export class EngineImpl implements Engine {
     }
 
     // Engine installed to Vue app (日志已禁用)
-    this.events.emit('engine:installed', { app })
+    // 只在events已初始化时触发
+    if (this._events) {
+      this._events.emit('engine:installed', { app })
+    }
   }
 
   async use(plugin: Plugin): Promise<void> {
@@ -680,147 +784,31 @@ export class EngineImpl implements Engine {
     return { valid, errors }
   }
 
-  // 私有方法：注册管理器
+  // 私有方法：注册管理器（更新为懒加载模式）
   private registerManagers(): void {
-    // 注册核心管理器（按依赖顺序）
+    // 注册立即初始化的核心管理器
     this.managerRegistry.register('config', [])
     this.managerRegistry.register('logger', ['config'])
     this.managerRegistry.register('environment', ['logger'])
-    this.managerRegistry.register('events', ['logger'])
-    this.managerRegistry.register('state', ['logger'])
-    this.managerRegistry.register('errors', [])
-    this.managerRegistry.register('directives', [])
-    this.managerRegistry.register('notifications', ['logger'])
-    this.managerRegistry.register('middleware', ['logger'])
-    this.managerRegistry.register('plugins', ['events', 'state', 'middleware'])
+    this.managerRegistry.register('lifecycle', ['logger'])
 
-    // 注册懒加载管理器
+    // 注册懒加载管理器（所有业务管理器都改为懒加载）
+    this.managerRegistry.register('events', ['logger'], true)
+    this.managerRegistry.register('state', ['logger'], true)
+    this.managerRegistry.register('errors', [], true)
+    this.managerRegistry.register('directives', [], true)
+    this.managerRegistry.register('notifications', ['logger'], true)
+    this.managerRegistry.register('middleware', ['logger'], true)
+    this.managerRegistry.register('plugins', ['events', 'state', 'middleware'], true)
     this.managerRegistry.register('cache', ['config'], true)
     this.managerRegistry.register('performance', ['config', 'logger'], true)
     this.managerRegistry.register('security', ['config', 'logger'], true)
 
-    this.logger.debug('Managers registered in registry')
-  }
-
-  // 私有方法：初始化管理器
-  private initializeManagers(): void {
-    try {
-      // 验证依赖图
-      const validation = this.managerRegistry.validateDependencyGraph()
-      if (!validation.valid) {
-        this.logger.error('Manager dependency validation failed', {
-          errors: validation.errors,
-          warnings: validation.warnings,
-        })
-      }
-
-      // 获取初始化顺序
-      const initOrder = this.managerRegistry.getInitializationOrder()
-      this.logger.debug('Manager initialization order', { order: initOrder })
-
-      // 按顺序初始化管理器
-      this.initializeManagersInOrder(initOrder)
-    } catch (error) {
-      this.logger.error('Failed to initialize managers', error)
-      throw error
-    }
+    this.logger.debug('Managers registered in registry (lazy-load mode)')
   }
 
   /**
-   * 管理器初始化工厂映射 - 提高可维护性
-   * 使用懒初始化模式减少内存占用
-   */
-  private get managerFactories(): Record<string, () => unknown> {
-    // 缓存工厂映射，避免重复创建
-    if (!this._managerFactories) {
-      this._managerFactories = {
-        events: () => createEventManager(this.logger),
-        state: () => createStateManager(this.logger),
-        errors: () => createErrorManager(),
-        directives: () => createDirectiveManager(),
-        notifications: () => createNotificationSystem(this),
-        middleware: () => createMiddlewareManager(this.logger),
-        plugins: () => createPluginManager(this),
-      }
-    }
-    return this._managerFactories
-  }
-  private _managerFactories?: Record<string, () => unknown>
-
-  // 私有方法：按顺序初始化管理器
-  private initializeManagersInOrder(order: string[]): void {
-    for (const managerName of order) {
-      this.initializeSingleManager(managerName)
-    }
-  }
-
-  // 私有方法：初始化单个管理器
-  private initializeSingleManager(managerName: string): void {
-    try {
-      const startTime = Date.now()
-
-      // 跳过已经初始化的核心管理器
-      if (['config', 'logger', 'environment'].includes(managerName)) {
-        this.managerRegistry.markInitialized(managerName)
-        this.logger.debug(`Manager "${managerName}" already initialized`)
-        return
-      }
-
-      const factory = this.managerFactories[managerName]
-      if (!factory) {
-        this.logger.warn(`Unknown manager: ${managerName}`)
-        return
-      }
-
-      // 使用工厂函数创建管理器
-      const manager = factory()
-
-      // 将管理器分配到对应的属性
-      this.assignManagerToProperty(managerName, manager)
-
-      const initTime = Date.now() - startTime
-      this.managerRegistry.markInitialized(managerName)
-      this.logger.debug(`Manager "${managerName}" initialized`, {
-        initTime: `${initTime}ms`,
-      })
-    } catch (error) {
-      this.managerRegistry.markInitialized(managerName, error as Error)
-      this.logger.error(
-        `Failed to initialize manager "${managerName}"`,
-        error
-      )
-      throw error
-    }
-  }
-
-  /**
-   * 将管理器分配到对应的属性 - 优化版
-   * @private
-   * @param managerName 管理器名称
-   * @param manager 管理器实例
-   */
-  private assignManagerToProperty(managerName: string, manager: unknown): void {
-    // 使用对象映射替代switch，提高性能和可维护性
-    const managerMap: Record<string, (m: unknown) => void> = {
-      'events': (m) => { this.events = m as EventManager },
-      'state': (m) => { this.state = m as StateManager },
-      'errors': (m) => { this.errors = m as ErrorManager },
-      'directives': (m) => { this.directives = m as DirectiveManager },
-      'notifications': (m) => { this.notifications = m as NotificationSystem },
-      'middleware': (m) => { this.middleware = m as MiddlewareManager },
-      'plugins': (m) => { this.plugins = m as PluginManager }
-    }
-    
-    const setter = managerMap[managerName]
-    if (setter) {
-      setter(manager)
-    } else {
-      this.logger.warn(`Unknown manager type: ${managerName}`)
-    }
-  }
-
-  /**
-   * 清理所有管理器 - 新增方法
+   * 清理所有管理器 - 优化版（支持懒加载的管理器）
    * @private
    */
   private async cleanupManagers(): Promise<void> {
@@ -833,12 +821,20 @@ export class EngineImpl implements Engine {
         this.configWatchers.clear()
         this.configWatchers = undefined
       }
-      
-      // 按照反向顺序清理管理器
-      const cleanupOrder = ['plugins', 'middleware', 'notifications', 'directives', 'errors', 'state', 'events']
-      
-      for (const managerName of cleanupOrder) {
-        const manager = (this as any)[managerName]
+
+      // 按照反向顺序清理已初始化的懒加载管理器
+      const cleanupOrder: Array<{ key: string; name: string }> = [
+        { key: '_plugins', name: 'plugins' },
+        { key: '_middleware', name: 'middleware' },
+        { key: '_notifications', name: 'notifications' },
+        { key: '_directives', name: 'directives' },
+        { key: '_errors', name: 'errors' },
+        { key: '_state', name: 'state' },
+        { key: '_events', name: 'events' },
+      ]
+
+      for (const { key, name } of cleanupOrder) {
+        const manager = (this as any)[key]
         if (manager) {
           // 检查是否有 destroy 方法
           if ('destroy' in manager && typeof manager.destroy === 'function') {
@@ -846,12 +842,10 @@ export class EngineImpl implements Engine {
           } else if ('clear' in manager && typeof manager.clear === 'function') {
             manager.clear()
           }
-          (this as any)[managerName] = undefined
+          (this as any)[key] = undefined
+          this.logger?.debug(`Manager "${name}" cleaned up`)
         }
       }
-      
-      // 清理工厂函数缓存
-      this._managerFactories = undefined
     } catch (error) {
       this.logger?.error('Error cleaning up managers:', error)
     }
@@ -863,10 +857,10 @@ export class EngineImpl implements Engine {
    */
   private emergencyCleanup(): void {
     try {
-      // 清理所有可能的资源
+      // 清理所有可能的资源（懒加载和立即加载的）
       const managersToClean = [
-        this.events, this.state, this.errors, this.directives,
-        this.notifications, this.middleware, this.plugins,
+        this._events, this._state, this._errors, this._directives,
+        this._notifications, this._middleware, this._plugins,
         this._cache, this._performance, this._security
       ]
 

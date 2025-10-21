@@ -1,7 +1,7 @@
 {
   "name": "@ldesign/engine",
-  "version": "0.1.0",
-  "description": "A powerful Vue3 application engine with plugin system, middleware support, and global management",
+  "version": "0.3.0",
+  "description": "A powerful Vue3 application engine with plugin system, middleware support, and global management - Optimized for performance and memory efficiency",
   "keywords": [
     "vue3",
     "engine",

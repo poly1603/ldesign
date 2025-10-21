@@ -5,7 +5,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "pnpm --filter ldesign-simple-app dev",
     "build": "tsx scripts/build-all.ts",
+    "build:lib": "pnpm --filter ldesign-simple-app build:lib",
+    "preview": "pnpm --filter ldesign-simple-app preview",
     "build:all": "tsx scripts/build-all.ts",
     "build:all:clean": "tsx scripts/build-all.ts --clean",
     "build:all:verbose": "tsx scripts/build-all.ts --verbose",

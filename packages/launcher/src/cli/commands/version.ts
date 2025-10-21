@@ -69,7 +69,7 @@ export class VersionCommand implements CliCommandDefinition {
       const versionInfo = await this.getVersionInfo(context.cwd)
 
       if (context.options.json) {
-        )
+        console.log(JSON.stringify(versionInfo, null, 2))
       } else if (context.options.verbose) {
         this.showVerboseVersion(versionInfo, logger)
       } else {

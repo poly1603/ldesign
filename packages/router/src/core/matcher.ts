@@ -94,12 +94,32 @@ export class RouteMatcher {
     totalMatches: 0,
     averageMatchTime: 0,
   }
-  
+
   // 优化：预分配的对象池，减少GC压力
   private readonly objectPool = {
     matchResults: [] as MatchResult[],
     segments: [] as string[][],
   }
+
+  // 新增：路由热点分析
+  private hotspots = new Map<string, {
+    hits: number
+    lastAccess: number
+    avgMatchTime: number
+  }>()
+
+  // 新增：自适应缓存配置
+  private adaptiveCacheConfig = {
+    minSize: 50,
+    maxSize: 200,
+    currentSize: 100,
+    adjustmentInterval: 60000, // 1分钟调整一次
+    lastAdjustment: Date.now(),
+  }
+
+  // 新增：预热状态
+  private preheated = false
+  private preheatRoutes: string[] = []
 
   constructor(cacheSize: number = 100) {
     this.root = this.createNode()
@@ -107,11 +127,15 @@ export class RouteMatcher {
     this.rawRoutes = new Map()
     this.lruCache = new LRUCache(cacheSize)
     this.compiledPaths = new Map()
-    
+    this.adaptiveCacheConfig.currentSize = cacheSize
+
     // 预分配对象池
     for (let i = 0; i < 10; i++) {
       this.objectPool.segments.push([])
     }
+
+    // 启动自适应缓存调整
+    this.startAdaptiveCacheAdjustment()
   }
 
   /**
@@ -208,7 +232,135 @@ export class RouteMatcher {
       cacheStats: this.lruCache.getStats(),
       compiledPathsCount: this.compiledPaths.size,
       routesCount: this.routes.size,
+      hotspots: this.getTopHotspots(10),
+      adaptiveCache: {
+        currentSize: this.adaptiveCacheConfig.currentSize,
+        minSize: this.adaptiveCacheConfig.minSize,
+        maxSize: this.adaptiveCacheConfig.maxSize,
+      },
+      preheated: this.preheated,
     }
+  }
+
+  /**
+   * 启动自适应缓存调整
+   */
+  private startAdaptiveCacheAdjustment(): void {
+    if (typeof window === 'undefined') return
+
+    setInterval(() => {
+      this.adjustCacheSize()
+    }, this.adaptiveCacheConfig.adjustmentInterval)
+  }
+
+  /**
+   * 自适应调整缓存大小
+   */
+  private adjustCacheSize(): void {
+    const now = Date.now()
+    const hitRate = this.stats.totalMatches > 0
+      ? this.stats.cacheHits / this.stats.totalMatches
+      : 0
+
+    const { minSize, maxSize, currentSize } = this.adaptiveCacheConfig
+
+    // 根据命中率调整缓存大小
+    let newSize = currentSize
+
+    if (hitRate > 0.9 && currentSize < maxSize) {
+      // 命中率很高，增加缓存
+      newSize = Math.min(currentSize + 20, maxSize)
+    } else if (hitRate < 0.5 && currentSize > minSize) {
+      // 命中率较低，减小缓存
+      newSize = Math.max(currentSize - 20, minSize)
+    }
+
+    if (newSize !== currentSize) {
+      this.lruCache.resize(newSize)
+      this.adaptiveCacheConfig.currentSize = newSize
+    }
+
+    this.adaptiveCacheConfig.lastAdjustment = now
+  }
+
+  /**
+   * 记录热点访问
+   */
+  private recordHotspot(path: string, matchTime: number): void {
+    const hotspot = this.hotspots.get(path)
+
+    if (hotspot) {
+      hotspot.hits++
+      hotspot.lastAccess = Date.now()
+      hotspot.avgMatchTime = (hotspot.avgMatchTime * (hotspot.hits - 1) + matchTime) / hotspot.hits
+    } else {
+      this.hotspots.set(path, {
+        hits: 1,
+        lastAccess: Date.now(),
+        avgMatchTime: matchTime,
+      })
+    }
+
+    // 限制热点记录数量
+    if (this.hotspots.size > 500) {
+      this.cleanupHotspots()
+    }
+  }
+
+  /**
+   * 清理过期的热点记录
+   */
+  private cleanupHotspots(): void {
+    const now = Date.now()
+    const timeout = 5 * 60 * 1000 // 5分钟
+
+    for (const [path, hotspot] of this.hotspots.entries()) {
+      if (now - hotspot.lastAccess > timeout) {
+        this.hotspots.delete(path)
+      }
+    }
+  }
+
+  /**
+   * 获取TOP热点路由
+   */
+  private getTopHotspots(count: number): Array<{ path: string; hits: number }> {
+    return Array.from(this.hotspots.entries())
+      .sort((a, b) => b[1].hits - a[1].hits)
+      .slice(0, count)
+      .map(([path, data]) => ({ path, hits: data.hits }))
+  }
+
+  /**
+   * 预热路由（提前编译和缓存热门路由）
+   */
+  public preheat(routes?: string[]): void {
+    if (this.preheated) return
+
+    const routesToPreheat = routes || this.getTopHotspots(20).map(h => h.path)
+
+    for (const path of routesToPreheat) {
+      try {
+        // 预编译路径
+        this.compilePath(path)
+
+        // 预缓存匹配结果
+        this.matchByPath(path)
+      } catch {
+        // 忽略预热失败的路由
+      }
+    }
+
+    this.preheatRoutes = routesToPreheat
+    this.preheated = true
+  }
+
+  /**
+   * 重置预热状态
+   */
+  public resetPreheat(): void {
+    this.preheated = false
+    this.preheatRoutes = []
   }
 
   /**
@@ -323,18 +475,22 @@ export class RouteMatcher {
 
     if (cached !== undefined) {
       this.stats.cacheHits++
-      this.updateAverageMatchTime(performance.now() - startTime)
+      const matchTime = performance.now() - startTime
+      this.updateAverageMatchTime(matchTime)
+      this.recordHotspot(path, matchTime)
       return cached
     }
 
     this.stats.cacheMisses++
-    
+
     // 优化：对于根路径直接处理
     if (path === '/' || path === '') {
       const rootMatch = this.matchRootPath()
       if (rootMatch) {
         this.lruCache.set(cacheKey, rootMatch)
-        this.updateAverageMatchTime(performance.now() - startTime)
+        const matchTime = performance.now() - startTime
+        this.updateAverageMatchTime(matchTime)
+        this.recordHotspot(path, matchTime)
         return rootMatch
       }
     }
@@ -347,7 +503,9 @@ export class RouteMatcher {
       const fastMatch = this.fastMatch(path)
       if (fastMatch) {
         this.lruCache.set(cacheKey, fastMatch)
-        this.updateAverageMatchTime(performance.now() - startTime)
+        const matchTime = performance.now() - startTime
+        this.updateAverageMatchTime(matchTime)
+        this.recordHotspot(path, matchTime)
         return fastMatch
       }
     }
@@ -360,11 +518,13 @@ export class RouteMatcher {
 
     // 缓存结果
     this.lruCache.set(cacheKey, result)
-    this.updateAverageMatchTime(performance.now() - startTime)
+    const matchTime = performance.now() - startTime
+    this.updateAverageMatchTime(matchTime)
+    this.recordHotspot(path, matchTime)
 
     return result
   }
-  
+
   /**
    * 优化：快速匹配根路径
    */
@@ -372,12 +532,12 @@ export class RouteMatcher {
     if (this.root.record) {
       const matched = [this.root.record]
       let finalRecord = this.root.record
-      
+
       if (this.root.defaultChild) {
         matched.push(this.root.defaultChild)
         finalRecord = this.root.defaultChild
       }
-      
+
       return {
         record: finalRecord,
         matched,
@@ -387,21 +547,21 @@ export class RouteMatcher {
     }
     return null
   }
-  
+
   /**
    * 优化：使用对象池管理segments数组
    */
   private getPooledSegments(): string[] {
     return this.objectPool.segments.pop() || []
   }
-  
+
   private releasePooledSegments(segments: string[]): void {
     segments.length = 0
     if (this.objectPool.segments.length < 20) {
       this.objectPool.segments.push(segments)
     }
   }
-  
+
   private fillSegments(segments: string[], path: string): void {
     const parts = path.split('/')
     for (let i = 0; i < parts.length; i++) {
@@ -457,7 +617,7 @@ export class RouteMatcher {
   private updateAverageMatchTime(time: number): void {
     this.stats.averageMatchTime
       = (this.stats.averageMatchTime * (this.stats.totalMatches - 1) + time)
-        / this.stats.totalMatches
+      / this.stats.totalMatches
   }
 
   /**

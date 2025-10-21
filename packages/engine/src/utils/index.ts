@@ -100,7 +100,7 @@ export function formatFileSize(bytes: number): string {
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${Math.round((bytes / k**i) * 100) / 100  } ${  sizes[i]}`
+  return `${Math.round((bytes / k ** i) * 100) / 100} ${sizes[i]}`
 }
 
 /**
@@ -246,3 +246,8 @@ export { createManagedContext, destroyGlobalContext, getGlobalContext } from './
 export { createMemoryMonitor, MemoryMonitor } from './memory-monitor';
 export type { MemoryError, MemoryMonitorConfig, MemoryStats, MemoryWarning } from './memory-monitor';
 export { createResourceManager, ResourceManager } from './resource-manager';
+
+// ============ LRU缓存（新增） ============
+
+export { createLRUCache, LRUCache } from './lru-cache';
+export type { LRUCacheOptions } from './lru-cache';

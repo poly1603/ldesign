@@ -195,10 +195,10 @@ export class TeamCommand {
 
       // 生成团队配置文件
       await this.generateTeamConfig(config)
-      
+
       // 创建标准化目录结构
       await this.createTeamStructure(config)
-      
+
       // 设置开发规范
       await this.setupDevelopmentStandards(config.standards)
 
@@ -207,7 +207,7 @@ export class TeamCommand {
       this.logger.success('🎉 团队配置创建成功!')
       this.logger.info(`👥 团队名称: ${config.teamName}`)
       this.logger.info(`🚀 同步命令: launcher team sync`)
-      
+
     } catch (error) {
       this.logger.error('初始化失败:', error)
       throw error
@@ -222,7 +222,7 @@ export class TeamCommand {
       this.logger.info('同步团队配置...')
 
       const config = await this.loadTeamConfig()
-      
+
       if (options.dryRun) {
         this.logger.info('预览同步内容:')
         await this.previewSync(config)
@@ -233,10 +233,10 @@ export class TeamCommand {
 
       // 同步共享配置
       await this.syncSharedConfig(config.sharedConfig, options.force)
-      
+
       // 同步开发规范
       await this.syncDevelopmentStandards(config.standards, options.force)
-      
+
       // 同步工具配置
       await this.syncToolsConfig(config.sharedConfig.toolsConfig, options.force)
 
@@ -258,7 +258,7 @@ export class TeamCommand {
       this.logger.info(`添加团队成员: ${email}`)
 
       const config = await this.loadTeamConfig()
-      
+
       const member: TeamMember = {
         name: options.name || email.split('@')[0],
         email,
@@ -388,7 +388,7 @@ export class TeamCommand {
 
       // 根据配置文件设置环境
       await this.configureEnvironment(options.profile)
-      
+
       // 安装必要依赖
       if (options.install) {
         await this.installDependencies(options.profile)
@@ -408,20 +408,18 @@ export class TeamCommand {
   private async showTeamStatus(options: any): Promise<void> {
     try {
       const config = await this.loadTeamConfig()
-      
-      )
-      } ${config.teamName}`)
-      } ${config.members.length}`)
+
+      console.log('\n👥 团队状态')
+      console.log(`团队名称: ${config.teamName}`)
+      console.log(`成员数量: ${config.members.length}`)
 
       if (options.detailed) {
-        )
+        console.log('\n成员列表:')
         config.members.forEach((member, index) => {
-          } (${member.email})`)
-                    }`)
+          console.log(`  ${index + 1}. ${member.name} (${member.email})`)
+          console.log(`     角色: ${member.role}`)
         })
-
-        )
-                              }
+      }
 
     } catch (error) {
       this.logger.error('获取团队状态失败:', error)

@@ -4,11 +4,11 @@
  */
 
 import { createEngineApp } from '@ldesign/engine'
-import App from '@/App.vue'
-import { createRouter } from '@/router'
-// import { createStore } from '@/store' // 暂时禁用 - store 包构建失败
-import { engineConfig } from '@/config/app.config'
-import { auth } from '@/composables/useAuth'
+import App from '../App.vue'
+import { createRouter } from '../router'
+// import { createStore } from '../store' // 暂时禁用 - store 包构建失败
+import { engineConfig } from '../config/app.config'
+import { auth } from '../composables/useAuth'
 import { initializePlugins } from './plugins'
 import { setupVueApp, setupEngineReady } from './app-setup'
 import { handleAppError } from './error-handler'

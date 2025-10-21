@@ -155,9 +155,9 @@ export class PreviewCommand implements CliCommandDefinition {
 
       // 立即输出环境标识，不依赖logger
       if (!context.options.silent) {
-        } - ${envLabel}`)
-        } ${context.cwd}`)
-        } preview`)
+        console.log(`\n🚀 ${pc.bold('Launcher Preview Server')} - ${envLabel}`)
+        console.log(`📁 ${pc.cyan('Working Directory:')} ${context.cwd}`)
+        console.log(`⚙️  ${pc.cyan('Mode:')} preview`)
         
       }
 

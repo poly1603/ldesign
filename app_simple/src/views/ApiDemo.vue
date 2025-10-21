@@ -38,35 +38,39 @@
           系统 API
         </h3>
         <div class="card-content">
-          <div class="input-group">
-            <label>用户名</label>
-            <input 
-              v-model="loginForm.username" 
-              type="text" 
-              placeholder="admin"
-              class="input-field"
-            />
-          </div>
-          <div class="input-group">
-            <label>密码</label>
-            <input 
-              v-model="loginForm.password" 
-              type="password" 
-              placeholder="password"
-              class="input-field"
-            />
-          </div>
-          <div class="button-group">
-            <button @click="testSystemLogin" class="action-btn primary" :disabled="loading">
-              <LogIn class="btn-icon" /> 模拟登录
-            </button>
-            <button @click="testGetUserInfo" class="action-btn secondary" :disabled="!isLoggedIn">
-              <User class="btn-icon" /> 获取用户信息
-            </button>
-            <button @click="testLogout" class="action-btn danger" :disabled="!isLoggedIn">
-              <LogOut class="btn-icon" /> 登出
-            </button>
-          </div>
+          <form @submit.prevent="testSystemLogin">
+            <div class="input-group">
+              <label>用户名</label>
+              <input 
+                v-model="loginForm.username" 
+                type="text" 
+                placeholder="admin"
+                class="input-field"
+                autocomplete="username"
+              />
+            </div>
+            <div class="input-group">
+              <label>密码</label>
+              <input 
+                v-model="loginForm.password" 
+                type="password" 
+                placeholder="password"
+                class="input-field"
+                autocomplete="current-password"
+              />
+            </div>
+            <div class="button-group">
+              <button type="submit" class="action-btn primary" :disabled="loading">
+                <LogIn class="btn-icon" /> 模拟登录
+              </button>
+              <button type="button" @click="testGetUserInfo" class="action-btn secondary" :disabled="!isLoggedIn">
+                <User class="btn-icon" /> 获取用户信息
+              </button>
+              <button type="button" @click="testLogout" class="action-btn danger" :disabled="!isLoggedIn">
+                <LogOut class="btn-icon" /> 登出
+              </button>
+            </div>
+          </form>
           <div v-if="userInfo" class="result-box success">
             <label>用户信息</label>
             <pre class="result-content">{{ formatJSON(userInfo) }}</pre>
@@ -236,7 +240,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useI18n } from '@/i18n'
+import { useI18n } from '../i18n'
 import { createApiEngine } from '@ldesign/api'
 import { 
   Server, Send, Info, Users, User, LogIn, LogOut, Database, 

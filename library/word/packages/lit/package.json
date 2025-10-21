@@ -26,10 +26,10 @@
   "license": "MIT",
   "peerDependencies": {
     "lit": "^2.0.0 || ^3.0.0",
-    "@word-viewer/core": "^1.0.0"
+    "@word-viewer/core": "workspace:*"
   },
   "dependencies": {
-    "@word-viewer/core": "^1.0.0"
+    "@word-viewer/core": "workspace:*"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",

@@ -5,7 +5,7 @@
 import { createRouterEnginePlugin } from '@ldesign/router'
 import routes from './routes'
 import { setupGuards } from './guards'
-import { routerConfig } from '@/config/router.config'
+import { routerConfig } from '../config/router.config'
 
 /**
  * 创建路由器插件
@@ -14,7 +14,7 @@ export function createRouter() {
   const routerPlugin = createRouterEnginePlugin({
     routes,
     ...routerConfig,
-    
+
     // 滚动行为
     scrollBehavior: (to, from, savedPosition) => {
       if (savedPosition) {

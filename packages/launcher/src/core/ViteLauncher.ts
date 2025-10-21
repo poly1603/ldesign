@@ -839,18 +839,20 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       }
 
       // 更新配置中的插件列表
-      if (!this.config?.plugins) {
-        this.config?.plugins = []
-      }
+      if (this.config) {
+        if (!this.config.plugins) {
+          this.config.plugins = []
+        }
 
-      // 确保插件在配置中
-      const configPluginIndex = this.config?.plugins.findIndex(p =>
-        p && typeof p === 'object' && 'name' in p && p.name === plugin.name
-      )
-      if (configPluginIndex >= 0) {
-        this.config?.plugins[configPluginIndex] = plugin
-      } else {
-        this.config?.plugins.push(plugin)
+        // 确保插件在配置中
+        const configPluginIndex = this.config.plugins.findIndex(p =>
+          p && typeof p === 'object' && 'name' in p && p.name === plugin.name
+        )
+        if (configPluginIndex >= 0) {
+          this.config.plugins[configPluginIndex] = plugin
+        } else {
+          this.config.plugins.push(plugin)
+        }
       }
 
     } catch (error) {
@@ -1356,12 +1358,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
       if (Array.isArray(config.resolve.alias)) {
         userAliases = [...config.resolve.alias]
         if (this.logger.getLevel() === 'debug') {
-          
-          
           const ldesignAliases = userAliases.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
-          
-          
-          , null, 2))
+
+          this.logger.debug('ldesign 别名配置', JSON.stringify(ldesignAliases, null, 2))
 
           this.logger.debug('用户别名（数组格式）', {
             count: userAliases.length,
@@ -1596,10 +1595,10 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     }
 
     // 输出简化的服务器信息
-    
-    
+
+
     if (networkUrl) {
-      
+
     }
 
     // 生成二维码 - 优先使用网络地址
@@ -1627,9 +1626,9 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
 
         if (terminalQR && typeof terminalQR === 'string') {
           this.logger.info('二维码（扫码在手机上打开）：')
-          
-          
-          
+
+
+
           return
         }
       } catch (e1) {
@@ -1670,7 +1669,7 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     })
 
     this.logger.info('二维码（扫码在手机上打开）：')
-    
+
 
     // 创建简洁的边框效果
     const borderWidth = maxWidth + 4
@@ -1679,18 +1678,17 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
     const emptyLine = '│' + ' '.repeat(borderWidth - 2) + '│'
 
     // 上边框
-    
-    
+    console.log(topBorder)
+    console.log(emptyLine)
 
     // 二维码内容
     normalizedLines.forEach(line => {
-      
+      console.log(`│  ${line}  │`)
     })
 
     // 下边框
-    
-    
-    
+    console.log(emptyLine)
+    console.log(bottomBorder)
   }
 
   /**
@@ -1725,15 +1723,12 @@ export class ViteLauncher extends EventEmitter implements IViteLauncher {
         networkUrl = `${protocol}://${localIP}:${port}/`
       }
 
-      // 输出服务器信息框
-      
-      
-      } │`)
+      // 输出服务器信息
+      this.logger.success('✨ 预览服务器已启动')
+      this.logger.info(`本地地址: ${localUrl}`)
       if (networkUrl) {
-        } │`)
+        this.logger.info(`网络地址: ${networkUrl}`)
       }
-      
-      
 
       // 生成二维码 - 优先使用网络地址
       const qrTarget = networkUrl || localUrl

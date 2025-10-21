@@ -156,31 +156,156 @@ export interface PerformanceManager {
   importData: (data: string) => void
 }
 
-// 内存监控器
+// 增强的内存监控器 - 支持自适应采样和泄漏检测
 class MemoryMonitor {
   private callback?: (memory: PerformanceMetrics['memory']) => void
   private intervalId?: NodeJS.Timeout
+  private baseInterval = 30000 // 基础采样间隔30秒
+  private currentInterval = 30000
+  private memoryHistory: Array<{ timestamp: number; used: number }> = []
+  private maxHistorySize = 50 // 保留最近50个样本
+  private leakThreshold = 10 * 1024 * 1024 // 10MB增长视为潜在泄漏
 
   start(
     callback: (memory: PerformanceMetrics['memory']) => void,
-    interval = 30000 // 增加采样间隔到30秒
+    interval = 30000
   ): void {
     this.callback = callback
+    this.baseInterval = interval
+    this.currentInterval = interval
+    this.startAdaptiveMonitoring()
+  }
 
-    this.intervalId = setInterval(() => {
+  /**
+   * 自适应监控 - 根据内存压力调整采样频率
+   */
+  private startAdaptiveMonitoring(): void {
+    const sample = () => {
       const memory = this.getMemoryInfo()
       if (memory && this.callback) {
         this.callback(memory)
+
+        // 记录内存历史
+        this.memoryHistory.push({
+          timestamp: Date.now(),
+          used: memory.used
+        })
+
+        // 限制历史大小
+        if (this.memoryHistory.length > this.maxHistorySize) {
+          this.memoryHistory.shift()
+        }
+
+        // 检测内存泄漏
+        this.detectMemoryLeak()
+
+        // 自适应调整采样间隔
+        this.adjustSamplingInterval(memory)
       }
-    }, interval)
+
+      // 使用当前间隔重新调度
+      if (this.intervalId) {
+        clearTimeout(this.intervalId)
+      }
+      this.intervalId = setTimeout(sample, this.currentInterval) as any
+    }
+
+    sample()
+  }
+
+  /**
+   * 根据内存使用情况调整采样间隔
+   */
+  private adjustSamplingInterval(memory: NonNullable<PerformanceMetrics['memory']>): void {
+    const usagePercent = memory.used / memory.limit
+
+    if (usagePercent > 0.8) {
+      // 高内存压力：每5秒采样
+      this.currentInterval = 5000
+    } else if (usagePercent > 0.6) {
+      // 中等压力：每15秒采样
+      this.currentInterval = 15000
+    } else {
+      // 正常：使用基础间隔
+      this.currentInterval = this.baseInterval
+    }
+  }
+
+  /**
+   * 检测内存泄漏
+   */
+  private detectMemoryLeak(): void {
+    if (this.memoryHistory.length < 10) {
+      return // 样本不足
+    }
+
+    // 检查最近10个样本的内存增长趋势
+    const recentSamples = this.memoryHistory.slice(-10)
+    const firstSample = recentSamples[0]
+    const lastSample = recentSamples[recentSamples.length - 1]
+
+    const growthRate = lastSample.used - firstSample.used
+    const timeDiff = lastSample.timestamp - firstSample.timestamp
+
+    // 如果在短时间内内存持续增长超过阈值，发出警告
+    if (growthRate > this.leakThreshold && timeDiff < 5 * 60 * 1000) {
+      console.warn('[MemoryMonitor] Potential memory leak detected', {
+        growth: `${(growthRate / 1024 / 1024).toFixed(2)}MB`,
+        duration: `${(timeDiff / 1000).toFixed(0)}s`,
+        rate: `${((growthRate / timeDiff) * 1000 / 1024).toFixed(2)}KB/s`
+      })
+
+      // 触发自定义事件
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('memory-leak-warning', {
+          detail: { growth: growthRate, duration: timeDiff }
+        }))
+      }
+    }
+  }
+
+  /**
+   * 获取内存趋势
+   */
+  getMemoryTrend(): {
+    average: number
+    peak: number
+    current: number
+    trend: 'increasing' | 'stable' | 'decreasing'
+  } | null {
+    if (this.memoryHistory.length < 5) {
+      return null
+    }
+
+    const recent = this.memoryHistory.slice(-10)
+    const average = recent.reduce((sum, s) => sum + s.used, 0) / recent.length
+    const peak = Math.max(...recent.map(s => s.used))
+    const current = recent[recent.length - 1].used
+
+    // 简单的趋势分析
+    const firstHalf = recent.slice(0, Math.floor(recent.length / 2))
+    const secondHalf = recent.slice(Math.floor(recent.length / 2))
+    const firstAvg = firstHalf.reduce((sum, s) => sum + s.used, 0) / firstHalf.length
+    const secondAvg = secondHalf.reduce((sum, s) => sum + s.used, 0) / secondHalf.length
+
+    let trend: 'increasing' | 'stable' | 'decreasing' = 'stable'
+    const diff = secondAvg - firstAvg
+    if (diff > 1024 * 1024) { // 1MB差异
+      trend = 'increasing'
+    } else if (diff < -1024 * 1024) {
+      trend = 'decreasing'
+    }
+
+    return { average, peak, current, trend }
   }
 
   stop(): void {
     if (this.intervalId) {
-      clearInterval(this.intervalId)
+      clearTimeout(this.intervalId)
       this.intervalId = undefined
     }
     this.callback = undefined
+    this.memoryHistory = []
   }
 
   private getMemoryInfo(): PerformanceMetrics['memory'] | undefined {
@@ -387,7 +512,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
 
   recordMetrics(metrics: Partial<PerformanceMetrics>): void {
     if (this.destroyed) return
-    
+
     const fullMetrics: PerformanceMetrics = {
       timestamp: Date.now(),
       duration: 0,
@@ -469,7 +594,7 @@ export class PerformanceManagerImpl implements PerformanceManager {
     this.monitoring = false
     this.fpsMonitor.stop()
     this.memoryMonitor.stop()
-    
+
     if (this.performanceObserver) {
       this.performanceObserver.disconnect()
       this.performanceObserver = undefined
@@ -961,35 +1086,67 @@ export class PerformanceManagerImpl implements PerformanceManager {
       globalThis.performance.clearMeasures()
     }
   }
-  
+
+  /**
+   * 获取内存趋势分析
+   */
+  getMemoryTrend(): {
+    average: number
+    peak: number
+    current: number
+    trend: 'increasing' | 'stable' | 'decreasing'
+  } | null {
+    return this.memoryMonitor.getMemoryTrend()
+  }
+
+  /**
+   * 获取内存信息（立即）
+   */
+  getMemoryInfo(): PerformanceMetrics['memory'] | undefined {
+    if (
+      typeof globalThis !== 'undefined' &&
+      typeof globalThis.performance !== 'undefined' &&
+      'memory' in (globalThis.performance as Performance)
+    ) {
+      const memory = (globalThis.performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } }).memory
+      if (!memory) return undefined
+      return {
+        used: memory.usedJSHeapSize,
+        total: memory.totalJSHeapSize,
+        limit: memory.jsHeapSizeLimit,
+      }
+    }
+    return undefined
+  }
+
   // 销毁方法 - 清理所有资源
   destroy(): void {
     if (this.destroyed) return
     this.destroyed = true
-    
+
     // 停止监控
     this.stopMonitoring()
-    
+
     // 清理性能观察器
     if (this.performanceObserver) {
       this.performanceObserver.disconnect()
       this.performanceObserver = undefined
     }
-    
+
     // 清理监视器
     this.fpsMonitor.stop()
     this.memoryMonitor.stop()
-    
+
     // 清理数据
     this.events.clear()
     this.metrics = []
     this.violationCallbacks = []
     this.metricsCallbacks = []
-    
+
     // 清理性能标记
     this.clearMarks()
     this.clearMeasures()
-    
+
     this.engine?.logger?.info('Performance manager destroyed')
   }
 }

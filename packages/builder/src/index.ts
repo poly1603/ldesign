@@ -24,6 +24,8 @@ export { TemporaryEnvironment } from './core/TemporaryEnvironment'
 export { BundlerAdapterFactory } from './adapters/base/AdapterFactory'
 export { RollupAdapter } from './adapters/rollup/RollupAdapter'
 export { RolldownAdapter } from './adapters/rolldown/RolldownAdapter'
+export { UnifiedBundlerAdapter } from './adapters/UnifiedBundlerAdapter'
+export type { UnifiedAdapterOptions, BundlerType } from './adapters/UnifiedBundlerAdapter'
 
 // 策略导出
 export { TypeScriptStrategy } from './strategies/typescript/TypeScriptStrategy'
@@ -49,6 +51,8 @@ export * from './constants'
 
 // 工具函数导出
 export * from './utils'
+export { MemoryOptimizer, getGlobalMemoryOptimizer } from './utils/memory-optimizer'
+export type { MemoryStats, MemoryConfig } from './utils/memory-optimizer'
 
 // 便捷函数
 export { defineConfig, defineAsyncConfig } from './utils/config'

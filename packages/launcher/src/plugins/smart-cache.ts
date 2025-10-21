@@ -96,7 +96,7 @@ export class SmartCacheManager {
       prewarmPatterns: ['**/*.{ts,js,vue,jsx,tsx}'],
       ...options
     }
-    
+
     this.indexPath = path.join(this.options.cacheDir, 'index.json')
   }
 
@@ -109,18 +109,18 @@ export class SmartCacheManager {
     try {
       // 确保缓存目录存在
       await fs.mkdir(this.options.cacheDir, { recursive: true })
-      
+
       // 加载缓存索引
       await this.loadCacheIndex()
-      
+
       // 清理过期缓存
       await this.cleanExpiredCache()
-      
+
       // 预热缓存
       if (this.options.enablePrewarm) {
         await this.prewarmCache()
       }
-      
+
       this.initialized = true
       this.logger.info('智能缓存管理器初始化完成', {
         cacheDir: this.options.cacheDir,
@@ -137,10 +137,10 @@ export class SmartCacheManager {
    */
   async get(key: string, dependencies: string[] = []): Promise<any | null> {
     await this.initialize()
-    
+
     const startTime = performance.now()
     const entry = this.cacheIndex.get(key)
-    
+
     if (!entry) {
       this.stats.misses++
       this.updateHitRate()
@@ -175,15 +175,15 @@ export class SmartCacheManager {
       const cachePath = this.getCachePath(key)
       const cacheData = await fs.readFile(cachePath)
       const result = JSON.parse(cacheData.toString())
-      
+
       // 更新访问统计
       entry.accessCount++
       entry.lastAccess = now
-      
+
       this.stats.hits++
       this.stats.timeSaved += performance.now() - startTime
       this.updateHitRate()
-      
+
       this.logger.debug('缓存命中', { key, accessCount: entry.accessCount })
       return result
     } catch (error) {
@@ -200,20 +200,20 @@ export class SmartCacheManager {
    */
   async set(key: string, value: any, dependencies: string[] = []): Promise<void> {
     await this.initialize()
-    
+
     try {
       const cachePath = this.getCachePath(key)
       const cacheData = JSON.stringify(value)
-      
+
       // 写入缓存文件
       await fs.mkdir(path.dirname(cachePath), { recursive: true })
       await fs.writeFile(cachePath, cacheData)
-      
+
       // 计算哈希
       const hash = this.calculateHash(cacheData)
       const depsHash = await this.calculateDependenciesHash(dependencies)
       const size = Buffer.byteLength(cacheData)
-      
+
       // 更新缓存索引
       const entry: CacheEntry = {
         hash,
@@ -224,17 +224,17 @@ export class SmartCacheManager {
         lastAccess: Date.now(),
         size
       }
-      
+
       this.cacheIndex.set(key, entry)
       this.stats.totalSize += size
       this.stats.entryCount = this.cacheIndex.size
-      
+
       // 检查缓存大小限制
       await this.enforceMaxCacheSize()
-      
+
       // 保存索引
       await this.saveCacheIndex()
-      
+
       this.logger.debug('缓存已设置', { key, size })
     } catch (error) {
       this.logger.error('设置缓存失败', { key, error: (error as Error).message })
@@ -250,14 +250,14 @@ export class SmartCacheManager {
 
     try {
       const cachePath = this.getCachePath(key)
-      await fs.unlink(cachePath).catch(() => {}) // 忽略文件不存在的错误
-      
+      await fs.unlink(cachePath).catch(() => { }) // 忽略文件不存在的错误
+
       this.cacheIndex.delete(key)
       this.stats.totalSize -= entry.size
       this.stats.entryCount = this.cacheIndex.size
-      
+
       await this.saveCacheIndex()
-      
+
       this.logger.debug('缓存已失效', { key })
     } catch (error) {
       this.logger.warn('失效缓存失败', { key, error: (error as Error).message })
@@ -271,7 +271,7 @@ export class SmartCacheManager {
     try {
       await fs.rm(this.options.cacheDir, { recursive: true, force: true })
       await fs.mkdir(this.options.cacheDir, { recursive: true })
-      
+
       this.cacheIndex.clear()
       this.stats = {
         hits: 0,
@@ -281,7 +281,7 @@ export class SmartCacheManager {
         entryCount: 0,
         timeSaved: 0
       }
-      
+
       this.logger.info('缓存已清理')
     } catch (error) {
       this.logger.error('清理缓存失败', { error: (error as Error).message })
@@ -300,7 +300,7 @@ export class SmartCacheManager {
    */
   private async prewarmCache(): Promise<void> {
     this.logger.info('开始预热缓存...')
-    
+
     try {
       // 这里可以实现预热逻辑，比如预编译常用文件
       // 实际实现会根据具体需求来定制
@@ -317,10 +317,10 @@ export class SmartCacheManager {
     try {
       const indexData = await fs.readFile(this.indexPath, 'utf8')
       const index = JSON.parse(indexData)
-      
+
       this.cacheIndex = new Map(Object.entries(index.entries || {}))
       this.stats = { ...this.stats, ...index.stats }
-      
+
       this.logger.debug('缓存索引已加载', { entryCount: this.cacheIndex.size })
     } catch (error) {
       // 索引文件不存在或损坏，创建新的
@@ -340,7 +340,7 @@ export class SmartCacheManager {
         entries: Object.fromEntries(this.cacheIndex),
         stats: this.stats
       }
-      
+
       await fs.writeFile(this.indexPath, JSON.stringify(indexData, null, 2))
     } catch (error) {
       this.logger.warn('保存缓存索引失败', { error: (error as Error).message })
@@ -353,14 +353,14 @@ export class SmartCacheManager {
   private async cleanExpiredCache(): Promise<void> {
     const now = Date.now()
     const expiredKeys: string[] = []
-    
+
     for (const [key, entry] of this.cacheIndex) {
       const ageHours = (now - entry.timestamp) / (1000 * 60 * 60)
       if (ageHours > this.options.cacheExpiry) {
         expiredKeys.push(key)
       }
     }
-    
+
     if (expiredKeys.length > 0) {
       this.logger.info(`清理 ${expiredKeys.length} 个过期缓存`)
       for (const key of expiredKeys) {
@@ -374,23 +374,23 @@ export class SmartCacheManager {
    */
   private async enforceMaxCacheSize(): Promise<void> {
     const maxSizeBytes = this.options.maxCacheSize * 1024 * 1024 // 转换为字节
-    
+
     if (this.stats.totalSize <= maxSizeBytes) return
-    
+
     // 按最后访问时间排序，删除最久未访问的缓存
     const entries = Array.from(this.cacheIndex.entries())
       .sort(([, a], [, b]) => a.lastAccess - b.lastAccess)
-    
+
     let removedSize = 0
     const targetSize = maxSizeBytes * 0.8 // 清理到80%
-    
+
     for (const [key, entry] of entries) {
       if (this.stats.totalSize - removedSize <= targetSize) break
-      
+
       await this.invalidate(key)
       removedSize += entry.size
     }
-    
+
     this.logger.info(`缓存大小限制清理完成，释放 ${(removedSize / 1024 / 1024).toFixed(2)}MB`)
   }
 
@@ -406,9 +406,9 @@ export class SmartCacheManager {
    */
   private async calculateDependenciesHash(dependencies: string[]): Promise<string> {
     if (dependencies.length === 0) return ''
-    
+
     const hashes: string[] = []
-    
+
     for (const dep of dependencies) {
       try {
         const stats = await fs.stat(dep)
@@ -418,7 +418,7 @@ export class SmartCacheManager {
         hashes.push(dep)
       }
     }
-    
+
     return crypto.createHash('md5').update(hashes.join('|')).digest('hex')
   }
 
@@ -444,20 +444,20 @@ export class SmartCacheManager {
  */
 export function createSmartCachePlugin(options: SmartCacheOptions = {}): Plugin {
   const cacheManager = new SmartCacheManager(options)
-  
+
   return {
     name: 'smart-cache',
-    
+
     async buildStart() {
       await cacheManager.initialize()
     },
-    
+
     async buildEnd() {
       const stats = cacheManager.getStats()
-      if (stats.hits + stats.misses > 0) {
-                .toFixed(1)}%`)
-        }ms`)
-        .toFixed(2)}MB`)
+      if (stats.entryCount > 0) {
+        console.log(`💾 Cache hit rate: ${stats.hitRate.toFixed(1)}%`)
+        console.log(`📦 Cache items: ${stats.entryCount}`)
+        console.log(`📦 Cache size: ${(stats.totalSize / 1024 / 1024).toFixed(2)}MB`)
       }
     }
   }

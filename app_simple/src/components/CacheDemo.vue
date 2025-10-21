@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useAppCache } from '@/composables/useAppCache'
+import { useAppCache } from '../composables/useAppCache'
 
 const cache = useAppCache()
 

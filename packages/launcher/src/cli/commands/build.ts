@@ -196,10 +196,10 @@ export class BuildCommand implements CliCommandDefinition {
 
       // 立即输出环境标识，不依赖logger
       if (!context.options.silent) {
-        } - ${envLabel}`)
-        } ${context.cwd}`)
-        } ${context.options.mode || 'production'}`)
-        
+        console.log(`\n🏗️  构建环境: ${envLabel}`)
+        console.log(`📁 工作目录: ${context.cwd}`)
+        console.log(`⚙️  构建模式: ${context.options.mode || 'production'}`)
+        console.log('')
       }
 
       logger.info('正在执行生产构建...')

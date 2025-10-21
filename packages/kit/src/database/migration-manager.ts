@@ -5,6 +5,7 @@
 
 import type { DatabaseConnection } from '../types'
 import { EventEmitter } from 'node:events'
+import { promises as fs } from 'node:fs'
 import { join } from 'node:path'
 import { FileSystem } from '../filesystem'
 import { DatabaseError } from '../types'
@@ -135,7 +136,7 @@ export class ${className} {
   private async getAllMigrations(): Promise<string[]> {
     try {
       const files = await fs.readdir(this.migrationsPath)
-      return files.filter(file => file.endsWith('.ts') || file.endsWith('.js')).sort()
+      return files.filter((file: string) => file.endsWith('.ts') || file.endsWith('.js')).sort()
     }
     catch {
       return []

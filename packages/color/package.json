@@ -166,16 +166,21 @@
       "import": "./es/vue/*.js",
       "require": "./lib/vue/*.cjs"
     },
-    "./es/react/index.css": "./es/react/index.css",
+    "./css": "./dist/index.css",
+    "./dist/index.css": "./dist/index.css",
+    "./es/react/ThemePicker.css": "./es/react/ThemePicker.css",
+    "./es/vue/index.css": "./es/vue/index.css",
     "./es/vue/ThemePicker.vue.css": "./es/vue/ThemePicker.vue.css",
     "./es/vue/VueThemeModeSwitcher.vue.css": "./es/vue/VueThemeModeSwitcher.vue.css",
-    "./lib/react/index.css": "./lib/react/index.css",
+    "./lib/react/ThemePicker.css": "./lib/react/ThemePicker.css",
+    "./lib/vue/index.css": "./lib/vue/index.css",
     "./lib/vue/ThemePicker.vue.css": "./lib/vue/ThemePicker.vue.css",
     "./lib/vue/VueThemeModeSwitcher.vue.css": "./lib/vue/VueThemeModeSwitcher.vue.css"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
   "types": "./es/index.d.ts",
+  "style": "./dist/index.css",
   "unpkg": "./dist/index.min.js",
   "jsdelivr": "./dist/index.min.js",
   "files": [

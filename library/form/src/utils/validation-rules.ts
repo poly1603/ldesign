@@ -1,471 +1,590 @@
 /**
+ * @ldesign/form - Built-in Validation Rules
  * 内置验证规则
- * 
- * 提供常用的验证规则实现，包括：
- * - 基础验证（必填、长度、范围等）
- * - 格式验证（邮箱、URL、手机号等）
- * - 数值验证（数字、整数、浮点数等）
- * - 自定义验证规则
- * 
- * @author LDesign Team
- * @since 2.0.0
  */
 
-import { isEmpty } from './helpers'
-import type { ValidationContext, ValidationResult, ValidatorFunction } from '../types'
+import type { ValidatorFunction, ValidationResult } from './types'
+import { isEmpty, isString, isNumber, isArray } from './helpers/type'
 
 /**
- * 验证消息模板
+ * 必填验证
  */
-export const VALIDATION_MESSAGES = {
-  required: '此字段为必填项',
-  email: '请输入有效的邮箱地址',
-  url: '请输入有效的URL地址',
-  phone: '请输入有效的手机号码',
-  pattern: '格式不正确',
-  minLength: '长度不能少于 {min} 个字符',
-  maxLength: '长度不能超过 {max} 个字符',
-  min: '值不能小于 {min}',
-  max: '值不能大于 {max}',
-  integer: '请输入整数',
-  number: '请输入数字',
-  positive: '请输入正数',
-  negative: '请输入负数',
-  range: '值必须在 {min} 到 {max} 之间',
-  enum: '请选择有效的选项',
-  custom: '验证失败'
-}
-
-/**
- * 格式化验证消息
- * 
- * @param template 消息模板
- * @param params 参数对象
- * @returns 格式化后的消息
- */
-function formatMessage(template: string, params: Record<string, any> = {}): string {
-  return template.replace(/\{(\w+)\}/g, (match, key) => {
-    return params[key] !== undefined ? String(params[key]) : match
-  })
-}
-
-/**
- * 必填验证器
- * 
- * @param message 自定义错误消息
- * @returns 验证器函数
- */
-export function required(message?: string): ValidatorFunction {
-  return ({ value }: ValidationContext): ValidationResult => {
-    const isValid = !isEmpty(value)
-    return {
-      valid: isValid,
-      message: isValid ? '' : (message || VALIDATION_MESSAGES.required),
-      field: undefined
-    }
+export const required: ValidatorFunction = (value): ValidationResult => {
+  const valid = !isEmpty(value)
+  return {
+    valid,
+    message: valid ? '' : '此字段为必填项'
   }
 }
 
 /**
- * 邮箱验证器
- * 
- * @param message 自定义错误消息
- * @returns 验证器函数
+ * 邮箱验证
  */
-export function email(message?: string): ValidatorFunction {
+export const email: ValidatorFunction = (value): ValidationResult => {
+  if (isEmpty(value)) {
+    return { valid: true, message: '' }
+  }
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const valid = emailRegex.test(String(value))
 
-  return ({ value }: ValidationContext): ValidationResult => {
-    if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
-    }
+  return {
+    valid,
+    message: valid ? '' : '请输入有效的邮箱地址'
+  }
+}
 
-    const isValid = emailRegex.test(String(value))
+/**
+ * URL 验证
+ */
+export const url: ValidatorFunction = (value): ValidationResult => {
+  if (isEmpty(value)) {
+    return { valid: true }
+  }
+
+  try {
+    new URL(String(value))
+    return { valid: true }
+  } catch {
     return {
-      valid: isValid,
-      message: isValid ? '' : (message || VALIDATION_MESSAGES.email),
-      field: undefined
+      valid: false,
+      message: '请输入有效的URL地址'
     }
   }
 }
 
 /**
- * URL验证器
- * 
- * @param message 自定义错误消息
- * @returns 验证器函数
+ * 手机号验证（中国大陆）
  */
-export function url(message?: string): ValidatorFunction {
-  return ({ value }: ValidationContext): ValidationResult => {
-    if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
-    }
-
-    try {
-      new URL(String(value))
-      return { valid: true, message: '', field: undefined }
-    } catch {
-      return {
-        valid: false,
-        message: message || VALIDATION_MESSAGES.url,
-        field: undefined
-      }
-    }
+export const phone: ValidatorFunction = (value): ValidationResult => {
+  if (isEmpty(value)) {
+    return { valid: true }
   }
-}
 
-/**
- * 手机号验证器
- * 
- * @param message 自定义错误消息
- * @returns 验证器函数
- */
-export function phone(message?: string): ValidatorFunction {
   const phoneRegex = /^1[3-9]\d{9}$/
+  const valid = phoneRegex.test(String(value))
 
-  return ({ value }: ValidationContext): ValidationResult => {
-    if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
-    }
-
-    const isValid = phoneRegex.test(String(value))
-    return {
-      valid: isValid,
-      message: isValid ? '' : (message || VALIDATION_MESSAGES.phone),
-      field: undefined
-    }
+  return {
+    valid,
+    message: valid ? '' : '请输入有效的手机号码'
   }
 }
 
 /**
- * 正则表达式验证器
- * 
- * @param pattern 正则表达式
- * @param message 自定义错误消息
- * @returns 验证器函数
+ * 数字验证
  */
-export function pattern(pattern: RegExp, message?: string): ValidatorFunction {
-  return ({ value }: ValidationContext): ValidationResult => {
-    if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
-    }
+export const number: ValidatorFunction = (value): ValidationResult => {
+  if (isEmpty(value)) {
+    return { valid: true }
+  }
 
-    const isValid = pattern.test(String(value))
-    return {
-      valid: isValid,
-      message: isValid ? '' : (message || VALIDATION_MESSAGES.pattern),
-      field: undefined
-    }
+  const valid = isNumber(Number(value)) && !isNaN(Number(value))
+
+  return {
+    valid,
+    message: valid ? '' : '请输入有效的数字'
   }
 }
 
 /**
- * 最小长度验证器
- * 
- * @param min 最小长度
- * @param message 自定义错误消息
- * @returns 验证器函数
+ * 整数验证
  */
-export function minLength(min: number, message?: string): ValidatorFunction {
-  return ({ value }: ValidationContext): ValidationResult => {
-    if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
-    }
+export const integer: ValidatorFunction = (value): ValidationResult => {
+  if (isEmpty(value)) {
+    return { valid: true }
+  }
 
-    const length = String(value).length
-    const isValid = length >= min
-    return {
-      valid: isValid,
-      message: isValid ? '' : (message || formatMessage(VALIDATION_MESSAGES.minLength, { min })),
-      field: undefined
-    }
+  const num = Number(value)
+  const valid = isNumber(num) && Number.isInteger(num)
+
+  return {
+    valid,
+    message: valid ? '' : '请输入有效的整数'
   }
 }
 
 /**
- * 最大长度验证器
- * 
- * @param max 最大长度
- * @param message 自定义错误消息
- * @returns 验证器函数
+ * 最小值验证
  */
-export function maxLength(max: number, message?: string): ValidatorFunction {
-  return ({ value }: ValidationContext): ValidationResult => {
+export function min(minValue: number, message?: string): ValidatorFunction {
+  return (value): ValidationResult => {
     if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
-    }
-
-    const length = String(value).length
-    const isValid = length <= max
-    return {
-      valid: isValid,
-      message: isValid ? '' : (message || formatMessage(VALIDATION_MESSAGES.maxLength, { max })),
-      field: undefined
-    }
-  }
-}
-
-/**
- * 长度范围验证器
- * 
- * @param min 最小长度
- * @param max 最大长度
- * @param message 自定义错误消息
- * @returns 验证器函数
- */
-export function length(min: number, max: number, message?: string): ValidatorFunction {
-  return ({ value }: ValidationContext): ValidationResult => {
-    if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
-    }
-
-    const length = String(value).length
-    const isValid = length >= min && length <= max
-    return {
-      valid: isValid,
-      message: isValid ? '' : (message || formatMessage(VALIDATION_MESSAGES.range, { min, max })),
-      field: undefined
-    }
-  }
-}
-
-/**
- * 最小值验证器
- * 
- * @param min 最小值
- * @param message 自定义错误消息
- * @returns 验证器函数
- */
-export function min(min: number, message?: string): ValidatorFunction {
-  return ({ value }: ValidationContext): ValidationResult => {
-    if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
+      return { valid: true }
     }
 
     const num = Number(value)
-    if (isNaN(num)) {
-      return {
-        valid: false,
-        message: VALIDATION_MESSAGES.number,
-        field: undefined
-      }
-    }
+    const valid = isNumber(num) && num >= minValue
 
-    const isValid = num >= min
     return {
-      valid: isValid,
-      message: isValid ? '' : (message || formatMessage(VALIDATION_MESSAGES.min, { min })),
-      field: undefined
+      valid,
+      message: valid ? '' : message || `值不能小于 ${minValue}`
     }
   }
 }
 
 /**
- * 最大值验证器
- * 
- * @param max 最大值
- * @param message 自定义错误消息
- * @returns 验证器函数
+ * 最大值验证
  */
-export function max(max: number, message?: string): ValidatorFunction {
-  return ({ value }: ValidationContext): ValidationResult => {
+export function max(maxValue: number, message?: string): ValidatorFunction {
+  return (value): ValidationResult => {
     if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
+      return { valid: true }
     }
 
     const num = Number(value)
-    if (isNaN(num)) {
-      return {
-        valid: false,
-        message: VALIDATION_MESSAGES.number,
-        field: undefined
-      }
-    }
+    const valid = isNumber(num) && num <= maxValue
 
-    const isValid = num <= max
     return {
-      valid: isValid,
-      message: isValid ? '' : (message || formatMessage(VALIDATION_MESSAGES.max, { max })),
-      field: undefined
+      valid,
+      message: valid ? '' : message || `值不能大于 ${maxValue}`
     }
   }
 }
 
 /**
- * 数值范围验证器
- * 
- * @param min 最小值
- * @param max 最大值
- * @param message 自定义错误消息
- * @returns 验证器函数
+ * 最小长度验证
  */
-export function range(min: number, max: number, message?: string): ValidatorFunction {
-  return ({ value }: ValidationContext): ValidationResult => {
+export function minLength(
+  minLen: number,
+  message?: string
+): ValidatorFunction {
+  return (value): ValidationResult => {
     if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
+      return { valid: true }
+    }
+
+    let length = 0
+
+    if (isString(value)) {
+      length = value.length
+    } else if (isArray(value)) {
+      length = value.length
+    } else {
+      length = String(value).length
+    }
+
+    const valid = length >= minLen
+
+    return {
+      valid,
+      message: valid ? '' : message || `长度不能少于 ${minLen} 个字符`
+    }
+  }
+}
+
+/**
+ * 最大长度验证
+ */
+export function maxLength(
+  maxLen: number,
+  message?: string
+): ValidatorFunction {
+  return (value): ValidationResult => {
+    if (isEmpty(value)) {
+      return { valid: true }
+    }
+
+    let length = 0
+
+    if (isString(value)) {
+      length = value.length
+    } else if (isArray(value)) {
+      length = value.length
+    } else {
+      length = String(value).length
+    }
+
+    const valid = length <= maxLen
+
+    return {
+      valid,
+      message: valid ? '' : message || `长度不能超过 ${maxLen} 个字符`
+    }
+  }
+}
+
+/**
+ * 正则表达式验证
+ */
+export function pattern(regex: RegExp, message?: string): ValidatorFunction {
+  return (value): ValidationResult => {
+    if (isEmpty(value)) {
+      return { valid: true }
+    }
+
+    const valid = regex.test(String(value))
+
+    return {
+      valid,
+      message: valid ? '' : message || '格式不正确'
+    }
+  }
+}
+
+/**
+ * 范围验证（数值）
+ */
+export function range(
+  minValue: number,
+  maxValue: number,
+  message?: string
+): ValidatorFunction {
+  return (value): ValidationResult => {
+    if (isEmpty(value)) {
+      return { valid: true }
     }
 
     const num = Number(value)
-    if (isNaN(num)) {
-      return {
-        valid: false,
-        message: VALIDATION_MESSAGES.number,
-        field: undefined
-      }
-    }
+    const valid = isNumber(num) && num >= minValue && num <= maxValue
 
-    const isValid = num >= min && num <= max
     return {
-      valid: isValid,
-      message: isValid ? '' : (message || formatMessage(VALIDATION_MESSAGES.range, { min, max })),
-      field: undefined
+      valid,
+      message:
+        valid ? '' : message || `值必须在 ${minValue} 到 ${maxValue} 之间`
     }
   }
 }
 
 /**
- * 整数验证器
- * 
- * @param message 自定义错误消息
- * @returns 验证器函数
+ * 确认密码验证（两个字段值相等）
  */
-export function integer(message?: string): ValidatorFunction {
-  return ({ value }: ValidationContext): ValidationResult => {
+export function confirm(targetField: string, message?: string): ValidatorFunction {
+  return (value, values): ValidationResult => {
     if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
+      return { valid: true }
     }
 
-    const num = Number(value)
-    const isValid = !isNaN(num) && Number.isInteger(num)
+    const targetValue = values[targetField]
+    const valid = value === targetValue
+
     return {
-      valid: isValid,
-      message: isValid ? '' : (message || VALIDATION_MESSAGES.integer),
-      field: undefined
-    }
-  }
-}
-
-/**
- * 数字验证器
- * 
- * @param message 自定义错误消息
- * @returns 验证器函数
- */
-export function number(message?: string): ValidatorFunction {
-  return ({ value }: ValidationContext): ValidationResult => {
-    if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
-    }
-
-    const num = Number(value)
-    const isValid = !isNaN(num) && isFinite(num)
-    return {
-      valid: isValid,
-      message: isValid ? '' : (message || VALIDATION_MESSAGES.number),
-      field: undefined
-    }
-  }
-}
-
-/**
- * 正数验证器
- * 
- * @param message 自定义错误消息
- * @returns 验证器函数
- */
-export function positive(message?: string): ValidatorFunction {
-  return ({ value }: ValidationContext): ValidationResult => {
-    if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
-    }
-
-    const num = Number(value)
-    const isValid = !isNaN(num) && num > 0
-    return {
-      valid: isValid,
-      message: isValid ? '' : (message || VALIDATION_MESSAGES.positive),
-      field: undefined
-    }
-  }
-}
-
-/**
- * 枚举验证器
- * 
- * @param values 允许的值列表
- * @param message 自定义错误消息
- * @returns 验证器函数
- */
-export function enumValidator(values: any[], message?: string): ValidatorFunction {
-  return ({ value }: ValidationContext): ValidationResult => {
-    if (isEmpty(value)) {
-      return { valid: true, message: '', field: undefined }
-    }
-
-    const isValid = values.includes(value)
-    return {
-      valid: isValid,
-      message: isValid ? '' : (message || VALIDATION_MESSAGES.enum),
-      field: undefined
+      valid,
+      message: valid ? '' : message || '两次输入不一致'
     }
   }
 }
 
 /**
  * 自定义验证器
- * 
- * @param validator 自定义验证函数
- * @param message 自定义错误消息
- * @returns 验证器函数
  */
 export function custom(
-  validator: (value: any, context: ValidationContext) => boolean | string | Promise<boolean | string>,
+  validator: (value: any, values: any) => boolean | ValidationResult | Promise<boolean | ValidationResult>,
   message?: string
 ): ValidatorFunction {
-  return async (context: ValidationContext): Promise<ValidationResult> => {
-    try {
-      const result = await validator(context.value, context)
+  return async (value, values): Promise<ValidationResult> => {
+    const result = await validator(value, values)
 
-      if (typeof result === 'boolean') {
-        return {
-          valid: result,
-          message: result ? '' : (message || VALIDATION_MESSAGES.custom),
-          field: undefined
-        }
+    if (typeof result === 'boolean') {
+      return {
+        valid: result,
+        message: result ? '' : message || '验证失败'
       }
+    }
 
-      if (typeof result === 'string') {
-        return {
-          valid: false,
-          message: result,
-          field: undefined
-        }
+    return result
+  }
+}
+
+/**
+ * 身份证号验证（中国大陆）
+ */
+export const idCard: ValidatorFunction = (value): ValidationResult => {
+  if (isEmpty(value)) {
+    return { valid: true }
+  }
+
+  const idCardRegex = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/
+  const valid = idCardRegex.test(String(value))
+
+  return {
+    valid,
+    message: valid ? '' : '请输入有效的身份证号码'
+  }
+}
+
+/**
+ * 信用卡验证（Luhn算法）
+ */
+export const creditCard: ValidatorFunction = (value): ValidationResult => {
+  if (isEmpty(value)) {
+    return { valid: true }
+  }
+
+  const cardNumber = String(value).replace(/\s/g, '')
+
+  if (!/^\d+$/.test(cardNumber)) {
+    return { valid: false, message: '信用卡号只能包含数字' }
+  }
+
+  // Luhn algorithm
+  let sum = 0
+  let isEven = false
+  for (let i = cardNumber.length - 1; i >= 0; i--) {
+    let digit = parseInt(cardNumber[i], 10)
+    if (isEven) {
+      digit *= 2
+      if (digit > 9) {
+        digit -= 9
       }
+    }
+    sum += digit
+    isEven = !isEven
+  }
+
+  const valid = sum % 10 === 0
+
+  return {
+    valid,
+    message: valid ? '' : '请输入有效的信用卡号码'
+  }
+}
+
+/**
+ * IP地址验证（IPv4）
+ */
+export const ip: ValidatorFunction = (value): ValidationResult => {
+  if (isEmpty(value)) {
+    return { valid: true }
+  }
+
+  const ipRegex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+  const valid = ipRegex.test(String(value))
+
+  return {
+    valid,
+    message: valid ? '' : '请输入有效的IP地址'
+  }
+}
+
+/**
+ * 邮政编码验证（中国大陆）
+ */
+export const postalCode: ValidatorFunction = (value): ValidationResult => {
+  if (isEmpty(value)) {
+    return { valid: true }
+  }
+
+  const postalCodeRegex = /^[1-9]\d{5}$/
+  const valid = postalCodeRegex.test(String(value))
+
+  return {
+    valid,
+    message: valid ? '' : '请输入有效的邮政编码'
+  }
+}
+
+/**
+ * 文件类型验证
+ */
+export function fileType(types: string[], message?: string): ValidatorFunction {
+  return (value): ValidationResult => {
+    if (isEmpty(value)) {
+      return { valid: true }
+    }
+
+    // 支持 File 对象或文件名字符串
+    let fileName: string
+    if (value instanceof File) {
+      fileName = value.name
+    } else {
+      fileName = String(value)
+    }
+
+    const ext = fileName.split('.').pop()?.toLowerCase() || ''
+    const valid = types.map(t => t.toLowerCase()).includes(ext)
+
+    return {
+      valid,
+      message: valid ? '' : message || `文件类型必须是: ${types.join(', ')}`
+    }
+  }
+}
+
+/**
+ * 文件大小验证（单位：字节）
+ */
+export function fileSize(maxSize: number, message?: string): ValidatorFunction {
+  return (value): ValidationResult => {
+    if (isEmpty(value)) {
+      return { valid: true }
+    }
+
+    // 支持 File 对象
+    if (value instanceof File) {
+      const valid = value.size <= maxSize
+      const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(2)
 
       return {
-        valid: false,
-        message: message || VALIDATION_MESSAGES.custom,
-        field: undefined
+        valid,
+        message: valid ? '' : message || `文件大小不能超过 ${maxSizeMB}MB`
+      }
+    }
+
+    return { valid: true }
+  }
+}
+
+/**
+ * 密码强度验证
+ */
+export function passwordStrength(
+  level: 'weak' | 'medium' | 'strong',
+  message?: string
+): ValidatorFunction {
+  return (value): ValidationResult => {
+    if (isEmpty(value)) {
+      return { valid: true }
+    }
+
+    const password = String(value)
+    let valid = false
+
+    switch (level) {
+      case 'weak':
+        // 至少6个字符
+        valid = password.length >= 6
+        break
+      case 'medium':
+        // 至少8个字符，包含数字和字母
+        valid = password.length >= 8 && /\d/.test(password) && /[a-zA-Z]/.test(password)
+        break
+      case 'strong':
+        // 至少8个字符，包含大小写字母、数字和特殊字符
+        valid =
+          password.length >= 8 &&
+          /[a-z]/.test(password) &&
+          /[A-Z]/.test(password) &&
+          /\d/.test(password) &&
+          /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+        break
+    }
+
+    const defaultMessages = {
+      weak: '密码至少需要6个字符',
+      medium: '密码至少需要8个字符，且包含数字和字母',
+      strong: '密码至少需要8个字符，且包含大小写字母、数字和特殊字符'
+    }
+
+    return {
+      valid,
+      message: valid ? '' : message || defaultMessages[level]
+    }
+  }
+}
+
+/**
+ * 跨字段比较验证
+ */
+export function compareWith(
+  field: string,
+  operator: 'gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'ne',
+  message?: string
+): ValidatorFunction {
+  return (value, values): ValidationResult => {
+    if (isEmpty(value)) {
+      return { valid: true }
+    }
+
+    const compareValue = values[field]
+    if (isEmpty(compareValue)) {
+      return { valid: true }
+    }
+
+    const val = Number(value)
+    const compareVal = Number(compareValue)
+
+    let valid = false
+    let defaultMessage = ''
+
+    switch (operator) {
+      case 'gt':
+        valid = val > compareVal
+        defaultMessage = `必须大于${field}`
+        break
+      case 'gte':
+        valid = val >= compareVal
+        defaultMessage = `必须大于或等于${field}`
+        break
+      case 'lt':
+        valid = val < compareVal
+        defaultMessage = `必须小于${field}`
+        break
+      case 'lte':
+        valid = val <= compareVal
+        defaultMessage = `必须小于或等于${field}`
+        break
+      case 'eq':
+        valid = val === compareVal
+        defaultMessage = `必须等于${field}`
+        break
+      case 'ne':
+        valid = val !== compareVal
+        defaultMessage = `不能等于${field}`
+        break
+    }
+
+    return {
+      valid,
+      message: valid ? '' : message || defaultMessage
+    }
+  }
+}
+
+/**
+ * 异步唯一性验证
+ */
+export function uniqueUsername(
+  checkAPI: (username: string) => Promise<boolean>,
+  message?: string
+): ValidatorFunction {
+  return async (value): Promise<ValidationResult> => {
+    if (isEmpty(value)) {
+      return { valid: true }
+    }
+
+    try {
+      const isUnique = await checkAPI(String(value))
+      return {
+        valid: isUnique,
+        message: isUnique ? '' : message || '该用户名已被使用'
       }
     } catch (error) {
       return {
         valid: false,
-        message: error instanceof Error ? error.message : (message || VALIDATION_MESSAGES.custom),
-        field: undefined
+        message: '验证失败，请稍后重试'
       }
     }
   }
 }
 
 /**
- * 内置验证器映射
+ * 所有内置验证规则
  */
-export const BUILTIN_VALIDATORS: Record<string, ValidatorFunction> = {
-  required: required(),
-  email: email(),
-  url: url(),
-  phone: phone(),
-  integer: integer(),
-  number: number(),
-  positive: positive()
+export const builtinValidators = {
+  required,
+  email,
+  url,
+  phone,
+  number,
+  integer,
+  min,
+  max,
+  minLength,
+  maxLength,
+  pattern,
+  range,
+  confirm,
+  custom,
+  idCard,
+  creditCard,
+  ip,
+  postalCode,
+  fileType,
+  fileSize,
+  passwordStrength,
+  compareWith,
+  uniqueUsername
 }
+
+
+

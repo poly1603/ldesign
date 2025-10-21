@@ -157,7 +157,7 @@ export class OptimizeCommand {
   private async analyzeCache(): Promise<any> {
     const cacheManager = new SmartCacheManager()
     await cacheManager.initialize()
-    
+
     return {
       stats: cacheManager.getStats(),
       recommendations: this.getCacheRecommendations(cacheManager.getStats())
@@ -181,7 +181,7 @@ export class OptimizeCommand {
    */
   private async analyzePerformance(): Promise<any> {
     const memUsage = process.memoryUsage()
-    
+
     return {
       memory: {
         used: memUsage.heapUsed / 1024 / 1024,
@@ -206,9 +206,10 @@ export class OptimizeCommand {
     if (options.stats) {
       const stats = cacheManager.getStats()
       )
-      .toFixed(1)}%`)
+      .toFixed(1)
+    }% `)
       .toFixed(2)}MB`)
-            }ms`)
+  }ms`)
     }
   }
 
@@ -274,7 +275,8 @@ export class OptimizeCommand {
    */
   private displayCacheResults(cache: any): void {
     )
-    .toFixed(1)}%`)
+    .toFixed(1)
+} % `)
     .toFixed(2)}MB`)
           }
 
@@ -283,7 +285,8 @@ export class OptimizeCommand {
    */
   private displayBundleResults(bundle: any): void {
     )
-    .toFixed(2)}KB`)
+    .toFixed(2)
+}KB`)
           }
 
   /**
@@ -297,171 +300,171 @@ export class OptimizeCommand {
   /**
    * 交互式优化
    */
-  private async interactiveOptimization(results: any): Promise<void> {
-    const choices: string[] = []
+  private async interactiveOptimization(results: any): Promise < void> {
+  const choices: string[] = []
 
-    if (results.dependencies?.unusedDependencies?.length > 0) {
-      choices.push('移除未使用的依赖')
-    }
+    if(results.dependencies?.unusedDependencies?.length > 0) {
+  choices.push('移除未使用的依赖')
+}
 
-    if (results.dependencies?.vulnerabilities?.length > 0) {
-      choices.push('修复安全漏洞')
-    }
+if (results.dependencies?.vulnerabilities?.length > 0) {
+  choices.push('修复安全漏洞')
+}
 
-    if (results.cache?.recommendations?.length > 0) {
-      choices.push('优化缓存配置')
-    }
+if (results.cache?.recommendations?.length > 0) {
+  choices.push('优化缓存配置')
+}
 
-    if (choices.length === 0) {
+if (choices.length === 0) {
       )
-      return
-    }
+  return
+}
 
-    const { actions } = await inquirer.prompt([
-      {
-        type: 'checkbox',
-        name: 'actions',
-        message: '选择要执行的优化操作:',
-        choices
-      }
-    ])
+const { actions } = await inquirer.prompt([
+  {
+    type: 'checkbox',
+    name: 'actions',
+    message: '选择要执行的优化操作:',
+    choices
+  }
+])
 
-    for (const action of actions) {
-      await this.executeOptimization(action, results)
-    }
+for (const action of actions) {
+  await this.executeOptimization(action, results)
+}
   }
 
   /**
    * 执行优化操作
    */
-  private async executeOptimization(action: string, results: any): Promise<void> {
-    const spinner = ora(`正在执行: ${action}`).start()
+  private async executeOptimization(action: string, results: any): Promise < void> {
+  const spinner = ora(`正在执行: ${action}`).start()
 
     try {
-      switch (action) {
+    switch(action) {
         case '移除未使用的依赖':
-          // 实现移除未使用依赖的逻辑
-          spinner.succeed('未使用的依赖已移除')
+    // 实现移除未使用依赖的逻辑
+    spinner.succeed('未使用的依赖已移除')
           break
         case '修复安全漏洞':
-          // 实现修复安全漏洞的逻辑
-          spinner.succeed('安全漏洞已修复')
+    // 实现修复安全漏洞的逻辑
+    spinner.succeed('安全漏洞已修复')
           break
         case '优化缓存配置':
-          // 实现优化缓存配置的逻辑
-          spinner.succeed('缓存配置已优化')
+    // 实现优化缓存配置的逻辑
+    spinner.succeed('缓存配置已优化')
           break
         default:
-          spinner.warn(`未知操作: ${action}`)
-      }
-    } catch (error) {
-      spinner.fail(`执行失败: ${(error as Error).message}`)
-    }
+      spinner.warn(`未知操作: ${action}`)
+  }
+} catch (error) {
+  spinner.fail(`执行失败: ${(error as Error).message}`)
+}
   }
 
   /**
    * 生成报告
    */
-  private async generateReport(results: any, outputPath: string): Promise<void> {
-    const report = {
-      timestamp: new Date().toISOString(),
-      project: process.cwd(),
-      results,
-      summary: this.generateSummary(results)
-    }
+  private async generateReport(results: any, outputPath: string): Promise < void> {
+  const report = {
+    timestamp: new Date().toISOString(),
+    project: process.cwd(),
+    results,
+    summary: this.generateSummary(results)
+  }
 
     const fs = await import('node:fs/promises')
     await fs.writeFile(outputPath, JSON.stringify(report, null, 2))
     
     this.logger.success(`优化报告已生成: ${outputPath}`)
-  }
+}
 
   /**
    * 生成摘要
    */
   private generateSummary(results: any): any {
-    return {
-      totalIssues: this.countTotalIssues(results),
-      criticalIssues: this.countCriticalIssues(results),
-      recommendations: this.countRecommendations(results)
-    }
+  return {
+    totalIssues: this.countTotalIssues(results),
+    criticalIssues: this.countCriticalIssues(results),
+    recommendations: this.countRecommendations(results)
   }
+}
 
   /**
    * 获取缓存建议
    */
   private getCacheRecommendations(stats: any): string[] {
-    const recommendations: string[] = []
-    
-    if (stats.hitRate < 0.5) {
-      recommendations.push('缓存命中率较低，考虑调整缓存策略')
-    }
-    
-    if (stats.totalSize > 500 * 1024 * 1024) { // 500MB
-      recommendations.push('缓存大小较大，考虑清理过期缓存')
-    }
-    
-    return recommendations
+  const recommendations: string[] = []
+
+  if (stats.hitRate < 0.5) {
+    recommendations.push('缓存命中率较低，考虑调整缓存策略')
   }
+
+  if (stats.totalSize > 500 * 1024 * 1024) { // 500MB
+    recommendations.push('缓存大小较大，考虑清理过期缓存')
+  }
+
+  return recommendations
+}
 
   /**
    * 获取性能建议
    */
   private getPerformanceRecommendations(memUsage: any): string[] {
-    const recommendations: string[] = []
-    const memMB = memUsage.heapUsed / 1024 / 1024
-    
-    if (memMB > 512) {
-      recommendations.push('内存使用量较高，考虑优化代码或重启服务')
-    }
-    
-    return recommendations
+  const recommendations: string[] = []
+  const memMB = memUsage.heapUsed / 1024 / 1024
+
+  if (memMB > 512) {
+    recommendations.push('内存使用量较高，考虑优化代码或重启服务')
   }
+
+  return recommendations
+}
 
   /**
    * 统计总问题数
    */
   private countTotalIssues(results: any): number {
-    let count = 0
-    
-    if (results.dependencies) {
-      count += (results.dependencies.unusedDependencies?.length || 0)
-      count += (results.dependencies.vulnerabilities?.length || 0)
-      count += (results.dependencies.outdatedDependencies?.length || 0)
-    }
-    
-    return count
+  let count = 0
+
+  if (results.dependencies) {
+    count += (results.dependencies.unusedDependencies?.length || 0)
+    count += (results.dependencies.vulnerabilities?.length || 0)
+    count += (results.dependencies.outdatedDependencies?.length || 0)
   }
+
+  return count
+}
 
   /**
    * 统计严重问题数
    */
   private countCriticalIssues(results: any): number {
-    let count = 0
-    
-    if (results.dependencies?.vulnerabilities) {
-      count += results.dependencies.vulnerabilities.filter((v: any) => v.severity === 'critical').length
-    }
-    
-    return count
+  let count = 0
+
+  if (results.dependencies?.vulnerabilities) {
+    count += results.dependencies.vulnerabilities.filter((v: any) => v.severity === 'critical').length
   }
+
+  return count
+}
 
   /**
    * 统计建议数
    */
   private countRecommendations(results: any): number {
-    let count = 0
-    
-    if (results.cache?.recommendations) {
-      count += results.cache.recommendations.length
-    }
-    
-    if (results.performance?.recommendations) {
-      count += results.performance.recommendations.length
-    }
-    
-    return count
+  let count = 0
+
+  if (results.cache?.recommendations) {
+    count += results.cache.recommendations.length
   }
+
+  if (results.performance?.recommendations) {
+    count += results.performance.recommendations.length
+  }
+
+  return count
+}
 }
 
 // 导出命令创建函数

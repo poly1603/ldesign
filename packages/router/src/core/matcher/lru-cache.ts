@@ -119,6 +119,28 @@ export class LRUCache {
     }
   }
 
+  /**
+   * 动态调整缓存大小
+   */
+  resize(newCapacity: number): void {
+    const validCapacity = Math.max(this.minCapacity, Math.min(newCapacity, this.maxCapacity))
+
+    if (validCapacity === this.capacity) {
+      return
+    }
+
+    this.capacity = validCapacity
+
+    // 如果新容量小于当前大小，需要移除多余的项
+    while (this.size > this.capacity) {
+      const tail = this.removeTail()
+      if (tail) {
+        this.cache.delete(tail.key)
+        this.size--
+      }
+    }
+  }
+
   private addToHead(node: LRUNode): void {
     node.prev = this.head
     node.next = this.head.next

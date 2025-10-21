@@ -1,0 +1,279 @@
+/**
+ * 暗黑模式样式
+ */
+
+.dark-theme {
+  // 暗黑模式下的颜色变量已经在 theme-config.ts 中通过 CSS Variables 动态设置
+  // 这里只需要处理一些特殊的样式覆盖
+
+  // 编辑器背景
+  .lowcode-editor {
+    background: var(--bg-color);
+    color: var(--text-color);
+  }
+
+  // 工具栏
+  .editor-toolbar {
+    background: var(--bg-secondary);
+    border-bottom-color: var(--border-color);
+
+    .tool-button {
+      background: var(--bg-color);
+      color: var(--text-color);
+      border-color: var(--border-color);
+
+      &:hover:not(:disabled) {
+        background: var(--bg-hover);
+        border-color: var(--primary-color);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+      }
+    }
+  }
+
+  // 面板
+  .material-panel,
+  .property-panel,
+  .outline-panel,
+  .datasource-panel {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+
+    .panel-header {
+      background: var(--bg-secondary);
+      border-bottom-color: var(--border-color);
+      color: var(--text-color);
+
+      h3 {
+        color: var(--text-color);
+      }
+    }
+
+    .panel-body {
+      background: var(--bg-secondary);
+    }
+  }
+
+  // 物料项
+  .material-item {
+    background: var(--bg-color);
+    border-color: var(--border-color);
+    color: var(--text-color);
+
+    &:hover {
+      background: var(--bg-hover);
+      border-color: var(--primary-color);
+    }
+
+    .material-title {
+      color: var(--text-color);
+    }
+  }
+
+  // 物料分类
+  .material-category {
+    h4 {
+      background: var(--bg-color);
+      color: var(--text-secondary);
+    }
+  }
+
+  // 画布区域
+  .canvas-area {
+    background: var(--canvas-bg);
+  }
+
+  .canvas-content {
+    background: var(--bg-secondary);
+    box-shadow: var(--shadow-medium);
+  }
+
+  // 属性面板
+  .property-group {
+    border-bottom-color: var(--border-color);
+
+    .group-header {
+      color: var(--text-color);
+      background: var(--bg-secondary);
+
+      &:hover {
+        background: var(--bg-hover);
+      }
+    }
+  }
+
+  .property-item {
+    label {
+      color: var(--text-secondary);
+    }
+
+    input,
+    select,
+    textarea {
+      background: var(--bg-color);
+      color: var(--text-color);
+      border-color: var(--border-color);
+
+      &:focus {
+        border-color: var(--primary-color);
+        background: var(--bg-secondary);
+      }
+
+      &:disabled {
+        background: var(--bg-hover);
+        color: var(--text-disabled);
+      }
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--text-disabled);
+    }
+  }
+
+  // 状态栏
+  .status-bar {
+    background: var(--bg-secondary);
+    border-top-color: var(--border-color);
+    color: var(--text-secondary);
+  }
+
+  // 按钮
+  .primary-button {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--text-inverse);
+
+    &:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+    }
+  }
+
+  .secondary-button {
+    background: var(--bg-color);
+    border-color: var(--border-color);
+    color: var(--text-color);
+
+    &:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-hover);
+    }
+  }
+
+  .delete-button {
+    background: #ff4d4f;
+    color: #fff;
+
+    &:hover {
+      background: #ff7875;
+    }
+  }
+
+  // 对话框
+  .export-dialog,
+  .settings-dialog {
+    background: var(--bg-secondary);
+    color: var(--text-color);
+
+    .dialog-header {
+      background: var(--bg-secondary);
+      border-bottom-color: var(--border-color);
+
+      h3 {
+        color: var(--text-color);
+      }
+
+      button {
+        color: var(--text-secondary);
+
+        &:hover {
+          color: var(--text-color);
+        }
+      }
+    }
+
+    .dialog-body {
+      background: var(--bg-secondary);
+    }
+
+    .dialog-footer {
+      background: var(--bg-secondary);
+      border-top-color: var(--border-color);
+    }
+  }
+
+  // 代码预览
+  .code-preview {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+  }
+
+  // 空状态
+  .empty-state,
+  .empty-state-panel {
+    color: var(--text-disabled);
+  }
+
+  // 输入框
+  .search-input {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+
+    &:focus {
+      border-color: var(--primary-color);
+    }
+
+    &::placeholder {
+      color: var(--text-disabled);
+    }
+  }
+
+  // 下拉框
+  .device-selector,
+  select {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+
+    &:focus {
+      border-color: var(--primary-color);
+    }
+
+    option {
+      background: var(--bg-secondary);
+      color: var(--text-color);
+    }
+  }
+
+  // 组件树
+  .tree-node {
+    color: var(--text-color);
+
+    &:hover {
+      background: var(--bg-hover);
+    }
+
+    &.selected {
+      background: var(--bg-active);
+      color: var(--primary-color);
+    }
+  }
+
+  // 滚动条（暗黑模式）
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}

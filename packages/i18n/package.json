@@ -79,8 +79,8 @@
       "import": "./es/utils/*.js",
       "require": "./lib/utils/*.cjs"
     },
-    "./es/adapters/vue/index.css": "./es/adapters/vue/index.css",
-    "./lib/adapters/vue/index.css": "./lib/adapters/vue/index.css"
+    "./es/adapters/vue/plugin.css": "./es/adapters/vue/plugin.css",
+    "./lib/adapters/vue/plugin.css": "./lib/adapters/vue/plugin.css"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",

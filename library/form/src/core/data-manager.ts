@@ -1,398 +1,284 @@
 /**
+ * @ldesign/form - Data Manager
  * 数据管理器
- * 
- * 负责表单数据的管理，包括：
- * - 数据的获取和设置
- * - 数据变化的监听和通知
- * - 数据的序列化和反序列化
- * - 数据的重置和恢复
- * 
- * @author LDesign Team
- * @since 2.0.0
  */
 
-import { EventEmitter } from '../utils/event-emitter'
-import { deepClone, deepEqual, getValueByPath, setValueByPath } from '../utils/helpers'
+import type { FormValues, Subscriber, Unsubscribe } from '../utils/types'
+import {
+  getValue,
+  setValue,
+  deletePath,
+  hasPath,
+  deepClone,
+  deepEqual
+} from '../utils/helpers'
 
 /**
- * 数据变化事件
+ * 数据变更事件
  */
-export interface DataChangeEvent<T = any> {
-  /** 变化类型 */
-  type: 'set' | 'update' | 'reset'
-  /** 新数据 */
-  data: T
-  /** 旧数据 */
-  oldData: T
-  /** 变化的路径（如果是字段级变化） */
-  path?: string
-}
-
-/**
- * 字段变化事件
- */
-export interface FieldChangeEvent {
-  /** 字段名称 */
-  name: string
+export interface DataChangeEvent {
+  /** 变更的字段路径 */
+  path: string
   /** 新值 */
   value: any
   /** 旧值 */
   oldValue: any
-  /** 变化路径 */
-  path: string
+  /** 完整的表单数据 */
+  values: FormValues
+}
+
+/**
+ * 数据管理器配置
+ */
+export interface DataManagerConfig {
+  /** 初始数据 */
+  initialValues?: FormValues
+  /** 是否启用快照 */
+  enableSnapshot?: boolean
 }
 
 /**
  * 数据管理器类
- * 
- * 提供完整的数据管理功能，支持：
- * - 深层数据结构
- * - 路径访问（如 'user.profile.name'）
- * - 数据变化监听
- * - 数据快照和恢复
- * 
- * @template T 数据类型
  */
-export class DataManager<T = Record<string, any>> extends EventEmitter {
-  /** 当前数据 */
-  private data: T
+export class DataManager {
+  private values: FormValues
+  private initialValues: FormValues
+  private snapshots: FormValues[]
+  private subscribers: Set<Subscriber<DataChangeEvent>>
+  private enableSnapshot: boolean
 
-  /** 初始数据（用于重置） */
-  private initialData: T
-
-  /** 数据快照历史 */
-  private snapshots: T[] = []
-
-  /** 最大快照数量 */
-  private maxSnapshots = 10
-
-  /** 是否启用深度监听 */
-  private deepWatch = true
-
-  /** 是否已销毁 */
-  private destroyed = false
-
-  /**
-   * 构造函数
-   * 
-   * @param initialData 初始数据
-   * @param options 配置选项
-   */
-  constructor(
-    initialData: T,
-    options: {
-      deepWatch?: boolean
-      maxSnapshots?: number
-    } = {}
-  ) {
-    super()
-
-    this.deepWatch = options.deepWatch !== false
-    this.maxSnapshots = options.maxSnapshots || 10
-
-    // 深拷贝初始数据
-    this.initialData = deepClone(initialData)
-    this.data = deepClone(initialData)
-
-    // 创建初始快照
-    this.createSnapshot()
-  }
-
-  /**
-   * 获取完整数据
-   * 
-   * @returns 数据副本
-   */
-  getData(): T {
-    this.checkDestroyed()
-    return deepClone(this.data)
-  }
-
-  /**
-   * 设置完整数据
-   * 
-   * @param newData 新数据
-   * @param silent 是否静默更新（不触发事件）
-   */
-  setData(newData: Partial<T>, silent = false): void {
-    this.checkDestroyed()
-
-    const oldData = deepClone(this.data)
-    const mergedData = { ...this.data, ...newData }
-
-    // 检查数据是否真的发生了变化
-    if (deepEqual(this.data, mergedData)) {
-      return
-    }
-
-    this.data = mergedData
-
-    if (!silent) {
-      this.emit('data:change', {
-        type: 'update',
-        data: deepClone(this.data),
-        oldData
-      } as DataChangeEvent<T>)
-    }
-
-    this.createSnapshot()
+  constructor(config: DataManagerConfig = {}) {
+    this.initialValues = deepClone(config.initialValues || {})
+    this.values = deepClone(this.initialValues)
+    this.snapshots = []
+    this.subscribers = new Set()
+    this.enableSnapshot = config.enableSnapshot ?? false
   }
 
   /**
    * 获取字段值
-   * 
-   * @param path 字段路径，支持点号分隔的深层路径
-   * @returns 字段值
+   * @param path 字段路径
+   * @param defaultValue 默认值
    */
-  getFieldValue(path: string): any {
-    this.checkDestroyed()
-    return getValueByPath(this.data, path)
+  getValue<T = any>(path: string, defaultValue?: T): T {
+    return getValue(this.values, path, defaultValue)
   }
 
   /**
    * 设置字段值
-   * 
    * @param path 字段路径
-   * @param value 新值
-   * @param silent 是否静默更新
+   * @param value 字段值
+   * @param silent 是否静默更新（不触发订阅者）
    */
-  setFieldValue(path: string, value: any, silent = false): void {
-    this.checkDestroyed()
+  setValue(path: string, value: any, silent = false): void {
+    const oldValue = this.getValue(path)
 
-    const oldValue = this.getFieldValue(path)
-
-    // 检查值是否真的发生了变化
+    // 如果值没有变化，直接返回
     if (deepEqual(oldValue, value)) {
       return
     }
 
-    const oldData = deepClone(this.data)
-    setValueByPath(this.data, path, value)
+    setValue(this.values, path, value)
 
+    // 触发订阅者
     if (!silent) {
-      // 触发字段变化事件
-      this.emit('field:change', {
-        name: path,
-        value: deepClone(value),
-        oldValue: deepClone(oldValue),
-        path
-      } as FieldChangeEvent)
-
-      // 触发数据变化事件
-      this.emit('data:change', {
-        type: 'set',
-        data: deepClone(this.data),
-        oldData,
-        path
-      } as DataChangeEvent<T>)
-    }
-
-    this.createSnapshot()
-  }
-
-  /**
-   * 批量设置字段值
-   * 
-   * @param fields 字段值映射
-   * @param silent 是否静默更新
-   */
-  setFieldsValue(fields: Record<string, any>, silent = false): void {
-    this.checkDestroyed()
-
-    const oldData = deepClone(this.data)
-    const changes: FieldChangeEvent[] = []
-
-    // 批量更新字段
-    for (const [path, value] of Object.entries(fields)) {
-      const oldValue = this.getFieldValue(path)
-
-      if (!deepEqual(oldValue, value)) {
-        setValueByPath(this.data, path, value)
-        changes.push({
-          name: path,
-          value: deepClone(value),
-          oldValue: deepClone(oldValue),
-          path
-        })
-      }
-    }
-
-    // 如果没有变化，直接返回
-    if (changes.length === 0) {
-      return
-    }
-
-    if (!silent) {
-      // 触发字段变化事件
-      changes.forEach(change => {
-        this.emit('field:change', change)
+      this.notifySubscribers({
+        path,
+        value,
+        oldValue,
+        values: this.getValues()
       })
-
-      // 触发数据变化事件
-      this.emit('data:change', {
-        type: 'update',
-        data: deepClone(this.data),
-        oldData
-      } as DataChangeEvent<T>)
     }
-
-    this.createSnapshot()
   }
 
   /**
-   * 重置数据到初始状态
-   * 
+   * 批量设置值
+   * @param values 值对象
    * @param silent 是否静默更新
    */
-  reset(silent = false): void {
-    this.checkDestroyed()
+  setValues(values: FormValues, silent = false): void {
+    Object.keys(values).forEach(key => {
+      this.setValue(key, values[key], silent)
+    })
+  }
 
-    const oldData = deepClone(this.data)
-    this.data = deepClone(this.initialData)
+  /**
+   * 删除字段值
+   * @param path 字段路径
+   * @param silent 是否静默删除
+   */
+  deleteValue(path: string, silent = false): boolean {
+    const oldValue = this.getValue(path)
+    const deleted = deletePath(this.values, path)
 
-    if (!silent) {
-      this.emit('data:change', {
-        type: 'reset',
-        data: deepClone(this.data),
-        oldData
-      } as DataChangeEvent<T>)
+    if (deleted && !silent) {
+      this.notifySubscribers({
+        path,
+        value: undefined,
+        oldValue,
+        values: this.getValues()
+      })
     }
 
-    this.createSnapshot()
+    return deleted
   }
 
   /**
    * 检查字段是否存在
-   * 
    * @param path 字段路径
-   * @returns 是否存在
    */
-  hasField(path: string): boolean {
-    this.checkDestroyed()
-    return getValueByPath(this.data, path) !== undefined
+  hasValue(path: string): boolean {
+    return hasPath(this.values, path)
   }
 
   /**
-   * 删除字段
-   * 
-   * @param path 字段路径
-   * @param silent 是否静默更新
+   * 获取所有值
+   * @param clone 是否克隆（默认true，避免外部修改）
    */
-  deleteField(path: string, silent = false): void {
-    this.checkDestroyed()
+  getValues(clone = true): FormValues {
+    return clone ? deepClone(this.values) : this.values
+  }
 
-    if (!this.hasField(path)) {
-      return
-    }
+  /**
+   * 获取初始值
+   * @param clone 是否克隆
+   */
+  getInitialValues(clone = true): FormValues {
+    return clone ? deepClone(this.initialValues) : this.initialValues
+  }
 
-    const oldValue = this.getFieldValue(path)
-    const oldData = deepClone(this.data)
-
-    // 删除字段
-    const pathParts = path.split('.')
-    let current: any = this.data
-
-    for (let i = 0; i < pathParts.length - 1; i++) {
-      current = current[pathParts[i]]
-      if (!current) return
-    }
-
-    delete current[pathParts[pathParts.length - 1]]
+  /**
+   * 重置到初始值
+   * @param silent 是否静默重置
+   */
+  reset(silent = false): void {
+    this.values = deepClone(this.initialValues)
 
     if (!silent) {
-      this.emit('field:change', {
-        name: path,
-        value: undefined,
-        oldValue: deepClone(oldValue),
-        path
-      } as FieldChangeEvent)
-
-      this.emit('data:change', {
-        type: 'update',
-        data: deepClone(this.data),
-        oldData,
-        path
-      } as DataChangeEvent<T>)
-    }
-
-    this.createSnapshot()
-  }
-
-  /**
-   * 创建数据快照
-   */
-  private createSnapshot(): void {
-    this.snapshots.push(deepClone(this.data))
-
-    // 限制快照数量
-    if (this.snapshots.length > this.maxSnapshots) {
-      this.snapshots.shift()
+      this.notifySubscribers({
+        path: '',
+        value: this.values,
+        oldValue: {},
+        values: this.getValues()
+      })
     }
   }
 
   /**
-   * 恢复到指定快照
-   * 
-   * @param index 快照索引，-1表示最新快照
-   * @param silent 是否静默更新
+   * 重置到指定值
+   * @param values 新的初始值
+   * @param silent 是否静默重置
    */
-  restoreSnapshot(index = -1, silent = false): void {
-    this.checkDestroyed()
+  resetTo(values: FormValues, silent = false): void {
+    this.initialValues = deepClone(values)
+    this.reset(silent)
+  }
 
-    const actualIndex = index < 0 ? this.snapshots.length + index : index
-    const snapshot = this.snapshots[actualIndex]
+  /**
+   * 创建快照
+   */
+  createSnapshot(): void {
+    if (this.enableSnapshot) {
+      this.snapshots.push(deepClone(this.values))
+    }
+  }
 
-    if (!snapshot) {
-      throw new Error(`Snapshot at index ${index} not found`)
+  /**
+   * 恢复到上一个快照
+   * @param silent 是否静默恢复
+   * @returns 是否成功恢复
+   */
+  restoreSnapshot(silent = false): boolean {
+    if (!this.enableSnapshot || this.snapshots.length === 0) {
+      return false
     }
 
-    const oldData = deepClone(this.data)
-    this.data = deepClone(snapshot)
+    const snapshot = this.snapshots.pop()!
+    const oldValues = this.values
+    this.values = snapshot
 
     if (!silent) {
-      this.emit('data:change', {
-        type: 'set',
-        data: deepClone(this.data),
-        oldData
-      } as DataChangeEvent<T>)
+      this.notifySubscribers({
+        path: '',
+        value: this.values,
+        oldValue: oldValues,
+        values: this.getValues()
+      })
     }
+
+    return true
   }
 
   /**
-   * 获取快照数量
-   * 
-   * @returns 快照数量
-   */
-  getSnapshotCount(): number {
-    return this.snapshots.length
-  }
-
-  /**
-   * 清除所有快照
+   * 清空所有快照
    */
   clearSnapshots(): void {
     this.snapshots = []
   }
 
   /**
-   * 销毁数据管理器
+   * 获取快照数量
    */
-  destroy(): void {
-    if (this.destroyed) return
-
-    this.destroyed = true
-    this.snapshots = []
-
-    // 直接清理监听器映射，避免调用checkDestroyed
-    this.listeners.clear()
+  get snapshotCount(): number {
+    return this.snapshots.length
   }
 
   /**
-   * 检查是否已销毁
+   * 检查数据是否已变更（与初始值比较）
    */
-  private checkDestroyed(): void {
-    if (this.destroyed) {
-      throw new Error('DataManager has been destroyed')
+  isDirty(path?: string): boolean {
+    if (path) {
+      const currentValue = this.getValue(path)
+      const initialValue = getValue(this.initialValues, path)
+      return !deepEqual(currentValue, initialValue)
+    }
+
+    return !deepEqual(this.values, this.initialValues)
+  }
+
+  /**
+   * 订阅数据变更
+   * @param subscriber 订阅者函数
+   * @returns 取消订阅函数
+   */
+  subscribe(subscriber: Subscriber<DataChangeEvent>): Unsubscribe {
+    this.subscribers.add(subscriber)
+
+    return () => {
+      this.subscribers.delete(subscriber)
     }
   }
+
+  /**
+   * 通知所有订阅者
+   * @param event 变更事件
+   */
+  private notifySubscribers(event: DataChangeEvent): void {
+    this.subscribers.forEach(subscriber => {
+      try {
+        subscriber(event)
+      } catch (error) {
+        console.error('Error in data change subscriber:', error)
+      }
+    })
+  }
+
+  /**
+   * 销毁数据管理器
+   */
+  destroy(): void {
+    this.subscribers.clear()
+    this.snapshots = []
+  }
 }
+
+/**
+ * 创建数据管理器
+ */
+export function createDataManager(config?: DataManagerConfig): DataManager {
+  return new DataManager(config)
+}
+
+
+
+

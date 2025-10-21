@@ -32,6 +32,11 @@ export interface VirtualScrollConfig {
   estimateSize?: number
   keepAlive?: boolean
   threshold?: number
+  // 新增配置
+  bidirectional?: boolean // 双向滚动支持
+  adaptiveBuffer?: boolean // 自适应缓冲区
+  minBuffer?: number // 最小缓冲区
+  maxBuffer?: number // 最大缓冲区
 }
 
 // 滚动状态
@@ -65,28 +70,28 @@ export class VirtualScroller<T = any> {
   private clientSize = ref(0)
   private scrollSize = ref(0)
   private isScrolling = ref(false)
-  
+
   // 缓存 (with LRU eviction)
   private sizeCache = new Map<number, number>()
   private offsetCache = new Map<number, number>()
   private cacheAccessOrder = new Set<number>()  // Track access order for LRU
   private readonly maxCacheSize = 1000  // Maximum cache entries
   private lastMeasuredIndex = -1
-  
+
   // 配置
   private config: Required<VirtualScrollConfig>
-  
+
   // 计算属性
   public readonly visibleRange: ComputedRef<{ start: number; end: number }>
   public readonly visibleItems: ComputedRef<VirtualItem<T>[]>
   public readonly scrollState: ComputedRef<ScrollState>
-  
+
   // 性能监控
   private scrollTimer: NodeJS.Timeout | null = null
   private rafId: number | null = null
   private lastScrollTime = 0
   private scrollVelocity = 0
-  
+
   constructor(
     config: VirtualScrollConfig = {},
     private logger?: Logger
@@ -101,14 +106,18 @@ export class VirtualScroller<T = any> {
       estimateSize: 50,
       keepAlive: false,
       threshold: 0.1,
+      bidirectional: config.bidirectional ?? false,
+      adaptiveBuffer: config.adaptiveBuffer ?? true,
+      minBuffer: config.minBuffer || 3,
+      maxBuffer: config.maxBuffer || 10,
       ...config
     }
-    
+
     // 初始化计算属性
     this.visibleRange = computed(() => this.calculateVisibleRange())
     this.visibleItems = computed(() => this.getVisibleItems())
     this.scrollState = computed(() => this.getScrollState())
-    
+
     this.logger?.debug('Virtual scroller initialized', this.config)
   }
 
@@ -134,23 +143,23 @@ export class VirtualScroller<T = any> {
   handleScroll(offset: number): void {
     const now = Date.now()
     const timeDelta = now - this.lastScrollTime
-    
+
     if (timeDelta > 0) {
       const offsetDelta = offset - this.scrollOffset.value
       this.scrollVelocity = offsetDelta / timeDelta
     }
-    
+
     this.scrollOffset.value = offset
     this.lastScrollTime = now
-    
+
     // 防抖处理
     this.isScrolling.value = true
-    
+
     if (this.scrollTimer) {
       clearTimeout(this.scrollTimer)
       this.scrollTimer = null
     }
-    
+
     this.scrollTimer = setTimeout(() => {
       this.isScrolling.value = false
       this.scrollVelocity = 0
@@ -158,7 +167,7 @@ export class VirtualScroller<T = any> {
       this.cleanupDistantCache()
       this.scrollTimer = null
     }, 150)
-    
+
     // 预测滚动
     if (Math.abs(this.scrollVelocity) > 0.5) {
       this.predictivePreload()
@@ -174,9 +183,9 @@ export class VirtualScroller<T = any> {
   ): void {
     const targetOffset = this.getItemOffset(index)
     const itemSize = this.getItemSize(index)
-    
+
     let offset = targetOffset
-    
+
     switch (align) {
       case 'center':
         offset = targetOffset - (this.clientSize.value - itemSize) / 2
@@ -187,7 +196,7 @@ export class VirtualScroller<T = any> {
       case 'auto': {
         const currentOffset = this.scrollOffset.value
         const currentEnd = currentOffset + this.clientSize.value
-        
+
         if (targetOffset < currentOffset) {
           offset = targetOffset
         } else if (targetOffset + itemSize > currentEnd) {
@@ -198,7 +207,7 @@ export class VirtualScroller<T = any> {
         break
       }
     }
-    
+
     this.smoothScrollTo(Math.max(0, offset))
   }
 
@@ -210,25 +219,25 @@ export class VirtualScroller<T = any> {
     const distance = target - start
     const duration = Math.min(500, Math.abs(distance) * 2)
     const startTime = Date.now()
-    
+
     const animate = () => {
       const now = Date.now()
       const progress = Math.min((now - startTime) / duration, 1)
       const easeProgress = this.easeInOutCubic(progress)
-      
+
       const currentOffset = start + distance * easeProgress
       this.scrollOffset.value = currentOffset
-      
+
       if (progress < 1) {
         this.rafId = requestAnimationFrame(animate)
       }
     }
-    
+
     if (this.rafId) {
       cancelAnimationFrame(this.rafId)
       this.rafId = null
     }
-    
+
     animate()
   }
 
@@ -242,24 +251,42 @@ export class VirtualScroller<T = any> {
   }
 
   /**
-   * 计算可见范围
+   * 计算可见范围（支持自适应缓冲区）
    */
   private calculateVisibleRange(): { start: number; end: number } {
-    const { buffer, overscan } = this.config
+    let { buffer, overscan } = this.config
+    const { adaptiveBuffer, minBuffer, maxBuffer, bidirectional } = this.config
     const scrollTop = this.scrollOffset.value
     const clientHeight = this.clientSize.value
-    
+
+    // 自适应缓冲区：根据滚动速度调整
+    if (adaptiveBuffer) {
+      const velocity = Math.abs(this.scrollVelocity)
+
+      if (velocity > 2) {
+        // 快速滚动：增加缓冲区
+        buffer = Math.min(maxBuffer, buffer + Math.floor(velocity))
+      } else if (velocity < 0.5) {
+        // 慢速或静止：减少缓冲区
+        buffer = Math.max(minBuffer, buffer - 1)
+      }
+    }
+
     // 二分查找起始索引
     let startIndex = this.findNearestIndex(scrollTop)
     let endIndex = this.findNearestIndex(scrollTop + clientHeight)
-    
+
     // 添加缓冲区
-    startIndex = Math.max(0, startIndex - buffer - overscan)
-    endIndex = Math.min(
-      this.items.value.length - 1,
-      endIndex + buffer + overscan
-    )
-    
+    if (bidirectional || this.scrollVelocity < 0) {
+      // 双向或向上滚动：两个方向都加缓冲
+      startIndex = Math.max(0, startIndex - buffer - overscan)
+      endIndex = Math.min(this.items.value.length - 1, endIndex + buffer + overscan)
+    } else {
+      // 向下滚动：在滚动方向增加更多缓冲
+      startIndex = Math.max(0, startIndex - Math.floor(buffer / 2) - overscan)
+      endIndex = Math.min(this.items.value.length - 1, endIndex + buffer * 2 + overscan)
+    }
+
     return { start: startIndex, end: endIndex }
   }
 
@@ -270,11 +297,11 @@ export class VirtualScroller<T = any> {
     const items = this.items.value
     let low = 0
     let high = items.length - 1
-    
+
     while (low <= high) {
       const mid = Math.floor((low + high) / 2)
       const midOffset = this.getItemOffset(mid)
-      
+
       if (midOffset < offset) {
         low = mid + 1
       } else if (midOffset > offset) {
@@ -283,7 +310,7 @@ export class VirtualScroller<T = any> {
         return mid
       }
     }
-    
+
     return low
   }
 
@@ -293,11 +320,11 @@ export class VirtualScroller<T = any> {
   private getVisibleItems(): VirtualItem<T>[] {
     const { start, end } = this.visibleRange.value
     const items: VirtualItem<T>[] = []
-    
+
     for (let i = start; i <= end; i++) {
       const item = this.items.value[i]
       if (!item) continue
-      
+
       items.push({
         index: i,
         data: item,
@@ -306,7 +333,7 @@ export class VirtualScroller<T = any> {
         visible: true
       })
     }
-    
+
     return items
   }
 
@@ -319,16 +346,16 @@ export class VirtualScroller<T = any> {
       this.updateCacheAccess(index)
       return this.sizeCache.get(index)!
     }
-    
+
     const { itemHeight, estimateSize } = this.config
-    
+
     if (typeof itemHeight === 'function') {
       const item = this.items.value[index]
       const size = itemHeight(index, item) || estimateSize
       this.setCacheWithEviction(index, size, 'size')
       return size
     }
-    
+
     return itemHeight
   }
 
@@ -339,19 +366,19 @@ export class VirtualScroller<T = any> {
     if (index < 0 || index >= this.items.value.length) {
       return 0
     }
-    
+
     // 检查缓存
     if (this.offsetCache.has(index)) {
       this.updateCacheAccess(index)
       return this.offsetCache.get(index)!
     }
-    
+
     let offset = 0
-    
+
     // 计算到最后测量位置的偏移
     if (this.lastMeasuredIndex >= 0 && index > this.lastMeasuredIndex) {
       offset = this.offsetCache.get(this.lastMeasuredIndex) || 0
-      
+
       for (let i = this.lastMeasuredIndex + 1; i <= index; i++) {
         offset += this.getItemSize(i - 1)
       }
@@ -361,10 +388,10 @@ export class VirtualScroller<T = any> {
         offset += this.getItemSize(i)
       }
     }
-    
+
     this.setCacheWithEviction(index, offset, 'offset')
     this.lastMeasuredIndex = Math.max(this.lastMeasuredIndex, index)
-    
+
     return offset
   }
 
@@ -377,7 +404,7 @@ export class VirtualScroller<T = any> {
       this.scrollSize.value = 0
       return
     }
-    
+
     const lastOffset = this.getItemOffset(itemCount - 1)
     const lastSize = this.getItemSize(itemCount - 1)
     this.scrollSize.value = lastOffset + lastSize
@@ -389,12 +416,12 @@ export class VirtualScroller<T = any> {
   private predictivePreload(): void {
     const { preloadTime } = this.config
     const predictedOffset = this.scrollOffset.value + this.scrollVelocity * preloadTime
-    
+
     const predictedStart = this.findNearestIndex(predictedOffset)
     const predictedEnd = this.findNearestIndex(
       predictedOffset + this.clientSize.value
     )
-    
+
     // 触发预加载
     this.logger?.debug('Predictive preload', {
       velocity: this.scrollVelocity,
@@ -407,7 +434,7 @@ export class VirtualScroller<T = any> {
    */
   private getScrollState(): ScrollState {
     const { start, end } = this.visibleRange.value
-    
+
     return {
       offset: this.scrollOffset.value,
       clientSize: this.clientSize.value,
@@ -441,7 +468,7 @@ export class VirtualScroller<T = any> {
    */
   private setCacheWithEviction(index: number, value: number, type: 'size' | 'offset'): void {
     const cache = type === 'size' ? this.sizeCache : this.offsetCache
-    
+
     // 如果缓存已满，驱逐最少使用的项
     if (cache.size >= this.maxCacheSize && !cache.has(index)) {
       const lruIndex = this.cacheAccessOrder.values().next().value
@@ -451,7 +478,7 @@ export class VirtualScroller<T = any> {
         this.cacheAccessOrder.delete(lruIndex)
       }
     }
-    
+
     cache.set(index, value)
     this.updateCacheAccess(index)
   }
@@ -462,7 +489,7 @@ export class VirtualScroller<T = any> {
   private cleanupDistantCache(): void {
     const { start, end } = this.visibleRange.value
     const keepDistance = 100  // Keep items within 100 indices
-    
+
     for (const index of this.cacheAccessOrder) {
       if (index < start - keepDistance || index > end + keepDistance) {
         this.sizeCache.delete(index)
@@ -477,17 +504,17 @@ export class VirtualScroller<T = any> {
    */
   updateItemSize(index: number, size: number): void {
     const oldSize = this.sizeCache.get(index)
-    
+
     if (oldSize !== size) {
       this.sizeCache.set(index, size)
       this.updateCacheAccess(index)
-      
+
       // 清除后续偏移缓存
       for (let i = index + 1; i <= this.lastMeasuredIndex; i++) {
         this.offsetCache.delete(i)
         this.cacheAccessOrder.delete(i)
       }
-      
+
       this.updateScrollSize()
     }
   }
@@ -500,14 +527,14 @@ export class VirtualScroller<T = any> {
       clearTimeout(this.scrollTimer)
       this.scrollTimer = null
     }
-    
+
     if (this.rafId) {
       cancelAnimationFrame(this.rafId)
       this.rafId = null
     }
-    
+
     this.resetCache()
-    
+
     // 重置状态
     this.items.value = []
     this.scrollOffset.value = 0
@@ -529,7 +556,7 @@ export class ComponentLazyLoader {
   private observers = new Map<string, IntersectionObserver>()
   private readonly maxCacheSize = 50  // Limit component cache size
   private loadTimeouts = new Map<string, NodeJS.Timeout>()
-  
+
   constructor(
     private config: LazyComponentConfig = {},
     private logger?: Logger
@@ -555,19 +582,19 @@ export class ComponentLazyLoader {
     if (this.componentCache.has(key)) {
       return this.componentCache.get(key)!
     }
-    
+
     // 检查是否正在加载
     if (this.loadingComponents.has(key)) {
       return this.loadingComponents.get(key)!
     }
-    
+
     // 开始加载
     const loadPromise = this.loadWithRetry(loader, key)
     this.loadingComponents.set(key, loadPromise)
-    
+
     try {
       const component = await loadPromise
-      
+
       // 缓存大小限制
       if (this.componentCache.size >= this.maxCacheSize) {
         const firstKey = this.componentCache.keys().next().value
@@ -576,13 +603,13 @@ export class ComponentLazyLoader {
           this.loadedComponents.delete(firstKey)
         }
       }
-      
+
       this.componentCache.set(key, component)
       this.loadedComponents.add(key)
       this.loadingComponents.delete(key)
-      
+
       this.logger?.debug(`Component loaded: ${key}`)
-      
+
       return component
     } catch (error) {
       this.loadingComponents.delete(key)
@@ -600,7 +627,7 @@ export class ComponentLazyLoader {
     attempt = 1
   ): Promise<Component> {
     const { timeout, retries, delay } = this.config
-    
+
     try {
       // 延迟加载
       if (delay && attempt === 1) {
@@ -610,13 +637,13 @@ export class ComponentLazyLoader {
         })
         this.loadTimeouts.delete(`${key}_delay`)
       }
-      
+
       // 超时控制
       const timeoutPromise = new Promise<never>((_, reject) => {
         const timer = setTimeout(() => reject(new Error('Load timeout')), timeout)
         this.loadTimeouts.set(`${key}_timeout`, timer)
       })
-      
+
       const result = await Promise.race([loader(), timeoutPromise])
       this.clearTimeout(`${key}_timeout`)
       return result
@@ -624,19 +651,19 @@ export class ComponentLazyLoader {
       this.clearTimeout(`${key}_timeout`)
       if (attempt < retries!) {
         this.logger?.debug(`Retrying component load: ${key} (attempt ${attempt + 1})`)
-        
+
         // 指数退避
-        await new Promise(resolve => 
-          setTimeout(resolve, 2**attempt * 1000)
+        await new Promise(resolve =>
+          setTimeout(resolve, 2 ** attempt * 1000)
         )
-        
+
         return this.loadWithRetry(loader, key, attempt + 1)
       }
-      
+
       throw error
     }
   }
-  
+
   /**
    * Clear timeout helper
    */
@@ -657,13 +684,13 @@ export class ComponentLazyLoader {
     key: string
   ): void {
     const { distance, preload } = this.config
-    
+
     // 清理旧观察器
     const oldObserver = this.observers.get(key)
     if (oldObserver) {
       oldObserver.disconnect()
     }
-    
+
     // 创建观察器
     const observer = new IntersectionObserver(
       (entries) => {
@@ -673,7 +700,7 @@ export class ComponentLazyLoader {
             this.loadComponent(loader, key).catch(error => {
               this.logger?.error(`Failed to lazy load component: ${key}`, error)
             })
-            
+
             // 停止观察
             observer.unobserve(element)
             observer.disconnect()
@@ -686,7 +713,7 @@ export class ComponentLazyLoader {
         threshold: 0
       }
     )
-    
+
     observer.observe(element)
     this.observers.set(key, observer)
   }
@@ -702,7 +729,7 @@ export class ComponentLazyLoader {
         this.logger?.warn(`Failed to preload component: ${key}`, error)
       })
     )
-    
+
     await Promise.all(promises)
   }
 
@@ -730,14 +757,14 @@ export class ComponentLazyLoader {
         this.componentCache.delete(key)
         this.loadedComponents.delete(key)
         this.loadingComponents.delete(key)
-        
+
         // Clear observer for specific key
         const observer = this.observers.get(key)
         if (observer) {
           observer.disconnect()
           this.observers.delete(key)
         }
-        
+
         // Clear timeouts for specific key
         this.clearTimeout(`${key}_timeout`)
         this.clearTimeout(`${key}_delay`)
@@ -746,11 +773,11 @@ export class ComponentLazyLoader {
       this.componentCache.clear()
       this.loadedComponents.clear()
       this.loadingComponents.clear()
-      
+
       // Clear all observers
       this.observers.forEach(observer => observer.disconnect())
       this.observers.clear()
-      
+
       // Clear all timeouts
       this.loadTimeouts.forEach(timeout => clearTimeout(timeout))
       this.loadTimeouts.clear()
@@ -763,11 +790,11 @@ export class ComponentLazyLoader {
   dispose(): void {
     // Clear all caches and observers
     this.clearCache()
-    
+
     // Clear all pending timeouts
     this.loadTimeouts.forEach(timeout => clearTimeout(timeout))
     this.loadTimeouts.clear()
-    
+
     // Clear logger reference
     this.logger = undefined
   }
@@ -783,11 +810,11 @@ export class ResourcePreloader {
     type: 'image' | 'script' | 'style' | 'font' | 'data'
     priority: number
   }> = []
-  
+
   private isPreloading = false
   private concurrentLoads = 3
-  
-  constructor(private logger?: Logger) {}
+
+  constructor(private logger?: Logger) { }
 
   /**
    * 预加载资源
@@ -808,10 +835,10 @@ export class ResourcePreloader {
         })
       }
     })
-    
+
     // 按优先级排序
     this.preloadQueue.sort((a, b) => b.priority - a.priority)
-    
+
     // 开始预加载
     if (!this.isPreloading) {
       await this.processQueue()
@@ -823,15 +850,15 @@ export class ResourcePreloader {
    */
   private async processQueue(): Promise<void> {
     this.isPreloading = true
-    
+
     while (this.preloadQueue.length > 0) {
       const batch = this.preloadQueue.splice(0, this.concurrentLoads)
-      
+
       await Promise.all(
         batch.map(resource => this.loadResource(resource))
       )
     }
-    
+
     this.isPreloading = false
   }
 
@@ -843,7 +870,7 @@ export class ResourcePreloader {
     type: 'image' | 'script' | 'style' | 'font' | 'data'
   }): Promise<void> {
     const { url, type } = resource
-    
+
     try {
       switch (type) {
         case 'image':
@@ -862,7 +889,7 @@ export class ResourcePreloader {
           await this.preloadData(url)
           break
       }
-      
+
       this.preloadedResources.add(url)
       this.logger?.debug(`Resource preloaded: ${url}`)
     } catch (error) {
@@ -975,15 +1002,15 @@ export function useVirtualScroll<T = any>(
   scrollToIndex: (index: number, align?: 'start' | 'center' | 'end' | 'auto') => void
 } {
   const scroller = new VirtualScroller<T>(config)
-  
+
   // 监听数据变化
   watchEffect(() => {
     scroller.setItems(items.value)
   })
-  
+
   // 组件卸载时自动清理
   onUnmounted(() => scroller.dispose())
-  
+
   return {
     scroller,
     visibleItems: scroller.visibleItems,

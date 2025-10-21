@@ -148,8 +148,11 @@ export const ESM_ONLY = {
   
   // Use native async/await
   asyncLoader: async (locale: string) => {
-    const module = await import(/* @vite-ignore */ `../locales/${locale}.js`);
-    return module.default;
+    // Dynamic import path - this is for documentation purposes
+    // In actual usage, provide the full path from the consuming application
+    // const module = await import(/* @vite-ignore */ `../locales/${locale}.js`);
+    // return module.default;
+    throw new Error('asyncLoader should be implemented by the consuming application with proper paths');
   },
   
   // Use native Proxy for reactive bindings

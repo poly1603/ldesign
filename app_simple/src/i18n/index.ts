@@ -3,13 +3,13 @@
  * 使用 @ldesign/i18n 包
  */
 
-import { 
-  createI18nEnginePlugin as createPackageI18nPlugin, 
+import {
+  createI18nEnginePlugin as createPackageI18nPlugin,
   useVueI18n  // 这是 Vue adapter 的 useI18n，已经重命名为 useVueI18n
 } from '@ldesign/i18n'
 import type { I18nEnginePluginOptions } from '@ldesign/i18n'
-import zhCN from '@/locales/zh-CN'
-import enUS from '@/locales/en-US'
+import zhCN from '../locales/zh-CN'
+import enUS from '../locales/en-US'
 
 // 导出 Vue 专用的 useI18n
 export const useI18n = useVueI18n
@@ -21,7 +21,7 @@ export function createI18nEnginePlugin(options: I18nEnginePluginOptions = {}) {
     'zh-CN': zhCN,
     'en-US': enUS,
   }
-  
+
   const mergedMessages = {
     ...appMessages,
     ...(options.messages || {}),

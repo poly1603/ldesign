@@ -1,0 +1,49 @@
+/**
+ * 列宽调整样式
+ */
+
+.l-table__resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  user-select: none;
+  z-index: 1;
+}
+
+.l-table__resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 3px;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 50%;
+  background-color: transparent;
+  transition: background-color var(--l-table-transition-duration);
+}
+
+.l-table__resize-handle:hover::after,
+.l-table__resize-handle--active::after {
+  background-color: var(--l-table-primary-color);
+}
+
+.l-table__resize-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--l-table-primary-color);
+  z-index: 999;
+  pointer-events: none;
+  display: none;
+}
+
+.l-table__resize-line--active {
+  display: block;
+}
+
+
+

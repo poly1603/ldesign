@@ -6,14 +6,14 @@
 import type { RouteRecordRaw } from '@ldesign/router'
 
 // 路由懒加载
-const Main = () => import('@/views/Main.vue')
-const Home = () => import('@/views/Home.vue')
-const Login = () => import('@/views/Login.vue')
-const Dashboard = () => import('@/views/Dashboard.vue')
-const About = () => import('@/views/About.vue')
-const CryptoDemo = () => import('@/views/CryptoDemo.vue')
-const HttpDemo = () => import('@/views/HttpDemo.vue')
-const ApiDemo = () => import('@/views/ApiDemo.vue')
+const Main = () => import('../views/Main.vue')
+const Home = () => import('../views/Home.vue')
+const Login = () => import('../views/Login.vue')
+const Dashboard = () => import('../views/Dashboard.vue')
+const About = () => import('../views/About.vue')
+const CryptoDemo = () => import('../views/CryptoDemo.vue')
+const HttpDemo = () => import('../views/HttpDemo.vue')
+const ApiDemo = () => import('../views/ApiDemo.vue')
 
 /**
  * 公开路由
@@ -119,7 +119,7 @@ export const errorRoutes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
-    component: () => import('@/views/errors/NotFound.vue'),
+    component: () => import('../views/errors/NotFound.vue'),
     meta: {
       titleKey: 'errors.404.title',
       layout: 'blank'

@@ -1,0 +1,105 @@
+/**
+ * CSS变量定义
+ */
+
+:root {
+  /* ========== 颜色 ========== */
+  
+  /* 主色 */
+  --l-table-primary-color: #409eff;
+  --l-table-primary-hover: #66b1ff;
+  --l-table-primary-active: #3a8ee6;
+  
+  /* 边框 */
+  --l-table-border-color: #ebeef5;
+  --l-table-border-color-light: #f2f6fc;
+  --l-table-border-color-dark: #dcdfe6;
+  
+  /* 背景 */
+  --l-table-bg-color: #ffffff;
+  --l-table-header-bg: #f5f7fa;
+  --l-table-row-hover-bg: #f5f7fa;
+  --l-table-stripe-bg: #fafafa;
+  --l-table-selected-bg: #e6f7ff;
+  
+  /* 文本 */
+  --l-table-text-color: #606266;
+  --l-table-text-color-secondary: #909399;
+  --l-table-header-text-color: #303133;
+  
+  /* 禁用 */
+  --l-table-disabled-bg: #f5f7fa;
+  --l-table-disabled-text-color: #c0c4cc;
+  
+  /* ========== 尺寸 ========== */
+  
+  /* 高度 */
+  --l-table-header-height: 48px;
+  --l-table-row-height: 48px;
+  --l-table-row-height-small: 40px;
+  --l-table-row-height-large: 56px;
+  
+  /* 间距 */
+  --l-table-cell-padding-x: 12px;
+  --l-table-cell-padding-y: 8px;
+  --l-table-cell-padding: var(--l-table-cell-padding-y) var(--l-table-cell-padding-x);
+  
+  /* 边框 */
+  --l-table-border-width: 1px;
+  --l-table-border: var(--l-table-border-width) solid var(--l-table-border-color);
+  
+  /* ========== 阴影 ========== */
+  
+  /* 固定列阴影 */
+  --l-table-fixed-left-shadow: 2px 0 4px rgba(0, 0, 0, 0.08);
+  --l-table-fixed-right-shadow: -2px 0 4px rgba(0, 0, 0, 0.08);
+  
+  /* 表头阴影 */
+  --l-table-header-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  
+  /* ========== 过渡 ========== */
+  
+  --l-table-transition-duration: 0.2s;
+  --l-table-transition-timing: ease-in-out;
+  
+  /* ========== Z-index ========== */
+  
+  --l-table-z-index-fixed: 10;
+  --l-table-z-index-header: 20;
+  --l-table-z-index-fixed-header: 30;
+  
+  /* ========== 其他 ========== */
+  
+  --l-table-border-radius: 4px;
+  --l-table-checkbox-size: 16px;
+}
+
+/* ========== 暗色主题 ========== */
+
+:root[data-theme="dark"],
+.l-table-dark {
+  /* 颜色 */
+  --l-table-primary-color: #409eff;
+  --l-table-primary-hover: #66b1ff;
+  --l-table-primary-active: #3a8ee6;
+  
+  --l-table-border-color: #4c4d4f;
+  --l-table-border-color-light: #414243;
+  --l-table-border-color-dark: #58595b;
+  
+  --l-table-bg-color: #1d1e1f;
+  --l-table-header-bg: #262727;
+  --l-table-row-hover-bg: #262727;
+  --l-table-stripe-bg: #232425;
+  --l-table-selected-bg: #1e3a5f;
+  
+  --l-table-text-color: #e5eaf3;
+  --l-table-text-color-secondary: #a3a6ad;
+  --l-table-header-text-color: #e5eaf3;
+  
+  --l-table-disabled-bg: #262727;
+  --l-table-disabled-text-color: #6c6e72;
+}
+
+
+

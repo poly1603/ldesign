@@ -90,6 +90,27 @@ export interface TypeScriptLibraryConfig {
   paths?: Record<string, string[]>
   /** 类型定义 */
   types?: string[]
+  /** TypeScript 编译器选项 - 支持嵌套的 compilerOptions 格式 */
+  compilerOptions?: {
+    /** 是否生成类型声明文件 */
+    declaration?: boolean
+    /** 类型声明文件输出目录 */
+    declarationDir?: string
+    /** 是否生成声明文件映射 */
+    declarationMap?: boolean
+    /** 是否移除注释 */
+    removeComments?: boolean
+    /** 目标 ES 版本 */
+    target?: string
+    /** 模块系统 */
+    module?: string
+    /** 是否启用严格模式 */
+    strict?: boolean
+    /** 是否跳过库检查 */
+    skipLibCheck?: boolean
+    /** 其他编译器选项 */
+    [key: string]: any
+  }
 }
 
 /**

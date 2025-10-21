@@ -1,0 +1,41 @@
+/**
+ * 虚拟滚动样式
+ */
+
+.l-table--virtual .l-table__container {
+  position: relative;
+  overflow: auto;
+  will-change: scroll-position;
+}
+
+.l-table__virtual-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.l-table__virtual-spacer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.l-table__virtual-body {
+  position: relative;
+  transform: translateZ(0);
+}
+
+/* 优化滚动性能 */
+.l-table--virtual {
+  contain: layout style paint;
+}
+
+.l-table--virtual .l-table__body-row {
+  contain: layout style paint;
+  will-change: transform;
+}
+
+
+

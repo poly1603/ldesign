@@ -1,0 +1,36 @@
+{
+  "name": "@ldesign/datepicker-core",
+  "version": "0.1.0",
+  "description": "Core logic for @ldesign/datepicker (framework-agnostic)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./dist/style.css": "./dist/style.css",
+    "./style.css": "./dist/style.css"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["datepicker", "core", "framework-agnostic"],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "dependencies": {
+    "@ldesign/datepicker-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
+    "vite-plugin-dts": "^3.7.0"
+  }
+}
+
+
+

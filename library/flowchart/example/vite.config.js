@@ -1,31 +1,17 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   resolve: {
     alias: {
-      '@': resolve(__dirname, '../src')
+      '@': path.resolve(__dirname, '../src')
     }
   },
   server: {
-    port: 8000,
-    open: true,
-    host: true,
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: true
+    port: 5173,
+    open: true
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-

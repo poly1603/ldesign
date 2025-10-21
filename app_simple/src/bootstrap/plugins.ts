@@ -5,16 +5,16 @@
 
 import { watch } from 'vue'
 import type { Ref } from 'vue'
-import { createI18nEnginePlugin } from '@/i18n'
-import { createCacheVuePlugin } from '@/plugins/cache'
+import { createI18nEnginePlugin } from '../i18n'
+import { createCacheVuePlugin } from '../plugins/cache'
 import { createColorPlugin } from '@ldesign/color/plugin'
 import { createSizePlugin } from '@ldesign/size/plugin'
 import { createTemplatePlugin } from '@ldesign/template'
-import { i18nConfig } from '@/config/i18n.config'
-import { createCacheConfig } from '@/config/cache.config'
-import { createColorConfig } from '@/config/color.config'
-import { createSizeConfig } from '@/config/size.config'
-import { templateConfig } from '@/config/template.config'
+import { i18nConfig } from '../config/i18n.config'
+import { createCacheConfig } from '../config/cache.config'
+import { createColorConfig } from '../config/color.config'
+import { createSizeConfig } from '../config/size.config'
+import { templateConfig } from '../config/template.config'
 
 export interface PluginsResult {
   i18nPlugin: any

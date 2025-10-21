@@ -1,13 +1,12 @@
 /**
- * 布局系统核心模块
- * 
- * 提供表单布局计算、响应式处理、栅格系统等功能
- * 
- * @author LDesign Team
- * @since 1.0.0
+ * @ldesign/form - Layout Module Index
+ * 布局模块入口
  */
 
-export { LayoutEngine } from './engine'
-export { GridSystem } from './grid'
-export type { LayoutEngineOptions } from './engine'
-export type { GridSystemOptions } from './grid'
+export * from './engine'
+export * from './calculator'
+export * from './responsive'
+
+
+
+

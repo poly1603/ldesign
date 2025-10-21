@@ -5,6 +5,7 @@
 
 import type { IconFontOptions, SvgIcon } from './svg-to-iconfont'
 import { EventEmitter } from 'node:events'
+import { promises as fs } from 'node:fs'
 import { basename, resolve } from 'node:path'
 import { FileSystem } from '../filesystem'
 

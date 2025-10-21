@@ -1,11 +1,190 @@
 {
   "name": "ldesign-simple-app",
   "version": "1.0.0",
+  "description": "LDesign Simple App - 现代化前端开发框架示例应用",
+  "keywords": [
+    "ldesign",
+    "vue3",
+    "typescript",
+    "framework",
+    "app"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    },
+    "./bootstrap": {
+      "types": "./es/bootstrap/index.d.ts",
+      "import": "./es/bootstrap/index.js",
+      "require": "./lib/bootstrap/index.cjs"
+    },
+    "./bootstrap/*": {
+      "types": "./es/bootstrap/*.d.ts",
+      "import": "./es/bootstrap/*.js",
+      "require": "./lib/bootstrap/*.cjs"
+    },
+    "./composables/*": {
+      "types": "./es/composables/*.d.ts",
+      "import": "./es/composables/*.js",
+      "require": "./lib/composables/*.cjs"
+    },
+    "./config": {
+      "types": "./es/config/index.d.ts",
+      "import": "./es/config/index.js",
+      "require": "./lib/config/index.cjs"
+    },
+    "./config/*": {
+      "types": "./es/config/*.d.ts",
+      "import": "./es/config/*.js",
+      "require": "./lib/config/*.cjs"
+    },
+    "./i18n": {
+      "types": "./es/i18n/index.d.ts",
+      "import": "./es/i18n/index.js",
+      "require": "./lib/i18n/index.cjs"
+    },
+    "./i18n/*": {
+      "types": "./es/i18n/*.d.ts",
+      "import": "./es/i18n/*.js",
+      "require": "./lib/i18n/*.cjs"
+    },
+    "./locales": {
+      "types": "./es/locales/index.d.ts",
+      "import": "./es/locales/index.js",
+      "require": "./lib/locales/index.cjs"
+    },
+    "./locales/*": {
+      "types": "./es/locales/*.d.ts",
+      "import": "./es/locales/*.js",
+      "require": "./lib/locales/*.cjs"
+    },
+    "./plugins/*": {
+      "types": "./es/plugins/*.d.ts",
+      "import": "./es/plugins/*.js",
+      "require": "./lib/plugins/*.cjs"
+    },
+    "./router": {
+      "types": "./es/router/index.d.ts",
+      "import": "./es/router/index.js",
+      "require": "./lib/router/index.cjs"
+    },
+    "./router/*": {
+      "types": "./es/router/*.d.ts",
+      "import": "./es/router/*.js",
+      "require": "./lib/router/*.cjs"
+    },
+    "./store": {
+      "types": "./es/store/index.d.ts",
+      "import": "./es/store/index.js",
+      "require": "./lib/store/index.cjs"
+    },
+    "./store/*": {
+      "types": "./es/store/*.d.ts",
+      "import": "./es/store/*.js",
+      "require": "./lib/store/*.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
+    },
+    "./es/App.vue.css": "./es/App.vue.css",
+    "./es/components/CacheDemo.vue.css": "./es/components/CacheDemo.vue.css",
+    "./es/components/CustomLoginPanel.vue.css": "./es/components/CustomLoginPanel.vue.css",
+    "./es/components/LanguageSwitcher.vue.css": "./es/components/LanguageSwitcher.vue.css",
+    "./es/components/login-panel/components/BaseInput.vue.css": "./es/components/login-panel/components/BaseInput.vue.css",
+    "./es/components/login-panel/components/ImageCaptcha.vue.css": "./es/components/login-panel/components/ImageCaptcha.vue.css",
+    "./es/components/login-panel/components/LoginTabs.vue.css": "./es/components/login-panel/components/LoginTabs.vue.css",
+    "./es/components/login-panel/components/MessageToast.vue.css": "./es/components/login-panel/components/MessageToast.vue.css",
+    "./es/components/login-panel/components/PhoneLoginForm.vue.css": "./es/components/login-panel/components/PhoneLoginForm.vue.css",
+    "./es/components/login-panel/components/PhoneLoginForm.vue2.css": "./es/components/login-panel/components/PhoneLoginForm.vue2.css",
+    "./es/components/login-panel/components/RememberCheckbox.vue.css": "./es/components/login-panel/components/RememberCheckbox.vue.css",
+    "./es/components/login-panel/components/SmsCaptcha.vue.css": "./es/components/login-panel/components/SmsCaptcha.vue.css",
+    "./es/components/login-panel/components/SocialLogin.vue.css": "./es/components/login-panel/components/SocialLogin.vue.css",
+    "./es/components/login-panel/components/UsernameLoginForm.vue.css": "./es/components/login-panel/components/UsernameLoginForm.vue.css",
+    "./es/components/login-panel/components/UsernameLoginForm.vue2.css": "./es/components/login-panel/components/UsernameLoginForm.vue2.css",
+    "./es/components/login-panel/index.css": "./es/components/login-panel/index.css",
+    "./es/components/login-panel/LoginPanel.vue.css": "./es/components/login-panel/LoginPanel.vue.css",
+    "./es/components/login-panel/LoginPanel.vue2.css": "./es/components/login-panel/LoginPanel.vue2.css",
+    "./es/components/login-panel/LoginPanelV2.vue2.css": "./es/components/login-panel/LoginPanelV2.vue2.css",
+    "./es/components/LoginTemplate.vue.css": "./es/components/LoginTemplate.vue.css",
+    "./es/views/About.vue.css": "./es/views/About.vue.css",
+    "./es/views/ApiDemo.vue.css": "./es/views/ApiDemo.vue.css",
+    "./es/views/CryptoDemo.vue.css": "./es/views/CryptoDemo.vue.css",
+    "./es/views/Dashboard.vue.css": "./es/views/Dashboard.vue.css",
+    "./es/views/errors/NotFound.vue.css": "./es/views/errors/NotFound.vue.css",
+    "./es/views/Home.vue.css": "./es/views/Home.vue.css",
+    "./es/views/HttpDemo.vue.css": "./es/views/HttpDemo.vue.css",
+    "./es/views/Login.vue.css": "./es/views/Login.vue.css",
+    "./es/views/Main.vue.css": "./es/views/Main.vue.css",
+    "./lib/App.vue.css": "./lib/App.vue.css",
+    "./lib/components/CacheDemo.vue.css": "./lib/components/CacheDemo.vue.css",
+    "./lib/components/CustomLoginPanel.vue.css": "./lib/components/CustomLoginPanel.vue.css",
+    "./lib/components/LanguageSwitcher.vue.css": "./lib/components/LanguageSwitcher.vue.css",
+    "./lib/components/login-panel/components/BaseInput.vue.css": "./lib/components/login-panel/components/BaseInput.vue.css",
+    "./lib/components/login-panel/components/ImageCaptcha.vue.css": "./lib/components/login-panel/components/ImageCaptcha.vue.css",
+    "./lib/components/login-panel/components/LoginTabs.vue.css": "./lib/components/login-panel/components/LoginTabs.vue.css",
+    "./lib/components/login-panel/components/MessageToast.vue.css": "./lib/components/login-panel/components/MessageToast.vue.css",
+    "./lib/components/login-panel/components/PhoneLoginForm.vue.css": "./lib/components/login-panel/components/PhoneLoginForm.vue.css",
+    "./lib/components/login-panel/components/PhoneLoginForm.vue2.css": "./lib/components/login-panel/components/PhoneLoginForm.vue2.css",
+    "./lib/components/login-panel/components/RememberCheckbox.vue.css": "./lib/components/login-panel/components/RememberCheckbox.vue.css",
+    "./lib/components/login-panel/components/SmsCaptcha.vue.css": "./lib/components/login-panel/components/SmsCaptcha.vue.css",
+    "./lib/components/login-panel/components/SocialLogin.vue.css": "./lib/components/login-panel/components/SocialLogin.vue.css",
+    "./lib/components/login-panel/components/UsernameLoginForm.vue.css": "./lib/components/login-panel/components/UsernameLoginForm.vue.css",
+    "./lib/components/login-panel/components/UsernameLoginForm.vue2.css": "./lib/components/login-panel/components/UsernameLoginForm.vue2.css",
+    "./lib/components/login-panel/index.css": "./lib/components/login-panel/index.css",
+    "./lib/components/login-panel/LoginPanel.vue.css": "./lib/components/login-panel/LoginPanel.vue.css",
+    "./lib/components/login-panel/LoginPanel.vue2.css": "./lib/components/login-panel/LoginPanel.vue2.css",
+    "./lib/components/login-panel/LoginPanelV2.vue2.css": "./lib/components/login-panel/LoginPanelV2.vue2.css",
+    "./lib/components/LoginTemplate.vue.css": "./lib/components/LoginTemplate.vue.css",
+    "./lib/views/About.vue.css": "./lib/views/About.vue.css",
+    "./lib/views/ApiDemo.vue.css": "./lib/views/ApiDemo.vue.css",
+    "./lib/views/CryptoDemo.vue.css": "./lib/views/CryptoDemo.vue.css",
+    "./lib/views/Dashboard.vue.css": "./lib/views/Dashboard.vue.css",
+    "./lib/views/errors/NotFound.vue.css": "./lib/views/errors/NotFound.vue.css",
+    "./lib/views/Home.vue.css": "./lib/views/Home.vue.css",
+    "./lib/views/HttpDemo.vue.css": "./lib/views/HttpDemo.vue.css",
+    "./lib/views/Login.vue.css": "./lib/views/Login.vue.css",
+    "./lib/views/Main.vue.css": "./lib/views/Main.vue.css"
+  },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
+  "files": [
+    "README.md",
+    "LICENSE",
+    "package.json",
+    "es",
+    "lib",
+    "dist"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "launcher dev",
+    "dev:vite": "vite --host 0.0.0.0",
+    "build": "launcher build",
+    "build:vite": "vite build",
+    "build:lib": "node ../packages/builder/bin/ldesign-builder.js build",
+    "build:test": "node build-test.js",
+    "build:all": "npm run build:lib && npm run build",
+    "preview": "launcher preview",
+    "preview:vite": "vite preview",
+    "serve": "launcher dev",
+    "clean": "rimraf dist lib es site .builder",
+    "clean:lib": "rimraf dist lib es .builder",
+    "clean:site": "rimraf site",
+    "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@ldesign/api": "workspace:*",
@@ -16,6 +195,7 @@
     "@ldesign/http": "workspace:*",
     "@ldesign/i18n": "workspace:*",
     "@ldesign/router": "workspace:*",
+    "@ldesign/size": "workspace:*",
     "@ldesign/store": "workspace:*",
     "@ldesign/template": "workspace:*",
     "lucide-vue-next": "^0.545.0",
@@ -23,9 +203,16 @@
     "vue": "^3.5.0"
   },
   "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@ldesign/launcher": "workspace:*",
     "@vitejs/plugin-vue": "^5.0.0",
     "@vue/tsconfig": "^0.5.0",
+    "rimraf": "^5.0.5",
     "typescript": "^5.0.0",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "vue-tsc": "^1.8.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

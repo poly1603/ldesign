@@ -306,6 +306,21 @@ export class Vue3Strategy implements ILibraryStrategy {
       // CommonJS 插件
       const commonjs = await import('@rollup/plugin-commonjs')
       plugins.push(commonjs.default())
+      
+      // TypeScript 插件（用于生成声明文件）
+      const tsOptions = this.getTypeScriptOptions(config)
+      if (tsOptions.declaration) {
+        plugins.push({
+          name: 'typescript',
+          plugin: async () => {
+            const typescript = await import('@rollup/plugin-typescript')
+            return typescript.default(tsOptions)
+          },
+          // 将选项附加到插件对象以便 RollupAdapter 读取
+          options: tsOptions
+        })
+      }
+      
       // esbuild 插件处理 TypeScript 和 JSX（保留 JSX 语法）
       const { default: esbuild } = await import('rollup-plugin-esbuild')
       plugins.push(esbuild({
@@ -440,16 +455,25 @@ export class Vue3Strategy implements ILibraryStrategy {
    */
   private getTypeScriptOptions(config: BuilderConfig): any {
     const tsConfig = config.typescript || {}
+    const compilerOptions = tsConfig.compilerOptions || {}
+
+    // 检查多个位置的 declaration 配置
+    const declarationEnabled = tsConfig.declaration === true ||
+                              compilerOptions.declaration === true ||
+                              (config as any).dts === true
 
     return {
-      target: tsConfig.target || 'ES2020',
-      module: tsConfig.module || 'ESNext',
-      declaration: tsConfig.declaration !== false,
+      target: tsConfig.target || compilerOptions.target || 'ES2020',
+      module: tsConfig.module || compilerOptions.module || 'ESNext',
+      declaration: declarationEnabled,
       // declarationDir 将由 RollupAdapter 动态设置
-      strict: tsConfig.strict !== false,
+      declarationDir: tsConfig.declarationDir || compilerOptions.declarationDir,
+      declarationMap: tsConfig.declarationMap === true || compilerOptions.declarationMap === true,
+      removeComments: compilerOptions.removeComments,
+      strict: tsConfig.strict !== false && compilerOptions.strict !== false,
       esModuleInterop: true,
       allowSyntheticDefaultImports: true,
-      skipLibCheck: true,
+      skipLibCheck: tsConfig.skipLibCheck !== false && compilerOptions.skipLibCheck !== false,
       moduleResolution: 'node',
       resolveJsonModule: true,
       // JSX 配置

@@ -281,16 +281,16 @@ export class MicroCommand {
     try {
       const config = await this.loadMicroConfig()
 
-      )
-      } ${config.type === 'main' ? '主应用' : '子应用'}`)
-      } ${config.name}`)
-      } ${config.port}`)
+      console.log('\n🔬 微前端状态')
+      console.log(`类型: ${config.type === 'main' ? '主应用' : '子应用'}`)
+      console.log(`名称: ${config.name}`)
+      console.log(`端口: ${config.port}`)
 
       if (config.subApps && config.subApps.length > 0) {
-        )
+        console.log('\n子应用列表:')
         config.subApps.forEach((app, index) => {
-          }`)
-                            })
+          console.log(`  ${index + 1}. ${app.name} - ${app.entry}`)
+        })
       }
 
     } catch (error) {
@@ -463,38 +463,39 @@ export class MicroCommand {
   private async generateMicroConfig(config: MicroFrontendConfig): Promise<void> {
     const configContent = `import { defineConfig } from '@ldesign/launcher'
 
-export default defineConfig({
-  micro: ${JSON.stringify(config, null, 2)},
+        export default defineConfig({
+          micro: ${JSON.stringify(config, null, 2)},
 
-  // Vite 配置
-  server: {
-    port: ${config.port},
-    cors: true
+          // Vite 配置
+          server: {
+          port: ${config.port},
+          cors: true
   },
 
-  // 微前端特定配置
-  build: {
-    target: 'esnext',
-    lib: ${config.type === 'sub' ? `{
+      // 微前端特定配置
+      build: {
+        target: 'esnext',
+          lib: ${config.type === 'sub' ? `{
       entry: 'src/main.ts',
       name: '${config.name}',
       fileName: 'index',
       formats: ['umd']
-    }` : 'undefined'},
-    rollupOptions: {
-      external: ${JSON.stringify(Object.keys(config.shared || {}))},
-      output: {
-        globals: ${JSON.stringify(this.generateGlobals(config.shared || {}))}
-      }
-    }
-  },
+    }` : 'undefined'
+      },
+        rollupOptions: {
+          external: ${JSON.stringify(Object.keys(config.shared || {}))},
+          output: {
+            globals: ${JSON.stringify(this.generateGlobals(config.shared || {}))}
+          }
+        }
+      },
 
-  // 插件配置
-  plugins: [
-    ${this.generatePluginConfig(config)}
-  ]
-})
-`
+      // 插件配置
+      plugins: [
+        ${this.generatePluginConfig(config)}
+      ]
+    })
+    `
 
     await fs.writeFile(
       path.resolve(process.cwd(), 'micro.config.ts'),
@@ -603,7 +604,7 @@ registerMicroApps(microConfig.apps)
 start()
 
 app.mount('#app')
-`
+  `
   }
 
   private getMicroConfigTemplate(config: MicroFrontendConfig): string {
@@ -628,7 +629,7 @@ const router = createRouter({
 })
 
 export default router
-`
+  `
   }
 
   private getSubAppTemplate(config: MicroFrontendConfig): string {
@@ -652,7 +653,7 @@ if (!(window as any).__POWERED_BY_QIANKUN__) {
 }
 
 export async function bootstrap() {
-  }
+}
 
 export async function mount(props: any) {
   render(props)

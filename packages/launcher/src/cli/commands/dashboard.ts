@@ -29,7 +29,7 @@ export class DashboardCommand {
   name = 'dashboard'
   description = '启动性能监控面板'
   alias = 'dash'
-  
+
   options = [
     {
       name: 'port',
@@ -115,21 +115,19 @@ export class DashboardCommand {
       await this.server.start()
 
       const url = `http://${options.host || 'localhost'}:${options.port || 9527}`
-      
-      
-      )
-      
-      } ${chalk.cyan(url)}`)
-      
+
+      console.log('\n🎯 Dashboard 服务已启动')
+      console.log('═'.repeat(50))
+
+      console.log(`\n  访问地址: ${chalk.cyan(url)}`)
+
       if (options.auth) {
-        } ${chalk.yellow(authToken)}`)
-        
-        )
+        console.log(`  认证令牌: ${chalk.yellow(authToken)}`)
+        console.log('\n  请在 HTTP 请求头中添加: Authorization: Bearer <token>')
       }
-      
-      
-      )
-      
+
+      console.log('\n  按 Ctrl+C 停止服务')
+
 
       // 打开浏览器
       if (options.open) {
@@ -138,13 +136,13 @@ export class DashboardCommand {
 
       // 保持进程运行
       process.stdin.resume()
-      
+
       // 处理退出信号
       process.on('SIGINT', async () => {
         await this.cleanup()
         process.exit(0)
       })
-      
+
       process.on('SIGTERM', async () => {
         await this.cleanup()
         process.exit(0)
@@ -186,11 +184,11 @@ export class DashboardCommand {
   private async openBrowser(url: string): Promise<void> {
     try {
       const { exec } = await import('child_process')
-      
+
       const command = process.platform === 'win32' ? `start ${url}` :
-                     process.platform === 'darwin' ? `open ${url}` :
-                     `xdg-open ${url}`
-      
+        process.platform === 'darwin' ? `open ${url}` :
+          `xdg-open ${url}`
+
       exec(command, (error) => {
         if (error) {
           this.logger.debug('无法自动打开浏览器')
@@ -206,11 +204,11 @@ export class DashboardCommand {
    */
   private async cleanup(): Promise<void> {
     this.logger.info('正在关闭监控面板...')
-    
+
     if (this.server) {
       await this.server.stop()
     }
-    
+
     this.logger.info('监控面板已关闭')
   }
 }

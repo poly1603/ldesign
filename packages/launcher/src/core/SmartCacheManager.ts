@@ -12,7 +12,7 @@
  * @since 1.0.0
  */
 
-import { CacheManager, type CacheType, type CacheEntry } from './CacheManager'
+import { CacheManager, type CacheType, type CacheItem, type CacheConfig } from './CacheManager'
 
 /**
  * 缓存统计信息
@@ -72,15 +72,28 @@ export interface SmartCacheConfig {
  * 智能缓存管理器
  */
 export class SmartCacheManager extends CacheManager {
-  private config: Required<SmartCacheConfig>
+  private smartConfig: Required<SmartCacheConfig>
   private metadata: Map<string, CacheItemMetadata>
   private statistics: CacheStatistics
-  private cleanupTimer?: NodeJS.Timeout
+  private smartCleanupTimer?: NodeJS.Timeout
 
   constructor(config: SmartCacheConfig = {}) {
-    super()
-    
-    this.config = {
+    // 调用父类构造函数，传入 CacheConfig
+    super({
+      enabled: true,
+      cacheDir: '.cache',
+      maxSize: config.maxSize ?? 100,
+      ttl: config.maxAge ?? 3600000,
+      types: ['build', 'deps', 'modules', 'transform', 'assets', 'temp'],
+      compression: true,
+      autoClean: {
+        enabled: config.enableMemoryPressureCleanup ?? true,
+        interval: 4,
+        threshold: (config.memoryPressureThreshold ?? 70) / 100
+      }
+    })
+
+    this.smartConfig = {
       maxSize: config.maxSize ?? 100, // 100MB
       enableMemoryPressureCleanup: config.enableMemoryPressureCleanup ?? true,
       memoryPressureThreshold: config.memoryPressureThreshold ?? 70,
@@ -98,11 +111,12 @@ export class SmartCacheManager extends CacheManager {
       totalItems: 0,
       memoryUsage: 0,
       itemsByType: {
-        config: 0,
-        module: 0,
+        build: 0,
+        deps: 0,
+        modules: 0,
         transform: 0,
-        dependency: 0,
-        other: 0
+        assets: 0,
+        temp: 0
       }
     }
 
@@ -113,12 +127,12 @@ export class SmartCacheManager extends CacheManager {
   /**
    * 增强的 set 方法
    */
-  set(key: string, value: any, type: CacheType = 'other'): void {
-    super.set(key, value, type)
-    
+  async set(key: string, type: CacheType, data: any, ttl?: number): Promise<void> {
+    await super.set(key, type, data, ttl)
+
     // 估算数据大小
-    const size = this.estimateSize(value)
-    
+    const size = this.estimateSize(data)
+
     // 记录元数据
     this.metadata.set(key, {
       accessCount: 0,
@@ -127,10 +141,10 @@ export class SmartCacheManager extends CacheManager {
       size,
       type
     })
-    
+
     // 更新统计信息
     this.updateStatistics()
-    
+
     // 检查是否需要清理
     this.checkAndCleanup()
   }
@@ -138,33 +152,33 @@ export class SmartCacheManager extends CacheManager {
   /**
    * 增强的 get 方法
    */
-  async get<T = any>(key: string, type: CacheType = 'other'): Promise<T | null> {
+  async get<T = any>(key: string, type: CacheType): Promise<T | null> {
     const value = await super.get<T>(key, type)
-    
+
     // 更新元数据
     const meta = this.metadata.get(key)
     if (meta) {
       meta.accessCount++
       meta.lastAccessTime = Date.now()
-      
+
       // 记录命中
-      if (this.config?.enableStatistics) {
+      if (this.smartConfig?.enableStatistics) {
         this.statistics.hits++
         this.updateHitRate()
       }
-    } else if (this.config?.enableStatistics) {
+    } else if (this.smartConfig?.enableStatistics) {
       // 记录未命中
       this.statistics.misses++
       this.updateHitRate()
     }
-    
+
     return value
   }
 
   /**
    * 删除缓存项
    */
-  async delete(key: string, type: CacheType = 'other'): Promise<void> {
+  async delete(key: string, type: CacheType): Promise<void> {
     await super.delete(key, type)
     this.metadata.delete(key)
     this.updateStatistics()
@@ -182,25 +196,26 @@ export class SmartCacheManager extends CacheManager {
    * 更新统计信息
    */
   private updateStatistics(): void {
-    if (!this.config?.enableStatistics) return
-    
+    if (!this.smartConfig?.enableStatistics) return
+
     this.statistics.totalItems = this.metadata.size
     this.statistics.memoryUsage = Array.from(this.metadata.values())
       .reduce((sum, meta) => sum + meta.size, 0)
-    
+
     // 统计各类型数量
     const itemsByType: Record<CacheType, number> = {
-      config: 0,
-      module: 0,
+      build: 0,
+      deps: 0,
+      modules: 0,
       transform: 0,
-      dependency: 0,
-      other: 0
+      assets: 0,
+      temp: 0
     }
-    
+
     for (const meta of this.metadata.values()) {
       itemsByType[meta.type]++
     }
-    
+
     this.statistics.itemsByType = itemsByType
   }
 
@@ -209,7 +224,7 @@ export class SmartCacheManager extends CacheManager {
    */
   private updateHitRate(): void {
     const total = this.statistics.hits + this.statistics.misses
-    this.statistics.hitRate = total > 0 
+    this.statistics.hitRate = total > 0
       ? Math.round((this.statistics.hits / total) * 100)
       : 0
   }
@@ -219,19 +234,19 @@ export class SmartCacheManager extends CacheManager {
    */
   private async checkAndCleanup(): Promise<void> {
     // 检查内存压力
-    if (this.config?.enableMemoryPressureCleanup) {
+    if (this.smartConfig?.enableMemoryPressureCleanup) {
       const memUsage = process.memoryUsage()
       const heapUsedPercent = (memUsage.heapUsed / memUsage.heapTotal) * 100
-      
-      if (heapUsedPercent > this.config?.memoryPressureThreshold) {
+
+      if (heapUsedPercent > this.smartConfig?.memoryPressureThreshold) {
         console.warn(`🧹 内存压力过高 (${heapUsedPercent.toFixed(1)}%), 开始清理缓存...`)
         await this.cleanup(0.3) // 清理 30% 的缓存
       }
     }
-    
+
     // 检查缓存大小
     const sizeMB = this.statistics.memoryUsage / 1024 / 1024
-    if (sizeMB > this.config?.maxSize) {
+    if (sizeMB > this.smartConfig?.maxSize) {
       console.warn(`🧹 缓存大小超限 (${sizeMB.toFixed(1)}MB), 开始清理...`)
       await this.cleanup(0.2) // 清理 20% 的缓存
     }
@@ -244,10 +259,10 @@ export class SmartCacheManager extends CacheManager {
   async cleanup(ratio: number = 0.1): Promise<void> {
     const entries = Array.from(this.metadata.entries())
     const now = Date.now()
-    
+
     // 计算清理数量
     const cleanupCount = Math.max(1, Math.floor(entries.length * ratio))
-    
+
     // 使用改进的 LRU 算法排序
     // 考虑：访问频率、最后访问时间、数据年龄
     entries.sort(([, a], [, b]) => {
@@ -255,37 +270,40 @@ export class SmartCacheManager extends CacheManager {
       const maxAccessCount = Math.max(...entries.map(([, m]) => m.accessCount), 1)
       const frequencyScoreA = a.accessCount / maxAccessCount
       const frequencyScoreB = b.accessCount / maxAccessCount
-      
+
       // 计算新鲜度分数 (0-1)
       const ageA = now - a.lastAccessTime
       const ageB = now - a.lastAccessTime
       const maxAge = Math.max(ageA, ageB)
       const freshnessScoreA = maxAge > 0 ? 1 - (ageA / maxAge) : 1
       const freshnessScoreB = maxAge > 0 ? 1 - (ageB / maxAge) : 1
-      
+
       // 综合分数 (访问频率 60% + 新鲜度 40%)
       const scoreA = frequencyScoreA * 0.6 + freshnessScoreA * 0.4
       const scoreB = frequencyScoreB * 0.6 + freshnessScoreB * 0.4
-      
+
       return scoreA - scoreB // 分数低的排在前面，优先清理
     })
-    
+
     // 清理得分最低的项
     for (let i = 0; i < cleanupCount; i++) {
       const [key] = entries[i]
-      await this.delete(key)
+      const meta = this.metadata.get(key)
+      if (meta) {
+        await this.delete(key, meta.type)
+      }
     }
-    
-    
+
+
   }
 
   /**
    * 启动渐进式清理
    */
   private startProgressiveCleanup(): void {
-    this.cleanupTimer = setInterval(() => {
+    this.smartCleanupTimer = setInterval(() => {
       this.cleanupExpired()
-    }, this.config?.progressiveCleanupInterval)
+    }, this.smartConfig?.progressiveCleanupInterval)
   }
 
   /**
@@ -294,22 +312,25 @@ export class SmartCacheManager extends CacheManager {
   private async cleanupExpired(): Promise<void> {
     const now = Date.now()
     const expired: string[] = []
-    
+
     for (const [key, meta] of this.metadata.entries()) {
       const age = now - meta.createdTime
-      if (age > this.config?.maxAge) {
+      if (age > this.smartConfig?.maxAge) {
         expired.push(key)
       }
     }
-    
+
     if (expired.length > 0) {
       // 分批清理
-      const batch = expired.slice(0, this.config?.cleanupBatchSize)
+      const batch = expired.slice(0, this.smartConfig?.cleanupBatchSize)
       for (const key of batch) {
-        await this.delete(key)
+        const meta = this.metadata.get(key)
+        if (meta) {
+          await this.delete(key, meta.type)
+        }
       }
-      
-      
+
+
     }
   }
 
@@ -317,9 +338,9 @@ export class SmartCacheManager extends CacheManager {
    * 停止渐进式清理
    */
   stopProgressiveCleanup(): void {
-    if (this.cleanupTimer) {
-      clearInterval(this.cleanupTimer)
-      this.cleanupTimer = undefined
+    if (this.smartCleanupTimer) {
+      clearInterval(this.smartCleanupTimer)
+      this.smartCleanupTimer = undefined
     }
   }
 
@@ -335,20 +356,20 @@ export class SmartCacheManager extends CacheManager {
    * @param warmupFn 预热函数
    */
   async warmup(warmupFn: () => Promise<Record<string, any>>): Promise<void> {
-    
+
     const startTime = Date.now()
-    
+
     try {
       const data = await warmupFn()
       let count = 0
-      
+
       for (const [key, value] of Object.entries(data)) {
-        this.set(key, value)
+        await this.set(key, 'build', value)
         count++
       }
-      
+
       const duration = Date.now() - startTime
-      
+
     } catch (error) {
       console.error('❌ 缓存预热失败:', error)
     }
@@ -360,7 +381,7 @@ export class SmartCacheManager extends CacheManager {
   getReport(): string {
     const stats = this.getStatistics()
     const sizeMB = (stats.memoryUsage / 1024 / 1024).toFixed(2)
-    
+
     return `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   💾 智能缓存报告
@@ -368,17 +389,18 @@ export class SmartCacheManager extends CacheManager {
 
 【统计信息】
   📊 缓存项总数: ${stats.totalItems}
-  💾 内存占用: ${sizeMB}MB / ${this.config?.maxSize}MB
+  💾 内存占用: ${sizeMB}MB / ${this.smartConfig?.maxSize}MB
   🎯 命中率: ${stats.hitRate}%
   ✅ 命中次数: ${stats.hits}
   ❌ 未命中次数: ${stats.misses}
 
 【按类型统计】
-  ⚙️  配置缓存: ${stats.itemsByType.config}
-  📦 模块缓存: ${stats.itemsByType.module}
+  🏗️  构建缓存: ${stats.itemsByType.build}
+  📦 依赖缓存: ${stats.itemsByType.deps}
+  📂 模块缓存: ${stats.itemsByType.modules}
   🔄 转换缓存: ${stats.itemsByType.transform}
-  🔗 依赖缓存: ${stats.itemsByType.dependency}
-  📄 其他缓存: ${stats.itemsByType.other}
+  🎨 资源缓存: ${stats.itemsByType.assets}
+  📄 临时缓存: ${stats.itemsByType.temp}
 
 【缓存健康度】
   ${this.getCacheHealthEmoji(stats)} ${this.getCacheHealthStatus(stats)}
@@ -392,8 +414,8 @@ export class SmartCacheManager extends CacheManager {
    */
   private getCacheHealthStatus(stats: CacheStatistics): string {
     const sizeMB = stats.memoryUsage / 1024 / 1024
-    const sizePercent = (sizeMB / this.config?.maxSize) * 100
-    
+    const sizePercent = (sizeMB / this.smartConfig?.maxSize) * 100
+
     if (stats.hitRate >= 80 && sizePercent < 70) {
       return '健康 - 缓存运行良好'
     } else if (stats.hitRate >= 60 && sizePercent < 85) {
@@ -411,8 +433,8 @@ export class SmartCacheManager extends CacheManager {
    */
   private getCacheHealthEmoji(stats: CacheStatistics): string {
     const sizeMB = stats.memoryUsage / 1024 / 1024
-    const sizePercent = (sizeMB / this.config?.maxSize) * 100
-    
+    const sizePercent = (sizeMB / this.smartConfig?.maxSize) * 100
+
     if (stats.hitRate >= 80 && sizePercent < 70) return '✅'
     if (stats.hitRate >= 60 && sizePercent < 85) return '👍'
     if (sizePercent >= 85) return '⚠️'

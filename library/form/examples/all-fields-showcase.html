@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>所有字段类型展示 - @ldesign/form</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --ldesign-brand-color: #722ED1;
+      --ldesign-error-color: #ff4d4f;
+      --ldesign-success-color: #52c41a;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      background: #fff;
+      padding: 24px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+      font-size: 24px;
+      color: var(--ldesign-brand-color);
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.65);
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .field-card {
+      background: #fff;
+      padding: 24px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .field-card h3 {
+      font-size: 16px;
+      color: rgba(0, 0, 0, 0.85);
+      margin-bottom: 4px;
+    }
+
+    .field-card .field-description {
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.45);
+      margin-bottom: 16px;
+    }
+
+    .field-demo {
+      margin-bottom: 16px;
+    }
+
+    .field-demo-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.85);
+    }
+
+    .field-value-display {
+      margin-top: 12px;
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.65);
+    }
+
+    .field-value-display strong {
+      color: var(--ldesign-brand-color);
+    }
+
+    /* 所有字段组件的通用样式 */
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 14px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--ldesign-brand-color);
+      box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.1);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Switch 样式 */
+    .switch-field {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 22px;
+      background-color: rgba(0, 0, 0, 0.25);
+      border-radius: 11px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .switch.checked {
+      background-color: var(--ldesign-brand-color);
+    }
+
+    .switch-handle {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      transition: left 0.3s;
+    }
+
+    .switch.checked .switch-handle {
+      left: 22px;
+    }
+
+    /* Slider 样式 */
+    .slider-container {
+      padding: 10px 0;
+    }
+
+    .slider-track {
+      position: relative;
+      width: 100%;
+      height: 4px;
+      background: #f5f5f5;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .slider-fill {
+      position: absolute;
+      height: 4px;
+      background: var(--ldesign-brand-color);
+      border-radius: 2px;
+    }
+
+    .slider-handle {
+      position: absolute;
+      top: -5px;
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      border: 2px solid var(--ldesign-brand-color);
+      border-radius: 50%;
+      cursor: grab;
+      transform: translateX(-50%);
+    }
+
+    .slider-handle:active {
+      cursor: grabbing;
+    }
+
+    /* Rate 样式 */
+    .rate-field {
+      display: inline-flex;
+      gap: 4px;
+    }
+
+    .rate-star {
+      font-size: 24px;
+      color: #d9d9d9;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .rate-star.filled {
+      color: #fadb14;
+    }
+
+    .rate-star:hover {
+      transform: scale(1.1);
+    }
+
+    /* Color Picker 样式 */
+    .color-picker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 11px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .color-preview {
+      width: 24px;
+      height: 24px;
+      border: 1px solid #d9d9d9;
+      border-radius: 2px;
+    }
+
+    .color-value {
+      font-size: 14px;
+    }
+
+    /* Radio 和 Checkbox 样式 */
+    .radio-group,
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .radio-item,
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .radio-item input,
+    .checkbox-item input {
+      cursor: pointer;
+    }
+
+    .submit-section {
+      background: #fff;
+      padding: 24px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      font-size: 14px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: var(--ldesign-brand-color);
+      border-color: var(--ldesign-brand-color);
+      color: #fff;
+    }
+
+    .btn:hover {
+      opacity: 0.8;
+    }
+
+    .result-display {
+      margin-top: 24px;
+      padding: 20px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      text-align: left;
+    }
+
+    .result-display h3 {
+      margin-bottom: 12px;
+      color: var(--ldesign-success-color);
+    }
+
+    .result-display pre {
+      margin: 0;
+      font-size: 13px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <h1>🎨 @ldesign/form 所有字段类型展示</h1>
+      <p>展示表单系统支持的所有字段类型和交互效果</p>
+    </div>
+
+    <!-- 字段展示 -->
+    <div class="field-grid">
+      <!-- InputField -->
+      <div class="field-card">
+        <h3>📝 InputField - 输入框</h3>
+        <p class="field-description">支持文本、数字、密码等多种输入类型</p>
+
+        <div class="field-demo">
+          <label class="field-demo-label">文本输入</label>
+          <input type="text" id="textInput" class="form-input" placeholder="请输入文本" />
+        </div>
+
+        <div class="field-demo">
+          <label class="field-demo-label">数字输入</label>
+          <input type="number" id="numberInput" class="form-input" placeholder="请输入数字" />
+        </div>
+
+        <div class="field-demo">
+          <label class="field-demo-label">密码输入</label>
+          <input type="password" id="passwordInput" class="form-input" placeholder="请输入密码" />
+        </div>
+
+        <div class="field-value-display">
+          当前值: <strong id="inputValue">-</strong>
+        </div>
+      </div>
+
+      <!-- TextareaField -->
+      <div class="field-card">
+        <h3>📄 TextareaField - 多行文本</h3>
+        <p class="field-description">支持自动高度调整和字符计数</p>
+
+        <div class="field-demo">
+          <label class="field-demo-label">多行文本</label>
+          <textarea id="textarea" class="form-textarea" placeholder="请输入多行文本"></textarea>
+        </div>
+
+        <div class="field-value-display">
+          字符数: <strong id="textareaCount">0</strong>
+        </div>
+      </div>
+
+      <!-- SelectField -->
+      <div class="field-card">
+        <h3>🔽 SelectField - 下拉选择</h3>
+        <p class="field-description">支持单选和多选</p>
+
+        <div class="field-demo">
+          <label class="field-demo-label">单选</label>
+          <select id="select" class="form-select">
+            <option value="">请选择</option>
+            <option value="option1">选项 1</option>
+            <option value="option2">选项 2</option>
+            <option value="option3">选项 3</option>
+          </select>
+        </div>
+
+        <div class="field-value-display">
+          选中值: <strong id="selectValue">-</strong>
+        </div>
+      </div>
+
+      <!-- RadioField -->
+      <div class="field-card">
+        <h3>⭕ RadioField - 单选按钮</h3>
+        <p class="field-description">单选按钮组，支持水平和垂直布局</p>
+
+        <div class="field-demo">
+          <label class="field-demo-label">性别选择</label>
+          <div class="radio-group">
+            <label class="radio-item">
+              <input type="radio" name="gender" value="male" />
+              <span>男</span>
+            </label>
+            <label class="radio-item">
+              <input type="radio" name="gender" value="female" />
+              <span>女</span>
+            </label>
+            <label class="radio-item">
+              <input type="radio" name="gender" value="other" />
+              <span>其他</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-value-display">
+          选中值: <strong id="radioValue">-</strong>
+        </div>
+      </div>
+
+      <!-- CheckboxField -->
+      <div class="field-card">
+        <h3>☑️ CheckboxField - 复选框</h3>
+        <p class="field-description">复选框组，支持全选和数量限制</p>
+
+        <div class="field-demo">
+          <label class="field-demo-label">兴趣爱好</label>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input type="checkbox" name="hobby" value="reading" />
+              <span>阅读</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="hobby" value="sports" />
+              <span>运动</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="hobby" value="music" />
+              <span>音乐</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="hobby" value="travel" />
+              <span>旅行</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-value-display">
+          选中值: <strong id="checkboxValue">-</strong>
+        </div>
+      </div>
+
+      <!-- SwitchField -->
+      <div class="field-card">
+        <h3>🔘 SwitchField - 开关</h3>
+        <p class="field-description">开关组件，支持加载状态和自定义文案</p>
+
+        <div class="field-demo">
+          <label class="field-demo-label">启用状态</label>
+          <div class="switch-field">
+            <div id="switch" class="switch">
+              <div class="switch-handle"></div>
+            </div>
+            <span id="switchText">关闭</span>
+          </div>
+        </div>
+
+        <div class="field-value-display">
+          当前状态: <strong id="switchValue">false</strong>
+        </div>
+      </div>
+
+      <!-- SliderField -->
+      <div class="field-card">
+        <h3>🎚️ SliderField - 滑块</h3>
+        <p class="field-description">滑块组件，支持单值和范围选择</p>
+
+        <div class="field-demo">
+          <label class="field-demo-label">音量 (0-100)</label>
+          <div class="slider-container">
+            <div id="sliderTrack" class="slider-track">
+              <div id="sliderFill" class="slider-fill"></div>
+              <div id="sliderHandle" class="slider-handle"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-value-display">
+          当前值: <strong id="sliderValue">50</strong>
+        </div>
+      </div>
+
+      <!-- RateField -->
+      <div class="field-card">
+        <h3>⭐ RateField - 评分</h3>
+        <p class="field-description">评分组件，支持星星评分和半星</p>
+
+        <div class="field-demo">
+          <label class="field-demo-label">满意度评分</label>
+          <div class="rate-field" id="rateField">
+            <span class="rate-star" data-value="1">★</span>
+            <span class="rate-star" data-value="2">★</span>
+            <span class="rate-star" data-value="3">★</span>
+            <span class="rate-star" data-value="4">★</span>
+            <span class="rate-star" data-value="5">★</span>
+          </div>
+        </div>
+
+        <div class="field-value-display">
+          评分: <strong id="rateValue">0</strong> 星
+        </div>
+      </div>
+
+      <!-- ColorPickerField -->
+      <div class="field-card">
+        <h3>🎨 ColorPickerField - 颜色选择器</h3>
+        <p class="field-description">颜色选择组件，支持预设颜色和透明度</p>
+
+        <div class="field-demo">
+          <label class="field-demo-label">主题颜色</label>
+          <div class="color-picker" id="colorPicker">
+            <div class="color-preview" id="colorPreview" style="background-color: #722ED1;"></div>
+            <span class="color-value" id="colorValue">#722ED1</span>
+          </div>
+
+          <!-- 预设颜色 -->
+          <div style="margin-top: 12px; display: flex; gap: 8px;">
+            <div class="color-preview" style="background-color: #722ED1; cursor: pointer;" data-color="#722ED1"></div>
+            <div class="color-preview" style="background-color: #1890ff; cursor: pointer;" data-color="#1890ff"></div>
+            <div class="color-preview" style="background-color: #52c41a; cursor: pointer;" data-color="#52c41a"></div>
+            <div class="color-preview" style="background-color: #fa8c16; cursor: pointer;" data-color="#fa8c16"></div>
+            <div class="color-preview" style="background-color: #eb2f96; cursor: pointer;" data-color="#eb2f96"></div>
+          </div>
+        </div>
+
+        <div class="field-value-display">
+          选中颜色: <strong id="colorValueDisplay">#722ED1</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- 提交区域 -->
+    <div class="submit-section">
+      <h3 style="margin-bottom: 16px;">收集所有字段值</h3>
+      <button class="btn btn-primary" onclick="collectAllValues()">
+        收集表单数据
+      </button>
+      <button class="btn" onclick="resetAllValues()" style="margin-left: 12px;">
+        重置所有字段
+      </button>
+
+      <div id="resultDisplay" class="result-display" style="display: none;">
+        <h3>✅ 表单数据</h3>
+        <pre id="resultContent"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 存储所有字段的值
+    const formData = {
+      textInput: '',
+      numberInput: '',
+      passwordInput: '',
+      textarea: '',
+      select: '',
+      gender: '',
+      hobbies: [],
+      switch: false,
+      slider: 50,
+      rate: 0,
+      color: '#722ED1'
+    }
+
+    // InputField 事件
+    document.getElementById('textInput').addEventListener('input', (e) => {
+      formData.textInput = e.target.value
+      updateInputDisplay()
+    })
+
+    document.getElementById('numberInput').addEventListener('input', (e) => {
+      formData.numberInput = e.target.value
+      updateInputDisplay()
+    })
+
+    document.getElementById('passwordInput').addEventListener('input', (e) => {
+      formData.passwordInput = e.target.value
+      updateInputDisplay()
+    })
+
+    function updateInputDisplay() {
+      const display = []
+      if (formData.textInput) display.push(`文本: ${formData.textInput}`)
+      if (formData.numberInput) display.push(`数字: ${formData.numberInput}`)
+      if (formData.passwordInput) display.push(`密码: ${'*'.repeat(formData.passwordInput.length)}`)
+
+      document.getElementById('inputValue').textContent = display.join(', ') || '-'
+    }
+
+    // TextareaField 事件
+    document.getElementById('textarea').addEventListener('input', (e) => {
+      formData.textarea = e.target.value
+      document.getElementById('textareaCount').textContent = e.target.value.length
+    })
+
+    // SelectField 事件
+    document.getElementById('select').addEventListener('change', (e) => {
+      formData.select = e.target.value
+      document.getElementById('selectValue').textContent = e.target.value || '-'
+    })
+
+    // RadioField 事件
+    document.querySelectorAll('input[name="gender"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        formData.gender = e.target.value
+        document.getElementById('radioValue').textContent = e.target.value
+      })
+    })
+
+    // CheckboxField 事件
+    document.querySelectorAll('input[name="hobby"]').forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        formData.hobbies = Array.from(
+          document.querySelectorAll('input[name="hobby"]:checked')
+        ).map(cb => cb.value)
+
+        document.getElementById('checkboxValue').textContent =
+          formData.hobbies.join(', ') || '-'
+      })
+    })
+
+    // SwitchField 事件
+    document.getElementById('switch').addEventListener('click', function () {
+      formData.switch = !formData.switch
+      this.classList.toggle('checked', formData.switch)
+      document.getElementById('switchText').textContent = formData.switch ? '开启' : '关闭'
+      document.getElementById('switchValue').textContent = formData.switch
+    })
+
+    // SliderField 事件
+    const sliderTrack = document.getElementById('sliderTrack')
+    const sliderFill = document.getElementById('sliderFill')
+    const sliderHandle = document.getElementById('sliderHandle')
+    let isDragging = false
+
+    function updateSlider(clientX) {
+      const rect = sliderTrack.getBoundingClientRect()
+      const percent = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100))
+      formData.slider = Math.round(percent)
+
+      sliderFill.style.width = percent + '%'
+      sliderHandle.style.left = percent + '%'
+      document.getElementById('sliderValue').textContent = formData.slider
+    }
+
+    sliderTrack.addEventListener('mousedown', (e) => {
+      isDragging = true
+      updateSlider(e.clientX)
+    })
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        updateSlider(e.clientX)
+      }
+    })
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false
+    })
+
+    // 初始化滑块
+    updateSlider(sliderTrack.getBoundingClientRect().left + sliderTrack.offsetWidth / 2)
+
+    // RateField 事件
+    const rateStars = document.querySelectorAll('.rate-star')
+    let currentRate = 0
+
+    rateStars.forEach(star => {
+      star.addEventListener('click', () => {
+        currentRate = parseInt(star.dataset.value)
+        formData.rate = currentRate
+        updateRateDisplay()
+      })
+
+      star.addEventListener('mouseenter', () => {
+        const value = parseInt(star.dataset.value)
+        rateStars.forEach((s, i) => {
+          s.classList.toggle('filled', i < value)
+        })
+      })
+    })
+
+    document.getElementById('rateField').addEventListener('mouseleave', () => {
+      updateRateDisplay()
+    })
+
+    function updateRateDisplay() {
+      rateStars.forEach((s, i) => {
+        s.classList.toggle('filled', i < currentRate)
+      })
+      document.getElementById('rateValue').textContent = currentRate
+    }
+
+    // ColorPickerField 事件
+    document.querySelectorAll('[data-color]').forEach(colorBtn => {
+      colorBtn.addEventListener('click', () => {
+        const color = colorBtn.dataset.color
+        formData.color = color
+        document.getElementById('colorPreview').style.backgroundColor = color
+        document.getElementById('colorValue').textContent = color
+        document.getElementById('colorValueDisplay').textContent = color
+      })
+    })
+
+    // 收集所有值
+    function collectAllValues() {
+      const resultDisplay = document.getElementById('resultDisplay')
+      const resultContent = document.getElementById('resultContent')
+
+      resultContent.textContent = JSON.stringify(formData, null, 2)
+      resultDisplay.style.display = 'block'
+
+      console.log('表单数据:', formData)
+    }
+
+    // 重置所有值
+    function resetAllValues() {
+      // 重置数据
+      formData.textInput = ''
+      formData.numberInput = ''
+      formData.passwordInput = ''
+      formData.textarea = ''
+      formData.select = ''
+      formData.gender = ''
+      formData.hobbies = []
+      formData.switch = false
+      formData.slider = 50
+      formData.rate = 0
+      formData.color = '#722ED1'
+
+      // 重置 UI
+      document.getElementById('textInput').value = ''
+      document.getElementById('numberInput').value = ''
+      document.getElementById('passwordInput').value = ''
+      document.getElementById('textarea').value = ''
+      document.getElementById('select').value = ''
+
+      document.querySelectorAll('input[name="gender"]').forEach(r => r.checked = false)
+      document.querySelectorAll('input[name="hobby"]').forEach(c => c.checked = false)
+
+      document.getElementById('switch').classList.remove('checked')
+      document.getElementById('switchText').textContent = '关闭'
+
+      updateSlider(sliderTrack.getBoundingClientRect().left + sliderTrack.offsetWidth / 2)
+
+      currentRate = 0
+      updateRateDisplay()
+
+      document.getElementById('colorPreview').style.backgroundColor = '#722ED1'
+      document.getElementById('colorValue').textContent = '#722ED1'
+
+      // 重置显示
+      document.getElementById('inputValue').textContent = '-'
+      document.getElementById('textareaCount').textContent = '0'
+      document.getElementById('selectValue').textContent = '-'
+      document.getElementById('radioValue').textContent = '-'
+      document.getElementById('checkboxValue').textContent = '-'
+      document.getElementById('switchValue').textContent = 'false'
+      document.getElementById('sliderValue').textContent = '50'
+      document.getElementById('rateValue').textContent = '0'
+      document.getElementById('colorValueDisplay').textContent = '#722ED1'
+
+      document.getElementById('resultDisplay').style.display = 'none'
+
+      console.log('已重置所有字段')
+    }
+
+    console.log('🎨 所有字段类型展示已加载')
+  </script>
+</body>
+
+</html>
+
+
+

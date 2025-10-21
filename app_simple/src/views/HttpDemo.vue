@@ -242,7 +242,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useI18n } from '@/i18n'
+import { useI18n } from '../i18n'
 import { createHttpClient } from '@ldesign/http'
 import { 
   Download, Upload, Send, Trash2, Filter, Plus, Database, 

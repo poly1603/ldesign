@@ -76,7 +76,7 @@
 
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
-import { useI18n } from '@/i18n'
+import { useI18n } from '../i18n'
 
 const { t } = useI18n()
 

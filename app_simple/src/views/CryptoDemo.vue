@@ -217,26 +217,29 @@
           密码强度检测
         </h3>
         <div class="card-content">
-          <div class="input-group">
-            <label>密码</label>
-            <input 
-              v-model="passwordInput" 
-              type="password" 
-              placeholder="输入密码"
-              class="input-field"
-            />
-          </div>
-          <button @click="checkPasswordStrength" class="action-btn primary">
-            <ShieldAlert class="btn-icon" /> 检测强度
-          </button>
+          <form @submit.prevent="checkPasswordStrength">
+            <div class="input-group">
+              <label>密码</label>
+              <input 
+                v-model="passwordInput" 
+                type="password" 
+                placeholder="输入密码"
+                class="input-field"
+                autocomplete="new-password"
+              />
+            </div>
+            <button type="submit" class="action-btn primary">
+              <ShieldAlert class="btn-icon" /> 检测强度
+            </button>
+          </form>
           <div v-if="passwordStrength" class="result-box">
             <label>强度评估</label>
             <div class="password-strength">
               <div class="strength-bar" :class="strengthClass">
-                <div class="strength-fill" :style="{ width: passwordStrength.score * 25 + '%' }"></div>
+                <div class="strength-fill" :style="{ width: ((passwordStrength.score || passwordStrength.strength || 0) <= 4 ? (passwordStrength.score || passwordStrength.strength || 0) * 25 : (passwordStrength.score || 0)) + '%' }"></div>
               </div>
               <div class="strength-info">
-                <div><strong>得分：</strong>{{ passwordStrength.score }}/4</div>
+                <div><strong>得分：</strong>{{ passwordStrength.score || passwordStrength.strength || 0 }}{{ (passwordStrength.score || passwordStrength.strength || 0) <= 4 ? '/4' : '/100' }}</div>
                 <div><strong>等级：</strong>{{ strengthLabel }}</div>
               </div>
             </div>
@@ -249,7 +252,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useI18n } from '@/i18n'
+import { useI18n } from '../i18n'
 import { aes, hash, hmac, encoding, RandomUtils, PasswordStrengthChecker } from '@ldesign/crypto'
 import { 
   Lock, Unlock, Hash, ShieldCheck, ShieldAlert, Binary, Key, 
@@ -472,19 +475,30 @@ const checkPasswordStrength = () => {
 
 const strengthClass = computed(() => {
   if (!passwordStrength.value) return ''
-  const score = passwordStrength.value.score
-  if (score === 0) return 'weak'
-  if (score === 1) return 'fair'
-  if (score === 2) return 'good'
-  if (score === 3) return 'strong'
+  // 优先使用 score 字段（0-100），如果只有 strength 字段（0-4）则使用它
+  const score = passwordStrength.value.score || passwordStrength.value.strength || 0
+  // 如果是0-4的分数，转换为百分比
+  const normalizedScore = score <= 4 ? score * 25 : score
+  
+  if (normalizedScore <= 20) return 'weak'
+  if (normalizedScore <= 40) return 'fair'
+  if (normalizedScore <= 60) return 'good'
+  if (normalizedScore <= 80) return 'strong'
   return 'very-strong'
 })
 
 const strengthLabel = computed(() => {
   if (!passwordStrength.value) return ''
-  const score = passwordStrength.value.score
-  const labels = ['很弱', '弱', '中等', '强', '很强']
-  return labels[score] || '未知'
+  // 优先使用 score 字段（0-100），如果只有 strength 字段（0-4）则使用它
+  const score = passwordStrength.value.score || passwordStrength.value.strength || 0
+  // 如果是0-4的分数，转换为百分比
+  const normalizedScore = score <= 4 ? score * 25 : score
+  
+  if (normalizedScore <= 20) return '很弱'
+  if (normalizedScore <= 40) return '弱'
+  if (normalizedScore <= 60) return '中等'
+  if (normalizedScore <= 80) return '强'
+  return '很强'
 })
 </script>
 

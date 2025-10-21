@@ -4,6 +4,7 @@
  */
 
 import { EventEmitter } from 'node:events'
+import { promises as fs } from 'node:fs'
 import { basename, extname, resolve } from 'node:path'
 import { CssGenerator } from './css-generator'
 import { IconFontGenerator } from './iconfont-generator'

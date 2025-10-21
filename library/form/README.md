@@ -188,6 +188,173 @@ const submitResult = await form.submit();
 console.log('提交结果:', submitResult);
 ```
 
+## 🎯 字段组件
+
+@ldesign/form 提供了丰富的 Vue 字段组件，开箱即用。
+
+### 基础输入字段
+- **InputField**: 文本/数字/密码输入，支持前后缀、清空按钮、字符计数
+- **TextareaField**: 多行文本，支持自动高度、字符计数、Markdown预览
+
+### 选择类字段
+- **SelectField**: 下拉选择，支持单选/多选、搜索、远程加载、虚拟滚动
+- **RadioField**: 单选按钮组，支持水平/垂直布局、按钮样式
+- **CheckboxField**: 复选框组，支持全选、最小/最大限制
+
+### 日期时间字段
+- **DatePickerField**: 日期选择器，支持快捷选择、禁用日期、自定义格式
+- **TimePickerField**: 时间选择器，支持时分秒选择、12/24小时制、步长控制
+
+### 高级字段
+- **CascaderField**: 级联选择器，支持多级联动、异步加载、搜索功能
+- **UploadField**: 文件上传，支持拖拽、多文件、图片预览、进度显示
+- **SwitchField**: 开关，支持加载状态、自定义文案
+- **SliderField**: 滑块，支持单值/范围、刻度标记、输入框联动
+- **RateField**: 评分，支持星星评分、半星、自定义图标
+- **ColorPickerField**: 颜色选择器，支持色板、预设颜色、透明度
+
+### 使用示例
+
+```vue
+<template>
+  <div class="form">
+    <!-- 基础输入 -->
+    <InputField
+      v-model="username"
+      placeholder="请输入用户名"
+      clearable
+      showCount
+      :maxLength="20"
+    />
+
+    <!-- 下拉选择 -->
+    <SelectField
+      v-model="category"
+      :options="categoryOptions"
+      filterable
+      placeholder="请选择分类"
+    />
+
+    <!-- 单选按钮 -->
+    <RadioField
+      v-model="gender"
+      :options="genderOptions"
+    />
+
+    <!-- 复选框组 -->
+    <CheckboxField
+      v-model="hobbies"
+      :options="hobbyOptions"
+      showCheckAll
+    />
+
+    <!-- 开关 -->
+    <SwitchField
+      v-model="enabled"
+      checkedChildren="开启"
+      uncheckedChildren="关闭"
+    />
+
+    <!-- 滑块 -->
+    <SliderField
+      v-model="volume"
+      :min="0"
+      :max="100"
+      showTooltip
+    />
+
+    <!-- 评分 -->
+    <RateField
+      v-model="rating"
+      :count="5"
+      showText
+    />
+
+    <!-- 颜色选择器 -->
+    <ColorPickerField
+      v-model="themeColor"
+      :presetColors="['#722ED1', '#1890ff', '#52c41a']"
+    />
+
+    <!-- 日期选择器 -->
+    <DatePickerField
+      v-model="birthday"
+      placeholder="请选择日期"
+    />
+
+    <!-- 时间选择器 -->
+    <TimePickerField
+      v-model="time"
+      :showSecond="false"
+    />
+
+    <!-- 级联选择器 -->
+    <CascaderField
+      v-model="region"
+      :options="regionOptions"
+      placeholder="省/市/区"
+    />
+
+    <!-- 文件上传 -->
+    <UploadField
+      v-model="files"
+      accept="image/*"
+      listType="picture"
+      :maxCount="9"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import {
+  InputField,
+  SelectField,
+  RadioField,
+  CheckboxField,
+  SwitchField,
+  SliderField,
+  RateField,
+  ColorPickerField,
+  DatePickerField,
+  TimePickerField,
+  CascaderField,
+  UploadField
+} from '@ldesign/form/vue/fields'
+
+const username = ref('')
+const category = ref('')
+const gender = ref('')
+const hobbies = ref([])
+const enabled = ref(false)
+const volume = ref(50)
+const rating = ref(0)
+const themeColor = ref('#722ED1')
+const birthday = ref('')
+const time = ref('')
+const region = ref([])
+const files = ref([])
+
+const categoryOptions = [
+  { label: '技术', value: 'tech' },
+  { label: '产品', value: 'product' }
+]
+
+const genderOptions = [
+  { label: '男', value: 'male' },
+  { label: '女', value: 'female' }
+]
+
+const hobbyOptions = [
+  { label: '阅读', value: 'reading' },
+  { label: '运动', value: 'sports' },
+  { label: '音乐', value: 'music' }
+]
+</script>
+```
+
+详细的字段类型文档请参考 [字段类型文档](./docs/field-types.md)。
+
 ## 📚 核心概念
 
 ### 表单实例 (Form Instance)
@@ -451,12 +618,38 @@ const form = useForm({
 
 ### 内置验证器
 
+#### 基础验证器
 - `required()`: 必填验证
 - `email()`: 邮箱格式验证
-- `length(options)`: 长度验证
-- `pattern(regex)`: 正则表达式验证
-- `number(options)`: 数字验证
 - `url()`: URL 格式验证
+- `phone()`: 手机号验证（中国大陆）
+- `number()`: 数字验证
+- `integer()`: 整数验证
+
+#### 长度和范围验证
+- `minLength(length)`: 最小长度验证
+- `maxLength(length)`: 最大长度验证
+- `min(value)`: 最小值验证
+- `max(value)`: 最大值验证
+- `range(min, max)`: 范围验证
+
+#### 高级验证器
+- `pattern(regex)`: 正则表达式验证
+- `idCard()`: 身份证号验证
+- `creditCard()`: 信用卡验证（Luhn算法）
+- `ip()`: IP地址验证（IPv4）
+- `postalCode()`: 邮政编码验证
+- `passwordStrength(level)`: 密码强度验证
+- `fileType(types)`: 文件类型验证
+- `fileSize(maxSize)`: 文件大小验证
+
+#### 跨字段验证
+- `confirm(field)`: 确认字段验证（如确认密码）
+- `compareWith(field, operator)`: 字段比较验证
+- `uniqueUsername(checkAPI)`: 异步唯一性验证
+
+#### 自定义验证
+- `custom(validator)`: 自定义验证器
 
 ## 🎨 样式定制
 

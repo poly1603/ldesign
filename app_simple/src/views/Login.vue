@@ -40,10 +40,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from '@ldesign/router'
-import { useI18n } from '@/i18n'
-import { auth } from '@/composables/useAuth'
+import { useI18n } from '../i18n'
+import { auth } from '../composables/useAuth'
 import { TemplateRenderer } from '@ldesign/template'
-import CustomLoginPanel from '@/components/CustomLoginPanel.vue'
+import CustomLoginPanel from '../components/CustomLoginPanel.vue'
 
 const router = useRouter()
 const route = useRoute()

@@ -3,6 +3,7 @@
  * 提供临时文件和目录的创建、管理和自动清理功能
  */
 
+import { promises as fs } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { FileSystemError } from '../types'

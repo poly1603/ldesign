@@ -4,6 +4,7 @@
  */
 
 import type { FileInfo, ScanOptions } from '../types'
+import { promises as fs } from 'node:fs'
 import { basename, dirname, extname, join } from 'node:path'
 import { glob } from 'glob'
 import { FileSystemError } from '../types'
@@ -131,7 +132,7 @@ export class FileUtils {
 
         for (const range of sizeRanges) {
           if (size >= range.min && size <= range.max) {
-            ;(groups[range.name] ?? (groups[range.name] = [])).push(file)
+            ; (groups[range.name] ?? (groups[range.name] = [])).push(file)
             grouped = true
             break
           }

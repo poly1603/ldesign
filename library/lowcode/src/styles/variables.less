@@ -1,0 +1,80 @@
+/**
+ * 样式变量 - 使用 CSS Variables 支持主题切换
+ */
+
+// CSS 变量作为主要颜色系统
+:root {
+  // 主色
+  --primary-color: #1890ff;
+  --primary-hover: #40a9ff;
+  --primary-active: #096dd9;
+
+  // 状态颜色
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --error-color: #f5222d;
+  --info-color: #1890ff;
+
+  // 文本颜色
+  --text-color: #333333;
+  --text-secondary: #666666;
+  --text-disabled: #999999;
+  --text-inverse: #ffffff;
+
+  // 背景颜色
+  --bg-color: #f5f5f5;
+  --bg-secondary: #fafafa;
+  --bg-hover: #f0f0f0;
+  --bg-active: #e8e8e8;
+
+  // 边框颜色
+  --border-color: #d9d9d9;
+  --border-hover: #40a9ff;
+
+  // 画布颜色
+  --canvas-bg: #e8e8e8;
+  --grid-color: rgba(0, 0, 0, 0.05);
+
+  // 阴影
+  --shadow-small: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.12);
+  --shadow-large: 0 8px 16px rgba(0, 0, 0, 0.16);
+}
+
+// Less 变量保持向后兼容，并引用 CSS 变量
+@primary-color: var(--primary-color);
+@success-color: var(--success-color);
+@warning-color: var(--warning-color);
+@error-color: var(--error-color);
+
+@text-color: var(--text-color);
+@text-secondary: var(--text-secondary);
+@text-disabled: var(--text-disabled);
+
+@bg-color: var(--bg-color);
+@hover-bg: var(--bg-hover);
+@border-color: var(--border-color);
+
+@canvas-bg: var(--canvas-bg);
+@grid-color: var(--grid-color);
+
+// 尺寸常量（不需要主题切换）
+@toolbar-height: 50px;
+@statusbar-height: 32px;
+@panel-width: 280px;
+@grid-size: 20px;
+
+// 字体
+@font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+// 圆角
+@border-radius: 6px;
+@border-radius-small: 4px;
+@border-radius-large: 8px;
+
+// 阴影
+@box-shadow: var(--shadow-medium);
+
+// 动画
+@transition-duration: 0.2s;
+@transition-function: cubic-bezier(0.4, 0, 0.2, 1);

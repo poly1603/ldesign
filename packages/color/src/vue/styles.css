@@ -1,0 +1,33 @@
+/**
+ * @ldesign/color - Vue 组件样式入口
+ * 
+ * 此文件集中导入所有 Vue 组件的样式
+ * 使用方式：
+ * 
+ * 1. 全量导入（推荐）：
+ *    import '@ldesign/color/vue/styles.css'
+ * 
+ * 2. 按需导入：
+ *    import '@ldesign/color/es/vue/ThemePicker.vue.css'
+ *    import '@ldesign/color/es/vue/VueThemeModeSwitcher.vue.css'
+ * 
+ * 3. 从 dist 导入（UMD）：
+ *    <link rel="stylesheet" href="node_modules/@ldesign/color/dist/index.css">
+ */
+
+/* 导入 ThemePicker 组件样式 - 注意：样式在 .vue 文件中定义 */
+/* 导入 VueThemeModeSwitcher 组件样式 - 注意：样式在 .vue 文件中定义 */
+
+/* 
+ * 注意：
+ * Vue 单文件组件 (SFC) 的 <style> 块会在编译时自动提取
+ * 无需手动导入，构建工具会自动处理
+ * 
+ * 如果需要全局样式，可以在这里添加：
+ */
+
+/* 全局样式变量（可选） */
+:root {
+  /* 可以在这里定义一些全局 CSS 变量 */
+}
+

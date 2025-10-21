@@ -40,6 +40,9 @@ export interface WorkerPoolConfig {
   idleTimeout?: number
   maxRetries?: number
   enableSharedArrayBuffer?: boolean
+  enablePreheating?: boolean // 启用预热
+  preheatTasks?: Array<WorkerTask> // 预热任务
+  enableSmartScheduling?: boolean // 启用智能调度
   onError?: (error: Error, task: WorkerTask) => void
   onSuccess?: (result: WorkerResult) => void
 }
@@ -54,6 +57,10 @@ export interface WorkerState {
   errors: number
   createdAt: number
   lastUsedAt: number
+  // 智能调度相关
+  averageTaskTime: number // 平均任务时间
+  taskTypeStats: Map<string, { count: number; totalTime: number }> // 按任务类型统计
+  load: number // 当前负载（0-1）
 }
 
 // 任务队列项
@@ -99,11 +106,19 @@ export class WorkerPool<T = unknown, R = unknown> {
       idleTimeout: config.idleTimeout || 60000,
       maxRetries: config.maxRetries || 3,
       enableSharedArrayBuffer: config.enableSharedArrayBuffer || false,
+      enablePreheating: config.enablePreheating ?? true, // 默认启用预热
+      preheatTasks: config.preheatTasks || [],
+      enableSmartScheduling: config.enableSmartScheduling ?? true, // 默认启用智能调度
       onError: config.onError || (() => { }),
       onSuccess: config.onSuccess || (() => { })
     }
 
     this.initialize()
+
+    // 预热Workers
+    if (this.config.enablePreheating) {
+      this.preheatWorkers()
+    }
   }
 
   /**
@@ -132,6 +147,42 @@ export class WorkerPool<T = unknown, R = unknown> {
   }
 
   /**
+   * 预热Workers - 提前让Workers准备好执行任务
+   */
+  private async preheatWorkers(): Promise<void> {
+    const preheatTasks = this.config.preheatTasks || []
+
+    // 如果没有预定义的预热任务，创建一个简单的预热任务
+    if (preheatTasks.length === 0) {
+      preheatTasks.push({
+        id: 'preheat-default',
+        type: 'compute',
+        data: { iterations: 1000 } as any
+      })
+    }
+
+    this.logger?.debug('Preheating workers', { tasks: preheatTasks.length })
+
+    // 并行预热所有workers
+    const preheatPromises = Array.from(this.workers.values()).map(async (workerState) => {
+      for (const task of preheatTasks) {
+        try {
+          // 发送预热任务但不等待结果
+          workerState.worker.postMessage({
+            ...task,
+            id: `preheat-${workerState.id}-${task.id}`
+          })
+        } catch (error) {
+          this.logger?.warn(`Failed to preheat worker ${workerState.id}`, error)
+        }
+      }
+    })
+
+    await Promise.allSettled(preheatPromises)
+    this.logger?.debug('Worker preheating completed')
+  }
+
+  /**
    * 创建新的 Worker
    */
   private createWorker(): WorkerState | null {
@@ -157,7 +208,10 @@ export class WorkerPool<T = unknown, R = unknown> {
       tasksCompleted: 0,
       errors: 0,
       createdAt: Date.now(),
-      lastUsedAt: Date.now()
+      lastUsedAt: Date.now(),
+      averageTaskTime: 0,
+      taskTypeStats: new Map(),
+      load: 0
     }
 
     // 设置 Worker 消息处理
@@ -253,8 +307,8 @@ export class WorkerPool<T = unknown, R = unknown> {
     const blob = new Blob([workerScript], { type: 'application/javascript' })
     const url = URL.createObjectURL(blob)
 
-    // 存储 URL 以便后续清理
-    ;(this as any).__workerBlobUrl = url
+      // 存储 URL 以便后续清理
+      ; (this as any).__workerBlobUrl = url
 
     return new Worker(url)
   }
@@ -325,8 +379,8 @@ export class WorkerPool<T = unknown, R = unknown> {
    * 尝试执行任务
    */
   private tryExecuteTask(queuedTask: QueuedTask<T, R>): boolean {
-    // 查找空闲的 worker
-    let worker = this.findIdleWorker()
+    // 查找空闲的 worker（传入任务以支持智能调度）
+    let worker = this.findIdleWorker(queuedTask.task)
 
     // 如果没有空闲 worker，尝试创建新的
     if (!worker && this.workers.size < this.config.maxWorkers) {
@@ -429,6 +483,23 @@ export class WorkerPool<T = unknown, R = unknown> {
       data: message.data as R | undefined,
       error: message.error,
       duration
+    }
+
+    // 更新worker统计信息（用于智能调度）
+    if (message.success && this.config.enableSmartScheduling) {
+      // 更新平均任务时间
+      const totalTime = worker.averageTaskTime * (worker.tasksCompleted - 1) + duration
+      worker.averageTaskTime = totalTime / worker.tasksCompleted
+
+      // 更新任务类型统计
+      const taskType = task.task.type
+      const typeStats = worker.taskTypeStats.get(taskType) || { count: 0, totalTime: 0 }
+      typeStats.count++
+      typeStats.totalTime += duration
+      worker.taskTypeStats.set(taskType, typeStats)
+
+      // 更新负载（简单实现：基于任务完成速度）
+      worker.load = Math.min(duration / 1000 / 10, 1) // 归一化到0-1
     }
 
     if (message.success) {
@@ -541,15 +612,69 @@ export class WorkerPool<T = unknown, R = unknown> {
   }
 
   /**
-   * 查找空闲的 Worker
+   * 查找空闲的 Worker（智能调度版本）
+   * 根据任务类型和worker性能选择最合适的worker
    */
-  private findIdleWorker(): WorkerState | undefined {
-    for (const worker of this.workers.values()) {
-      if (!worker.busy) {
-        return worker
-      }
+  private findIdleWorker(task?: WorkerTask): WorkerState | undefined {
+    const idleWorkers = Array.from(this.workers.values()).filter(w => !w.busy)
+
+    if (idleWorkers.length === 0) {
+      return undefined
     }
-    return undefined
+
+    // 如果未启用智能调度或没有任务信息，返回第一个空闲worker
+    if (!this.config.enableSmartScheduling || !task) {
+      return idleWorkers[0]
+    }
+
+    // 智能调度：根据任务类型和worker历史性能选择最佳worker
+    const taskType = task.type
+
+    // 为每个空闲worker计算得分
+    const scoredWorkers = idleWorkers.map(worker => {
+      let score = 0
+
+      // 1. 任务类型匹配度（如果worker之前执行过此类型任务）
+      const taskStats = worker.taskTypeStats.get(taskType)
+      if (taskStats && taskStats.count > 0) {
+        // 执行过该类型任务的worker优先级更高
+        const avgTime = taskStats.totalTime / taskStats.count
+        // 平均时间越短，得分越高
+        score += 100 - Math.min(avgTime / 10, 100)
+      } else {
+        // 没有执行过的worker得分较低
+        score += 30
+      }
+
+      // 2. 整体性能（平均任务时间）
+      if (worker.tasksCompleted > 0 && worker.averageTaskTime > 0) {
+        score += 100 - Math.min(worker.averageTaskTime / 10, 100)
+      } else {
+        score += 50 // 新worker给中等得分
+      }
+
+      // 3. 负载均衡（倾向选择负载较轻的worker）
+      score += (1 - worker.load) * 50
+
+      // 4. 错误率（错误少的worker得分高）
+      if (worker.tasksCompleted > 0) {
+        const errorRate = worker.errors / worker.tasksCompleted
+        score -= errorRate * 100
+      }
+
+      return { worker, score }
+    })
+
+    // 选择得分最高的worker
+    scoredWorkers.sort((a, b) => b.score - a.score)
+    const selected = scoredWorkers[0].worker
+
+    this.logger?.debug(`Smart scheduling selected worker ${selected.id}`, {
+      taskType,
+      score: scoredWorkers[0].score.toFixed(2)
+    })
+
+    return selected
   }
 
   /**

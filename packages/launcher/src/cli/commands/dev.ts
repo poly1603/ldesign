@@ -176,9 +176,9 @@ export class DevCommand implements CliCommandDefinition {
 
       // 立即输出环境标识，不依赖logger
       if (!context.options.silent) {
-        } - ${envLabel}`)
-        } ${context.cwd}`)
-        } ${mode}`)
+        console.log(`\n🚀 ${pc.bold('Launcher Dev Server')} - ${envLabel}`)
+        console.log(`📁 ${pc.cyan('Working Directory:')} ${context.cwd}`)
+        console.log(`⚙️  ${pc.cyan('Mode:')} ${mode}`)
         
       }
 

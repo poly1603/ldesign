@@ -1,0 +1,91 @@
+/**
+ * CSS 变量定义
+ */
+
+:root {
+  /* 颜色 */
+  --ldate-primary-color: #409eff;
+  --ldate-primary-hover-color: #66b1ff;
+  --ldate-primary-active-color: #3a8ee6;
+  --ldate-success-color: #67c23a;
+  --ldate-warning-color: #e6a23c;
+  --ldate-danger-color: #f56c6c;
+  --ldate-info-color: #909399;
+  
+  /* 背景色 */
+  --ldate-bg-color: #ffffff;
+  --ldate-bg-hover-color: #f5f7fa;
+  --ldate-bg-selected-color: #f0f9ff;
+  --ldate-bg-disabled-color: #f5f7fa;
+  
+  /* 文本色 */
+  --ldate-text-color: #606266;
+  --ldate-text-primary-color: #303133;
+  --ldate-text-secondary-color: #909399;
+  --ldate-text-placeholder-color: #c0c4cc;
+  --ldate-text-disabled-color: #c0c4cc;
+  --ldate-text-inverse-color: #ffffff;
+  
+  /* 边框 */
+  --ldate-border-color: #dcdfe6;
+  --ldate-border-hover-color: #c0c4cc;
+  --ldate-border-focus-color: var(--ldate-primary-color);
+  --ldate-border-radius: 4px;
+  --ldate-border-radius-small: 2px;
+  
+  /* 尺寸 */
+  --ldate-cell-size: 36px;
+  --ldate-cell-size-small: 28px;
+  --ldate-cell-size-large: 40px;
+  --ldate-font-size: 14px;
+  --ldate-font-size-small: 12px;
+  --ldate-font-size-large: 16px;
+  --ldate-line-height: 1.5;
+  
+  /* 间距 */
+  --ldate-spacing-xs: 4px;
+  --ldate-spacing-sm: 8px;
+  --ldate-spacing-md: 12px;
+  --ldate-spacing-lg: 16px;
+  --ldate-spacing-xl: 20px;
+  
+  /* 阴影 */
+  --ldate-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  --ldate-shadow-light: 0 0 6px 0 rgba(0, 0, 0, 0.04);
+  
+  /* 过渡 */
+  --ldate-transition-duration: 0.3s;
+  --ldate-transition-function: cubic-bezier(0.645, 0.045, 0.355, 1);
+  
+  /* 层级 */
+  --ldate-z-index-popper: 2000;
+}
+
+/* 暗色主题 */
+[data-theme="dark"] {
+  --ldate-primary-color: #409eff;
+  --ldate-primary-hover-color: #66b1ff;
+  --ldate-primary-active-color: #3a8ee6;
+  
+  --ldate-bg-color: #1a1a1a;
+  --ldate-bg-hover-color: #2a2a2a;
+  --ldate-bg-selected-color: #1e3a5f;
+  --ldate-bg-disabled-color: #2a2a2a;
+  
+  --ldate-text-color: #e0e0e0;
+  --ldate-text-primary-color: #f0f0f0;
+  --ldate-text-secondary-color: #a0a0a0;
+  --ldate-text-placeholder-color: #606060;
+  --ldate-text-disabled-color: #606060;
+  
+  --ldate-border-color: #3a3a3a;
+  --ldate-border-hover-color: #4a4a4a;
+  
+  --ldate-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.5);
+  --ldate-shadow-light: 0 0 6px 0 rgba(0, 0, 0, 0.3);
+}
+
+
+
+
+

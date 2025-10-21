@@ -84,7 +84,12 @@ export class TypeScriptStrategy implements ILibraryStrategy {
         target: 'ES2020',
         module: 'ESNext',
         strict: true,
-        skipLibCheck: true
+        skipLibCheck: true,
+        // 也支持 compilerOptions 格式
+        compilerOptions: {
+          declaration: true,
+          declarationMap: true
+        }
       },
       performance: {
         treeshaking: true,
@@ -327,14 +332,17 @@ export class TypeScriptStrategy implements ILibraryStrategy {
     const plugins: any[] = []
 
     // TypeScript 插件 - 始终添加，由 getTypeScriptOptions 决定声明相关行为
+    const tsOptions = this.getTypeScriptOptions(config)
+    console.log('[TypeScriptStrategy] TypeScript 插件选项:', JSON.stringify(tsOptions, null, 2))
+    
     plugins.push({
       name: 'typescript',
       plugin: async () => {
         const typescript = await import('@rollup/plugin-typescript')
-        return typescript.default({
-          ...this.getTypeScriptOptions(config)
-        })
-      }
+        return typescript.default(tsOptions)
+      },
+      // 将选项附加到插件对象以便 RollupAdapter 读取
+      options: tsOptions
     })
 
     // Node 解析插件（优先浏览器分支）
@@ -428,11 +436,12 @@ export class TypeScriptStrategy implements ILibraryStrategy {
    */
   private getTypeScriptOptions(config: BuilderConfig): any {
     const tsConfig = config.typescript || {}
+    const compilerOptions = tsConfig.compilerOptions || {}
     const options: any = {
-      target: tsConfig.target || 'ES2020',
-      module: tsConfig.module || 'ESNext',
-      strict: tsConfig.strict !== false,
-      skipLibCheck: tsConfig.skipLibCheck !== false,
+      target: tsConfig.target || compilerOptions.target || 'ES2020',
+      module: tsConfig.module || compilerOptions.module || 'ESNext',
+      strict: tsConfig.strict !== false && compilerOptions.strict !== false,
+      skipLibCheck: tsConfig.skipLibCheck !== false && compilerOptions.skipLibCheck !== false,
       esModuleInterop: true,
       allowSyntheticDefaultImports: true,
       moduleResolution: 'node',
@@ -444,16 +453,28 @@ export class TypeScriptStrategy implements ILibraryStrategy {
       exclude: ['**/*.test.ts', '**/*.spec.ts', 'node_modules/**']
     }
 
-    // 只有在明确启用声明文件时才添加相关选项（顶层 dts 也可开启）
-    if (tsConfig.declaration === true || (config as any).dts === true) {
+    // 检查多个位置的 declaration 配置
+    // 1. typescript.declaration
+    // 2. typescript.compilerOptions.declaration
+    // 3. 顶层 dts 配置
+    const declarationEnabled = tsConfig.declaration === true || 
+                              compilerOptions.declaration === true ||
+                              (config as any).dts === true
+    
+    if (declarationEnabled) {
       options.declaration = true
       // declarationDir 将由 RollupAdapter 动态设置，这里不设置固定值
-      if (tsConfig.declarationDir) {
-        options.declarationDir = tsConfig.declarationDir
+      if (tsConfig.declarationDir || compilerOptions.declarationDir) {
+        options.declarationDir = tsConfig.declarationDir || compilerOptions.declarationDir
       }
-      if (tsConfig.declarationMap === true) {
+      if (tsConfig.declarationMap === true || compilerOptions.declarationMap === true) {
         options.declarationMap = true
       }
+    }
+
+    // 合并其他 compilerOptions
+    if (compilerOptions.removeComments !== undefined) {
+      options.removeComments = compilerOptions.removeComments
     }
 
     return options

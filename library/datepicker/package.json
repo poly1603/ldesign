@@ -1,0 +1,49 @@
+{
+  "name": "@ldesign/datepicker-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A powerful, framework-agnostic date-time picker component library",
+  "keywords": ["datepicker", "date", "time", "picker", "vue", "react", "lit", "web-components"],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "scripts": {
+    "dev": "pnpm --filter @ldesign/datepicker-playground dev",
+    "build": "pnpm -r --filter ./packages/** build",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "typecheck": "pnpm -r typecheck",
+    "docs:dev": "pnpm --filter @ldesign/datepicker-docs dev",
+    "docs:build": "pnpm --filter @ldesign/datepicker-docs build",
+    "example:vanilla": "pnpm --filter datepicker-vanilla-example dev",
+    "example:vue": "pnpm --filter datepicker-vue-example dev",
+    "example:react": "pnpm --filter datepicker-react-example dev",
+    "examples": "concurrently \"pnpm example:vanilla\" \"pnpm example:vue\" \"pnpm example:react\""
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.1",
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "@vitest/ui": "^1.0.4",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
+    "vitest": "^1.0.4"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}
+
+

@@ -52,6 +52,29 @@ export class MapRenderer {
   private markerRenderer: MarkerRenderer;
   private animationFrameId: number | null = null;
   private rippleMarkers: Map<string, RippleMarker> = new Map();
+  
+  // 新增功能属性
+  private miniMap: HTMLElement | null = null;
+  private compass: HTMLElement | null = null;
+  private scaleBar: HTMLElement | null = null;
+  private coordinateDisplay: HTMLElement | null = null;
+  private performanceOverlay: HTMLElement | null = null;
+  private drawingMode: 'none' | 'polygon' | 'circle' | 'rectangle' = 'none';
+  private currentDrawing: any[] = [];
+  private drawings: Map<string, any> = new Map();
+  private hoverTimeout: number | null = null;
+  private lastInteractionTime: number = Date.now();
+  private idleCallback?: () => void;
+  
+  // 配置选项
+  private enableMiniMap: boolean = false;
+  private enableCompass: boolean = false;
+  private enableScaleBar: boolean = false;
+  private enableCoordinates: boolean = false;
+  private enablePerformanceOverlay: boolean = false;
+  private enableDrawing: boolean = false;
+  private enableIdleDetection: boolean = false;
+  private idleTimeout: number = 30000; // 30秒
 
   constructor(container: HTMLElement | string, options: MapRendererOptions = {}) {
     this.container = typeof container === 'string' 

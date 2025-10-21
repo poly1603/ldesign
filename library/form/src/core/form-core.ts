@@ -1,259 +1,318 @@
 /**
+ * @ldesign/form - Form Core Engine
  * 表单核心引擎
- * 
- * 提供框架无关的表单管理功能，包括：
- * - 数据管理
- * - 状态管理
- * - 事件系统
- * - 字段管理
- * - 验证协调
- * 
- * @author LDesign Team
- * @since 2.0.0
  */
 
-import { EventEmitter } from '../utils/event-emitter'
-import { FieldManager } from './field-manager'
-import { ValidationEngine } from './validation-engine'
-import { DataManager } from './data-manager'
-import { StateManager } from './state-manager'
 import type {
   FormConfig,
+  FormOptions,
+  FormValues,
   FormState,
-  FormInstance,
-  FieldConfig,
-  ValidationResult,
-  FormEventCallbacks
-} from '../types'
+  FieldState,
+  FormValidationResult
+} from '../utils/types'
+import { EventEmitter } from './event-emitter'
+import { DataManager, type DataChangeEvent } from './data-manager'
+import { StateManager, type StateChangeEvent } from './state-manager'
+import { ValidationEngine } from './validation'
+import { LayoutEngine, type LayoutEngineConfig } from './layout'
+import { FieldManager } from './field-manager'
+import { deepMerge, deepClone } from '../utils/helpers'
+import { DEFAULT_FORM_CONFIG } from '../utils/constants'
+
+/**
+ * 表单事件映射
+ */
+export interface FormEventMap {
+  /** 数据变更事件 */
+  'data:change': DataChangeEvent
+  /** 状态变更事件 */
+  'state:change': StateChangeEvent
+  /** 字段值变更事件 */
+  'field:change': { field: string; value: any; values: FormValues }
+  /** 字段触摸事件 */
+  'field:blur': { field: string }
+  /** 字段聚焦事件 */
+  'field:focus': { field: string }
+  /** 验证开始事件 */
+  'validate:start': { fields?: string[] }
+  /** 验证完成事件 */
+  'validate:end': FormValidationResult
+  /** 提交开始事件 */
+  'submit:start': FormValues
+  /** 提交成功事件 */
+  'submit:success': FormValues
+  /** 提交失败事件 */
+  'submit:error': { error: Error; values: FormValues }
+  /** 重置事件 */
+  'reset': FormValues
+  /** 展开收起事件 */
+  'expand:change': { expanded: boolean }
+}
 
 /**
  * 表单核心引擎类
- * 
- * 这是整个表单系统的核心，负责协调各个子系统的工作
- * 完全独立于UI框架，可以在任何JavaScript环境中使用
- * 
- * @template T 表单数据类型
  */
-export class FormCore<T = Record<string, any>> extends EventEmitter implements FormInstance<T> {
-  /** 表单唯一标识 */
-  public readonly id: string
+export class FormCore {
+  private options: Required<Omit<FormOptions, 'onSubmit' | 'onReset' | 'onChange' | 'onValidateFailed' | 'onExpandChange'>> & {
+    onSubmit?: (values: FormValues) => void | Promise<void>
+    onReset?: () => void
+    onChange?: (field: string, value: any, values: FormValues) => void
+    onValidateFailed?: (errors: Record<string, string[]>) => void
+    onExpandChange?: (expanded: boolean) => void
+  }
 
-  /** 表单配置 */
-  public readonly config: FormConfig<T>
+  private events: EventEmitter<FormEventMap>
+  private dataManager: DataManager
+  private stateManager: StateManager
+  private validationEngine: ValidationEngine
+  private layoutEngine: LayoutEngine
+  private fieldManager: FieldManager
+  private expanded: boolean
 
-  /** 字段管理器 */
-  public readonly fieldManager: FieldManager
+  constructor(options: FormOptions = {}) {
+    // 合并默认配置
+    this.options = deepMerge({ ...DEFAULT_FORM_CONFIG }, options as any) as any
 
-  /** 验证引擎 */
-  public readonly validationEngine: ValidationEngine
-
-  /** 数据管理器 */
-  public readonly dataManager: DataManager<T>
-
-  /** 状态管理器 */
-  public readonly stateManager: StateManager<T>
-
-  /** 事件回调 */
-  private eventCallbacks: FormEventCallbacks<T>
-
-  /** 是否已销毁 */
-  private destroyed = false
-
-  /**
-   * 构造函数
-   * 
-   * @param config 表单配置
-   * @param callbacks 事件回调
-   */
-  constructor(config: FormConfig<T>, callbacks: FormEventCallbacks<T> = {}) {
-    super()
-
-    this.id = config.id || this.generateId()
-    this.config = { ...config }
-    this.eventCallbacks = callbacks
-
-    // 初始化子系统
-    this.dataManager = new DataManager(config.initialValues || {} as T)
+    // 初始化各个子系统
+    this.events = new EventEmitter<FormEventMap>()
+    this.dataManager = new DataManager({
+      initialValues: this.options.initialValues,
+      enableSnapshot: true
+    })
     this.stateManager = new StateManager()
-    this.validationEngine = new ValidationEngine(config.validationConfig)
-    this.fieldManager = new FieldManager(this.validationEngine)
+    this.validationEngine = new ValidationEngine({
+      enableCache: true
+    })
+    this.layoutEngine = new LayoutEngine({
+      ...this.options.layout,
+      fields: this.options.fields
+    } as LayoutEngineConfig)
+    this.fieldManager = new FieldManager()
+    this.expanded = !this.options.expand?.defaultExpanded
+
+    // 初始化字段
+    if (this.options.fields) {
+      this.initializeFields()
+    }
 
     // 设置事件监听
     this.setupEventListeners()
-
-    // 初始化字段
-    if (config.fields) {
-      this.initializeFields(config.fields)
-    }
-
-    this.emit('form:created', { id: this.id, config })
   }
 
   /**
-   * 生成唯一ID
+   * 初始化字段
    */
-  private generateId(): string {
-    return `form_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  private initializeFields(): void {
+    this.options.fields?.forEach(field => {
+      // 注册字段
+      this.fieldManager.registerField(field)
+
+      // 注册字段状态
+      const initialValue = field.defaultValue ?? this.dataManager.getValue(field.name)
+      this.stateManager.registerField(field.name, initialValue)
+
+      // 注册验证规则
+      if (field.rules && field.rules.length > 0) {
+        this.validationEngine.addRules(field.name, field.rules)
+      }
+    })
   }
 
   /**
    * 设置事件监听
    */
   private setupEventListeners(): void {
-    // 监听数据变化
-    this.dataManager.on('data:change', (data) => {
-      this.stateManager.updateState({ values: data })
-      this.emit('values:change', data)
-      this.eventCallbacks.onValuesChange?.(data, data)
-    })
+    // 监听数据变更
+    this.dataManager.subscribe(event => {
+      this.events.emitSync('data:change', event)
 
-    // 监听字段变化
-    this.dataManager.on('field:change', ({ name, value, oldValue }) => {
-      this.emit('field:change', { name, value, oldValue })
-      this.eventCallbacks.onFieldChange?.(name, value, this.dataManager.getData())
+      // 触发字段变更事件
+      if (event.path) {
+        this.events.emitSync('field:change', {
+          field: event.path,
+          value: event.value,
+          values: event.values
+        })
 
-      // 如果启用了变化时验证，则触发验证
-      if (this.config.validateOnChange !== false) {
-        this.validateField(name)
+        // 更新字段状态
+        this.stateManager.setFieldValue(event.path, event.value)
+
+        // 如果启用了值变化时验证
+        if (this.options.validateOnChange) {
+          this.validateField(event.path, 'change')
+        }
+
+        // 调用 onChange 回调
+        if (this.options.onChange) {
+          this.options.onChange(event.path, event.value, event.values)
+        }
       }
     })
 
-    // 监听验证结果
-    this.validationEngine.on('validation:complete', (result) => {
-      this.handleValidationResult(result)
+    // 监听状态变更
+    this.stateManager.subscribe(event => {
+      this.events.emitSync('state:change', event)
     })
-
-    // 监听状态变化
-    this.stateManager.on('state:change', (state) => {
-      this.emit('state:change', state)
-    })
-  }
-
-  /**
-   * 初始化字段
-   */
-  private initializeFields(fields: FieldConfig[]): void {
-    fields.forEach(fieldConfig => {
-      this.fieldManager.registerField(fieldConfig)
-
-      // 设置初始值
-      if (fieldConfig.defaultValue !== undefined) {
-        this.dataManager.setFieldValue(fieldConfig.name, fieldConfig.defaultValue)
-      }
-    })
-  }
-
-  /**
-   * 处理验证结果
-   */
-  private handleValidationResult(result: ValidationResult): void {
-    if (result.field) {
-      // 单字段验证结果
-      this.stateManager.setFieldError(result.field, result.errors)
-      this.fieldManager.updateFieldState(result.field, {
-        validating: false,
-        valid: result.valid,
-        errors: result.errors
-      })
-    } else {
-      // 表单整体验证结果
-      this.stateManager.updateState({
-        validating: false,
-        valid: result.valid,
-        errors: result.fieldErrors || {}
-      })
-    }
-  }
-
-  // === 公共API方法 ===
-
-  /**
-   * 获取表单状态
-   */
-  getState(): FormState<T> {
-    return this.stateManager.getState()
-  }
-
-  /**
-   * 获取表单数据
-   */
-  getData(): T {
-    return this.dataManager.getData()
-  }
-
-  /**
-   * 设置表单数据
-   */
-  setData(data: Partial<T>): void {
-    this.checkDestroyed()
-    this.dataManager.setData(data)
   }
 
   /**
    * 获取字段值
+   * @param field 字段名
    */
-  getFieldValue(name: string): any {
-    return this.dataManager.getFieldValue(name)
+  getFieldValue<T = any>(field: string): T {
+    return this.dataManager.getValue(field)
   }
 
   /**
    * 设置字段值
+   * @param field 字段名
+   * @param value 字段值
    */
-  setFieldValue(name: string, value: any): void {
-    this.checkDestroyed()
-    this.dataManager.setFieldValue(name, value)
+  setFieldValue(field: string, value: any): void {
+    this.dataManager.setValue(field, value)
   }
 
   /**
-   * 验证整个表单
+   * 批量设置字段值
+   * @param values 字段值对象
    */
-  async validate(): Promise<ValidationResult> {
-    this.checkDestroyed()
-    this.stateManager.updateState({ validating: true })
+  setFieldsValue(values: FormValues): void {
+    this.dataManager.setValues(values)
+  }
 
-    try {
-      const result = await this.validationEngine.validateForm(
-        this.dataManager.getData(),
-        this.fieldManager.getAllValidationRules()
-      )
+  /**
+   * 获取所有字段值
+   */
+  getFieldsValue(): FormValues {
+    return this.dataManager.getValues()
+  }
 
-      this.handleValidationResult(result)
-      return result
-    } catch (error) {
-      this.stateManager.updateState({ validating: false })
-      throw error
-    }
+  /**
+   * 获取字段状态
+   * @param field 字段名
+   */
+  getFieldState(field: string): FieldState | undefined {
+    return this.stateManager.getFieldState(field)
+  }
+
+  /**
+   * 获取表单状态
+   */
+  getFormState(): FormState {
+    return this.stateManager.getFormState()
   }
 
   /**
    * 验证单个字段
+   * @param field 字段名
+   * @param trigger 触发方式
    */
-  async validateField(name: string): Promise<ValidationResult> {
-    this.checkDestroyed()
+  async validateField(field: string, trigger?: 'change' | 'blur' | 'submit'): Promise<boolean> {
+    const value = this.dataManager.getValue(field)
+    const values = this.dataManager.getValues()
 
-    const field = this.fieldManager.getField(name)
-    if (!field) {
-      throw new Error(`Field "${name}" not found`)
+    this.stateManager.setFieldValidating(field, true)
+
+    const result = await this.validationEngine.validateField(
+      field,
+      value,
+      values,
+      trigger
+    )
+
+    this.stateManager.setFieldValidationResult(
+      field,
+      result.valid,
+      result.errors
+    )
+
+    return result.valid
+  }
+
+  /**
+   * 验证所有字段
+   */
+  async validate(): Promise<FormValidationResult> {
+    const values = this.dataManager.getValues()
+
+    this.stateManager.updateFormState({ validating: true })
+    this.events.emitSync('validate:start', {})
+
+    const result = await this.validationEngine.validateAll(values, 'submit')
+
+    // 更新各字段验证状态
+    Object.keys(result.fields).forEach(field => {
+      const fieldResult = result.fields[field]
+      this.stateManager.setFieldValidationResult(
+        field,
+        fieldResult.valid,
+        fieldResult.errors
+      )
+    })
+
+    this.stateManager.updateFormState({ validating: false })
+    this.events.emitSync('validate:end', result)
+
+    if (!result.valid && this.options.onValidateFailed) {
+      this.options.onValidateFailed(result.errors)
     }
 
-    this.fieldManager.updateFieldState(name, { validating: true })
+    return result
+  }
+
+  /**
+   * 字段触摸（失焦）
+   * @param field 字段名
+   */
+  async handleFieldBlur(field: string): Promise<void> {
+    this.stateManager.setFieldTouched(field, true)
+    this.events.emitSync('field:blur', { field })
+
+    if (this.options.validateOnBlur) {
+      await this.validateField(field, 'blur')
+    }
+  }
+
+  /**
+   * 字段聚焦
+   * @param field 字段名
+   */
+  handleFieldFocus(field: string): void {
+    this.events.emitSync('field:focus', { field })
+  }
+
+  /**
+   * 提交表单
+   */
+  async submit(): Promise<void> {
+    const values = this.dataManager.getValues()
+
+    // 验证表单
+    if (this.options.validateOnSubmit) {
+      const result = await this.validate()
+      if (!result.valid) {
+        return
+      }
+    }
+
+    this.stateManager.updateFormState({ submitting: true })
+    this.events.emitSync('submit:start', values)
 
     try {
-      const value = this.dataManager.getFieldValue(name)
-      const rules = this.fieldManager.getFieldValidationRules(name)
+      if (this.options.onSubmit) {
+        await this.options.onSubmit(values)
+      }
 
-      const result = await this.validationEngine.validateField(
-        name,
-        value,
-        rules,
-        this.dataManager.getData()
-      )
-
-      this.handleValidationResult(result)
-      return result
+      this.events.emitSync('submit:success', values)
     } catch (error) {
-      this.fieldManager.updateFieldState(name, { validating: false })
+      this.events.emitSync('submit:error', {
+        error: error as Error,
+        values
+      })
       throw error
+    } finally {
+      this.stateManager.updateFormState({ submitting: false })
     }
   }
 
@@ -261,248 +320,117 @@ export class FormCore<T = Record<string, any>> extends EventEmitter implements F
    * 重置表单
    */
   reset(): void {
-    this.checkDestroyed()
-
-    // 重置数据
     this.dataManager.reset()
+    this.stateManager.resetAllFieldStates()
+    this.validationEngine.clearCache()
 
-    // 重置状态
-    this.stateManager.reset()
+    const values = this.dataManager.getValues()
+    this.events.emitSync('reset', values)
 
-    // 重置字段
-    this.fieldManager.resetAllFields()
-
-    this.emit('form:reset', { id: this.id })
-    this.eventCallbacks.onReset?.(this.dataManager.getData())
-  }
-
-  /**
-   * 重置单个字段
-   *
-   * @param fieldName 字段名称
-   */
-  resetField(fieldName: string): void {
-    this.checkDestroyed()
-
-    // 重置字段数据
-    const initialValue = this.config.initialValues?.[fieldName as keyof typeof this.config.initialValues]
-    this.dataManager.setFieldValue(fieldName, initialValue)
-
-    // 重置字段状态
-    this.stateManager.setFieldState(fieldName, {
-      value: initialValue,
-      error: null,
-      touched: false,
-      dirty: false,
-      validating: false
-    })
-
-    // 重置字段管理器中的字段
-    this.fieldManager.resetField(fieldName)
-
-    this.emit('field:reset', { fieldName, value: initialValue })
-  }
-
-  /**
-   * 清除表单验证错误
-   */
-  clearErrors(): void {
-    this.checkDestroyed()
-
-    // 清除状态中的错误
-    this.stateManager.updateState({
-      errors: {},
-      valid: true
-    })
-
-    // 清除所有字段错误
-    const fieldNames = this.fieldManager.getFieldNames()
-    fieldNames.forEach(fieldName => {
-      this.stateManager.setFieldState(fieldName, {
-        error: null
-      })
-    })
-
-    this.emit('form:errors:cleared')
-  }
-
-  /**
-   * 清除单个字段的验证错误
-   *
-   * @param fieldName 字段名称
-   */
-  clearFieldError(fieldName: string): void {
-    this.checkDestroyed()
-
-    this.stateManager.setFieldState(fieldName, {
-      error: null
-    })
-
-    // 更新表单整体状态
-    const formState = this.stateManager.getState()
-    const hasErrors = Object.values(formState.errors).some(error => error && error.length > 0)
-
-    if (!hasErrors) {
-      this.stateManager.updateState({ valid: true })
+    if (this.options.onReset) {
+      this.options.onReset()
     }
-
-    this.emit('field:error:cleared', { fieldName })
   }
 
   /**
-   * 批量验证多个字段
-   *
-   * @param fieldNames 字段名称数组，如果不提供则验证所有字段
-   * @returns 验证结果
+   * 切换展开/收起状态
    */
-  async validateFields(fieldNames?: string[]): Promise<ValidationResult> {
-    this.checkDestroyed()
+  toggleExpand(): void {
+    this.expanded = !this.expanded
+    this.events.emitSync('expand:change', { expanded: this.expanded })
 
-    const fieldsToValidate = fieldNames || this.fieldManager.getFieldNames()
-    const validationPromises = fieldsToValidate.map(fieldName =>
-      this.validateField(fieldName)
-    )
-
-    const results = await Promise.all(validationPromises)
-
-    // 合并验证结果
-    const combinedResult: ValidationResult = {
-      valid: results.every(result => result.valid),
-      errors: results.flatMap(result => result.errors),
-      fieldErrors: {}
+    if (this.options.onExpandChange) {
+      this.options.onExpandChange(this.expanded)
     }
-
-    // 合并字段错误
-    results.forEach(result => {
-      if (result.fieldErrors) {
-        Object.assign(combinedResult.fieldErrors, result.fieldErrors)
-      }
-    })
-
-    this.emit('form:fields:validated', {
-      fieldNames: fieldsToValidate,
-      result: combinedResult
-    })
-
-    return combinedResult
   }
 
   /**
-   * 检查表单是否有效
-   *
-   * @returns 是否有效
+   * 获取展开状态
    */
-  isValid(): boolean {
-    this.checkDestroyed()
-    return this.stateManager.isValid()
+  isExpanded(): boolean {
+    return this.expanded
   }
 
   /**
-   * 检查表单是否已修改
-   *
-   * @returns 是否已修改
+   * 设置展开状态
+   * @param expanded 是否展开
    */
-  isDirty(): boolean {
-    this.checkDestroyed()
-    return this.stateManager.isDirty()
-  }
-
-  /**
-   * 检查表单是否已触摸
-   *
-   * @returns 是否已触摸
-   */
-  isTouched(): boolean {
-    this.checkDestroyed()
-    return this.stateManager.isTouched()
-  }
-
-  /**
-   * 标记字段为已触摸
-   *
-   * @param fieldName 字段名称
-   */
-  touchField(fieldName: string): void {
-    this.checkDestroyed()
-
-    this.stateManager.setFieldState(fieldName, {
-      touched: true
-    })
-
-    this.emit('field:touched', { fieldName })
-  }
-
-  /**
-   * 标记字段为已修改
-   *
-   * @param fieldName 字段名称
-   */
-  markFieldDirty(fieldName: string): void {
-    this.checkDestroyed()
-
-    this.stateManager.setFieldState(fieldName, {
-      dirty: true
-    })
-
-    this.emit('field:dirty', { fieldName })
-  }
-
-  /**
-   * 提交表单
-   */
-  async submit(): Promise<void> {
-    this.checkDestroyed()
-
-    this.stateManager.updateState({ submitting: true })
-
-    try {
-      // 先验证表单
-      const validationResult = await this.validate()
-
-      if (!validationResult.valid) {
-        this.eventCallbacks.onSubmitFailed?.(
-          validationResult.errors || {},
-          this.dataManager.getData()
-        )
-        return
-      }
-
-      // 执行提交回调
-      await this.eventCallbacks.onSubmit?.(this.dataManager.getData())
-
-      this.emit('form:submit', this.dataManager.getData())
-    } catch (error) {
-      this.emit('form:submit:error', error)
-      throw error
-    } finally {
-      this.stateManager.updateState({ submitting: false })
+  setExpanded(expanded: boolean): void {
+    if (this.expanded !== expanded) {
+      this.toggleExpand()
     }
+  }
+
+  /**
+   * 监听事件
+   * @param event 事件名
+   * @param listener 监听器
+   */
+  on<K extends keyof FormEventMap>(
+    event: K,
+    listener: (data: FormEventMap[K]) => void
+  ): () => void {
+    return this.events.on(event, listener)
+  }
+
+  /**
+   * 监听一次性事件
+   * @param event 事件名
+   * @param listener 监听器
+   */
+  once<K extends keyof FormEventMap>(
+    event: K,
+    listener: (data: FormEventMap[K]) => void
+  ): () => void {
+    return this.events.once(event, listener)
+  }
+
+  /**
+   * 移除事件监听
+   * @param event 事件名
+   * @param listener 监听器
+   */
+  off<K extends keyof FormEventMap>(
+    event: K,
+    listener?: (data: FormEventMap[K]) => void
+  ): void {
+    this.events.off(event, listener as any)
+  }
+
+  /**
+   * 获取布局引擎
+   */
+  getLayoutEngine(): LayoutEngine {
+    return this.layoutEngine
+  }
+
+  /**
+   * 获取字段管理器
+   */
+  getFieldManager(): FieldManager {
+    return this.fieldManager
   }
 
   /**
    * 销毁表单实例
    */
   destroy(): void {
-    if (this.destroyed) return
-
-    this.destroyed = true
-
-    // 清理子系统
-    this.fieldManager.destroy()
-    this.validationEngine.destroy()
+    this.events.destroy()
     this.dataManager.destroy()
     this.stateManager.destroy()
-
-    // 直接清理监听器映射，避免调用checkDestroyed
-    this.listeners.clear()
-  }
-
-  /**
-   * 检查是否已销毁
-   */
-  private checkDestroyed(): void {
-    if (this.destroyed) {
-      throw new Error('Form instance has been destroyed')
-    }
+    this.validationEngine.destroy()
+    this.layoutEngine.destroy()
+    this.fieldManager.destroy()
   }
 }
+
+/**
+ * 创建表单实例
+ */
+export function createForm(options?: FormOptions): FormCore {
+  return new FormCore(options)
+}
+
+
+
+

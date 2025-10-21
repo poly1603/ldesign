@@ -4,6 +4,7 @@
  */
 
 import { EventEmitter } from 'node:events'
+import { promises as fs } from 'node:fs'
 import { dirname, extname, isAbsolute, resolve } from 'node:path'
 import * as JSON5 from 'json5'
 import { FileSystem } from '../filesystem'

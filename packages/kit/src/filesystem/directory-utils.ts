@@ -3,6 +3,7 @@
  * 提供目录操作和管理功能
  */
 
+import { promises as fs } from 'node:fs'
 import { basename, join } from 'node:path'
 import { FileSystemError } from '../types'
 import { PathUtils } from '../utils'

@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map Renderer v2.3 - 完整功能演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 40px 20px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .header h1 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 36px;
+      font-weight: 700;
+    }
+
+    .version-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .feature-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .feature-card.active {
+      border: 2px solid #667eea;
+      background: linear-gradient(135deg, #f3f4ff 0%, #faf3ff 100%);
+    }
+
+    .feature-card .icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+
+    .feature-card h3 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .feature-card p {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .feature-card .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    .badge.new {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+
+    .badge.updated {
+      background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+      color: white;
+    }
+
+    .demo-section {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      margin-bottom: 30px;
+    }
+
+    .demo-header {
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .demo-header h2 {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .demo-header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .demo-controls {
+      padding: 20px;
+      background: #f8f9fa;
+      border-bottom: 2px solid #e9ecef;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+
+    .control-group label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      white-space: nowrap;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button.secondary {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    button.success {
+      background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+
+    button.warning {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+
+    button.danger {
+      background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+    }
+
+    select, input {
+      padding: 8px 12px;
+      border: 2px solid #e9ecef;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    input[type="range"] {
+      width: 150px;
+    }
+
+    .map-container {
+      width: 100%;
+      height: 600px;
+      position: relative;
+      background: linear-gradient(135deg, #e8f4f8 0%, #f0f8ff 100%);
+    }
+
+    .info-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      min-width: 200px;
+      max-width: 300px;
+      z-index: 1000;
+    }
+
+    .info-panel h4 {
+      margin-bottom: 10px;
+      color: #333;
+      font-size: 16px;
+    }
+
+    .info-panel .info-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 14px;
+    }
+
+    .info-panel .info-label {
+      color: #666;
+    }
+
+    .info-panel .info-value {
+      color: #333;
+      font-weight: 600;
+    }
+
+    .status-bar {
+      padding: 15px 20px;
+      background: linear-gradient(135deg, #e7f3ff 0%, #f0f8ff 100%);
+      border-top: 2px solid #b3d9ff;
+      font-size: 14px;
+      color: #004085;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status-bar.success {
+      background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+      border-color: #c3e6cb;
+      color: #155724;
+    }
+
+    .status-bar.warning {
+      background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+      border-color: #ffeeba;
+      color: #856404;
+    }
+
+    .status-bar.error {
+      background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+      border-color: #f5c6cb;
+      color: #721c24;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #e9ecef;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      transition: width 0.3s;
+    }
+
+    @media (max-width: 768px) {
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .map-container {
+        height: 400px;
+      }
+
+      .info-panel {
+        position: static;
+        margin-top: 10px;
+        max-width: 100%;
+      }
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 头部 -->
+    <div class="header">
+      <span class="version-badge">v2.3.0</span>
+      <h1>🗺️ Map Renderer - 完整功能演示</h1>
+      <p>基于 deck.gl 的强大地图渲染库，包含所有最新功能</p>
+    </div>
+
+    <!-- 功能选择网格 -->
+    <div class="feature-grid">
+      <div class="feature-card" data-feature="track-player">
+        <div class="icon">🛤️</div>
+        <h3>轨迹回放</h3>
+        <p>GPS轨迹动画播放、速度控制、进度拖动</p>
+        <span class="badge new">NEW</span>
+      </div>
+
+      <div class="feature-card" data-feature="geo-fence">
+        <div class="icon">🚧</div>
+        <h3>地理围栏</h3>
+        <p>多种围栏类型、进出监控、事件告警</p>
+        <span class="badge new">NEW</span>
+      </div>
+
+      <div class="feature-card" data-feature="poi-search">
+        <div class="icon">🔍</div>
+        <h3>POI搜索</h3>
+        <p>关键字搜索、空间搜索、分类筛选</p>
+        <span class="badge new">NEW</span>
+      </div>
+
+      <div class="feature-card" data-feature="heatmap">
+        <div class="icon">🔥</div>
+        <h3>热力图</h3>
+        <p>数据密度可视化、自定义配色</p>
+        <span class="badge updated">UPDATED</span>
+      </div>
+
+      <div class="feature-card" data-feature="cluster">
+        <div class="icon">🔄</div>
+        <h3>智能聚类</h3>
+        <p>海量数据点自动聚合、性能优化</p>
+      </div>
+
+      <div class="feature-card" data-feature="measurement">
+        <div class="icon">📏</div>
+        <h3>测量工具</h3>
+        <p>距离测量、面积测量、路径长度</p>
+      </div>
+
+      <div class="feature-card" data-feature="drawing">
+        <div class="icon">✏️</div>
+        <h3>绘制工具</h3>
+        <p>多边形、圆形、矩形、自由绘制</p>
+        <span class="badge new">NEW</span>
+      </div>
+
+      <div class="feature-card" data-feature="3d-view">
+        <div class="icon">🏗️</div>
+        <h3>3D视图</h3>
+        <p>建筑物3D化、地形起伏、倾斜摄影</p>
+      </div>
+
+      <div class="feature-card" data-feature="animation">
+        <div class="icon">🎬</div>
+        <h3>动画效果</h3>
+        <p>飞行动画、水波纹、脉冲效果</p>
+      </div>
+
+      <div class="feature-card" data-feature="layer-control">
+        <div class="icon">📊</div>
+        <h3>图层控制</h3>
+        <p>图层管理、显示隐藏、透明度调节</p>
+      </div>
+
+      <div class="feature-card" data-feature="export">
+        <div class="icon">📸</div>
+        <h3>地图导出</h3>
+        <p>PNG/JPEG/WebP导出、自定义分辨率</p>
+      </div>
+
+      <div class="feature-card" data-feature="data-filter">
+        <div class="icon">🎚️</div>
+        <h3>数据筛选</h3>
+        <p>条件过滤、空间查询、属性筛选</p>
+      </div>
+    </div>
+
+    <!-- 轨迹回放演示 -->
+    <div class="demo-section" id="demo-track-player">
+      <div class="demo-header">
+        <h2>🛤️ 轨迹回放</h2>
+        <p>支持GPS轨迹动画播放、速度控制、进度拖动等功能</p>
+      </div>
+      
+      <div class="demo-controls">
+        <div class="control-group">
+          <button id="track-load">加载轨迹</button>
+          <button id="track-play" class="success">播放</button>
+          <button id="track-pause" class="warning">暂停</button>
+          <button id="track-stop" class="danger">停止</button>
+        </div>
+        
+        <div class="control-group">
+          <label>播放速度:</label>
+          <input type="range" id="track-speed" min="0.1" max="10" step="0.1" value="1">
+          <span id="track-speed-value">1x</span>
+        </div>
+        
+        <div class="control-group">
+          <label>进度:</label>
+          <input type="range" id="track-progress" min="0" max="100" value="0">
+          <span id="track-progress-value">0%</span>
+        </div>
+        
+        <div class="control-group">
+          <label>
+            <input type="checkbox" id="track-loop"> 循环播放
+          </label>
+          <label>
+            <input type="checkbox" id="track-trail" checked> 显示轨迹尾巴
+          </label>
+        </div>
+      </div>
+      
+      <div class="map-container" id="map-track">
+        <div class="info-panel">
+          <h4>轨迹信息</h4>
+          <div class="info-item">
+            <span class="info-label">状态:</span>
+            <span class="info-value" id="track-status">未加载</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">总距离:</span>
+            <span class="info-value" id="track-distance">0 km</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">总时长:</span>
+            <span class="info-value" id="track-duration">0分钟</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">当前速度:</span>
+            <span class="info-value" id="track-current-speed">0 km/h</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">经过时间:</span>
+            <span class="info-value" id="track-elapsed">0秒</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="status-bar">
+        <span id="track-message">准备就绪，点击"加载轨迹"开始</span>
+        <span id="track-time">00:00:00</span>
+      </div>
+    </div>
+
+    <!-- 地理围栏演示 -->
+    <div class="demo-section hidden" id="demo-geo-fence">
+      <div class="demo-header">
+        <h2>🚧 地理围栏</h2>
+        <p>支持多种围栏类型、目标监控、进出告警等功能</p>
+      </div>
+      
+      <div class="demo-controls">
+        <div class="control-group">
+          <label>围栏类型:</label>
+          <select id="fence-type">
+            <option value="polygon">多边形</option>
+            <option value="circle">圆形</option>
+            <option value="rectangle">矩形</option>
+            <option value="corridor">走廊</option>
+          </select>
+          <button id="fence-create">创建围栏</button>
+        </div>
+        
+        <div class="control-group">
+          <button id="fence-add-target" class="success">添加目标</button>
+          <button id="fence-simulate" class="warning">模拟移动</button>
+          <button id="fence-clear" class="danger">清除所有</button>
+        </div>
+        
+        <div class="control-group">
+          <label>围栏状态:</label>
+          <select id="fence-status">
+            <option value="active">激活</option>
+            <option value="warning">警告</option>
+            <option value="alarming">告警</option>
+            <option value="inactive">未激活</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="map-container" id="map-fence">
+        <div class="info-panel">
+          <h4>围栏统计</h4>
+          <div class="info-item">
+            <span class="info-label">围栏数量:</span>
+            <span class="info-value" id="fence-count">0</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">目标数量:</span>
+            <span class="info-value" id="target-count">0</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">进入次数:</span>
+            <span class="info-value" id="enter-count">0</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">离开次数:</span>
+            <span class="info-value" id="leave-count">0</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">当前告警:</span>
+            <span class="info-value" id="alarm-count">0</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="status-bar" id="fence-status-bar">
+        <span id="fence-message">准备就绪，创建围栏开始监控</span>
+        <span id="fence-events">事件: 0</span>
+      </div>
+    </div>
+
+    <!-- POI搜索演示 -->
+    <div class="demo-section hidden" id="demo-poi-search">
+      <div class="demo-header">
+        <h2>🔍 POI搜索</h2>
+        <p>支持关键字搜索、空间搜索、分类筛选等功能</p>
+      </div>
+      
+      <div class="demo-controls">
+        <div class="control-group">
+          <input type="text" id="poi-keyword" placeholder="输入关键字搜索...">
+          <button id="poi-search">搜索</button>
+        </div>
+        
+        <div class="control-group">
+          <label>POI类型:</label>
+          <select id="poi-type">
+            <option value="">全部</option>
+            <option value="restaurant">餐饮</option>
+            <option value="hotel">酒店</option>
+            <option value="shopping">购物</option>
+            <option value="hospital">医院</option>
+            <option value="school">学校</option>
+            <option value="bank">银行</option>
+            <option value="gas_station">加油站</option>
+            <option value="parking">停车场</option>
+            <option value="transit">交通</option>
+            <option value="scenic">景点</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <button id="poi-load" class="success">加载示例POI</button>
+          <button id="poi-nearby" class="warning">附近搜索</button>
+          <button id="poi-clear" class="danger">清除POI</button>
+        </div>
+        
+        <div class="control-group">
+          <label>搜索半径:</label>
+          <input type="range" id="poi-radius" min="100" max="5000" step="100" value="1000">
+          <span id="poi-radius-value">1000m</span>
+        </div>
+      </div>
+      
+      <div class="map-container" id="map-poi">
+        <div class="info-panel">
+          <h4>搜索结果</h4>
+          <div class="info-item">
+            <span class="info-label">总POI数:</span>
+            <span class="info-value" id="poi-total">0</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">搜索结果:</span>
+            <span class="info-value" id="poi-results">0</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">搜索时间:</span>
+            <span class="info-value" id="poi-time">0ms</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">选中POI:</span>
+            <span class="info-value" id="poi-selected">无</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="status-bar">
+        <span id="poi-message">准备就绪，加载POI数据开始搜索</span>
+        <span id="poi-categories">分类: 0</span>
+      </div>
+    </div>
+
+    <!-- 其他功能演示（占位） -->
+    <div class="demo-section hidden" id="demo-placeholder">
+      <div class="demo-header">
+        <h2>功能演示</h2>
+        <p>该功能正在开发中...</p>
+      </div>
+      <div class="map-container">
+        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">
+          <div style="text-align: center;">
+            <div style="font-size: 64px; margin-bottom: 20px;">🚧</div>
+            <div style="font-size: 24px;">功能开发中</div>
+            <div style="font-size: 16px; margin-top: 10px;">敬请期待...</div>
+          </div>
+        </div>
+      </div>
+      <div class="status-bar">
+        <span>该功能即将推出</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/full-demo.js"></script>
+</body>
+</html>

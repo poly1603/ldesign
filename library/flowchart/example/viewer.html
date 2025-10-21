@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowChart 2.0 - 只读查看器示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #f5f5f5;
+    }
+
+    .header {
+      padding: 20px 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.95;
+      margin: 0;
+    }
+
+    .examples-nav {
+      padding: 15px 30px;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .examples-nav a {
+      padding: 8px 16px;
+      text-decoration: none;
+      color: #333;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .examples-nav a:hover {
+      background: #f5f5f5;
+      border-color: #667eea;
+      color: #667eea;
+    }
+
+    .examples-nav a.active {
+      background: #667eea;
+      color: white;
+    }
+
+    .examples-nav select {
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      margin-left: auto;
+    }
+
+    #app {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .info {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      font-size: 13px;
+      color: #666;
+      z-index: 100;
+    }
+
+    .info strong {
+      color: #333;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h1>🎯 FlowChart 2.0 - 只读查看器</h1>
+    <p>轻量级的流程图查看，无编辑功能</p>
+  </div>
+
+  <div class="examples-nav">
+    <a href="index.html">完整编辑器</a>
+    <a href="basic-graph.html">基础图API</a>
+    <a href="viewer.html" class="active">只读查看器</a>
+
+    <select id="workflowSelect" onchange="loadWorkflow(this.value)">
+      <option value="/workflow-data.json">完整审批流程</option>
+      <option value="/workflows/simple-approval.json">简单审批</option>
+      <option value="/workflows/condition-branch.json">条件分支</option>
+      <option value="/workflows/loop-process.json">循环流程</option>
+    </select>
+  </div>
+
+  <div id="app"></div>
+
+  <div class="info">
+    <strong>只读模式</strong> - 只能查看和缩放，不能编辑
+  </div>
+
+  <script type="module">
+    import { FlowChartViewer } from '@/index-new.ts';
+
+    let viewer = null;
+
+    // 转换数据格式
+    function convertToNewFormat(workflowData) {
+      const nodes = workflowData.nodes.map(node => ({
+        id: node.id,
+        type: node.type,
+        x: node.position?.x || 0,
+        y: node.position?.y || 0,
+        label: node.label,
+        status: node.status,
+        style: node.style,
+      }));
+
+      const edges = workflowData.edges || [];
+
+      return { nodes, edges };
+    }
+
+    // 加载流程图
+    async function loadWorkflow(url) {
+      try {
+        const response = await fetch(url);
+        const workflowData = await response.json();
+        const data = convertToNewFormat(workflowData);
+
+        if (viewer) {
+          viewer.destroy();
+        }
+
+        viewer = new FlowChartViewer({
+          container: '#app',
+          showZoomControls: true,
+          autoLayout: true,
+          nodeGap: 180,
+          levelGap: 120,
+        });
+
+        viewer.load(data);
+
+        window.viewer = viewer;
+        console.log('✅ 流程图加载成功:', url);
+
+      } catch (error) {
+        console.error('❌ 加载失败:', error);
+      }
+    }
+
+    // 暴露到全局
+    window.loadWorkflow = loadWorkflow;
+
+    // 初始加载
+    loadWorkflow('/workflow-data.json');
+
+    console.log('📝 提示: 可以通过 window.viewer 访问查看器实例');
+  </script>
+</body>
+
+</html>
+

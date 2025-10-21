@@ -1,4 +1,5 @@
 import type { Logger, StateManager } from '../types'
+import { LRUCache } from '../utils/lru-cache'
 import { reactive } from 'vue'
 
 type WatchCallback = (newValue: unknown, oldValue: unknown) => void
@@ -37,11 +38,19 @@ export class StateManagerImpl implements StateManager {
   private cleanupTimer: number | null = null
   private readonly CLEANUP_INTERVAL = 30000 // 30秒清理一次
 
-  // LRU缓存优化
-  private pathCache = new Map<string, { value: unknown; hits: number; lastAccess: number }>()
-  private readonly MAX_CACHE_SIZE = 50 // 减少缓存大小
+  // LRU缓存优化 - 使用专用LRU实现
+  private pathCache: LRUCache<unknown>
+  private readonly MAX_CACHE_SIZE = 100 // 增加缓存大小 // 减少缓存大小
 
   constructor(private logger?: Logger) {
+    // 初始化LRU缓存
+    this.pathCache = new LRUCache({
+      maxSize: this.MAX_CACHE_SIZE,
+      onEvict: (key) => {
+        this.logger?.debug('Path cache evicted', { key })
+      }
+    })
+
     // 仅在浏览器环境启动定期清理
     if (typeof window !== 'undefined') {
       this.startPeriodicCleanup()
@@ -49,24 +58,22 @@ export class StateManagerImpl implements StateManager {
   }
 
   /**
-   * 获取状态值 - 优化内存访问
+   * 获取状态值 - 优化内存访问（使用LRU缓存）
    * @param key 状态键，支持嵌套路径（如 'user.profile.name'）
    * @returns 状态值或undefined
    */
   get<T = unknown>(key: string): T | undefined {
-    // 优化：先检查缓存，更新访问信息
+    // 优化：先检查LRU缓存
     const cached = this.pathCache.get(key)
-    if (cached) {
-      cached.hits++
-      cached.lastAccess = Date.now()
-      return cached.value as T
+    if (cached !== undefined) {
+      return cached as T
     }
 
     const value = this.getNestedValue(this.state, key) as T
 
     // 智能缓存策略
     if (value !== undefined) {
-      this.updatePathCache(key, value)
+      this.pathCache.set(key, value)
     }
 
     return value
@@ -303,34 +310,102 @@ export class StateManagerImpl implements StateManager {
     return this.deepClone(this.state)
   }
 
-  // 高效深拷贝方法 - 优化版
-  private deepClone(obj: any, depth = 0): any {
-    // 限制递归深度
-    if (depth > 10) return obj
-
+  /**
+   * 高效深拷贝方法 - 极致优化版
+   * 使用迭代方式替代递归，避免栈溢出
+   * 使用WeakMap追踪循环引用，减少内存占用
+   */
+  private deepClone(obj: any): any {
+    // 快速路径：处理基本类型
     if (obj === null || typeof obj !== 'object') return obj
     if (obj instanceof Date) return new Date(obj)
     if (obj instanceof RegExp) return new RegExp(obj)
-    if (Array.isArray(obj)) {
-      // 限制数组大小
-      const len = Math.min(obj.length, 1000)
-      const cloned = new Array(len)
-      for (let i = 0; i < len; i++) {
-        cloned[i] = this.deepClone(obj[i], depth + 1)
+    if (obj instanceof Map) return new Map(obj)
+    if (obj instanceof Set) return new Set(obj)
+
+    // 使用structuredClone（如果可用）- 最快的克隆方式
+    if (typeof structuredClone !== 'undefined') {
+      try {
+        return structuredClone(obj)
+      } catch {
+        // 回退到手动克隆
       }
-      return cloned
     }
 
-    const cloned: Record<string, any> = {}
-    const keys = Object.keys(obj)
-    // 限制对象属性数量
-    const maxKeys = Math.min(keys.length, 100)
+    // 迭代式深拷贝（避免递归栈溢出）
+    const visited = new WeakMap()
+    const stack: Array<{ source: any; target: any; key?: string | number }> = []
 
-    for (let i = 0; i < maxKeys; i++) {
-      const key = keys[i]
-      cloned[key] = this.deepClone(obj[key], depth + 1)
+    // 确定根对象类型
+    const isArray = Array.isArray(obj)
+    const root = isArray ? [] : {}
+    visited.set(obj, root)
+
+    // 初始化栈
+    if (isArray) {
+      const len = Math.min(obj.length, 1000) // 限制数组大小
+      for (let i = 0; i < len; i++) {
+        stack.push({ source: obj, target: root, key: i })
+      }
+    } else {
+      const keys = Object.keys(obj)
+      const maxKeys = Math.min(keys.length, 100) // 限制对象属性数量
+      for (let i = 0; i < maxKeys; i++) {
+        stack.push({ source: obj, target: root, key: keys[i] })
+      }
     }
-    return cloned
+
+    // 迭代处理栈
+    while (stack.length > 0) {
+      const { source, target, key } = stack.pop()!
+      const value = source[key!]
+
+      // 处理基本类型
+      if (value === null || typeof value !== 'object') {
+        target[key!] = value
+        continue
+      }
+
+      // 处理特殊对象
+      if (value instanceof Date) {
+        target[key!] = new Date(value)
+        continue
+      }
+      if (value instanceof RegExp) {
+        target[key!] = new RegExp(value)
+        continue
+      }
+
+      // 处理循环引用
+      if (visited.has(value)) {
+        target[key!] = visited.get(value)
+        continue
+      }
+
+      // 处理数组和对象
+      if (Array.isArray(value)) {
+        const clonedArray: any[] = []
+        target[key!] = clonedArray
+        visited.set(value, clonedArray)
+
+        const len = Math.min(value.length, 1000)
+        for (let i = 0; i < len; i++) {
+          stack.push({ source: value, target: clonedArray, key: i })
+        }
+      } else {
+        const clonedObj: Record<string, any> = {}
+        target[key!] = clonedObj
+        visited.set(value, clonedObj)
+
+        const keys = Object.keys(value)
+        const maxKeys = Math.min(keys.length, 100)
+        for (let i = 0; i < maxKeys; i++) {
+          stack.push({ source: value, target: clonedObj, key: keys[i] })
+        }
+      }
+    }
+
+    return root
   }
 
   // 从快照恢复状态
@@ -545,23 +620,7 @@ export class StateManagerImpl implements StateManager {
   }
 
   /**
-   * 更新路径缓存
-   * @private
-   */
-  private updatePathCache(key: string, value: unknown): void {
-    // 限制缓存大小
-    if (this.pathCache.size >= this.MAX_CACHE_SIZE) {
-      // 移除最早的缓存项
-      const firstKey = this.pathCache.keys().next().value
-      if (firstKey) {
-        this.pathCache.delete(firstKey)
-      }
-    }
-    this.pathCache.set(key, { value, hits: 1, lastAccess: Date.now() })
-  }
-
-  /**
-   * 使路径缓存失效
+   * 使路径缓存失效（优化版 - LRU缓存）
    * @private
    */
   private invalidatePathCache(key: string): void {
@@ -576,21 +635,14 @@ export class StateManagerImpl implements StateManager {
   }
 
   /**
-   * 清理路径缓存
+   * 清理路径缓存（LRU自动管理，无需手动清理）
    * @private
    */
   private cleanupPathCache(): void {
-    // 如果缓存过大，清理一半
-    if (this.pathCache.size > this.MAX_CACHE_SIZE * 0.8) {
-      const keysToKeep = Math.floor(this.MAX_CACHE_SIZE * 0.5)
-      const keys = Array.from(this.pathCache.keys())
-      const keysToDelete = keys.slice(0, keys.length - keysToKeep)
-      keysToDelete.forEach(key => this.pathCache.delete(key))
-
-      this.logger?.debug('Cleaned path cache', {
-        removed: keysToDelete.length,
-        remaining: this.pathCache.size
-      })
+    // LRU缓存会自动管理大小，这里只记录统计信息
+    if (this.logger) {
+      const stats = this.pathCache.getStats()
+      this.logger.debug('Path cache stats', stats)
     }
   }
 }

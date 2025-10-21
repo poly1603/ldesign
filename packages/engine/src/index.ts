@@ -43,6 +43,31 @@ export {
   type EngineAppOptions
 } from './core/create-engine-app'
 
+// 模块加载器（新增 - 支持动态导入和Tree-Shaking）
+export {
+  createModuleLoader,
+  ModuleLoader,
+  type ModuleLoaderConfig,
+  type ModuleMetadata,
+  type ModuleLoadOptions,
+  getGlobalModuleLoader,
+  setGlobalModuleLoader,
+  LazyModule
+} from './core/module-loader'
+
+// 对象池管理（新增 - 减少GC压力）
+export {
+  createObjectPoolManager,
+  ObjectPoolManager,
+  ObjectPool,
+  TaskPool,
+  NotificationPool,
+  RequestPool,
+  getGlobalObjectPoolManager,
+  setGlobalObjectPoolManager,
+  Pooled
+} from './core/object-pools'
+
 // ==================== Locale 模块导出 ====================
 export {
   createLocaleAwarePlugin,
@@ -56,6 +81,19 @@ export {
 
 // 性能监控模块
 export * from './performance/performance-monitor'
+
+// 性能分析器（新增 - 函数和组件性能追踪）
+export {
+  createProfiler,
+  Profiler,
+  type ProfilerConfig,
+  type FunctionCallRecord,
+  type ComponentRenderRecord,
+  type PerformanceProfileReport,
+  Profile,
+  getGlobalProfiler,
+  setGlobalProfiler
+} from './performance/profiler'
 
 // ==================== 插件导出 ====================
 export { createI18nEnginePlugin } from './plugins/i18n'
@@ -101,8 +139,19 @@ export {
   debounce,
   deepClone,
   generateId,
-  throttle
+  throttle,
+  // 新增 - LRU缓存
+  createLRUCache,
+  LRUCache,
+  type LRUCacheOptions
 } from './utils/index'
+
+// 智能缓存策略（新增）
+export {
+  SmartCacheStrategy,
+  createSmartCacheStrategy,
+  type SmartCacheConfig
+} from './cache/smart-cache'
 
 // ==================== 实用工具导出 ====================
 // Vue组合式 API

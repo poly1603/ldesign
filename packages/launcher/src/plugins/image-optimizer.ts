@@ -374,10 +374,10 @@ export class ImageOptimizer {
       sum + info.compressionRatio, 0
     ) / optimizedInfos.length
 
-            .toFixed(2)}KB`)
-    .toFixed(2)}KB`)
-    .toFixed(2)}KB`)
-    .toFixed(1)}%`)
+    this.logger.info(`原始大小: ${(totalOriginalSize / 1024).toFixed(2)}KB`)
+    this.logger.info(`优化后大小: ${(totalOptimizedSize / 1024).toFixed(2)}KB`)
+    this.logger.info(`节省空间: ${(totalSavings / 1024).toFixed(2)}KB`)
+    this.logger.info(`平均压缩率: ${(averageCompressionRatio * 100).toFixed(1)}%`)
   }
 
   /**
@@ -430,7 +430,7 @@ export function createImageOptimizerPlugin(options: ImageOptimizerOptions = {}):
       server.watcher.on('change', async (file) => {
         const inputFormats = options.inputFormats || ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff']
         if (inputFormats.some(format => file.toLowerCase().endsWith(`.${format}`))) {
-                    await optimizer.optimizeImages()
+          await optimizer.optimizeImages()
         }
       })
     },
