@@ -79,4 +79,9 @@ publish-report.json
 examples/dist
 examples/node_modules
 
+# Tools and playground directories
+tools/
+library/datepicker/playground/
+library/webcomponent/
+
 tdesign/
