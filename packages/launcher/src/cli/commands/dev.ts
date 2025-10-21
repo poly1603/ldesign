@@ -12,6 +12,7 @@ import { ViteLauncher } from '../../core/ViteLauncher'
 import type { CliCommandDefinition, CliContext } from '../../types'
 import { DEFAULT_PORT, DEFAULT_HOST } from '../../constants'
 import pc from 'picocolors'
+import { networkInterfaces } from 'node:os'
 import { getPreferredLocalIP } from '../../utils/network.js'
 
 /**
@@ -176,10 +177,10 @@ export class DevCommand implements CliCommandDefinition {
 
       // 立即输出环境标识，不依赖logger
       if (!context.options.silent) {
-        console.log(`\n🚀 ${pc.bold('Launcher Dev Server')} - ${envLabel}`)
-        console.log(`📁 ${pc.cyan('Working Directory:')} ${context.cwd}`)
-        console.log(`⚙️  ${pc.cyan('Mode:')} ${mode}`)
-        
+        console.log(`\n🚀 ${pc.cyan('LDesign Launcher')} - ${envLabel}`)
+        console.log(`📁 ${pc.gray('工作目录:')} ${context.cwd}`)
+        console.log(`⚙️  ${pc.gray('模式:')} ${mode}`)
+        console.log('')
       }
 
       logger.info('正在启动开发服务器...')
@@ -383,9 +384,9 @@ export class DevCommand implements CliCommandDefinition {
 
             if (terminalQR && typeof terminalQR === 'string') {
               logger.info(pc.dim('二维码（扫码在手机上打开）：'))
-              
-              
-              
+              console.log()
+              console.log(terminalQR)
+              console.log()
               printed = true
             }
           } catch (e1) {
@@ -430,7 +431,7 @@ export class DevCommand implements CliCommandDefinition {
                     ''
                   ].join('\n')
 
-                  
+                  console.log(borderedQR)
                   printed = true
                 }
               }

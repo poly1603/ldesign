@@ -5,8 +5,8 @@ import { ThemeManager } from './utils/theme';
 // 获取应用配置
 const appConfig = (import.meta.env.appConfig as any) || {};
 
-
-
+console.log('🚀 LDesign Launcher - Vanilla JavaScript 示例已启动');
+console.log('📄 App Config:', appConfig);
 
 // 更新页面标题
 const titleElement = document.querySelector('h1');

@@ -1,26 +1,96 @@
 /**
- * 虚拟渲染 - 处理大数据集
+ * 虚拟渲染 - 处理大数据集，自适应窗口，预加载
  */
 
 /**
- * 虚拟渲染器
+ * 虚拟渲染配置
+ */
+interface VirtualRenderConfig {
+  chunkSize?: number;
+  preloadCount?: number; // 预加载的分片数量
+  adaptiveChunkSize?: boolean; // 是否自适应分片大小
+  minChunkSize?: number;
+  maxChunkSize?: number;
+}
+
+/**
+ * 虚拟渲染器（优化版）
  */
 export class VirtualRenderer {
   private chunkSize: number;
   private visibleRange: { start: number; end: number };
   private totalData: any[] = [];
+  private preloadCount: number;
+  private adaptiveChunkSize: boolean;
+  private minChunkSize: number;
+  private maxChunkSize: number;
 
-  constructor(chunkSize = 1000) {
-    this.chunkSize = chunkSize;
-    this.visibleRange = { start: 0, end: chunkSize };
+  // 性能统计
+  private renderTimes: number[] = [];
+  private avgRenderTime = 0;
+
+  constructor(config: VirtualRenderConfig = {}) {
+    this.chunkSize = config.chunkSize ?? 1000;
+    this.preloadCount = config.preloadCount ?? 2;
+    this.adaptiveChunkSize = config.adaptiveChunkSize ?? true;
+    this.minChunkSize = config.minChunkSize ?? 100;
+    this.maxChunkSize = config.maxChunkSize ?? 5000;
+    this.visibleRange = { start: 0, end: this.chunkSize };
   }
 
   /**
-   * 设置数据
+   * 设置数据（自适应分片大小）
    */
   setData(data: any[]): void {
     this.totalData = data;
+
+    // 自适应调整分片大小
+    if (this.adaptiveChunkSize) {
+      this.chunkSize = this.calculateOptimalChunkSize(data.length);
+    }
+
     this.visibleRange = { start: 0, end: Math.min(this.chunkSize, data.length) };
+  }
+
+  /**
+   * 计算最优分片大小
+   */
+  private calculateOptimalChunkSize(dataLength: number): number {
+    // 基于数据量和平均渲染时间动态调整
+    if (this.avgRenderTime === 0) {
+      // 首次渲染，使用默认值
+      return Math.max(
+        this.minChunkSize,
+        Math.min(this.maxChunkSize, Math.floor(dataLength / 10))
+      );
+    }
+
+    // 目标渲染时间：16ms（60 FPS）
+    const targetTime = 16;
+    const ratio = targetTime / this.avgRenderTime;
+    const newSize = Math.floor(this.chunkSize * ratio);
+
+    return Math.max(this.minChunkSize, Math.min(this.maxChunkSize, newSize));
+  }
+
+  /**
+   * 记录渲染时间
+   */
+  recordRenderTime(time: number): void {
+    this.renderTimes.push(time);
+
+    // 只保留最近 10 次的数据
+    if (this.renderTimes.length > 10) {
+      this.renderTimes.shift();
+    }
+
+    // 更新平均渲染时间
+    this.avgRenderTime = this.renderTimes.reduce((a, b) => a + b, 0) / this.renderTimes.length;
+
+    // 动态调整分片大小
+    if (this.adaptiveChunkSize && this.renderTimes.length >= 3) {
+      this.chunkSize = this.calculateOptimalChunkSize(this.totalData.length);
+    }
   }
 
   /**
@@ -39,13 +109,29 @@ export class VirtualRenderer {
   }
 
   /**
-   * 获取可见范围的数据
+   * 获取可见范围的数据（带预加载）
    */
   getVisibleData(start?: number, end?: number): any[] {
     const startIndex = start ?? this.visibleRange.start;
     const endIndex = end ?? this.visibleRange.end;
 
     return this.totalData.slice(startIndex, endIndex);
+  }
+
+  /**
+   * 获取带预加载的数据
+   */
+  getVisibleDataWithPreload(): any[] {
+    const preloadStart = Math.max(
+      0,
+      this.visibleRange.start - this.chunkSize * this.preloadCount
+    );
+    const preloadEnd = Math.min(
+      this.totalData.length,
+      this.visibleRange.end + this.chunkSize * this.preloadCount
+    );
+
+    return this.totalData.slice(preloadStart, preloadEnd);
   }
 
   /**

@@ -9,6 +9,7 @@
 
 import { Command } from 'commander'
 import { Logger } from '../../utils/logger'
+import chalk from 'chalk'
 import inquirer from 'inquirer'
 import ora from 'ora'
 import fs from 'node:fs/promises'
@@ -195,10 +196,10 @@ export class TeamCommand {
 
       // 生成团队配置文件
       await this.generateTeamConfig(config)
-
+      
       // 创建标准化目录结构
       await this.createTeamStructure(config)
-
+      
       // 设置开发规范
       await this.setupDevelopmentStandards(config.standards)
 
@@ -207,7 +208,7 @@ export class TeamCommand {
       this.logger.success('🎉 团队配置创建成功!')
       this.logger.info(`👥 团队名称: ${config.teamName}`)
       this.logger.info(`🚀 同步命令: launcher team sync`)
-
+      
     } catch (error) {
       this.logger.error('初始化失败:', error)
       throw error
@@ -222,7 +223,7 @@ export class TeamCommand {
       this.logger.info('同步团队配置...')
 
       const config = await this.loadTeamConfig()
-
+      
       if (options.dryRun) {
         this.logger.info('预览同步内容:')
         await this.previewSync(config)
@@ -233,10 +234,10 @@ export class TeamCommand {
 
       // 同步共享配置
       await this.syncSharedConfig(config.sharedConfig, options.force)
-
+      
       // 同步开发规范
       await this.syncDevelopmentStandards(config.standards, options.force)
-
+      
       // 同步工具配置
       await this.syncToolsConfig(config.sharedConfig.toolsConfig, options.force)
 
@@ -258,7 +259,7 @@ export class TeamCommand {
       this.logger.info(`添加团队成员: ${email}`)
 
       const config = await this.loadTeamConfig()
-
+      
       const member: TeamMember = {
         name: options.name || email.split('@')[0],
         email,
@@ -388,7 +389,7 @@ export class TeamCommand {
 
       // 根据配置文件设置环境
       await this.configureEnvironment(options.profile)
-
+      
       // 安装必要依赖
       if (options.install) {
         await this.installDependencies(options.profile)
@@ -408,17 +409,23 @@ export class TeamCommand {
   private async showTeamStatus(options: any): Promise<void> {
     try {
       const config = await this.loadTeamConfig()
-
-      console.log('\n👥 团队状态')
-      console.log(`团队名称: ${config.teamName}`)
-      console.log(`成员数量: ${config.members.length}`)
+      
+      console.log(chalk.cyan('\n👥 团队状态\n'))
+      console.log(`${chalk.yellow('团队名称:')} ${config.teamName}`)
+      console.log(`${chalk.yellow('成员数量:')} ${config.members.length}`)
 
       if (options.detailed) {
-        console.log('\n成员列表:')
+        console.log(chalk.yellow('\n成员列表:'))
         config.members.forEach((member, index) => {
-          console.log(`  ${index + 1}. ${member.name} (${member.email})`)
+          console.log(`  ${index + 1}. ${chalk.green(member.name)} (${member.email})`)
           console.log(`     角色: ${member.role}`)
+          console.log(`     权限: ${member.permissions.join(', ')}`)
         })
+
+        console.log(chalk.yellow('\n开发规范:'))
+        console.log(`  代码规范: ${config.standards.codeStyle.eslint ? '✅' : '❌'} ESLint`)
+        console.log(`  代码格式: ${config.standards.codeStyle.prettier ? '✅' : '❌'} Prettier`)
+        console.log(`  提交规范: ${config.standards.codeStyle.commitlint ? '✅' : '❌'} CommitLint`)
       }
 
     } catch (error) {

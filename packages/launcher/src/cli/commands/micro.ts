@@ -9,6 +9,7 @@
 
 import { Command } from 'commander'
 import { Logger } from '../../utils/logger'
+import chalk from 'chalk'
 import inquirer from 'inquirer'
 import ora from 'ora'
 import fs from 'node:fs/promises'
@@ -281,15 +282,17 @@ export class MicroCommand {
     try {
       const config = await this.loadMicroConfig()
 
-      console.log('\n🔬 微前端状态')
-      console.log(`类型: ${config.type === 'main' ? '主应用' : '子应用'}`)
-      console.log(`名称: ${config.name}`)
-      console.log(`端口: ${config.port}`)
+      console.log(chalk.cyan('\n📊 微前端应用状态\n'))
+      console.log(`${chalk.yellow('应用类型:')} ${config.type === 'main' ? '主应用' : '子应用'}`)
+      console.log(`${chalk.yellow('应用名称:')} ${config.name}`)
+      console.log(`${chalk.yellow('端口号:')} ${config.port}`)
 
       if (config.subApps && config.subApps.length > 0) {
-        console.log('\n子应用列表:')
+        console.log(chalk.yellow('\n子应用列表:'))
         config.subApps.forEach((app, index) => {
-          console.log(`  ${index + 1}. ${app.name} - ${app.entry}`)
+          console.log(`  ${index + 1}. ${chalk.green(app.name)}`)
+          console.log(`     入口: ${app.entry}`)
+          console.log(`     路由: ${app.activeRule}`)
         })
       }
 
@@ -463,39 +466,38 @@ export class MicroCommand {
   private async generateMicroConfig(config: MicroFrontendConfig): Promise<void> {
     const configContent = `import { defineConfig } from '@ldesign/launcher'
 
-        export default defineConfig({
-          micro: ${JSON.stringify(config, null, 2)},
+export default defineConfig({
+  micro: ${JSON.stringify(config, null, 2)},
 
-          // Vite 配置
-          server: {
-          port: ${config.port},
-          cors: true
+  // Vite 配置
+  server: {
+    port: ${config.port},
+    cors: true
   },
 
-      // 微前端特定配置
-      build: {
-        target: 'esnext',
-          lib: ${config.type === 'sub' ? `{
+  // 微前端特定配置
+  build: {
+    target: 'esnext',
+    lib: ${config.type === 'sub' ? `{
       entry: 'src/main.ts',
       name: '${config.name}',
       fileName: 'index',
       formats: ['umd']
-    }` : 'undefined'
-      },
-        rollupOptions: {
-          external: ${JSON.stringify(Object.keys(config.shared || {}))},
-          output: {
-            globals: ${JSON.stringify(this.generateGlobals(config.shared || {}))}
-          }
-        }
-      },
+    }` : 'undefined'},
+    rollupOptions: {
+      external: ${JSON.stringify(Object.keys(config.shared || {}))},
+      output: {
+        globals: ${JSON.stringify(this.generateGlobals(config.shared || {}))}
+      }
+    }
+  },
 
-      // 插件配置
-      plugins: [
-        ${this.generatePluginConfig(config)}
-      ]
-    })
-    `
+  // 插件配置
+  plugins: [
+    ${this.generatePluginConfig(config)}
+  ]
+})
+`
 
     await fs.writeFile(
       path.resolve(process.cwd(), 'micro.config.ts'),
@@ -553,7 +555,7 @@ export class MicroCommand {
   }
 
   private async loadMicroConfig(configPath?: string): Promise<MicroFrontendConfig> {
-    const configFile = configPath || path.resolve(process.cwd(), 'micro.config.ts')
+    const configFilePath = configPath || path.resolve(process.cwd(), 'micro.config.ts')
     // 实现配置加载逻辑
     return {} as MicroFrontendConfig
   }
@@ -586,41 +588,47 @@ export class MicroCommand {
     // 实现部署执行逻辑
   }
 
+  // 模板方法
   private getMainAppTemplate(config: MicroFrontendConfig): string {
-    return `// 主应用入口文件
-import { createApp } from 'vue'
+    return `import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import { registerMicroApps, start } from 'qiankun'
-import microConfig from './micro/config'
+import { registerMicroApps, start } from '${config.framework === 'qiankun' ? 'qiankun' : '@originjs/vite-plugin-federation'}'
 
 const app = createApp(App)
 app.use(router)
 
 // 注册微应用
-registerMicroApps(microConfig.apps)
+registerMicroApps([
+  // 子应用配置将在这里添加
+])
 
-// 启动 qiankun
+// 启动微前端
 start()
 
 app.mount('#app')
-  `
+`
   }
 
   private getMicroConfigTemplate(config: MicroFrontendConfig): string {
-    return `// 微前端配置
-export default {
-  apps: ${JSON.stringify(config.subApps || [], null, 2)}
+    return `export default {
+  apps: [
+    // 子应用配置
+  ],
+  shared: ${JSON.stringify(config.shared, null, 2)}
 }
 `
   }
 
   private getRouterTemplate(config: MicroFrontendConfig): string {
-    return `// 路由配置
-import { createRouter, createWebHistory } from 'vue-router'
+    return `import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
-  // 主应用路由
+  {
+    path: '/',
+    name: 'Home',
+    component: () => import('../pages/Home.vue')
+  }
 ]
 
 const router = createRouter({
@@ -629,12 +637,11 @@ const router = createRouter({
 })
 
 export default router
-  `
+`
   }
 
   private getSubAppTemplate(config: MicroFrontendConfig): string {
-    return `// 子应用入口文件
-import './public-path'
+    return `import './public-path'
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
@@ -648,11 +655,13 @@ function render(props: any = {}) {
   instance.mount(container ? container.querySelector('#app') : '#app')
 }
 
+// 独立运行时
 if (!(window as any).__POWERED_BY_QIANKUN__) {
   render()
 }
 
 export async function bootstrap() {
+  console.log('${config.name} bootstrapped')
 }
 
 export async function mount(props: any) {
@@ -660,30 +669,27 @@ export async function mount(props: any) {
 }
 
 export async function unmount() {
-  instance.unmount()
+  instance?.unmount()
   instance = null
 }
 `
   }
 
   private getPublicPathTemplate(config: MicroFrontendConfig): string {
-    return `// 设置 public path
-if ((window as any).__POWERED_BY_QIANKUN__) {
-  // eslint-disable-next-line no-undef
+    return `if ((window as any).__POWERED_BY_QIANKUN__) {
+  // eslint-disable-next-line
   __webpack_public_path__ = (window as any).__INJECTED_PUBLIC_PATH_BY_QIANKUN__
 }
 `
   }
 
   private getBootstrapTemplate(config: MicroFrontendConfig): string {
-    return `// Bootstrap 文件
-import { createApp } from 'vue'
+    return `import { createApp } from 'vue'
 import App from './App.vue'
-import router from './router'
 
 export default function bootstrap() {
   const app = createApp(App)
-  app.use(router)
+  app.mount('#app')
   return app
 }
 `

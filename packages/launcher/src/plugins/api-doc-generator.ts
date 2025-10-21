@@ -592,7 +592,8 @@ export function createAPIDocPlugin(options: APIDocOptions = {}): Plugin {
       server.watcher.add(apiDir)
       server.watcher.on('change', async (file) => {
         if (file.includes(apiDir)) {
-                    await generator.generateDocs()
+          console.log('API 文件变更，重新生成文档...')
+          await generator.generateDocs()
         }
       })
     }

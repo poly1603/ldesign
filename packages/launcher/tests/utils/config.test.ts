@@ -18,9 +18,24 @@ import {
   getConfigWatchOptions
 } from '../../src/utils/config'
 import type { ViteLauncherConfig } from '../../src/types'
-import { FileSystem, PathUtils } from '@ldesign/kit'
 
-// @ldesign/kit is already mocked in tests/setup.ts, just import it
+// Mock @ldesign/kit 模块
+vi.mock('@ldesign/kit', () => ({
+  FileSystem: {
+    exists: vi.fn(),
+    readFile: vi.fn(),
+    writeFile: vi.fn()
+  },
+  PathUtils: {
+    resolve: vi.fn((path) => path),
+    join: vi.fn((...paths) => paths.join('/')),
+    isAbsolute: vi.fn().mockReturnValue(false),
+    extname: vi.fn((path) => {
+      const parts = path.split('.')
+      return parts.length > 1 ? `.${parts[parts.length - 1]}` : ''
+    })
+  }
+}))
 
 describe('配置工具函数', () => {
   beforeEach(() => {
@@ -28,8 +43,13 @@ describe('配置工具函数', () => {
   })
   
   describe('findConfigFile', () => {
-    it.skip('应该找到指定的配置文件', async () => {
-      // 实现逻辑可能不同，暂时跳过
+    it('应该找到指定的配置文件', async () => {
+      vi.mocked(FileSystem.exists).mockResolvedValue(true)
+
+      const result = await findConfigFile('/test/project', 'custom.config.js')
+
+      expect(result).toBe('custom.config.js')
+      expect(FileSystem.exists).toHaveBeenCalledWith('custom.config.js')
     })
 
     it('应该在指定文件不存在时抛出错误', async () => {
@@ -39,12 +59,23 @@ describe('配置工具函数', () => {
         .rejects.toThrow('指定的配置文件不存在')
     })
 
-    it.skip('应该自动查找默认配置文件', async () => {
-      // 实现逻辑可能不同，暂时跳过
+    it('应该自动查找默认配置文件', async () => {
+      const { FileSystem } = require('@ldesign/kit')
+
+      // 模拟第一个文件不存在，第二个存在
+      FileSystem.exists
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(true)
+
+      const result = await findConfigFile('/test/project')
+
+      expect(result).toBeDefined()
+      expect(FileSystem.exists).toHaveBeenCalledTimes(2)
     })
 
     it('应该在找不到任何配置文件时返回 null', async () => {
-      vi.mocked(FileSystem.exists).mockResolvedValue(false)
+      const { FileSystem } = require('@ldesign/kit')
+      FileSystem.exists.mockResolvedValue(false)
       
       const result = await findConfigFile('/test/project')
       
@@ -86,23 +117,49 @@ describe('配置工具函数', () => {
     it('应该处理文件不存在的情况', async () => {
       vi.mocked(FileSystem.exists).mockResolvedValue(false)
 
-      // 实现可能不会抛出错误，而是返回空对象或默认配置
-      const result = await loadConfigFile('/test/config.js')
-      expect(result).toBeDefined()
+      await expect(loadConfigFile('/test/config.js'))
+        .rejects.toThrow('配置文件不存在')
     })
   })
   
   describe('saveConfigFile', () => {
-    it.skip('应该保存 JSON 配置文件', async () => {
-      // 实际实现可能不存在此函数，暂时跳过
+    it('应该保存 JSON 配置文件', async () => {
+      const { FileSystem } = require('@ldesign/kit')
+      const mockConfig: ViteLauncherConfig = { server: { port: 3000 } }
+
+      await saveConfigFile('/test/config.json', mockConfig)
+
+      expect(FileSystem.writeFile).toHaveBeenCalledWith(
+        '/test/config.json',
+        JSON.stringify(mockConfig, null, 2),
+        { encoding: 'utf-8' }
+      )
     })
 
-    it.skip('应该保存 JavaScript 配置文件', async () => {
-      // 实际实现可能不存在此函数，暂时跳过
+    it('应该保存 JavaScript 配置文件', async () => {
+      const { FileSystem } = require('@ldesign/kit')
+      const mockConfig: ViteLauncherConfig = { server: { port: 3000 } }
+
+      await saveConfigFile('/test/config.js', mockConfig)
+
+      expect(FileSystem.writeFile).toHaveBeenCalledWith(
+        '/test/config.js',
+        expect.stringContaining('export default'),
+        { encoding: 'utf-8' }
+      )
     })
 
-    it.skip('应该保存 TypeScript 配置文件', async () => {
-      // 实际实现可能不存在此函数，暂时跳过
+    it('应该保存 TypeScript 配置文件', async () => {
+      const { FileSystem } = require('@ldesign/kit')
+      const mockConfig: ViteLauncherConfig = { server: { port: 3000 } }
+
+      await saveConfigFile('/test/config.ts', mockConfig)
+
+      expect(FileSystem.writeFile).toHaveBeenCalledWith(
+        '/test/config.ts',
+        expect.stringContaining('import type { ViteLauncherConfig }'),
+        { encoding: 'utf-8' }
+      )
     })
   })
   
@@ -131,8 +188,19 @@ describe('配置工具函数', () => {
       expect(result.build?.outDir).toBe('dist')
     })
     
-    it.skip('应该在深度合并失败时回退到简单合并', () => {
-      // 这个测试涉及复杂的 mock 逻辑，暂时跳过
+    it('应该在深度合并失败时回退到简单合并', () => {
+      // Mock ObjectUtils.deepMerge 抛出错误
+      vi.doMock('@ldesign/kit', () => {
+        throw new Error('Module not found')
+      })
+
+      const baseConfig: ViteLauncherConfig = { server: { port: 3000 } }
+      const overrideConfig: ViteLauncherConfig = { server: { host: 'localhost' } }
+
+      const result = mergeConfigs(baseConfig, overrideConfig)
+
+      // 应该使用简单合并的结果（server对象被完全替换）
+      expect(result).toEqual({ server: { host: 'localhost' } })
     })
   })
   
@@ -204,9 +272,10 @@ describe('配置工具函数', () => {
   
   describe('normalizeConfigPaths', () => {
     it('应该规范化相对路径', () => {
-      vi.mocked(PathUtils.isAbsolute).mockReturnValue(false)
-      // Windows 路径使用反斜杠
-      vi.mocked(PathUtils.resolve).mockImplementation((base, path) => `${base}\\${path}`)
+      const { PathUtils } = require('@ldesign/kit')
+
+      PathUtils.isAbsolute.mockReturnValue(false)
+      PathUtils.resolve.mockImplementation((base, path) => `${base}/${path}`)
 
       const config: ViteLauncherConfig = {
         root: 'src',
@@ -216,15 +285,17 @@ describe('配置工具函数', () => {
         publicDir: 'public'
       }
 
-      const result = normalizeConfigPaths(config, 'D:\\project')
+      const result = normalizeConfigPaths(config, '/project')
 
-      expect(result.root).toBe('D:\\project\\src')
-      expect(result.build?.outDir).toBe('D:\\project\\dist')
-      expect(result.publicDir).toBe('D:\\project\\public')
+      expect(result.root).toBe('/project/src')
+      expect(result.build?.outDir).toBe('/project/dist')
+      expect(result.publicDir).toBe('/project/public')
     })
 
     it('应该保持绝对路径不变', () => {
-      vi.mocked(PathUtils.isAbsolute).mockReturnValue(true)
+      const { PathUtils } = require('@ldesign/kit')
+
+      PathUtils.isAbsolute.mockReturnValue(true)
 
       const config: ViteLauncherConfig = {
         root: '/absolute/src',
@@ -242,19 +313,23 @@ describe('配置工具函数', () => {
   
   describe('getDefaultConfigPath', () => {
     it('应该返回 TypeScript 配置路径（默认）', () => {
-      vi.mocked(PathUtils.resolve).mockImplementation((cwd, file) => `${cwd}\\${file}`)
+      const { PathUtils } = require('@ldesign/kit')
 
-      const result = getDefaultConfigPath('D:\\project')
+      PathUtils.resolve.mockImplementation((cwd, file) => `${cwd}/${file}`)
 
-      expect(result).toBe('D:\\project\\launcher.config.ts')
+      const result = getDefaultConfigPath('/project')
+
+      expect(result).toBe('/project/launcher.config.ts')
     })
 
     it('应该返回 JavaScript 配置路径', () => {
-      vi.mocked(PathUtils.resolve).mockImplementation((cwd, file) => `${cwd}\\${file}`)
+      const { PathUtils } = require('@ldesign/kit')
 
-      const result = getDefaultConfigPath('D:\\project', false)
+      PathUtils.resolve.mockImplementation((cwd, file) => `${cwd}/${file}`)
 
-      expect(result).toBe('D:\\project\\launcher.config.js')
+      const result = getDefaultConfigPath('/project', false)
+
+      expect(result).toBe('/project/launcher.config.js')
     })
   })
   

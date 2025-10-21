@@ -4,6 +4,13 @@
   "description": "LDesign 设计系统 - 基于 pnpm 工作空间的 monorepo",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/**",
+    "library/**",
+    "app",
+    "app_simple",
+    "tools/**"
+  ],
   "scripts": {
     "dev": "pnpm --filter ldesign-simple-app dev",
     "build": "tsx scripts/build-all.ts",

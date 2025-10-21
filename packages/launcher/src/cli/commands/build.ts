@@ -13,6 +13,7 @@ import { PathUtils } from '../../utils/path-utils'
 import { ViteLauncher } from '../../core/ViteLauncher'
 import type { CliCommandDefinition, CliContext } from '../../types'
 import { DEFAULT_OUT_DIR, DEFAULT_BUILD_TARGET } from '../../constants'
+import pc from 'picocolors'
 
 /**
  * Build 命令类
@@ -89,36 +90,6 @@ export class BuildCommand implements CliCommandDefinition {
       description: '分析构建产物',
       type: 'boolean' as const,
       default: false
-    },
-    {
-      name: 'skipDepsCheck',
-      description: '跳过 workspace 依赖检查',
-      type: 'boolean' as const,
-      default: false
-    },
-    {
-      name: 'autoBuildDeps',
-      description: '自动构建未构建的 workspace 依赖',
-      type: 'boolean' as const,
-      default: false
-    },
-    {
-      name: 'cache',
-      description: '启用构建缓存',
-      type: 'boolean' as const,
-      default: true
-    },
-    {
-      name: 'clearCache',
-      description: '清除构建缓存',
-      type: 'boolean' as const,
-      default: false
-    },
-    {
-      name: 'smartSplit',
-      description: '启用智能代码分割',
-      type: 'boolean' as const,
-      default: true
     }
   ]
 
@@ -196,112 +167,13 @@ export class BuildCommand implements CliCommandDefinition {
 
       // 立即输出环境标识，不依赖logger
       if (!context.options.silent) {
-        console.log(`\n🏗️  构建环境: ${envLabel}`)
-        console.log(`📁 工作目录: ${context.cwd}`)
-        console.log(`⚙️  构建模式: ${context.options.mode || 'production'}`)
+        console.log(`\n🏗️  ${pc.cyan('LDesign Launcher')} - ${envLabel}`)
+        console.log(`📁 ${pc.gray('工作目录:')} ${context.cwd}`)
+        console.log(`⚙️  ${pc.gray('模式:')} ${context.options.mode || 'production'}`)
         console.log('')
       }
 
       logger.info('正在执行生产构建...')
-
-      // 处理缓存清除
-      if (context.options.clearCache) {
-        try {
-          const { BuildCacheManager } = await import('../../utils/build-cache')
-          const cacheManager = new BuildCacheManager(context.cwd)
-          await cacheManager.initialize()
-          await cacheManager.clear()
-          logger.success('构建缓存已清除')
-        } catch (error) {
-          logger.debug('清除缓存失败: ' + (error as Error).message)
-        }
-      }
-
-      // 检查构建缓存
-      let shouldBuild = true
-      let cacheManager: any = null
-
-      if (context.options.cache && !context.options.clearCache) {
-        try {
-          const { BuildCacheManager } = await import('../../utils/build-cache')
-          cacheManager = new BuildCacheManager(context.cwd)
-          await cacheManager.initialize()
-
-          // 读取 package.json 获取依赖信息
-          const packageJsonPath = PathUtils.join(context.cwd, 'package.json')
-          let dependencies = {}
-          let configHash = ''
-
-          if (await FileSystem.exists(packageJsonPath)) {
-            const pkgContent = await FileSystem.readFile(packageJsonPath)
-            const pkg = JSON.parse(pkgContent)
-            dependencies = { ...pkg.dependencies, ...pkg.devDependencies }
-            configHash = await cacheManager.calculateConfigHash({
-              mode: context.options.mode,
-              environment,
-              minify: context.options.minify,
-              target: context.options.target
-            })
-          }
-
-          // 检查是否需要重新构建
-          const sourceFiles = [packageJsonPath]
-          shouldBuild = await cacheManager.shouldRebuild(
-            environment,
-            configHash,
-            sourceFiles
-          )
-
-          if (!shouldBuild) {
-            logger.success('使用缓存的构建结果，跳过构建')
-            const stats = await cacheManager.getStats()
-            logger.info(`缓存文件数: ${stats.fileCount}`)
-            logger.info(`缓存大小: ${Math.round(stats.size / 1024)}KB`)
-            return
-          }
-        } catch (error) {
-          logger.debug('缓存检查失败: ' + (error as Error).message)
-          shouldBuild = true
-        }
-      }
-
-      // 检查 workspace 依赖是否已构建
-      if (!context.options.skipDepsCheck) {
-        try {
-          const { WorkspaceDepsManager } = await import('../../utils/workspace-deps')
-          const depsManager = new WorkspaceDepsManager(context.cwd)
-          const unbuiltDeps = await depsManager.checkUnbuiltDeps(context.cwd)
-
-          if (unbuiltDeps.length > 0) {
-            logger.warn(`检测到未构建的 workspace 依赖: ${unbuiltDeps.join(', ')}`)
-
-            if (context.options.autoBuildDeps) {
-              logger.info('正在自动构建依赖包...')
-              const results = await depsManager.buildPackages(unbuiltDeps)
-
-              const failed = Array.from(results.entries())
-                .filter(([_, success]) => !success)
-                .map(([name]) => name)
-
-              if (failed.length > 0) {
-                logger.error(`以下依赖包构建失败: ${failed.join(', ')}`)
-                logger.info('请手动构建这些包后再试')
-                process.exit(1)
-              }
-
-              logger.success('所有依赖包构建完成')
-            } else {
-              logger.info('提示: 使用 --auto-build-deps 自动构建依赖包')
-              logger.info('或手动构建这些包:')
-              unbuiltDeps.forEach(dep => {
-                logger.info(`  cd packages/${dep.replace('@ldesign/', '')} && pnpm run build`)
-              })
-            }
-          }
-        } catch (error) {
-          logger.debug('依赖检查失败: ' + (error as Error).message)
-        }
-      }
 
       // 解析输出目录
       const outDir = PathUtils.resolve(context.cwd, context.options.outDir || DEFAULT_OUT_DIR)
@@ -310,23 +182,6 @@ export class BuildCommand implements CliCommandDefinition {
       if (context.options.emptyOutDir && await FileSystem.exists(outDir)) {
         logger.info('正在清空输出目录...', { outDir })
         await FileSystem.remove(outDir)
-      }
-
-      // 准备智能代码分割配置
-      let rollupOptions: any = {}
-      if (context.options.smartSplit) {
-        try {
-          const { CodeSplittingManager } = await import('../../utils/code-splitting')
-          const splittingManager = new CodeSplittingManager({
-            enabled: true,
-            maxVendorSize: 500,
-            separateCSS: true
-          })
-          rollupOptions = splittingManager.generateRollupOptions()
-          logger.debug('智能代码分割已启用')
-        } catch (error) {
-          logger.debug('代码分割配置失败: ' + (error as Error).message)
-        }
       }
 
       // 创建 ViteLauncher 实例
@@ -344,8 +199,7 @@ export class BuildCommand implements CliCommandDefinition {
             emptyOutDir: context.options.emptyOutDir !== false,
             reportCompressedSize: context.options.report || false,
             ssr: context.options.ssr || false,
-            watch: context.options.watch ? {} : undefined,
-            rollupOptions
+            watch: context.options.watch ? {} : undefined
           },
           launcher: {
             logLevel: context.options.debug ? 'debug' : 'info',
@@ -362,7 +216,7 @@ export class BuildCommand implements CliCommandDefinition {
         logger.info('构建开始')
       })
 
-      launcher.on('buildEnd', async (data) => {
+      launcher.on('buildEnd', (data) => {
         const duration = data.duration
         logger.success(`构建完成 (${duration}ms)`)
 
@@ -379,32 +233,6 @@ export class BuildCommand implements CliCommandDefinition {
             }
             if (cssFiles.length > 0) {
               logger.info(`CSS 文件: ${cssFiles.length} 个`)
-            }
-
-            // 更新构建缓存
-            if (context.options.cache && cacheManager) {
-              try {
-                const packageJsonPath = PathUtils.join(context.cwd, 'package.json')
-                const pkgContent = await FileSystem.readFile(packageJsonPath)
-                const pkg = JSON.parse(pkgContent)
-                const dependencies = { ...pkg.dependencies, ...pkg.devDependencies }
-                const configHash = await cacheManager.calculateConfigHash({
-                  mode: context.options.mode,
-                  environment,
-                  minify: context.options.minify,
-                  target: context.options.target
-                })
-
-                await cacheManager.updateManifest(
-                  environment,
-                  configHash,
-                  [packageJsonPath],
-                  dependencies
-                )
-                logger.debug('构建缓存已更新')
-              } catch (error) {
-                logger.debug('更新缓存失败: ' + (error as Error).message)
-              }
             }
           }
         }

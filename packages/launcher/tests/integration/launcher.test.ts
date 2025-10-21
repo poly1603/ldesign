@@ -113,7 +113,7 @@ describe('ViteLauncher 集成测试', () => {
   })
   
   describe('完整的开发流程', () => {
-    it.skip('应该成功启动开发服务器', async () => {
+    it('应该成功启动开发服务器', async () => {
       // 监听状态变化
       const statusChanges: LauncherStatus[] = []
       launcher.on('statusChange', (data) => {
@@ -316,7 +316,7 @@ describe('ViteLauncher 集成测试', () => {
   })
   
   describe('事件系统集成', () => {
-    it.skip('应该正确触发和处理事件', async () => {
+    it('应该正确触发和处理事件', async () => {
       const events: string[] = []
       
       // 注册事件监听器
@@ -341,7 +341,7 @@ describe('ViteLauncher 集成测试', () => {
   })
   
   describe('错误处理集成', () => {
-    it.skip('应该正确处理启动错误', async () => {
+    it('应该正确处理启动错误', async () => {
       // Mock 启动失败
       const { createServer } = await import('vite')
       vi.mocked(createServer).mockRejectedValueOnce(new Error('启动失败'))
@@ -361,7 +361,7 @@ describe('ViteLauncher 集成测试', () => {
       expect(stats.errorCount).toBe(1)
     })
     
-    it.skip('应该正确处理构建错误', async () => {
+    it('应该正确处理构建错误', async () => {
       // Mock 构建失败
       const { build } = await import('vite')
       vi.mocked(build).mockRejectedValueOnce(new Error('构建失败'))
@@ -378,7 +378,7 @@ describe('ViteLauncher 集成测试', () => {
   })
   
   describe('性能监控集成', () => {
-    it.skip('应该正确记录性能指标', async () => {
+    it('应该正确记录性能指标', async () => {
       const startTime = Date.now()
       
       // 执行操作

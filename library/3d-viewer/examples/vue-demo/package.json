@@ -1,5 +1,5 @@
 {
-  "name": "vue-demo",
+  "name": "@3d-viewer/vue-demo",
   "version": "1.0.0",
   "private": true,
   "type": "module",

@@ -35,41 +35,41 @@ export class ToolsManager {
     this.plugins = []
 
     // 字体转换工具
-    if (this.config?.font?.enabled) {
+    if (this.config.font?.enabled) {
       const fontPlugin = createFontConverterPlugin({
-        sourceDir: this.config?.font.sourceDir || './src/assets/fonts',
-        outputDir: this.config?.font.outputDir || './public/fonts',
-        formats: this.config?.font.formats || ['woff2', 'woff'],
-        subset: this.config?.font.subset ?? true,
-        generateCSS: this.config?.font.generateCSS ?? true,
-        fontDisplay: this.config?.font.fontDisplay || 'swap'
+        sourceDir: this.config.font.sourceDir || './src/assets/fonts',
+        outputDir: this.config.font.outputDir || './public/fonts',
+        formats: this.config.font.formats || ['woff2', 'woff'],
+        subset: this.config.font.subset ?? true,
+        generateCSS: this.config.font.generateCSS ?? true,
+        fontDisplay: this.config.font.fontDisplay || 'swap'
       })
       this.plugins.push(fontPlugin)
     }
 
     // SVG 组件生成工具
-    if (this.config?.svg?.enabled) {
+    if (this.config.svg?.enabled) {
       const svgPlugin = createSVGComponentPlugin({
-        sourceDir: this.config?.svg.sourceDir || './src/assets/icons',
-        outputDir: this.config?.svg.outputDir || './src/components/icons',
-        framework: this.config?.svg.framework || 'vue',
-        typescript: this.config?.svg.typescript ?? true,
-        optimize: this.config?.svg.optimize ?? true,
-        generateIndex: this.config?.svg.generateIndex ?? true
+        sourceDir: this.config.svg.sourceDir || './src/assets/icons',
+        outputDir: this.config.svg.outputDir || './src/components/icons',
+        framework: this.config.svg.framework || 'vue',
+        typescript: this.config.svg.typescript ?? true,
+        optimize: this.config.svg.optimize ?? true,
+        generateIndex: this.config.svg.generateIndex ?? true
       })
       this.plugins.push(svgPlugin)
     }
 
     // 图片优化工具
-    if (this.config?.image?.enabled) {
+    if (this.config.image?.enabled) {
       const imagePlugin = createImageOptimizerPlugin({
-        sourceDir: this.config?.image.sourceDir || './src/assets/images',
-        outputDir: this.config?.image.outputDir || './public/images',
-        outputFormats: this.config?.image.formats || ['webp', 'jpeg'],
-        quality: this.config?.image.quality || { webp: 80, jpeg: 85 },
-        responsive: this.config?.image.responsive ?? true,
-        responsiveSizes: this.config?.image.responsiveSizes || [320, 640, 768, 1024, 1280, 1920],
-        generateManifest: this.config?.image.generateManifest ?? true
+        sourceDir: this.config.image.sourceDir || './src/assets/images',
+        outputDir: this.config.image.outputDir || './public/images',
+        outputFormats: this.config.image.formats || ['webp', 'jpeg'],
+        quality: this.config.image.quality || { webp: 80, jpeg: 85 },
+        responsive: this.config.image.responsive ?? true,
+        responsiveSizes: this.config.image.responsiveSizes || [320, 640, 768, 1024, 1280, 1920],
+        generateManifest: this.config.image.generateManifest ?? true
       })
       this.plugins.push(imagePlugin)
     }
@@ -77,14 +77,14 @@ export class ToolsManager {
 
 
     // API 文档生成工具
-    if (this.config?.apiDocs?.enabled) {
+    if (this.config.apiDocs?.enabled) {
       const apiDocPlugin = createAPIDocPlugin({
-        sourceDir: this.config?.apiDocs.sourceDir || './src/api',
-        outputDir: this.config?.apiDocs.outputDir || './docs/api',
-        format: this.config?.apiDocs.format || 'openapi',
-        interactive: this.config?.apiDocs.interactive ?? true,
-        generateExamples: this.config?.apiDocs.generateExamples ?? true,
-        includePrivate: this.config?.apiDocs.includePrivate ?? false
+        sourceDir: this.config.apiDocs.sourceDir || './src/api',
+        outputDir: this.config.apiDocs.outputDir || './docs/api',
+        format: this.config.apiDocs.format || 'openapi',
+        interactive: this.config.apiDocs.interactive ?? true,
+        generateExamples: this.config.apiDocs.generateExamples ?? true,
+        includePrivate: this.config.apiDocs.includePrivate ?? false
       })
       this.plugins.push(apiDocPlugin)
     }
@@ -92,16 +92,16 @@ export class ToolsManager {
 
 
     // PWA 支持工具
-    if (this.config?.pwa?.enabled) {
+    if (this.config.pwa?.enabled) {
       const pwaPlugin = createPWASupportPlugin({
-        appName: this.config?.pwa.appName || 'LDesign App',
-        shortName: this.config?.pwa.shortName || 'LDesign',
-        description: this.config?.pwa.description || 'LDesign 应用程序',
-        themeColor: this.config?.pwa.themeColor || '#722ED1',
-        backgroundColor: this.config?.pwa.backgroundColor || '#ffffff',
-        generateSW: this.config?.pwa.generateSW ?? true,
-        cacheStrategy: this.config?.pwa.cacheStrategy || 'staleWhileRevalidate',
-        offlinePage: this.config?.pwa.offlinePage || 'offline.html'
+        appName: this.config.pwa.appName || 'LDesign App',
+        shortName: this.config.pwa.shortName || 'LDesign',
+        description: this.config.pwa.description || 'LDesign 应用程序',
+        themeColor: this.config.pwa.themeColor || '#722ED1',
+        backgroundColor: this.config.pwa.backgroundColor || '#ffffff',
+        generateSW: this.config.pwa.generateSW ?? true,
+        cacheStrategy: this.config.pwa.cacheStrategy || 'staleWhileRevalidate',
+        offlinePage: this.config.pwa.offlinePage || 'offline.html'
       })
       this.plugins.push(pwaPlugin)
     }

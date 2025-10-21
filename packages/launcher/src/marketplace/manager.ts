@@ -460,22 +460,22 @@ module.exports = {
   version: '${metadata.versions[0].version}',
   
   async install(context) {
-    
+    console.log('Installing ${metadata.name}...')
     // Plugin installation logic
   },
 
   async activate(context) {
-    
+    console.log('Activating ${metadata.name}...')
     // Plugin activation logic
   },
 
   async deactivate(context) {
-    
+    console.log('Deactivating ${metadata.name}...')
     // Plugin deactivation logic
   },
 
   async uninstall(context) {
-    
+    console.log('Uninstalling ${metadata.name}...')
     // Plugin uninstallation logic
   }
 }

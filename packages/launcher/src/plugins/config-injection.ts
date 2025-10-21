@@ -113,10 +113,10 @@ export function createConfigInjectionPlugin(options: ConfigInjectionOptions): Pl
       }
 
       // 注入 launcher 配置
-      config.define['import.meta.env?.VITE_LAUNCHER_CONFIG'] = JSON.stringify(safeConfig)
-      config.define['import.meta.env?.VITE_LAUNCHER_ENVIRONMENT'] = JSON.stringify(environment)
-      config.define['import.meta.env?.VITE_LAUNCHER_COMMAND'] = JSON.stringify(command)
-      config.define['import.meta.env?.VITE_LAUNCHER_TIMESTAMP'] = JSON.stringify(Date.now())
+      config.define['import.meta.env.VITE_LAUNCHER_CONFIG'] = JSON.stringify(safeConfig)
+      config.define['import.meta.env.VITE_LAUNCHER_ENVIRONMENT'] = JSON.stringify(environment)
+      config.define['import.meta.env.VITE_LAUNCHER_COMMAND'] = JSON.stringify(command)
+      config.define['import.meta.env.VITE_LAUNCHER_TIMESTAMP'] = JSON.stringify(Date.now())
 
       // 静默注入配置到环境变量
     },
@@ -194,7 +194,7 @@ export const getClientConfigUtils = () => {
 (function() {
   let cachedConfig = null;
 
-  window.__LDESIGN_LAUNCHER__! = {
+  window.__LDESIGN_LAUNCHER__ = {
     // 获取 launcher 配置
     getConfig() {
       return cachedConfig?.config || {}
@@ -235,17 +235,20 @@ export const getClientConfigUtils = () => {
       const timestamp = new Date(this.getTimestamp())
 
       console.group('🚀 LDesign Launcher 配置信息')
-            )
-            if (fullConfig.server) {
-              }
+      console.log('环境:', env)
+      console.log('启动时间:', timestamp.toLocaleString())
+      console.log('配置:', fullConfig.config)
+      if (fullConfig.server) {
+        console.log('服务器:', fullConfig.server)
+      }
       console.groupEnd()
     }
   }
 
   // 初始化配置
-  window.__LDESIGN_LAUNCHER__!.getFullConfig().then(() => {
-    }\`)
-     查看完整配置')
+  window.__LDESIGN_LAUNCHER__.getFullConfig().then(() => {
+    console.log(\`🌍 当前环境: \${window.__LDESIGN_LAUNCHER__.getEnvironment()}\`)
+    console.log('💡 使用 window.__LDESIGN_LAUNCHER__.logConfig() 查看完整配置')
   }).catch(console.error)
 })();
 `

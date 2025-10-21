@@ -38,7 +38,7 @@ export class TestCommand {
   name = 'test'
   description = '运行测试'
   alias = 't'
-
+  
   options = [
     {
       name: 'framework',
@@ -131,7 +131,7 @@ export class TestCommand {
     try {
       // 检测可用的测试框架
       const framework = options.framework || await this.detectTestFramework()
-
+      
       if (!framework) {
         this.logger.error('未检测到测试框架，请安装 vitest、jest 或其他支持的测试框架')
         process.exit(1)
@@ -157,7 +157,7 @@ export class TestCommand {
       if (options.watch) {
         // 启动监听模式
         await this.testIntegration.startWatchMode()
-
+        
         // 保持进程运行
         process.stdin.resume()
         process.on('SIGINT', () => {
@@ -167,10 +167,10 @@ export class TestCommand {
       } else {
         // 运行一次测试
         const result = await this.testIntegration.runTests()
-
+        
         // 显示结果
         this.displayResults(result)
-
+        
         // 检查覆盖率阈值
         if (options.coverage) {
           const thresholdMet = this.testIntegration.checkCoverageThreshold()
@@ -178,7 +178,7 @@ export class TestCommand {
             this.logger.warn('覆盖率未达到设定阈值')
           }
         }
-
+        
         // 根据测试结果设置退出码
         process.exit(result.passed ? 0 : 1)
       }
@@ -194,23 +194,23 @@ export class TestCommand {
   private async detectTestFramework(): Promise<TestFramework | null> {
     const fs = await import('fs-extra')
     const path = await import('path')
-
+    
     try {
       const packageJsonPath = path.resolve(process.cwd(), 'package.json')
       const packageJson = await fs.readJson(packageJsonPath)
-
+      
       const allDeps = {
         ...packageJson.dependencies,
         ...packageJson.devDependencies
       }
-
+      
       // 按优先级检测框架
       if (allDeps.vitest) return 'vitest'
       if (allDeps.jest) return 'jest'
       if (allDeps.mocha) return 'mocha'
       if (allDeps.cypress) return 'cypress'
       if (allDeps.playwright || allDeps['@playwright/test']) return 'playwright'
-
+      
       return null
     } catch (error) {
       this.logger.debug('无法读取 package.json')
@@ -249,9 +249,10 @@ export class TestCommand {
    * 显示测试结果
    */
   private displayResults(result: any): void {
-    console.log('\n🧪 测试结果')
-    console.log('═'.repeat(50))
-
+    console.log()
+    console.log(chalk.bold('测试结果:'))
+    console.log(chalk.gray('─'.repeat(50)))
+    
     // 显示统计信息
     const stats = [
       ['总计', result.total],
@@ -260,40 +261,44 @@ export class TestCommand {
       ['跳过', result.skipped > 0 ? chalk.yellow(result.skipped) : result.skipped],
       ['耗时', `${result.duration}ms`]
     ]
-
+    
     stats.forEach(([label, value]) => {
-      console.log(`  ${chalk.gray(label)}: ${value}`)
+      console.log(`  ${chalk.gray(label + ':')} ${value}`)
     })
-
+    
     // 显示覆盖率信息
     if (result.coverage) {
-      console.log('\n📊 代码覆盖率')
-      console.log('─'.repeat(50))
-
+      console.log()
+      console.log(chalk.bold('覆盖率:'))
+      console.log(chalk.gray('─'.repeat(50)))
+      
       const coverage = [
-        ['行覆盖率', `${result.coverage.lines} % `],
-        ['分支覆盖率', `${result.coverage.branches} % `],
-        ['函数覆盖率', `${result.coverage.functions} % `],
-        ['语句覆盖率', `${result.coverage.statements} % `]
+        ['行覆盖率', `${result.coverage.lines}%`],
+        ['分支覆盖率', `${result.coverage.branches}%`],
+        ['函数覆盖率', `${result.coverage.functions}%`],
+        ['语句覆盖率', `${result.coverage.statements}%`]
       ]
-
+      
       coverage.forEach(([label, value]) => {
         const percentage = parseFloat(value)
         const coloredValue = percentage >= 80 ? chalk.green(value) :
-          percentage >= 60 ? chalk.yellow(value) :
-            chalk.red(value)
-        console.log(`  ${chalk.gray(label)}: ${coloredValue}`)
+                           percentage >= 60 ? chalk.yellow(value) :
+                           chalk.red(value)
+        console.log(`  ${chalk.gray(label + ':')} ${coloredValue}`)
       })
     }
-
+    
     // 显示错误信息
     if (result.errors && result.errors.length > 0) {
-      console.log('\n❌ 错误信息')
-      console.log('─'.repeat(50))
+      console.log()
+      console.log(chalk.bold.red('错误:'))
+      console.log(chalk.gray('─'.repeat(50)))
       result.errors.forEach((error: string) => {
-        console.log(`  ${error}`)
+        console.log(chalk.red(`  • ${error}`))
       })
     }
+    
+    console.log(chalk.gray('─'.repeat(50)))
   }
 
   /**

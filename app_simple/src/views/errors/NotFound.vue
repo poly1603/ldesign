@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { useRouter } from '@ldesign/router'
-import { useI18n } from '../i18n'
+import { useI18n } from '../../i18n'
 
 const router = useRouter()
 const { t } = useI18n()

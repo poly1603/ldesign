@@ -9,6 +9,7 @@
 
 import { Command } from 'commander'
 import { Logger } from '../../utils/logger'
+import chalk from 'chalk'
 import ora from 'ora'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -235,10 +236,10 @@ export class MonitorCommand {
 
       // 加载性能数据
       const data = await this.loadPerformanceData(options.period)
-
+      
       // 生成报告
       const report = await this.createReport(data, options.format)
-
+      
       // 保存报告
       const outputPath = `${options.output}.${options.format}`
       await this.saveReport(report, outputPath, options.format)
@@ -354,9 +355,9 @@ export class MonitorCommand {
         console.log(`${options.get}: ${value}`)
       } else if (options.list) {
         const config = await this.getAllConfig()
-        console.log('\n监控配置:')
+        console.log(chalk.cyan('\n📋 监控配置:\n'))
         Object.entries(config).forEach(([key, value]) => {
-          console.log(`  ${key}: ${value}`)
+          console.log(`${chalk.yellow(key)}: ${value}`)
         })
       }
     } catch (error) {
@@ -401,7 +402,7 @@ export class MonitorCommand {
     const timestamp = new Date().toISOString()
     const filename = `metrics-${timestamp.split('T')[0]}.json`
     const filepath = path.join(outputDir, filename)
-
+    
     // 追加到日志文件
     const logEntry = { timestamp, ...metrics }
     await fs.appendFile(filepath, JSON.stringify(logEntry) + '\n', 'utf-8')
@@ -409,21 +410,20 @@ export class MonitorCommand {
 
   private displayRealTimeMetrics(metrics: PerformanceMetrics, target: string): void {
     console.clear()
-    console.log(`\n📊 实时性能监控 - ${target}`)
-    console.log('═'.repeat(60))
-
+    console.log(chalk.cyan(`\n📊 实时性能监控 - ${target}\n`))
+    
     // 显示 Web Vitals
-    console.log('\n🎯 Web Vitals:')
-    console.log(`  LCP: ${metrics.lcp}ms`)
-    console.log(`  FID: ${metrics.fid}ms`)
-    console.log(`  CLS: ${metrics.cls}`)
-
+    console.log(chalk.yellow('Core Web Vitals:'))
+    console.log(`  LCP: ${this.formatMetric(metrics.webVitals.LCP, 'ms')}`)
+    console.log(`  FID: ${this.formatMetric(metrics.webVitals.FID, 'ms')}`)
+    console.log(`  CLS: ${this.formatMetric(metrics.webVitals.CLS, '')}`)
+    
     // 显示运行时指标
-    console.log('\n⚡ 运行时指标:')
-    console.log(`  CPU: ${metrics.cpu}%`)
-    console.log(`  内存: ${metrics.memory}MB`)
-
-    console.log(`\n最后更新: ${new Date().toLocaleTimeString()}`)
+    console.log(chalk.yellow('\n运行时指标:'))
+    console.log(`  内存使用: ${this.formatMetric(metrics.runtimeMetrics.memoryUsage, 'MB')}`)
+    console.log(`  CPU 使用: ${this.formatMetric(metrics.runtimeMetrics.cpuUsage, '%')}`)
+    
+    console.log(chalk.gray(`\n最后更新: ${new Date().toLocaleTimeString()}`))
   }
 
   private formatMetric(value: number, unit: string): string {

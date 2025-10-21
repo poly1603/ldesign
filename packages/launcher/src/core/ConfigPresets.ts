@@ -10,6 +10,7 @@
 
 import type { ViteLauncherConfig, ProjectPreset, LauncherConfigOptions } from '../types'
 import { DEFAULT_VITE_LAUNCHER_CONFIG } from '../constants'
+import { createAliasManager } from './AliasManager'
 
 /**
  * 预设配置基类

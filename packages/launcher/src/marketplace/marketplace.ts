@@ -51,7 +51,7 @@ export class PluginMarketplace {
       }
 
       // 启动自动更新
-      if (this.config?.autoUpdate) {
+      if (this.config.autoUpdate) {
         this.startAutoUpdate()
       }
     } catch (error) {
@@ -327,7 +327,7 @@ export class PluginMarketplace {
    * 启动自动更新
    */
   private startAutoUpdate(): void {
-    const interval = this.config?.updateInterval! * 60 * 60 * 1000
+    const interval = this.config.updateInterval! * 60 * 60 * 1000
 
     this.updateTimer = setInterval(async () => {
       this.logger.info('Checking for plugin updates...')

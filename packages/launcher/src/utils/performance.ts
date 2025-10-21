@@ -268,12 +268,12 @@ export function createTimer(name: string) {
     start,
     end(): number {
       const duration = Date.now() - start
-      console.log(`⏱️  ${name} completed: ${duration}ms`)
+      console.log(`⏱️  ${name}: ${duration}ms`)
       return duration
     },
     lap(label: string): number {
       const duration = Date.now() - start
-      console.log(`⏱️  ${name} - ${label}: ${duration}ms`)
+      console.log(`⏱️  ${name} (${label}): ${duration}ms`)
       return duration
     }
   }

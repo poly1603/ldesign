@@ -190,17 +190,17 @@ export class PluginCommand implements CliCommandDefinition {
       }
 
       // 显示搜索结果
-      console.log(`\n找到 ${results.length} 个插件:\n`)
-
+      console.log(chalk.green(`\n找到 ${results.length} 个插件:\n`))
+      
       results.forEach((plugin, index) => {
         const official = plugin.official ? chalk.blue('[官方]') : ''
         const installed = plugin.installed ? chalk.green('[已安装]') : ''
         const rating = '★'.repeat(Math.round(plugin.rating))
-
-        console.log(`${(index + 1).toString().padStart(2)}. ${chalk.bold(plugin.name)} ${official} ${installed}`)
-        console.log(`   ${chalk.gray(plugin.description)}`)
-        console.log(`   ${chalk.cyan(plugin.downloads)} 下载 • ${rating} (${plugin.reviewCount})`)
-        console.log(`   版本: ${plugin.version} • 作者: ${plugin.author}`)
+        
+        console.log(`${chalk.cyan((index + 1).toString().padStart(2))}. ${chalk.bold(plugin.name)} ${official} ${installed}`)
+        console.log(`    ${plugin.description}`)
+        console.log(`    ${chalk.gray(`v${plugin.version} • ${plugin.downloads.toLocaleString()} 下载 • ${rating} (${plugin.reviewCount})`)}`)
+        console.log(`    ${chalk.yellow(plugin.tags.join(', '))}`)
         console.log()
       })
 
@@ -249,9 +249,9 @@ export class PluginCommand implements CliCommandDefinition {
       }
 
       logger.info(`正在卸载插件 ${name}...`)
-
+      
       await pluginMarket.uninstallPlugin(name)
-
+      
       logger.success(`插件 ${name} 卸载成功`)
 
     } catch (error) {
@@ -270,28 +270,28 @@ export class PluginCommand implements CliCommandDefinition {
       if (name) {
         // 更新指定插件
         logger.info(`正在更新插件 ${name}...`)
-
+        
         await pluginMarket.updatePlugin(name, options.version)
-
+        
         logger.success(`插件 ${name} 更新成功`)
       } else {
         // 更新所有插件
         logger.info('正在检查插件更新...')
-
+        
         const updates = await pluginMarket.checkUpdates()
-
+        
         if (updates.length === 0) {
           logger.info('所有插件都是最新版本')
           return
         }
 
         logger.info(`发现 ${updates.length} 个插件有更新，正在更新...`)
-
+        
         for (const update of updates) {
           logger.info(`正在更新 ${update.plugin.name}...`)
           await pluginMarket.updatePlugin(update.plugin.name)
         }
-
+        
         logger.success(`成功更新 ${updates.length} 个插件`)
       }
 
@@ -322,22 +322,24 @@ export class PluginCommand implements CliCommandDefinition {
           return
         }
 
-        console.log(`\n找到 ${updates.length} 个可更新的插件:\n`)
-
+        console.log(chalk.yellow(`\n发现 ${updates.length} 个插件有更新:\n`))
+        
         updates.forEach((update, index) => {
-          console.log(`${(index + 1).toString().padStart(2)}. ${chalk.bold(update.plugin.name)}`)
-          console.log(`   当前版本: ${update.currentVersion} → 最新版本: ${update.latestVersion}`)
+          console.log(`${chalk.cyan((index + 1).toString().padStart(2))}. ${chalk.bold(update.plugin.name)}`)
+          console.log(`    ${chalk.gray(`当前版本: ${update.currentVersion}`)}`)
+          console.log(`    ${chalk.green(`最新版本: ${update.latestVersion}`)}`)
           console.log()
         })
 
       } else {
-        console.log(`\n已安装插件:\n`)
-
+        console.log(chalk.green(`\n已安装 ${installedPlugins.length} 个插件:\n`))
+        
         installedPlugins.forEach((plugin, index) => {
           const official = plugin.official ? chalk.blue('[官方]') : ''
-
-          console.log(`${(index + 1).toString().padStart(2)}. ${chalk.bold(plugin.name)} ${official}`)
-          console.log(`   版本: ${plugin.version}`)
+          
+          console.log(`${chalk.cyan((index + 1).toString().padStart(2))}. ${chalk.bold(plugin.name)} ${official}`)
+          console.log(`    ${plugin.description}`)
+          console.log(`    ${chalk.gray(`v${plugin.installedVersion} • ${plugin.category}`)}`)
           console.log()
         })
       }
@@ -359,70 +361,83 @@ export class PluginCommand implements CliCommandDefinition {
       }
 
       logger.info(`正在获取插件信息: ${name}...`)
-
+      
       const plugin = await pluginMarket.getPluginInfo(name)
-
+      
 
       if (!plugin) {
-        logger.error(`插件不存在: ${name} `)
+        logger.error(`插件不存在: ${name}`)
         return
       }
 
       // 显示插件详细信息
-      console.log(`\n插件详情: ${chalk.bold(plugin.name)}`)
-      console.log('─'.repeat(50))
-
+      console.log()
+      console.log(chalk.bold.cyan(`${plugin.name}`))
+      
       const badges = []
       if (plugin.official) badges.push(chalk.blue('[官方]'))
       if (plugin.installed) badges.push(chalk.green('[已安装]'))
-      if (badges.length > 0) {
-        console.log(`标签: ${badges.join(' ')}`)
-      }
-
-      console.log(`描述: ${plugin.description}`)
-      console.log(`版本: ${plugin.version}`)
-      console.log(`作者: ${plugin.author}`)
-      console.log(`下载量: ${plugin.downloads}`)
-      console.log(`评分: ${plugin.rating} (${plugin.reviewCount} 评论)`)
-
-      if (plugin.homepage) {
-        console.log(`主页: ${plugin.homepage}`)
-      }
-
-      if (plugin.repository) {
-        console.log(`仓库: ${plugin.repository}`)
-      }
-
+      if (badges.length > 0) console.log(badges.join(' '))
+      
       console.log()
-
-      if (plugin.tags && plugin.tags.length > 0) {
-        console.log(`标签: ${plugin.tags.join(', ')}`)
+      console.log(chalk.bold('描述:'))
+      console.log(`  ${plugin.description}`)
+      
+      console.log()
+      console.log(chalk.bold('基本信息:'))
+      console.log(`  版本: ${plugin.version}`)
+      console.log(`  作者: ${plugin.author.name}`)
+      console.log(`  许可证: ${plugin.license}`)
+      console.log(`  类别: ${plugin.category}`)
+      console.log(`  类型: ${plugin.type}`)
+      
+      console.log()
+      console.log(chalk.bold('统计信息:'))
+      console.log(`  下载量: ${plugin.downloads.toLocaleString()}`)
+      console.log(`  评分: ${'★'.repeat(Math.round(plugin.rating))} (${plugin.reviewCount} 评价)`)
+      console.log(`  最后更新: ${new Date(plugin.lastUpdated).toLocaleDateString()}`)
+      
+      if (plugin.tags.length > 0) {
+        console.log()
+        console.log(chalk.bold('标签:'))
+        console.log(`  ${plugin.tags.join(', ')}`)
+      }
+      
+      if (plugin.repository || plugin.homepage || plugin.documentation) {
+        console.log()
+        console.log(chalk.bold('链接:'))
+        if (plugin.repository) console.log(`  仓库: ${plugin.repository}`)
+        if (plugin.homepage) console.log(`  主页: ${plugin.homepage}`)
+        if (plugin.documentation) console.log(`  文档: ${plugin.documentation}`)
       }
 
-      if (plugin.publishedAt) {
-        console.log(`发布时间: ${new Date(plugin.publishedAt).toLocaleDateString()}`)
-      }
-
-      if (plugin.dependencies && Object.keys(plugin.dependencies).length > 0) {
-        console.log('\n依赖:')
+      if (Object.keys(plugin.dependencies).length > 0) {
+        console.log()
+        console.log(chalk.bold('依赖:'))
         Object.entries(plugin.dependencies).forEach(([dep, version]) => {
-          console.log(`  - ${dep}: ${version}`)
+          console.log(`  ${dep}: ${version}`)
         })
       }
 
-      if (plugin.peerDependencies && Object.keys(plugin.peerDependencies).length > 0) {
-        console.log('\n对等依赖:')
+      if (Object.keys(plugin.peerDependencies).length > 0) {
+        console.log()
+        console.log(chalk.bold('对等依赖:'))
         Object.entries(plugin.peerDependencies).forEach(([dep, version]) => {
-          console.log(`  - ${dep}: ${version}`)
+          console.log(`  ${dep}: ${version}`)
         })
       }
 
       if (plugin.examples && plugin.examples.length > 0) {
-        console.log('\n示例:')
+        console.log()
+        console.log(chalk.bold('使用示例:'))
         plugin.examples.forEach((example, index) => {
-          console.log(`  ${index + 1}. ${example.title || example.name}`)
+          console.log(`  ${index + 1}. ${example.title}`)
+          console.log(`     ${example.description}`)
+          console.log(`     ${chalk.gray(JSON.stringify(example.config, null, 6))}`)
         })
       }
+
+      console.log()
 
     } catch (error) {
       logger.error('获取插件信息失败', error)

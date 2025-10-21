@@ -8,8 +8,8 @@
  * @since 1.0.0
  */
 
+import { promises as fs } from 'fs'
 import { join, resolve } from 'path'
-import fs from 'fs/promises'
 import { Logger } from '../utils/logger'
 import { FileSystem } from '../utils/file-system'
 import type { ProjectPreset } from '../types'
@@ -101,18 +101,18 @@ export class ProjectTemplateManager {
     // Vue 3 模板
     this.register(this.createVue3Template())
     this.register(this.createVue3TypeScriptTemplate())
-
+    
     // React 模板
     this.register(this.createReactTemplate())
     this.register(this.createReactTypeScriptTemplate())
-
+    
     // Svelte 模板
     this.register(this.createSvelteTemplate())
     this.register(this.createSvelteTypeScriptTemplate())
-
+    
     // Vue 2 模板
     this.register(this.createVue2Template())
-
+    
     // 原生 JS/TS 模板
     this.register(this.createVanillaTemplate())
     this.register(this.createVanillaTypeScriptTemplate())

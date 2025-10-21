@@ -1,8 +1,8 @@
 /**
  * 性能优化器
- *
+ * 
  * 提供构建和运行时的性能优化功能
- *
+ * 
  * @author LDesign Team
  * @since 1.0.0
  */
@@ -10,30 +10,70 @@
 import { EventEmitter } from 'events'
 import type { Plugin, ResolvedConfig } from 'vite'
 import { Logger } from '../utils/logger'
-import type {
-  PerformanceMetrics,
-  PerformanceOptimizationConfig,
-  PerformanceEventType
-} from '../types/performance'
 
-// 为了向后兼容，重新导出类型
-export type OptimizationOptions = PerformanceOptimizationConfig
-export type { PerformanceMetrics } from '../types/performance'
+export interface OptimizationOptions {
+  /** 启用自动代码分割 */
+  enableAutoSplitting?: boolean
+  /** 启用预加载优化 */
+  enablePreloading?: boolean
+  /** 启用资源压缩 */
+  enableCompression?: boolean
+  /** 启用缓存优化 */
+  enableCaching?: boolean
+  /** 启用并行构建 */
+  enableParallelBuild?: boolean
+  /** 启用树摇优化 */
+  enableTreeShaking?: boolean
+  /** 启用懒加载 */
+  enableLazyLoading?: boolean
+  /** 启用资源内联 */
+  enableInlining?: boolean
+  /** 内联资源大小限制 (bytes) */
+  inlineLimit?: number
+  /** 代码分割策略 */
+  splitStrategy?: 'vendor' | 'modules' | 'custom'
+  /** 自定义分割规则 */
+  customSplitRules?: Record<string, (id: string) => boolean>
+}
+
+export interface PerformanceMetrics {
+  /** 构建时间 (ms) */
+  buildTime?: number
+  /** 包大小 */
+  bundleSize?: {
+    total: number
+    js: number
+    css: number
+    assets: number
+  }
+  /** 模块数量 */
+  moduleCount?: number
+  /** 优化建议 */
+  suggestions?: string[]
+  /** 缓存命中率 */
+  cacheHitRate?: number
+  /** 内存使用 */
+  memoryUsage?: {
+    heapUsed: number
+    heapTotal: number
+    external: number
+  }
+}
 
 /**
  * 性能优化器类
  */
 export class PerformanceOptimizer extends EventEmitter {
   private logger: Logger
-  private options: Required<PerformanceOptimizationConfig>
+  private options: Required<OptimizationOptions>
   private metrics: PerformanceMetrics = {}
   private startTime: number = 0
 
-  constructor(options: PerformanceOptimizationConfig = {}) {
+  constructor(options: OptimizationOptions = {}) {
     super()
-
+    
     this.logger = new Logger('PerformanceOptimizer')
-
+    
     // 设置默认选项
     this.options = {
       enableAutoSplitting: true,
@@ -47,7 +87,6 @@ export class PerformanceOptimizer extends EventEmitter {
       inlineLimit: 4096,
       splitStrategy: 'vendor',
       customSplitRules: {},
-      autoApply: false,
       ...options
     }
   }

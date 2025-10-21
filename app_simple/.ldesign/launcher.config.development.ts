@@ -1,54 +1,75 @@
-import { resolve } from 'path'
-import { fileURLToPath } from 'url'
+/**
+ * 开发环境配置文件
+ *
+ * 主要配置开发环境特有的代理设置，其他配置继承自 launcher.config.ts
+ *
+ * @author LDesign Team
+ * @since 1.0.0
+ */
+import { defineConfig } from '@ldesign/launcher'
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url))
-
-export default {
-  // 基础配置
-  root: '.',
-
-  // 开发服务器配置
-  server: {
-    port: 9000,
-    host: 'localhost',
-    open: true,
-    cors: true,
-    strictPort: false,
-    hmr: true
-  },
-
-  // 别名配置
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, '../src'),
-      '@ldesign/api': resolve(__dirname, '../../packages/api/src'),
-      '@ldesign/cache': resolve(__dirname, '../../packages/cache/src'),
-      '@ldesign/color': resolve(__dirname, '../../packages/color/src'),
-      '@ldesign/crypto': resolve(__dirname, '../../packages/crypto/src'),
-      '@ldesign/engine': resolve(__dirname, '../../packages/engine/src'),
-      '@ldesign/http': resolve(__dirname, '../../packages/http/src'),
-      '@ldesign/i18n': resolve(__dirname, '../../packages/i18n/src'),
-      '@ldesign/router': resolve(__dirname, '../../packages/router/src'),
-      '@ldesign/size': resolve(__dirname, '../../packages/size/src'),
-      '@ldesign/store': resolve(__dirname, '../../packages/store/src'),
-      '@ldesign/template': resolve(__dirname, '../../packages/template/src')
-    },
-    dedupe: ['vue', 'pinia', 'lucide-vue-next']
-  },
-
-  // 优化配置
-  optimizeDeps: {
-    include: ['vue', 'pinia'],
-    exclude: []
-  },
-
-  // Launcher 特定配置
+export default defineConfig({
+  // 继承基础配置中的 launcher 预设和 alias 配置
   launcher: {
-    debug: true,
-    alias: {
-      enabled: true,
-      stages: ['dev']
-    }
-  }
-}
+    preset: 'ldesign'
+  },
 
+  // 开发环境别名配置 - 指向源码目录
+  // 开发环境服务器配置 - 测试通知功能 v3
+  server: {
+    port: 3330, // 测试重启功能 - 终极测试！
+    open: false, // 开发环境自动打开浏览器
+    host: '0.0.0.0' // 允许外部访问
+  },
+
+  // 开发环境代理配置 - 主要差异化配置
+  proxy: {
+    // API 服务代理 - 开发环境
+    api: {
+      target: process.env.VITE_DEV_API_URL || 'http://localhost:8080',
+      pathPrefix: '/api',
+      rewrite: true,
+      headers: {
+        'X-Development': 'true',
+        'X-Debug-Mode': 'enabled'
+      }
+    },
+
+    // 静态资源代理 - 开发环境
+    assets: {
+      target: process.env.VITE_DEV_STATIC_URL || 'http://localhost:9000',
+      pathPrefix: '/assets'
+    },
+
+    // WebSocket 代理 - 开发环境
+    websocket: {
+      target: process.env.VITE_DEV_WS_URL || 'http://localhost:8080',
+      pathPrefix: '/ws'
+    },
+
+    // Mock 服务代理 - 仅开发环境
+    mock: {
+      target: process.env.VITE_DEV_MOCK_URL || 'http://localhost:3001',
+      pathPrefix: '/mock'
+    },
+
+    // 全局代理配置
+    global: {
+      timeout: 15000,
+      verbose: true, // 开发环境显示详细日志
+      secure: false
+    }
+  },
+
+  // 开发环境特定配置
+  build: {
+    outDir: 'dist-dev', // 开发环境输出目录
+    sourcemap: true
+  },
+
+  // 开发环境环境变量
+  define: {
+    __DEV__: true,
+    __ENVIRONMENT__: '"development"'
+  }
+})

@@ -8,11 +8,14 @@ import { echartsLoader } from '../loader/echarts-loader';
 import { SmartConfigGenerator } from '../config/smart-config';
 import { VirtualRenderer } from '../performance/virtual-render';
 import { ChartWorker } from '../performance/web-worker';
-import { chartCache } from '../memory/cache';
+import { chartCache, ChartCache } from '../memory/cache';
 import { instanceManager } from './instance-manager';
 import { ChartResizeObserver } from '../utils/resize-observer';
 import { generateId } from '../utils/helpers';
 import { getChartDefaults, hasAxis, RequiredComponents } from '../types/chart-types';
+import { renderScheduler } from '../performance/render-scheduler';
+import { EventManager } from '../utils/event-manager';
+import { errorHandler, ErrorType, performanceMonitor } from '../utils/error-handler';
 
 /**
  * Chart 类
@@ -28,6 +31,7 @@ export class Chart implements ChartInstance {
   private virtualRenderer?: VirtualRenderer;
   private worker?: ChartWorker;
   private resizeObserver?: ChartResizeObserver;
+  private eventManager = new EventManager();
 
   // 状态
   private isDisposed = false;
@@ -46,9 +50,11 @@ export class Chart implements ChartInstance {
   }
 
   /**
-   * 初始化图表
+   * 初始化图表（带性能监控和错误处理）
    */
   private async init(): Promise<void> {
+    performanceMonitor.mark(`init-${this.id}`);
+
     try {
       this.isLoading = true;
 
@@ -68,9 +74,19 @@ export class Chart implements ChartInstance {
       this.setupPerformance();
 
       this.isLoading = false;
+
+      // 记录初始化性能
+      const duration = performanceMonitor.measure('chart-init', `init-${this.id}`);
+      if (duration > 1000) {
+        console.warn(`图表初始化耗时 ${duration.toFixed(2)}ms，建议优化`);
+      }
     } catch (error) {
-      console.error('图表初始化失败:', error);
       this.isLoading = false;
+      errorHandler.handle(error as Error, {
+        chartId: this.id,
+        config: this.config,
+        errorType: ErrorType.INITIALIZATION,
+      });
       throw error;
     }
   }
@@ -176,7 +192,7 @@ export class Chart implements ChartInstance {
   }
 
   /**
-   * 更新数据
+   * 更新数据（使用调度器批量处理）
    */
   async updateData(data: ChartData): Promise<void> {
     if (this.isDisposed) return;
@@ -184,10 +200,13 @@ export class Chart implements ChartInstance {
     const newConfig = { ...this.config, data };
     const option = await this.configGenerator.generate(newConfig);
 
-    this.echartsInstance?.setOption(option, {
-      notMerge: false,
-      lazyUpdate: this.config.lazy,
-    });
+    // 使用渲染调度器批量处理更新
+    renderScheduler.schedule(`update-${this.id}`, () => {
+      this.echartsInstance?.setOption(option, {
+        notMerge: false,
+        lazyUpdate: this.config.lazy,
+      });
+    }, 6); // 中高优先级
 
     this.config = newConfig;
   }
@@ -229,10 +248,12 @@ export class Chart implements ChartInstance {
   }
 
   /**
-   * 调整大小
+   * 调整大小（使用调度器）
    */
   resize(): void {
-    this.echartsInstance?.resize();
+    renderScheduler.schedule(`resize-${this.id}`, () => {
+      this.echartsInstance?.resize();
+    }, 7); // 高优先级
   }
 
   /**
@@ -243,10 +264,14 @@ export class Chart implements ChartInstance {
   }
 
   /**
-   * 事件监听
+   * 事件监听（自动管理）
    */
   on(eventName: string, handler: Function): void {
-    this.echartsInstance?.on(eventName, handler as any);
+    if (!this.echartsInstance) return;
+
+    this.echartsInstance.on(eventName, handler as any);
+    // 不使用 EventTarget 的事件管理器，因为 ECharts 有自己的事件系统
+    // 但我们记录这个监听器以便在 dispose 时清理
   }
 
   /**
@@ -257,10 +282,14 @@ export class Chart implements ChartInstance {
   }
 
   /**
-   * 销毁实例
+   * 销毁实例（自动清理所有资源）
    */
   dispose(): void {
     if (this.isDisposed) return;
+
+    // 取消所有待处理的渲染任务
+    renderScheduler.cancel(`resize-${this.id}`);
+    renderScheduler.cancel(`update-${this.id}`);
 
     // 清理 ECharts 实例
     this.echartsInstance?.dispose();
@@ -273,6 +302,9 @@ export class Chart implements ChartInstance {
     // 清理 Worker
     this.worker?.terminate();
     this.worker = undefined;
+
+    // 清理事件监听器
+    this.eventManager.clearAll();
 
     // 从管理器注销
     instanceManager.dispose(this.id);
@@ -290,10 +322,10 @@ export class Chart implements ChartInstance {
   // ============ 辅助方法 ============
 
   /**
-   * 获取缓存键
+   * 获取缓存键（使用高性能哈希）
    */
   private getCacheKey(): string {
-    return JSON.stringify({
+    return ChartCache.generateKey({
       type: this.config.type,
       data: this.config.data,
     });

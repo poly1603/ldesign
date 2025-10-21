@@ -1,10 +1,9 @@
 packages:
   - packages/**
   - library/**
+  - tools/**
   - app
   - app_simple
-  - "!packages/icons/tdesign-icons-develop"
-  - "!packages/icons/tdesign-icons-develop/**"
 
 catalog:
   # React 相关

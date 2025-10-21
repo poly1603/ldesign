@@ -4,7 +4,7 @@ import './components/counter-button';
 import './components/theme-toggle';
 import './components/feature-card';
 
-
+console.log('🚀 LDesign Launcher - Lit Web Components 示例已启动');
 
 // 初始化应用
 document.addEventListener('DOMContentLoaded', () => {

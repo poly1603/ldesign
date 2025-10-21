@@ -175,8 +175,7 @@ describe('DevCommand', () => {
   })
   
   describe('命令执行', () => {
-    // 这些测试需要实际启动服务器，会导致超时，暂时跳过
-    it.skip('应该成功启动开发服务器', async () => {
+    it('应该成功启动开发服务器', async () => {
       const context = {
         ...mockContext,
         options: {
@@ -212,7 +211,7 @@ describe('DevCommand', () => {
       // 在实际测试中，可能需要使用超时或其他机制
     })
     
-    it.skip('应该正确处理配置选项', async () => {
+    it('应该正确处理配置选项', async () => {
       const context = {
         ...mockContext,
         options: {
@@ -247,7 +246,7 @@ describe('DevCommand', () => {
       )
     })
     
-    it.skip('应该注册进程退出处理器', async () => {
+    it('应该注册进程退出处理器', async () => {
       const context = {
         ...mockContext,
         options: {}
@@ -260,7 +259,7 @@ describe('DevCommand', () => {
       expect(mockProcess.on).toHaveBeenCalledWith('SIGTERM', expect.any(Function))
     })
     
-    it.skip('应该正确设置事件监听器', async () => {
+    it('应该正确设置事件监听器', async () => {
       const context = {
         ...mockContext,
         options: {}
@@ -278,7 +277,7 @@ describe('DevCommand', () => {
   })
   
   describe('错误处理', () => {
-    it.skip('应该处理启动失败的情况', async () => {
+    it('应该处理启动失败的情况', async () => {
       const context = {
         ...mockContext,
         options: {}
@@ -295,7 +294,7 @@ describe('DevCommand', () => {
       expect(mockProcess.exit).toHaveBeenCalledWith(1)
     })
     
-    it.skip('应该提供端口占用的解决建议', async () => {
+    it('应该提供端口占用的解决建议', async () => {
       const context = {
         ...mockContext,
         options: { debug: true }
@@ -316,7 +315,7 @@ describe('DevCommand', () => {
       )
     })
     
-    it.skip('应该提供配置文件问题的解决建议', async () => {
+    it('应该提供配置文件问题的解决建议', async () => {
       const context = {
         ...mockContext,
         options: { debug: true }
@@ -339,7 +338,7 @@ describe('DevCommand', () => {
   })
   
   describe('调试模式', () => {
-    it.skip('应该在调试模式下显示详细错误信息', async () => {
+    it('应该在调试模式下显示详细错误信息', async () => {
       const context = {
         ...mockContext,
         options: { debug: true }

@@ -32,18 +32,9 @@ export interface AliasEntry {
  */
 export class AliasManager {
   private cwd: string
-  private logger: { debug: (message: string) => void }
 
   constructor(cwd: string = process.cwd()) {
     this.cwd = cwd
-    // 简单的logger实现
-    this.logger = {
-      debug: (message: string) => {
-        if (process.env.NODE_ENV === 'development' && process.argv.includes('--debug')) {
-          console.log(`[AliasManager] ${message}`)
-        }
-      }
-    }
   }
 
   /**
@@ -82,7 +73,9 @@ export class AliasManager {
     // 只在 debug 模式下输出详细调试信息
     const isDebug = process.env.NODE_ENV === 'development' && process.argv.includes('--debug')
     if (isDebug) {
-      this.logger.debug(`开始过滤别名配置，目标阶段: ${stage}`)
+      console.log('🔍 别名过滤调试:')
+      console.log('  输入别名数量:', aliases.length)
+      console.log('  当前阶段:', stage)
     }
 
     const filtered = aliases.filter(alias => {
@@ -91,7 +84,7 @@ export class AliasManager {
       const shouldInclude = effectiveStages.includes(stage)
 
       if (isDebug && alias.find && typeof alias.find === 'string' && alias.find.startsWith('@ldesign')) {
-        this.logger.debug(`别名 ${alias.find} - Include ${stage}=${shouldInclude}`)
+        console.log(`  别名 ${alias.find}: stages=${JSON.stringify(effectiveStages)}, 包含${stage}=${shouldInclude}`)
       }
 
       return shouldInclude
@@ -100,6 +93,7 @@ export class AliasManager {
       const resolvedReplacement = this.resolveAlias(alias.replacement)
 
       if (isDebug && alias.find && typeof alias.find === 'string' && alias.find.startsWith('@ldesign')) {
+        console.log(`  解析路径 ${alias.find}: ${alias.replacement} -> ${resolvedReplacement}`)
       }
 
       return {
@@ -110,7 +104,9 @@ export class AliasManager {
     })
 
     if (isDebug) {
+      console.log('  过滤后别名数量:', filtered.length)
       const ldesignFiltered = filtered.filter(a => a.find && typeof a.find === 'string' && a.find.startsWith('@ldesign'))
+      console.log('  @ldesign别名数量:', ldesignFiltered.length)
     }
 
     return filtered

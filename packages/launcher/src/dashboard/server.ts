@@ -128,9 +128,9 @@ export class DashboardServer extends EventEmitter {
 
         this.wss.on('connection', (ws, req) => {
           // 认证检查
-          if (this.config?.enableAuth) {
+          if (this.config.enableAuth) {
             const token = req.headers.authorization?.replace('Bearer ', '')
-            if (token !== this.config?.authToken) {
+            if (token !== this.config.authToken) {
               ws.close(1008, 'Unauthorized')
               return
             }
@@ -167,8 +167,8 @@ export class DashboardServer extends EventEmitter {
         })
 
         // 启动服务器
-        this.server.listen(this.config?.port, this.config?.host, () => {
-          this.logger.info(`监控面板启动: http://${this.config?.host}:${this.config?.port}`)
+        this.server.listen(this.config.port, this.config.host, () => {
+          this.logger.info(`监控面板启动: http://${this.config.host}:${this.config.port}`)
           this.startMetricsUpdate()
           resolve()
         })
@@ -297,7 +297,7 @@ export class DashboardServer extends EventEmitter {
   private startMetricsUpdate(): void {
     this.updateTimer = setInterval(() => {
       this.updateSystemMetrics()
-    }, this.config?.updateInterval)
+    }, this.config.updateInterval)
   }
 
   /**

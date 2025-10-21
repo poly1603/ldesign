@@ -9,8 +9,11 @@
 
 import type { Plugin, ViteDevServer } from 'vite'
 import { Logger } from '../utils/logger'
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import { watch } from 'chokidar'
+import { execSync } from 'node:child_process'
+import chalk from 'chalk'
 
 export interface DevEnhancementOptions {
   /** 是否启用自动重启 */
@@ -181,7 +184,7 @@ export class DevEnhancementManager {
    * 设置配置文件监听
    */
   private async setupConfigWatcher(): Promise<void> {
-    const configPaths = this.options.configFiles.map(file =>
+    const configPaths = this.options.configFiles.map(file => 
       path.resolve(process.cwd(), file)
     )
 
@@ -208,7 +211,7 @@ export class DevEnhancementManager {
    * 设置环境文件监听
    */
   private async setupEnvWatcher(): Promise<void> {
-    const envPaths = this.options.envFiles.map(file =>
+    const envPaths = this.options.envFiles.map(file => 
       path.resolve(process.cwd(), file)
     )
 
@@ -279,18 +282,18 @@ export class DevEnhancementManager {
     // 监控网络请求
     this.server.middlewares.use((req, res, next) => {
       this.metrics.networkRequests++
-
+      
       const start = Date.now()
       const originalEnd = res.end.bind(res)
-
-      res.end = function (...args: any[]) {
+      
+      res.end = function(...args: any[]) {
         const duration = Date.now() - start
         if (duration > 1000) { // 超过1秒的请求
-          console.log(`慢请求: ${req.url} (${duration}ms)`)
+          console.log(chalk.yellow(`⚠️  慢请求: ${req.url} (${duration}ms)`))
         }
         return originalEnd(...args)
       }
-
+      
       next()
     })
   }
@@ -327,13 +330,13 @@ export class DevEnhancementManager {
         res.end(JSON.stringify(this.metrics, null, 2))
         return
       }
-
+      
       if (req.url === '/restart') {
         this.scheduleRestart('手动重启')
         res.end('重启已安排')
         return
       }
-
+      
       next()
     })
 
@@ -355,7 +358,7 @@ export class DevEnhancementManager {
       this.performRestart(reason)
     }, this.options.restartDelay)
 
-    this.logger.info('Server will restart in ' + this.options.restartDelay + 'ms, reason: ' + reason)
+    this.logger.info(`服务器将在 ${this.options.restartDelay}ms 后重启`, { reason })
   }
 
   /**
@@ -363,18 +366,18 @@ export class DevEnhancementManager {
    */
   private async performRestart(reason: string): Promise<void> {
     try {
-      this.logger.info('正在重启服务器...', { reason })
-
+      this.logger.info(`正在重启服务器...`, { reason })
+      
       if (this.server) {
         await this.server.close()
       }
-
+      
       // 清理缓存
       this.clearRequireCache()
-
+      
       // 重新启动
       process.exit(0) // 让进程管理器重启
-
+      
     } catch (error) {
       this.logger.error('重启失败', { error: (error as Error).message })
     }
@@ -385,10 +388,10 @@ export class DevEnhancementManager {
    */
   private attemptErrorRecovery(error: Error): void {
     this.logger.info('尝试自动错误恢复...')
-
+    
     // 清理缓存
     this.clearRequireCache()
-
+    
     // 如果是内存相关错误，触发垃圾回收
     if (error.message.includes('memory') || error.message.includes('heap')) {
       if (global.gc) {
@@ -396,7 +399,7 @@ export class DevEnhancementManager {
         this.logger.info('已触发垃圾回收')
       }
     }
-
+    
     // 如果错误持续，安排重启
     if (this.metrics.errorCount > 5) {
       this.scheduleRestart('错误过多，自动重启')
@@ -434,7 +437,7 @@ export class DevEnhancementManager {
    * 显示变更通知
    */
   private showChangeNotification(message: string): void {
-    this.logger.info(message)
+    console.log(chalk.blue(`\n📢 ${message}\n`))
   }
 
   /**
@@ -442,7 +445,7 @@ export class DevEnhancementManager {
    */
   private getEnabledFeatures(): string[] {
     const features: string[] = []
-
+    
     if (this.options.enableAutoRestart) features.push('自动重启')
     if (this.options.enableErrorRecovery) features.push('错误恢复')
     if (this.options.enableChangeNotification) features.push('变更通知')
@@ -450,7 +453,7 @@ export class DevEnhancementManager {
     if (this.options.enableMemoryMonitor) features.push('内存监控')
     if (this.options.enableNetworkMonitor) features.push('网络监控')
     if (this.options.enableDevTools) features.push('开发工具')
-
+    
     return features
   }
 }
@@ -460,24 +463,24 @@ export class DevEnhancementManager {
  */
 export function createDevEnhancementPlugin(options: DevEnhancementOptions = {}): Plugin {
   const manager = new DevEnhancementManager(options)
-
+  
   return {
     name: 'dev-enhancement',
-
+    
     configureServer(server) {
       manager.initialize(server)
-
+      
       // 在服务器关闭时清理
       server.httpServer?.on('close', () => {
         manager.cleanup()
       })
     },
-
+    
     buildStart() {
       // 在构建开始时显示性能指标
       const metrics = manager.getMetrics()
       if (metrics.memoryUsage > 0) {
-        console.log('Memory Usage: ' + metrics.memoryUsage + 'MB')
+        console.log(chalk.gray(`📊 内存使用: ${metrics.memoryUsage.toFixed(2)}MB`))
       }
     }
   }

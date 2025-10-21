@@ -284,11 +284,10 @@ export interface BasePluginInfo {
 }
 
 /**
- * 运行时性能监控接口
- * 定义运行时性能监控的数据结构
- * @deprecated 使用 PerformanceMetrics from '../types/performance' 替代
+ * 性能监控接口
+ * 定义性能监控的数据结构
  */
-export interface RuntimePerformanceMetrics {
+export interface PerformanceMetrics {
   /** 内存使用情况 */
   memory: {
     used: number
@@ -314,9 +313,3 @@ export interface RuntimePerformanceMetrics {
   /** 文件变更响应时间 */
   fileChangeResponseTime: number
 }
-
-/**
- * 向后兼容的类型别名
- * @deprecated 使用 RuntimePerformanceMetrics 或 PerformanceMetrics from '../types/performance'
- */
-export type LauncherPerformanceMetrics = RuntimePerformanceMetrics

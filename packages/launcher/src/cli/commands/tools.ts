@@ -47,11 +47,16 @@ export function createToolsCommand(): Command {
 
         const result = await converter.convertFonts()
 
-                        
+        console.log('\n✅ 字体转换完成!')
+        console.log(`📁 输出目录: ${options.output}`)
+        console.log(`📊 处理文件: ${result.length} 个`)
+
         if (result.length > 0) {
-                    result.forEach(font => {
-                        font.generatedFiles.forEach(file => {
-              .toFixed(2)}KB`)
+          console.log('\n📋 转换结果:')
+          result.forEach(font => {
+            console.log(`  • ${font.originalName} -> ${font.familyName}`)
+            font.generatedFiles.forEach(file => {
+              console.log(`    - ${file.format}: ${(file.size / 1024).toFixed(2)}KB`)
             })
           })
         }
@@ -87,10 +92,15 @@ export function createToolsCommand(): Command {
 
         const result = await generator.generateComponents()
 
-                        
+        console.log('\n✅ SVG 组件生成完成!')
+        console.log(`📁 输出目录: ${options.output}`)
+        console.log(`📊 生成组件: ${result.length} 个`)
+
         if (result.length > 0) {
-                    result.forEach(component => {
-                      })
+          console.log('\n📋 生成的组件:')
+          result.forEach(component => {
+            console.log(`  • ${component.originalName} -> ${component.componentName}`)
+          })
         }
 
       } catch (error) {
@@ -128,7 +138,10 @@ export function createToolsCommand(): Command {
 
         const result = await optimizer.optimizeImages()
 
-                        
+        console.log('\n✅ 图片优化完成!')
+        console.log(`📁 输出目录: ${options.output}`)
+        console.log(`📊 处理图片: ${result.length} 个`)
+
       } catch (error) {
         logger.error('图片优化失败', { error: (error as Error).message })
         process.exit(1)
@@ -160,7 +173,10 @@ export function createToolsCommand(): Command {
 
         await generator.generateDocs()
 
-                        
+        console.log('\n✅ API 文档生成完成!')
+        console.log(`📁 输出目录: ${options.output}`)
+        console.log(`📄 格式: ${options.format}`)
+
       } catch (error) {
         logger.error('API 文档生成失败', { error: (error as Error).message })
         process.exit(1)
@@ -194,7 +210,9 @@ export function createToolsCommand(): Command {
 
         await pwaSupport.setupPWA()
 
-                
+        console.log('\n✅ PWA 设置完成!')
+        console.log('📱 您的应用现在支持 PWA 功能')
+
       } catch (error) {
         logger.error('PWA 设置失败', { error: (error as Error).message })
         process.exit(1)

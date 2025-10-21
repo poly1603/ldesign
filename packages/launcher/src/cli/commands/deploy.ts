@@ -157,7 +157,7 @@ export class DeployCommand {
 
       // 生成部署配置文件
       await this.generateDeployConfig(config)
-
+      
       // 生成 Docker 相关文件
       if (config.platform === 'docker' || config.platform === 'k8s') {
         await this.generateDockerfiles(config)
@@ -175,7 +175,7 @@ export class DeployCommand {
       this.logger.info(`📁 平台: ${config.platform}`)
       this.logger.info(`🚀 构建命令: launcher deploy build`)
       this.logger.info(`🚀 部署命令: launcher deploy up`)
-
+      
     } catch (error) {
       this.logger.error('初始化失败:', error)
       throw error
@@ -230,7 +230,7 @@ export class DeployCommand {
 
       const config = await this.loadDeployConfig()
       const imageName = `${config.imageName}:${options.tag}`
-
+      
       const spinner = ora(`正在构建镜像: ${imageName}`).start()
 
       // 执行 Docker 构建
@@ -258,7 +258,7 @@ export class DeployCommand {
       this.logger.info('部署应用...')
 
       const config = await this.loadDeployConfig(options.file)
-
+      
       if (options.dryRun) {
         this.logger.info('预览部署配置:')
         console.log(JSON.stringify(config, null, 2))
@@ -314,18 +314,18 @@ export class DeployCommand {
   private async showStatus(options: any): Promise<void> {
     try {
       const config = await this.loadDeployConfig()
-
-      console.log('\n📦 部署状态')
-      console.log(`应用名称: ${config.appName}`)
-      console.log(`部署平台: ${config.platform}`)
-      console.log(`镜像: ${config.imageName}:${config.imageTag}`)
+      
+      console.log(chalk.cyan('\n📊 部署状态\n'))
+      console.log(`${chalk.yellow('应用名称:')} ${config.appName}`)
+      console.log(`${chalk.yellow('部署平台:')} ${config.platform}`)
+      console.log(`${chalk.yellow('镜像名称:')} ${config.imageName}:${config.imageTag}`)
 
       // 获取运行状态
       const status = await this.getAppStatus(config)
-      console.log(`状态: ${status.running ? chalk.green('运行中') : chalk.red('已停止')}`)
+      console.log(`${chalk.yellow('运行状态:')} ${status.running ? chalk.green('运行中') : chalk.red('已停止')}`)
 
       if (status.running) {
-        console.log('\n端口映射:')
+        console.log(`${chalk.yellow('端口映射:')}`)
         Object.entries(config.ports).forEach(([internal, external]) => {
           console.log(`  ${internal} -> ${external}`)
         })
@@ -347,9 +347,9 @@ export class DeployCommand {
   private async showLogs(options: any): Promise<void> {
     try {
       const config = await this.loadDeployConfig()
-
+      
       this.logger.info('获取应用日志...')
-
+      
       // 根据平台获取日志
       await this.fetchLogs(config, options)
 

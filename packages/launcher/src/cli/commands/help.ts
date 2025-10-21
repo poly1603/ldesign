@@ -96,7 +96,7 @@ export class HelpCommand implements CliCommandDefinition {
       } else if (line.trim().length > 0) {
         logger.info(line)
       } else {
-         // 空行
+        console.log() // 空行
       }
     }
 
@@ -152,7 +152,7 @@ export class HelpCommand implements CliCommandDefinition {
       } else if (line.trim().length > 0) {
         logger.info(line)
       } else {
-         // 空行
+        console.log() // 空行
       }
     }
   }

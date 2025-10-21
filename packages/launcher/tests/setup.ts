@@ -17,65 +17,44 @@ process.env.LAUNCHER_TEST = 'true'
 global.__TEST__ = true
 global.__VERSION__ = '1.0.0'
 
-// 简单的本地深度合并实现
-const deepMerge = (target: any, source: any): any => {
-  if (!source || typeof source !== 'object') return target
-  if (!target || typeof target !== 'object') return source
-  
-  const result: any = { ...target }
-  for (const key in source) {
-    const sv = (source as any)[key]
-    const tv = (target as any)[key]
-    if (sv && typeof sv === 'object' && !Array.isArray(sv)) {
-      result[key] = deepMerge(tv || {}, sv)
-    } else if (Array.isArray(sv)) {
-      result[key] = Array.isArray(tv) ? [...tv, ...sv] : [...sv]
-    } else {
-      result[key] = sv
-    }
-  }
-  return result
-}
-
-// 为所有测试统一 mock @ldesign/kit
+// 为所有测试统一 mock @ldesign/kit，确保 ESM import 与 CJS require 一致
 vi.mock('@ldesign/kit', () => {
+  // 简单的本地深度合并实现，供需要时使用
+  const deepMerge = (target: any, source: any): any => {
+    const result: any = { ...target }
+    for (const key in source) {
+      const sv = (source as any)[key]
+      const tv = (target as any)[key]
+      if (sv && typeof sv === 'object' && !Array.isArray(sv)) {
+        result[key] = deepMerge(tv || {}, sv)
+      } else if (Array.isArray(sv)) {
+        result[key] = Array.isArray(tv) ? [...tv, ...sv] : [...sv]
+      } else {
+        result[key] = sv
+      }
+    }
+    return result
+  }
+
   return {
     FileSystem: {
-      exists: vi.fn(async () => false),
-      readFile: vi.fn(async () => ''),
-      writeFile: vi.fn(async () => undefined),
-      stat: vi.fn(async () => ({ isDirectory: () => false, isFile: () => true })),
-      mkdir: vi.fn(async () => undefined),
-      rm: vi.fn(async () => undefined),
-      readdir: vi.fn(async () => []),
+      exists: vi.fn(),
+      readFile: vi.fn(),
+      writeFile: vi.fn(),
+      stat: vi.fn(),
     },
     PathUtils: {
       resolve: vi.fn((...args: any[]) => args.length === 1 ? String(args[0]) : args.join('/')),
       join: vi.fn((...paths: any[]) => paths.join('/')),
-      isAbsolute: vi.fn((p: string) => /^[\\/]|^[a-zA-Z]:/.test(p)),
+      isAbsolute: vi.fn().mockReturnValue(false),
       extname: vi.fn((p: string) => {
         const i = p.lastIndexOf('.')
         return i >= 0 ? p.slice(i) : ''
       }),
-      dirname: vi.fn((p: string) => {
-        const i = Math.max(p.lastIndexOf('/'), p.lastIndexOf('\\'))
-        return i >= 0 ? p.slice(0, i) : '.'
-      }),
-      basename: vi.fn((p: string) => {
-        const i = Math.max(p.lastIndexOf('/'), p.lastIndexOf('\\'))
-        return i >= 0 ? p.slice(i + 1) : p
-      }),
     },
     ObjectUtils: {
       deepMerge: vi.fn((a: any, b: any) => deepMerge(a, b))
-    },
-    Logger: vi.fn().mockImplementation(() => ({
-      info: vi.fn(),
-      success: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-      debug: vi.fn()
-    }))
+    }
   }
 })
 

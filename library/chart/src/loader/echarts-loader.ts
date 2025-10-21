@@ -1,15 +1,27 @@
 /**
- * ECharts 模块按需加载器
+ * ECharts 模块按需加载器 - 并行加载、预加载、优先级队列
  */
 
 import type { ChartType } from '../types';
 
 /**
- * ECharts 加载器
+ * 加载任务
+ */
+interface LoadTask {
+  key: string;
+  loader: () => Promise<any>;
+  priority: number;
+}
+
+/**
+ * ECharts 加载器（优化版）
  */
 export class EChartsLoader {
   private loadedModules = new Set<string>();
   private loading = new Map<string, Promise<any>>();
+  private loadQueue: LoadTask[] = [];
+  private isProcessingQueue = false;
+  private maxParallel = 3; // 最大并行加载数
 
   /**
    * 动态加载 ECharts 核心
@@ -189,6 +201,108 @@ export class EChartsLoader {
   clear(): void {
     this.loadedModules.clear();
     this.loading.clear();
+    this.loadQueue = [];
+  }
+
+  /**
+   * 并行加载多个模块
+   */
+  async loadParallel(
+    charts: ChartType[],
+    components: string[] = []
+  ): Promise<void> {
+    const tasks: Promise<void>[] = [];
+
+    // 加载核心和渲染器（必需）
+    tasks.push(this.loadCore());
+    tasks.push(this.loadRenderer('canvas'));
+
+    // 并行加载所有图表类型
+    for (const chartType of charts) {
+      tasks.push(this.loadChart(chartType));
+    }
+
+    // 并行加载所有组件
+    if (components.length > 0) {
+      tasks.push(this.loadComponents(components));
+    }
+
+    await Promise.all(tasks);
+  }
+
+  /**
+   * 预加载常用模块
+   */
+  async preload(types: ChartType[] = ['line', 'bar', 'pie']): Promise<void> {
+    const commonComponents = ['grid', 'tooltip', 'legend', 'title'];
+
+    // 低优先级预加载
+    setTimeout(async () => {
+      try {
+        await this.loadParallel(types, commonComponents);
+      } catch (error) {
+        console.warn('Preload failed:', error);
+      }
+    }, 1000); // 延迟 1 秒，避免影响首屏
+  }
+
+  /**
+   * 添加加载任务到队列
+   */
+  private addToQueue(key: string, loader: () => Promise<any>, priority = 5): void {
+    this.loadQueue.push({ key, loader, priority });
+    // 按优先级排序
+    this.loadQueue.sort((a, b) => b.priority - a.priority);
+    this.processQueue();
+  }
+
+  /**
+   * 处理加载队列
+   */
+  private async processQueue(): Promise<void> {
+    if (this.isProcessingQueue) return;
+    if (this.loadQueue.length === 0) return;
+
+    this.isProcessingQueue = true;
+
+    while (this.loadQueue.length > 0) {
+      // 并行加载多个任务
+      const batch = this.loadQueue.splice(0, this.maxParallel);
+
+      await Promise.all(
+        batch.map(task =>
+          task.loader().catch(err => {
+            console.error(`Failed to load ${task.key}:`, err);
+          })
+        )
+      );
+    }
+
+    this.isProcessingQueue = false;
+  }
+
+  /**
+   * 设置最大并行加载数
+   */
+  setMaxParallel(max: number): void {
+    this.maxParallel = Math.max(1, max);
+  }
+
+  /**
+   * 获取加载统计
+   */
+  stats(): {
+    loaded: number;
+    loading: number;
+    queued: number;
+    modules: string[];
+  } {
+    return {
+      loaded: this.loadedModules.size,
+      loading: this.loading.size,
+      queued: this.loadQueue.length,
+      modules: Array.from(this.loadedModules),
+    };
   }
 }
 

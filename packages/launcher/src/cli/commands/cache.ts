@@ -129,36 +129,37 @@ export class CacheCommand implements CliCommandDefinition {
   private async handleStatus(logger: Logger): Promise<void> {
     try {
       const stats = cacheManager.getStats()
-
-      console.log('\n📊 缓存状态')
-
+      
+      console.log(chalk.cyan('\n缓存状态信息:\n'))
+      
       // 基本统计
-      console.log('\n基本统计:')
-      console.log(`  命中次数: ${stats.hits}`)
-      console.log(`  未命中次数: ${stats.misses}`)
-      console.log(`  命中率: ${(stats.hitRate * 100).toFixed(1)}%`)
-
+      console.log(chalk.bold('总体统计:'))
+      console.log(`  总缓存项数量: ${chalk.green(stats.totalItems.toLocaleString())}`)
+      console.log(`  总缓存大小: ${chalk.green(formatSize(stats.totalSize))}`)
+      console.log(`  缓存命中率: ${chalk.green((stats.hitRate * 100).toFixed(1))}%`)
+      
       if (stats.lastCleanup) {
         const lastCleanup = new Date(stats.lastCleanup).toLocaleString()
-        console.log(`  上次清理: ${lastCleanup}`)
+        console.log(`  最近清理时间: ${chalk.gray(lastCleanup)}`)
       }
 
       // 按类型统计
-      console.log('\n按类型统计:')
-
+      console.log()
+      console.log(chalk.bold('按类型统计:'))
+      
       const types = Object.keys(stats.byType) as CacheType[]
       if (types.length === 0) {
-        console.log('  暂无缓存数据')
+        console.log('  无缓存数据')
       } else {
         types.forEach(type => {
           const typeStats = stats.byType[type]
           if (typeStats.count > 0) {
-            console.log(`  ${chalk.gray(type)}: ${chalk.cyan(typeStats.count.toString().padStart(6))} 项(${chalk.yellow(formatSize(typeStats.size))})`)
+            console.log(`  ${type.padEnd(10)}: ${chalk.cyan(typeStats.count.toString().padStart(6))} 项 (${chalk.yellow(formatSize(typeStats.size))})`)
           }
         })
       }
 
-
+      console.log()
 
     } catch (error) {
       logger.error('获取缓存状态失败', error)
@@ -182,10 +183,10 @@ export class CacheCommand implements CliCommandDefinition {
       } else {
         // 清理指定类型的缓存
         const validTypes: CacheType[] = ['build', 'deps', 'modules', 'transform', 'assets', 'temp']
-
+        
         if (!validTypes.includes(type as CacheType)) {
-          logger.error(`无效的缓存类型: ${type} `)
-          logger.info(`支持的类型: ${validTypes.join(', ')} `)
+          logger.error(`无效的缓存类型: ${type}`)
+          logger.info(`支持的类型: ${validTypes.join(', ')}`)
           return
         }
 
@@ -205,18 +206,18 @@ export class CacheCommand implements CliCommandDefinition {
   private async handleCompress(logger: Logger): Promise<void> {
     try {
       logger.info('正在压缩缓存...')
-
+      
       const startStats = cacheManager.getStats()
       await cacheManager.compress()
       const endStats = cacheManager.getStats()
-
+      
       const sizeBefore = startStats.totalSize
       const sizeAfter = endStats.totalSize
       const saved = sizeBefore - sizeAfter
       const savedPercent = sizeBefore > 0 ? (saved / sizeBefore * 100) : 0
 
       if (saved > 0) {
-        logger.success(`缓存压缩完成，节省了 ${formatSize(saved)}(${savedPercent.toFixed(1)} %)`)
+        logger.success(`缓存压缩完成，节省了 ${formatSize(saved)} (${savedPercent.toFixed(1)}%)`)
       } else {
         logger.info('缓存已经是最优状态，无需压缩')
       }
@@ -232,11 +233,11 @@ export class CacheCommand implements CliCommandDefinition {
   private async handleCleanup(logger: Logger): Promise<void> {
     try {
       logger.info('正在清理过期缓存...')
-
+      
       const startStats = cacheManager.getStats()
       await cacheManager.cleanup()
       const endStats = cacheManager.getStats()
-
+      
       const itemsBefore = startStats.totalItems
       const itemsAfter = endStats.totalItems
       const cleaned = itemsBefore - itemsAfter
@@ -254,56 +255,59 @@ export class CacheCommand implements CliCommandDefinition {
   private async handleAnalyze(logger: Logger): Promise<void> {
     try {
       const stats = cacheManager.getStats()
-
-      console.log('\n🔍 缓存分析')
-
+      
+      console.log(chalk.cyan('\n缓存分析报告:\n'))
+      
       // 使用效率分析
-      console.log('\n使用效率:')
-
+      console.log(chalk.bold('使用效率分析:'))
+      
       if (stats.hitRate >= 0.8) {
-        console.log(`  ✅ 缓存命中率良好(${(stats.hitRate * 100).toFixed(1)}%)`)
+        console.log(`  ${chalk.green('✓')} 缓存命中率良好 (${(stats.hitRate * 100).toFixed(1)}%)`)
       } else if (stats.hitRate >= 0.6) {
-        console.log(`  ⚠️  缓存命中率中等(${(stats.hitRate * 100).toFixed(1)}%)`)
+        console.log(`  ${chalk.yellow('!')} 缓存命中率中等 (${(stats.hitRate * 100).toFixed(1)}%)`)
       } else {
-        console.log(`  ❌ 缓存命中率较低(${(stats.hitRate * 100).toFixed(1)}%)`)
+        console.log(`  ${chalk.red('✗')} 缓存命中率较低 (${(stats.hitRate * 100).toFixed(1)}%)`)
       }
 
       // 空间使用分析
-      console.log('\n空间使用:')
-
+      console.log()
+      console.log(chalk.bold('空间使用分析:'))
+      
       const totalSizeMB = stats.totalSize / (1024 * 1024)
-
+      
       if (totalSizeMB < 100) {
-        console.log(`  ✅ 缓存大小合理(${formatSize(stats.totalSize)})`)
+        console.log(`  ${chalk.green('✓')} 缓存大小合理 (${formatSize(stats.totalSize)})`)
       } else if (totalSizeMB < 500) {
-        console.log(`  ⚠️  缓存大小中等(${formatSize(stats.totalSize)})`)
+        console.log(`  ${chalk.yellow('!')} 缓存大小中等 (${formatSize(stats.totalSize)})`)
       } else {
-        console.log(`  ❌ 缓存占用空间较大(${formatSize(stats.totalSize)})`)
+        console.log(`  ${chalk.red('✗')} 缓存占用空间较大 (${formatSize(stats.totalSize)})`)
       }
 
       // 类型分布分析
-      console.log('\n类型分布:')
-
+      console.log()
+      console.log(chalk.bold('类型分布:'))
+      
       const types = Object.keys(stats.byType) as CacheType[]
       const sortedTypes = types
         .filter(type => stats.byType[type].count > 0)
         .sort((a, b) => stats.byType[b].size - stats.byType[a].size)
 
       if (sortedTypes.length === 0) {
-        console.log('  暂无数据')
+        console.log('  无缓存数据')
       } else {
         sortedTypes.forEach((type, index) => {
           const typeStats = stats.byType[type]
           const percentage = stats.totalSize > 0 ? (typeStats.size / stats.totalSize * 100) : 0
           const bar = '█'.repeat(Math.round(percentage / 5)) // 每5%一个方块
-
+          
           console.log(`  ${(index + 1).toString().padStart(2)}. ${type.padEnd(10)} ${chalk.cyan(bar.padEnd(20))} ${percentage.toFixed(1)}% (${formatSize(typeStats.size)})`)
         })
       }
 
       // 优化建议
-      console.log('\n💡 优化建议:')
-
+      console.log()
+      console.log(chalk.bold('优化建议:'))
+      
       const suggestions: string[] = []
 
       if (stats.hitRate < 0.6) {
@@ -329,14 +333,14 @@ export class CacheCommand implements CliCommandDefinition {
       }
 
       if (suggestions.length === 0) {
-        console.log('  ✅ 缓存状态良好,无需特别优化')
+        console.log(`  ${chalk.green('✓')} 缓存状态良好，无需特别优化`)
       } else {
         suggestions.forEach((suggestion, index) => {
-          console.log(`  ${(index + 1).toString().padStart(2)}. ${suggestion}`)
+          console.log(`  ${(index + 1).toString()}. ${suggestion}`)
         })
       }
 
-
+      console.log()
 
     } catch (error) {
       logger.error('缓存分析失败', error)
@@ -350,15 +354,15 @@ export class CacheCommand implements CliCommandDefinition {
     try {
       const options = context.options
       logger.info('正在预热缓存...')
-
+      
       // 这里可以实现预热逻辑
       // 例如预编译常用模块、预处理资源等
-
+      
       // 模拟预热过程
       await new Promise(resolve => setTimeout(resolve, 2000))
-
+      
       logger.success('缓存预热完成')
-
+      
       if (options.force) {
         logger.info('已强制重新生成缓存')
       }
@@ -374,9 +378,9 @@ export class CacheCommand implements CliCommandDefinition {
  */
 function formatSize(bytes: number): string {
   if (bytes === 0) return '0 B'
-
+  
   const units = ['B', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(1024))
-
-  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]} `
+  
+  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`
 }

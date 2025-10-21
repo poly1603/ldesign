@@ -8,6 +8,7 @@
  * @since 1.0.0
  */
 
+import path from 'path'
 
 /**
  * 构建阶段类型
