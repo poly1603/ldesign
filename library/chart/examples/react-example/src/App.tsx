@@ -56,10 +56,10 @@ function App() {
       { name: 'Product B', data: [70, 85, 80, 75, 80] }
     ]
   })
-  
+
   // 大数据集
   const [largeData, setLargeData] = useState<number[]>([])
-  
+
   // 实时数据
   const [realtimeData, setRealtimeData] = useState({
     labels: ['A', 'B', 'C', 'D', 'E', 'F'],
@@ -83,7 +83,7 @@ function App() {
   const refreshData = () => {
     setLineData(Array.from({ length: 7 }, () => Math.floor(Math.random() * 200) + 50))
   }
-  
+
   const generateLargeData = () => {
     console.time('Generate large dataset')
     const data = Array.from({ length: 50000 }, (_, i) => {
@@ -91,14 +91,14 @@ function App() {
     })
     setLargeData(data)
     console.timeEnd('Generate large dataset')
-    
+
     setShowLargeData(true)
-    
+
     setTimeout(() => {
       showStatsPanel()
     }, 1000)
   }
-  
+
   const showStatsPanel = () => {
     // 模拟统计数据
     const mockStats = {
@@ -123,10 +123,10 @@ function App() {
         lastCleanup: Date.now()
       }
     }
-    
+
     setStats(mockStats)
   }
-  
+
   const startRealtime = () => {
     if (realtimeRunning) {
       setRealtimeRunning(false)
@@ -135,31 +135,31 @@ function App() {
       setRealtimeRunning(true)
     }
   }
-  
+
   // 实时更新效果
   useEffect(() => {
     if (!realtimeRunning) return
-    
+
     const timer = setInterval(() => {
       setRealtimeData({
         labels: ['A', 'B', 'C', 'D', 'E', 'F'],
         datasets: [
-          { 
-            name: 'Real-time', 
+          {
+            name: 'Real-time',
             data: Array.from({ length: 6 }, () => Math.floor(Math.random() * 100))
           }
         ]
       })
       setUpdateCount(prev => prev + 1)
     }, 500)
-    
+
     return () => clearInterval(timer)
   }, [realtimeRunning])
 
   return (
     <div className="container">
       <h1>@ldesign/chart v1.2.0 - React Example</h1>
-      
+
       <div className="version-badge">
         <span className="badge">✅ Performance +40-70%</span>
         <span className="badge">✅ Memory -30%</span>
@@ -176,7 +176,7 @@ function App() {
         <button onClick={showStatsPanel}>📊 Stats</button>
         <button onClick={generateLargeData}>🚀 Big Data</button>
       </div>
-      
+
       {stats && (
         <div className="stats-panel">
           <h3>Performance Statistics</h3>
@@ -284,7 +284,7 @@ function App() {
             cache
           />
         </div>
-        
+
         {/* Large Dataset - Virtual Rendering */}
         {showLargeData && (
           <div className="chart-card chart-large">
@@ -304,7 +304,7 @@ function App() {
             />
           </div>
         )}
-        
+
         {/* Real-time Updates */}
         <div className="chart-card chart-large">
           <h2>Real-time Updates <span className="opt-tag">⚡ RAF Scheduler</span></h2>
