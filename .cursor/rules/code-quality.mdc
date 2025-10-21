@@ -1,0 +1,629 @@
+---
+alwaysApply: true
+description: 代码质量、性能和编写规范的严格要求
+---
+
+# 代码质量和编写规范
+
+## 核心原则
+
+### 1. 代码规范性 ✅
+- **必须遵循项目的 ESLint 配置** - 参考 [eslint.config.js](mdc:eslint.config.js)
+- **必须遵循 TypeScript 严格模式** - 参考 [tsconfig.json](mdc:tsconfig.json)
+- **代码风格必须一致** - 使用 `@antfu/eslint-config` 规范
+- **所有代码必须通过 lint 检查** - 提交前运行 `pnpm lint:fix`
+
+### 2. 代码最优化 🚀
+- **性能优先** - 每一行代码都要考虑性能影响
+- **内存占用最低** - 避免内存泄漏，及时释放资源
+- **算法最优** - 选择最佳时间复杂度和空间复杂度
+- **打包体积最小** - 支持 Tree-shaking，避免不必要的依赖
+
+### 3. 代码结构简洁直观 📐
+- **单一职责原则** - 每个函数/类只做一件事
+- **DRY 原则** - Don't Repeat Yourself，避免重复代码
+- **直观命名** - 变量、函数名要自解释
+- **扁平化结构** - 避免深层嵌套，最多 3-4 层
+
+### 4. 避免重复编写 ♻️
+- **复用现有代码** - 优先使用项目中已有的工具函数和组件
+- **提取共享逻辑** - 相同功能抽取到 `packages/shared` 或 composables
+- **使用 workspace 依赖** - 引用内部包使用 `"workspace:*"`
+- **直接修改源文件** - 优化时修改现有文件，不创建新文件
+
+### 5. TypeScript 类型完整 🔒
+- **不能有 TypeScript 错误** - 编译必须零错误
+- **类型定义完整** - 所有函数参数、返回值都要有类型
+- **避免 any** - 使用 `unknown` 或具体类型
+- **使用类型推断** - 充分利用 TypeScript 的类型推断能力
+
+### 6. 详细完整的注释 📝
+- **JSDoc 注释** - 所有导出的函数、类、接口都要有 JSDoc
+- **复杂逻辑注释** - 非显而易见的逻辑必须添加注释
+- **中文注释** - 注释使用中文，便于团队理解
+- **注释格式规范** - 遵循 JSDoc 标准格式
+
+## 详细规范
+
+### TypeScript 类型规范
+
+```typescript
+// ❌ 错误：类型不完整
+function processData(data) {
+  return data.map(item => item.value)
+}
+
+// ✅ 正确：类型完整，带注释
+/**
+ * 处理数据数组，提取所有项的 value 字段
+ * @param data - 输入的数据数组
+ * @returns 包含所有 value 的数组
+ * @example
+ * ```ts
+ * const result = processData([{ value: 1 }, { value: 2 }])
+ * // result: [1, 2]
+ * ```
+ */
+function processData<T extends { value: number }>(data: T[]): number[] {
+  return data.map(item => item.value)
+}
+
+// ❌ 错误：使用 any
+const config: any = {}
+
+// ✅ 正确：使用具体类型或 unknown
+interface Config {
+  apiUrl: string
+  timeout: number
+}
+const config: Config = {
+  apiUrl: 'https://api.example.com',
+  timeout: 5000,
+}
+
+// ❌ 错误：缺少返回类型
+async function fetchData(id: string) {
+  const response = await fetch(`/api/${id}`)
+  return response.json()
+}
+
+// ✅ 正确：完整的类型定义
+interface ApiResponse {
+  data: unknown
+  error?: string
+}
+
+/**
+ * 获取指定 ID 的数据
+ * @param id - 数据 ID
+ * @returns API 响应数据
+ * @throws 当网络请求失败时抛出错误
+ */
+async function fetchData(id: string): Promise<ApiResponse> {
+  const response = await fetch(`/api/${id}`)
+  if (!response.ok) {
+    throw new Error(`请求失败: ${response.statusText}`)
+  }
+  return response.json() as Promise<ApiResponse>
+}
+```
+
+### 性能优化规范
+
+```typescript
+// ❌ 错误：每次都创建新对象，内存浪费
+function Component() {
+  return items.map(item => ({ ...item, processed: true }))
+}
+
+// ✅ 正确：使用缓存，避免重复创建
+const processedCache = new WeakMap<Item, ProcessedItem>()
+
+/**
+ * 处理组件项，使用缓存避免重复计算
+ * @param items - 需要处理的项数组
+ * @returns 处理后的项数组
+ */
+function Component(items: Item[]): ProcessedItem[] {
+  return items.map((item) => {
+    let processed = processedCache.get(item)
+    if (!processed) {
+      processed = { ...item, processed: true }
+      processedCache.set(item, processed)
+    }
+    return processed
+  })
+}
+
+// ❌ 错误：循环内部创建函数，性能差
+for (let i = 0; i < items.length; i++) {
+  items[i].onClick = () => handleClick(i)
+}
+
+// ✅ 正确：函数提取到外部
+/**
+ * 为项添加点击处理器
+ * @param items - 项数组
+ */
+function addClickHandlers(items: Item[]): void {
+  const handleClickAt = (index: number) => handleClick(index)
+  
+  for (let i = 0; i < items.length; i++) {
+    items[i].onClick = () => handleClickAt(i)
+  }
+}
+
+// ❌ 错误：深度嵌套，难以维护
+function process(data: Data): Result {
+  if (data) {
+    if (data.items) {
+      if (data.items.length > 0) {
+        return data.items.map((item) => {
+          if (item.valid) {
+            return transform(item)
+          }
+        })
+      }
+    }
+  }
+  return []
+}
+
+// ✅ 正确：扁平化结构，提前返回
+/**
+ * 处理数据并转换有效项
+ * @param data - 输入数据
+ * @returns 转换后的结果数组
+ */
+function process(data: Data | null): Result[] {
+  // 提前返回处理边界情况
+  if (!data?.items?.length) {
+    return []
+  }
+  
+  // 扁平化逻辑
+  return data.items
+    .filter(item => item.valid)
+    .map(item => transform(item))
+}
+```
+
+### Vue 性能优化
+
+```vue
+<script setup lang="ts">
+import { ref, computed, shallowRef, watchEffect } from 'vue'
+
+// ❌ 错误：使用 ref 包装大对象，性能差
+const largeData = ref<LargeData>({ /* 大量数据 */ })
+
+// ✅ 正确：使用 shallowRef，减少响应式开销
+/**
+ * 大型数据对象，使用浅层响应式优化性能
+ */
+const largeData = shallowRef<LargeData>({ /* 大量数据 */ })
+
+// ❌ 错误：计算属性中执行复杂计算，每次都重新计算
+const filtered = computed(() => {
+  return items.value
+    .filter(item => expensiveCheck(item))
+    .map(item => expensiveTransform(item))
+})
+
+// ✅ 正确：使用缓存，避免重复计算
+/**
+ * 过滤和转换项，使用缓存优化性能
+ */
+const filtered = computed(() => {
+  const cache = new Map<string, TransformedItem>()
+  
+  return items.value
+    .filter(item => expensiveCheck(item))
+    .map((item) => {
+      const cached = cache.get(item.id)
+      if (cached) return cached
+      
+      const transformed = expensiveTransform(item)
+      cache.set(item.id, transformed)
+      return transformed
+    })
+})
+
+// ❌ 错误：大列表直接渲染，性能差
+// <div v-for="item in largeList">{{ item }}</div>
+
+// ✅ 正确：使用虚拟滚动
+/**
+ * 可见项列表，仅渲染可视区域内的项
+ */
+const visibleItems = computed(() => {
+  const start = Math.floor(scrollTop.value / itemHeight)
+  const end = start + visibleCount
+  return largeList.value.slice(start, end)
+})
+</script>
+
+<template>
+  <!-- 仅渲染可见项 -->
+  <div 
+    v-for="item in visibleItems" 
+    :key="item.id"
+    class="item"
+  >
+    {{ item }}
+  </div>
+</template>
+```
+
+### 内存管理规范
+
+```typescript
+// ❌ 错误：未清理定时器，内存泄漏
+function startPolling() {
+  setInterval(() => {
+    fetchData()
+  }, 1000)
+}
+
+// ✅ 正确：清理定时器，避免内存泄漏
+/**
+ * 开始轮询数据
+ * @returns 清理函数，用于停止轮询
+ */
+function startPolling(): () => void {
+  const timerId = setInterval(() => {
+    fetchData()
+  }, 1000)
+  
+  // 返回清理函数
+  return () => {
+    clearInterval(timerId)
+  }
+}
+
+// Vue 组件中的正确使用
+onMounted(() => {
+  const cleanup = startPolling()
+  
+  // 组件卸载时清理
+  onUnmounted(() => {
+    cleanup()
+  })
+})
+
+// ❌ 错误：事件监听器未移除
+function Component() {
+  window.addEventListener('resize', handleResize)
+}
+
+// ✅ 正确：及时移除事件监听器
+/**
+ * 监听窗口大小变化
+ */
+function useWindowResize(): void {
+  const handleResize = () => {
+    // 处理逻辑
+  }
+  
+  onMounted(() => {
+    window.addEventListener('resize', handleResize)
+  })
+  
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
+  })
+}
+
+// ❌ 错误：大对象缓存未设置上限，可能内存溢出
+const cache = new Map()
+
+// ✅ 正确：使用 LRU 缓存，限制大小
+/**
+ * LRU 缓存实现，自动淘汰最少使用的项
+ */
+class LRUCache<K, V> {
+  private cache = new Map<K, V>()
+  
+  /**
+   * @param maxSize - 缓存最大大小
+   */
+  constructor(private maxSize: number) {}
+  
+  /**
+   * 获取缓存值
+   */
+  get(key: K): V | undefined {
+    const value = this.cache.get(key)
+    if (value !== undefined) {
+      // 更新访问顺序
+      this.cache.delete(key)
+      this.cache.set(key, value)
+    }
+    return value
+  }
+  
+  /**
+   * 设置缓存值
+   */
+  set(key: K, value: V): void {
+    if (this.cache.has(key)) {
+      this.cache.delete(key)
+    }
+    else if (this.cache.size >= this.maxSize) {
+      // 删除最旧的项
+      const firstKey = this.cache.keys().next().value
+      this.cache.delete(firstKey)
+    }
+    this.cache.set(key, value)
+  }
+}
+```
+
+### 代码复用规范
+
+```typescript
+// ❌ 错误：相同逻辑在多处重复
+// 在 ComponentA.vue 中
+function formatDate(date: Date) {
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+}
+
+// 在 ComponentB.vue 中
+function formatDate(date: Date) {
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+}
+
+// ✅ 正确：提取到共享工具函数
+// 在 packages/shared/src/utils/date.ts 中
+/**
+ * 格式化日期为 YYYY-MM-DD 格式
+ * @param date - 要格式化的日期
+ * @returns 格式化后的日期字符串
+ * @example
+ * ```ts
+ * formatDate(new Date('2024-01-01'))
+ * // 返回: '2024-1-1'
+ * ```
+ */
+export function formatDate(date: Date): string {
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+}
+
+// 在组件中使用
+import { formatDate } from '@ldesign/shared'
+
+// ❌ 错误：创建新文件实现类似功能
+// utils/string-helper.ts
+// utils/string-utils.ts
+// utils/string-formatter.ts  // 三个文件功能重复！
+
+// ✅ 正确：直接修改和扩展现有文件
+// packages/shared/src/utils/string.ts
+/**
+ * 字符串工具函数集合
+ */
+
+/**
+ * 首字母大写
+ */
+export function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+/**
+ * 驼峰转短横线
+ */
+export function kebabCase(str: string): string {
+  return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+}
+
+// 扩展功能时直接在此文件中添加
+/**
+ * 截断字符串并添加省略号
+ */
+export function truncate(str: string, maxLength: number): string {
+  return str.length > maxLength ? `${str.slice(0, maxLength)}...` : str
+}
+```
+
+### 注释规范
+
+```typescript
+/**
+ * 用户数据接口
+ * @interface User
+ */
+interface User {
+  /** 用户 ID */
+  id: string
+  /** 用户名 */
+  name: string
+  /** 电子邮件地址 */
+  email: string
+  /** 用户角色 */
+  role: 'admin' | 'user' | 'guest'
+  /** 创建时间 */
+  createdAt: Date
+}
+
+/**
+ * 用户服务类，处理用户相关的所有操作
+ * @class UserService
+ * @example
+ * ```ts
+ * const userService = new UserService()
+ * const user = await userService.getUserById('123')
+ * ```
+ */
+class UserService {
+  /**
+   * 用户缓存，使用 Map 提高查询性能
+   * @private
+   */
+  private cache = new Map<string, User>()
+  
+  /**
+   * 根据 ID 获取用户信息
+   * @param id - 用户 ID
+   * @returns 用户信息，如果不存在则返回 null
+   * @throws 当网络请求失败时抛出错误
+   * @example
+   * ```ts
+   * const user = await userService.getUserById('123')
+   * if (user) {
+   *   console.log(user.name)
+   * }
+   * ```
+   */
+  async getUserById(id: string): Promise<User | null> {
+    // 1. 先检查缓存，提高性能
+    const cached = this.cache.get(id)
+    if (cached) {
+      return cached
+    }
+    
+    // 2. 缓存未命中，从 API 获取
+    try {
+      const response = await fetch(`/api/users/${id}`)
+      
+      // 3. 检查响应状态
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null
+        }
+        throw new Error(`请求失败: ${response.statusText}`)
+      }
+      
+      // 4. 解析并缓存结果
+      const user = await response.json() as User
+      this.cache.set(id, user)
+      
+      return user
+    }
+    catch (error) {
+      console.error('获取用户失败:', error)
+      throw error
+    }
+  }
+  
+  /**
+   * 清理缓存，释放内存
+   * @public
+   */
+  clearCache(): void {
+    this.cache.clear()
+  }
+}
+
+/**
+ * 创建防抖函数，限制函数执行频率
+ * 
+ * 防抖（Debounce）：在事件被触发 n 秒后再执行回调，
+ * 如果在这 n 秒内又被触发，则重新计时。
+ * 
+ * @template T - 函数类型
+ * @param fn - 需要防抖的函数
+ * @param delay - 延迟时间（毫秒）
+ * @returns 防抖后的函数
+ * @example
+ * ```ts
+ * const search = debounce((query: string) => {
+ *   console.log('搜索:', query)
+ * }, 300)
+ * 
+ * // 用户输入时调用
+ * search('hello')  // 不会立即执行
+ * search('world')  // 重置定时器
+ * // 300ms 后执行最后一次调用
+ * ```
+ */
+function debounce<T extends (...args: any[]) => any>(
+  fn: T,
+  delay: number,
+): (...args: Parameters<T>) => void {
+  let timerId: ReturnType<typeof setTimeout> | null = null
+  
+  return function (this: any, ...args: Parameters<T>): void {
+    // 清除之前的定时器
+    if (timerId) {
+      clearTimeout(timerId)
+    }
+    
+    // 设置新的定时器
+    timerId = setTimeout(() => {
+      fn.apply(this, args)
+      timerId = null
+    }, delay)
+  }
+}
+```
+
+## 代码审查清单 ✓
+
+在提交代码前，请确保：
+
+### 类型检查
+- [ ] 所有 TypeScript 错误已修复
+- [ ] 没有使用 `any` 类型（除非特殊情况）
+- [ ] 所有函数都有明确的参数和返回值类型
+- [ ] 接口和类型定义完整
+
+### 性能优化
+- [ ] 没有不必要的重复计算
+- [ ] 大列表使用虚拟滚动或分页
+- [ ] 使用了适当的缓存策略
+- [ ] 避免了深层嵌套循环
+- [ ] 使用了 `computed` 而不是 `watch` (Vue)
+
+### 内存管理
+- [ ] 所有定时器都有清理逻辑
+- [ ] 所有事件监听器都被移除
+- [ ] 大对象缓存有大小限制
+- [ ] 组件卸载时释放资源
+
+### 代码质量
+- [ ] 通过 ESLint 检查 (`pnpm lint`)
+- [ ] 代码结构清晰，逻辑简洁
+- [ ] 没有重复代码
+- [ ] 变量命名自解释
+
+### 注释文档
+- [ ] 所有导出的函数/类/接口都有 JSDoc
+- [ ] 复杂逻辑有注释说明
+- [ ] 注释使用中文
+- [ ] 包含使用示例
+
+### 测试
+- [ ] 添加了单元测试（如果需要）
+- [ ] 所有测试通过
+- [ ] 测试覆盖率达标
+
+## 工具命令
+
+```bash
+# 代码检查和修复
+pnpm lint:fix
+
+# 类型检查
+pnpm type-check  # 如果有此命令
+
+# 运行测试
+pnpm test
+
+# 构建验证
+pnpm build
+
+# 清理缓存
+pnpm clean-build
+```
+
+## 参考资源
+
+- **TypeScript 手册**: https://www.typescriptlang.org/docs/
+- **Vue 性能优化**: https://vuejs.org/guide/best-practices/performance.html
+- **JavaScript 性能优化**: https://developer.mozilla.org/en-US/docs/Web/Performance
+- **Clean Code**: https://github.com/ryanmcdermott/clean-code-javascript
+
+---
+
+> 记住：**优秀的代码不仅要能工作，还要易读、高效、可维护！**

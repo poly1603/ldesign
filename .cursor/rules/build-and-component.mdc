@@ -1,0 +1,934 @@
+---
+alwaysApply: true
+description: 构建工具和组件开发规范
+---
+
+# 构建工具和组件开发规范
+
+## 构建工具选择
+
+### 1. 库（Library）打包 📦
+
+**必须使用 `@ldesign/builder`**
+
+```json
+// packages/your-lib/package.json
+{
+  "name": "@ldesign/your-lib",
+  "scripts": {
+    "build": "ldesign-builder build",
+    "build:watch": "ldesign-builder build --watch",
+    "build:clean": "ldesign-builder clean && ldesign-builder build"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*"
+  }
+}
+```
+
+**适用场景**：
+- ✅ 纯功能库（utils、hooks、composables）
+- ✅ 组件库（需要打包为 npm 包）
+- ✅ 工具包（CLI、插件等）
+- ✅ 需要发布到 npm 的包
+- ✅ 需要生成多种格式（ESM、CJS、UMD）
+
+**配置示例**：
+```typescript
+// packages/your-lib/builder.config.ts
+import { defineConfig } from '@ldesign/builder'
+
+export default defineConfig({
+  entry: 'src/index.ts',
+  output: {
+    formats: ['esm', 'cjs', 'umd'],
+    dir: 'dist',
+  },
+  external: ['vue', 'react'],
+  minify: true,
+  sourcemap: true,
+  dts: true, // 生成类型声明文件
+})
+```
+
+### 2. 项目（Application）构建 🚀
+
+**必须使用 `@ldesign/launcher`**
+
+```json
+// apps/your-app/package.json
+{
+  "name": "your-app",
+  "scripts": {
+    "dev": "ldesign-launcher dev",
+    "build": "ldesign-launcher build",
+    "preview": "ldesign-launcher preview",
+    "serve": "ldesign-launcher serve"
+  },
+  "devDependencies": {
+    "@ldesign/launcher": "workspace:*"
+  }
+}
+```
+
+**适用场景**：
+- ✅ 完整的应用程序
+- ✅ 示例展示项目
+- ✅ 文档网站
+- ✅ 开发环境预览
+- ✅ 需要开发服务器的项目
+
+**配置示例**：
+```typescript
+// apps/your-app/launcher.config.ts
+import { defineConfig } from '@ldesign/launcher'
+
+export default defineConfig({
+  root: 'src',
+  publicDir: 'public',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+  },
+  server: {
+    port: 3000,
+    open: true,
+    proxy: {
+      '/api': 'http://localhost:8080',
+    },
+  },
+})
+```
+
+### 3. 工具选择决策树
+
+```
+需要打包吗？
+├─ 是
+│  ├─ 需要发布到 npm？
+│  │  └─ 是 → 使用 @ldesign/builder
+│  └─ 只是应用部署？
+│     └─ 是 → 使用 @ldesign/launcher
+└─ 否
+   └─ 需要开发服务器？
+      └─ 是 → 使用 @ldesign/launcher
+```
+
+## Vue 组件开发规范
+
+### 1. 组件目录结构 🗂️
+
+**必须使用目录包裹，统一结构**：
+
+```
+components/
+└── Button/                    # 组件目录（PascalCase）
+    ├── index.ts              # 导出入口（必需）
+    ├── Button.tsx            # 组件实现（TSX）
+    ├── Button.less           # 组件样式（Less）
+    ├── types.ts              # 类型定义
+    ├── props.ts              # Props 定义（可选）
+    ├── constants.ts          # 常量定义（可选）
+    └── __tests__/            # 测试文件（可选）
+        └── Button.test.ts
+```
+
+**关键规则**：
+- ✅ 组件目录名使用 **PascalCase**（如 `Button`、`DatePicker`）
+- ✅ 主文件名与目录名一致（`Button/Button.tsx`）
+- ✅ 样式文件与主文件同名（`Button.less`）
+- ✅ 必须有 `index.ts` 作为导出入口
+- ✅ 类型定义独立到 `types.ts`
+- ❌ 禁止直接在根目录创建组件文件（如 `Button.tsx`）
+
+### 2. 组件实现规范 (TSX) 📝
+
+**必须使用 TSX 编写 Vue 组件**：
+
+```tsx
+// components/Button/Button.tsx
+import { defineComponent, computed, type PropType } from 'vue'
+import type { ButtonProps, ButtonEmits } from './types'
+import './Button.less'
+
+/**
+ * 按钮组件
+ * 
+ * 提供多种类型、尺寸和状态的按钮样式
+ * 
+ * @example
+ * ```tsx
+ * <Button type="primary" size="large" onClick={handleClick}>
+ *   点击我
+ * </Button>
+ * ```
+ */
+export default defineComponent({
+  name: 'LdButton',
+  
+  props: {
+    /**
+     * 按钮类型
+     * @default 'default'
+     */
+    type: {
+      type: String as PropType<ButtonProps['type']>,
+      default: 'default',
+    },
+    
+    /**
+     * 按钮尺寸
+     * @default 'medium'
+     */
+    size: {
+      type: String as PropType<ButtonProps['size']>,
+      default: 'medium',
+    },
+    
+    /**
+     * 是否禁用
+     * @default false
+     */
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+    
+    /**
+     * 是否加载中
+     * @default false
+     */
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  
+  emits: {
+    /**
+     * 点击事件
+     * @param event - 鼠标事件
+     */
+    click: (event: MouseEvent) => true,
+  },
+  
+  setup(props, { slots, emit }) {
+    // 计算按钮类名
+    const buttonClass = computed(() => {
+      return [
+        'ld-button',
+        `ld-button--${props.type}`,
+        `ld-button--${props.size}`,
+        {
+          'ld-button--disabled': props.disabled,
+          'ld-button--loading': props.loading,
+        },
+      ]
+    })
+    
+    // 处理点击事件
+    const handleClick = (event: MouseEvent) => {
+      if (props.disabled || props.loading) {
+        event.preventDefault()
+        return
+      }
+      emit('click', event)
+    }
+    
+    return () => (
+      <button
+        class={buttonClass.value}
+        disabled={props.disabled || props.loading}
+        onClick={handleClick}
+      >
+        {props.loading && <span class="ld-button__loading-icon">⏳</span>}
+        <span class="ld-button__content">{slots.default?.()}</span>
+      </button>
+    )
+  },
+})
+```
+
+**TSX 编写规范**：
+- ✅ 使用 `defineComponent` 定义组件
+- ✅ 组件名使用 `Ld` 前缀（如 `LdButton`）
+- ✅ Props 使用 `PropType` 显式声明类型
+- ✅ 所有 props 都要有注释和默认值
+- ✅ Emits 使用对象形式，包含验证函数
+- ✅ setup 返回渲染函数
+- ✅ 使用 `computed` 计算类名
+- ✅ 事件处理器以 `handle` 开头
+
+### 3. 类型定义规范 📐
+
+```typescript
+// components/Button/types.ts
+
+/**
+ * 按钮类型
+ */
+export type ButtonType = 
+  | 'default'
+  | 'primary' 
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | 'text'
+  | 'link'
+
+/**
+ * 按钮尺寸
+ */
+export type ButtonSize = 
+  | 'small'
+  | 'medium'
+  | 'large'
+
+/**
+ * 按钮 Props 接口
+ */
+export interface ButtonProps {
+  /** 按钮类型 */
+  type?: ButtonType
+  /** 按钮尺寸 */
+  size?: ButtonSize
+  /** 是否禁用 */
+  disabled?: boolean
+  /** 是否加载中 */
+  loading?: boolean
+  /** 是否为块级元素 */
+  block?: boolean
+  /** 图标 */
+  icon?: string
+  /** 图标位置 */
+  iconPosition?: 'left' | 'right'
+}
+
+/**
+ * 按钮事件接口
+ */
+export interface ButtonEmits {
+  /** 点击事件 */
+  click: (event: MouseEvent) => void
+  /** 双击事件 */
+  dblclick: (event: MouseEvent) => void
+}
+
+/**
+ * 按钮实例接口
+ */
+export interface ButtonInstance {
+  /** 触发点击 */
+  click: () => void
+  /** 获取按钮元素 */
+  getElement: () => HTMLButtonElement | null
+}
+```
+
+**类型定义规范**：
+- ✅ 所有类型都要有 JSDoc 注释
+- ✅ 使用 `type` 定义联合类型
+- ✅ 使用 `interface` 定义对象类型
+- ✅ Props 接口以 `Props` 结尾
+- ✅ Emits 接口以 `Emits` 结尾
+- ✅ Instance 接口以 `Instance` 结尾
+- ✅ 导出所有公开类型
+
+### 4. 样式规范 (Less) 🎨
+
+**必须使用 Less，支持完整的 CSS Variables**：
+
+```less
+// components/Button/Button.less
+
+// CSS Variables 定义（必须在最前面）
+:root {
+  // 颜色变量
+  --ld-button-color-primary: #1890ff;
+  --ld-button-color-success: #52c41a;
+  --ld-button-color-warning: #faad14;
+  --ld-button-color-danger: #ff4d4f;
+  --ld-button-color-info: #1890ff;
+  --ld-button-color-text: rgba(0, 0, 0, 0.85);
+  
+  // 尺寸变量
+  --ld-button-height-small: 24px;
+  --ld-button-height-medium: 32px;
+  --ld-button-height-large: 40px;
+  
+  --ld-button-padding-small: 0 8px;
+  --ld-button-padding-medium: 0 16px;
+  --ld-button-padding-large: 0 20px;
+  
+  --ld-button-font-size-small: 12px;
+  --ld-button-font-size-medium: 14px;
+  --ld-button-font-size-large: 16px;
+  
+  // 圆角变量
+  --ld-button-border-radius: 4px;
+  
+  // 过渡变量
+  --ld-button-transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+  
+  // 阴影变量
+  --ld-button-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+  --ld-button-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+// Less 变量（内部使用）
+@prefix: ld-button;
+
+// 基础样式
+.@{prefix} {
+  // 使用 CSS Variables
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--ld-button-height-medium);
+  padding: var(--ld-button-padding-medium);
+  font-size: var(--ld-button-font-size-medium);
+  border-radius: var(--ld-button-border-radius);
+  transition: var(--ld-button-transition);
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  
+  // 基础状态
+  &:hover {
+    box-shadow: var(--ld-button-shadow-hover);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+  
+  &:focus-visible {
+    outline: 2px solid var(--ld-button-color-primary);
+    outline-offset: 2px;
+  }
+  
+  // 禁用状态
+  &--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  
+  // 加载状态
+  &--loading {
+    cursor: wait;
+    
+    .@{prefix}__loading-icon {
+      margin-right: 8px;
+      animation: ld-button-loading 1s linear infinite;
+    }
+  }
+  
+  // 类型变体（使用 CSS Variables）
+  &--primary {
+    color: #fff;
+    background-color: var(--ld-button-color-primary);
+    border-color: var(--ld-button-color-primary);
+    
+    &:hover {
+      background-color: color-mix(in srgb, var(--ld-button-color-primary) 80%, white);
+    }
+  }
+  
+  &--success {
+    color: #fff;
+    background-color: var(--ld-button-color-success);
+    border-color: var(--ld-button-color-success);
+  }
+  
+  &--warning {
+    color: #fff;
+    background-color: var(--ld-button-color-warning);
+    border-color: var(--ld-button-color-warning);
+  }
+  
+  &--danger {
+    color: #fff;
+    background-color: var(--ld-button-color-danger);
+    border-color: var(--ld-button-color-danger);
+  }
+  
+  // 尺寸变体（使用 CSS Variables）
+  &--small {
+    height: var(--ld-button-height-small);
+    padding: var(--ld-button-padding-small);
+    font-size: var(--ld-button-font-size-small);
+  }
+  
+  &--large {
+    height: var(--ld-button-height-large);
+    padding: var(--ld-button-padding-large);
+    font-size: var(--ld-button-font-size-large);
+  }
+  
+  // 子元素
+  &__content {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+// 动画定义
+@keyframes ld-button-loading {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// 暗黑模式支持（使用 CSS Variables）
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ld-button-color-primary: #409eff;
+    --ld-button-color-text: rgba(255, 255, 255, 0.85);
+  }
+}
+```
+
+**Less 样式规范**：
+- ✅ **必须定义完整的 CSS Variables** 在 `:root` 中
+- ✅ 使用 BEM 命名规范（`ld-button`、`ld-button__content`、`ld-button--primary`）
+- ✅ 组件前缀统一使用 `ld-`
+- ✅ 使用 Less 变量存储组件前缀（`@prefix`）
+- ✅ 所有颜色、尺寸、间距都使用 CSS Variables
+- ✅ 支持暗黑模式（通过 CSS Variables）
+- ✅ 使用语义化的变量命名
+- ✅ 提供完整的状态样式（hover、active、focus、disabled）
+- ✅ 使用 `transition` 提供平滑过渡
+- ❌ 禁止硬编码颜色值（必须使用 CSS Variables）
+- ❌ 禁止使用 `!important`（除非绝对必要）
+
+### 5. 导出规范 (index.ts) 📤
+
+```typescript
+// components/Button/index.ts
+
+/**
+ * Button 组件导出模块
+ * @module Button
+ */
+
+import Button from './Button'
+import type { 
+  ButtonProps, 
+  ButtonEmits, 
+  ButtonInstance,
+  ButtonType,
+  ButtonSize,
+} from './types'
+
+// 组件安装函数（用于全局注册）
+import type { App } from 'vue'
+
+Button.install = (app: App): void => {
+  app.component(Button.name!, Button)
+}
+
+// 默认导出
+export default Button
+
+// 命名导出
+export {
+  Button,
+}
+
+// 类型导出
+export type {
+  ButtonProps,
+  ButtonEmits,
+  ButtonInstance,
+  ButtonType,
+  ButtonSize,
+}
+
+// 导出组件实例类型（用于 ref）
+export type ButtonRef = InstanceType<typeof Button>
+```
+
+**导出规范**：
+- ✅ 必须有模块注释
+- ✅ 默认导出组件本身
+- ✅ 命名导出组件（用于按需引入）
+- ✅ 导出所有类型定义
+- ✅ 提供 `install` 方法（支持全局注册）
+- ✅ 导出组件实例类型（`xxxRef`）
+- ✅ 使用 `type` 关键字导出类型
+
+### 6. 组件库根导出 📚
+
+```typescript
+// libraries/your-lib/src/index.ts
+
+/**
+ * LDesign Component Library
+ * @packageDocumentation
+ */
+
+// 导出所有组件
+export { default as Button } from './components/Button'
+export { default as Input } from './components/Input'
+export { default as Select } from './components/Select'
+
+// 导出所有类型
+export type * from './components/Button'
+export type * from './components/Input'
+export type * from './components/Select'
+
+// 导出工具函数
+export * from './utils'
+
+// 导出常量
+export * from './constants'
+
+// 全局安装函数
+import type { App } from 'vue'
+import Button from './components/Button'
+import Input from './components/Input'
+import Select from './components/Select'
+
+const components = [Button, Input, Select]
+
+/**
+ * 安装所有组件
+ * @param app - Vue 应用实例
+ */
+export function install(app: App): void {
+  components.forEach((component) => {
+    if (component.install) {
+      component.install(app)
+    }
+  })
+}
+
+// 默认导出
+export default {
+  install,
+}
+
+// 版本信息
+export const version = '__VERSION__'
+```
+
+## 组件开发完整示例
+
+### 示例：DatePicker 组件
+
+```
+libraries/datepicker/
+├── src/
+│   ├── components/
+│   │   ├── DatePicker/
+│   │   │   ├── index.ts              # 导出入口
+│   │   │   ├── DatePicker.tsx        # 主组件
+│   │   │   ├── DatePicker.less       # 样式文件
+│   │   │   ├── types.ts              # 类型定义
+│   │   │   ├── constants.ts          # 常量
+│   │   │   ├── utils.ts              # 工具函数
+│   │   │   └── __tests__/
+│   │   │       └── DatePicker.test.ts
+│   │   └── DateRangePicker/
+│   │       └── ...（同上结构）
+│   ├── utils/                        # 公共工具
+│   ├── constants/                    # 公共常量
+│   ├── styles/                       # 全局样式
+│   │   ├── variables.less            # CSS Variables 定义
+│   │   └── mixins.less               # Less Mixins
+│   └── index.ts                      # 库入口
+├── builder.config.ts                 # 构建配置（使用 @ldesign/builder）
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+## 额外约束和最佳实践
+
+### 1. 命名规范 🏷️
+
+```typescript
+// ✅ 组件命名：PascalCase
+export default defineComponent({ name: 'LdButton' })
+
+// ✅ 文件命名：与组件名一致
+Button.tsx
+DatePicker.tsx
+
+// ✅ 样式文件：与组件名一致
+Button.less
+DatePicker.less
+
+// ✅ 类型命名：组件名 + Props/Emits/Instance
+interface ButtonProps {}
+interface ButtonEmits {}
+interface ButtonInstance {}
+
+// ✅ 事件处理器：handle + 动作
+const handleClick = () => {}
+const handleChange = () => {}
+
+// ✅ 计算属性：描述性名称
+const isDisabled = computed(() => {})
+const buttonClass = computed(() => {})
+
+// ❌ 禁止：缩写、不明确的命名
+const btn = {}  // 错误
+const hdlClk = () => {}  // 错误
+```
+
+### 2. Props 定义规范 ⚙️
+
+```typescript
+// ✅ 完整的 Props 定义
+props: {
+  // 1. 必须有类型声明
+  // 2. 必须有注释
+  // 3. 必须有默认值（除非是必填）
+  // 4. 复杂类型使用 PropType
+  
+  /**
+   * 按钮类型
+   * @default 'default'
+   */
+  type: {
+    type: String as PropType<ButtonType>,
+    default: 'default',
+    validator: (value: string) => {
+      return ['default', 'primary', 'success'].includes(value)
+    },
+  },
+  
+  /**
+   * 自定义类名
+   */
+  customClass: {
+    type: [String, Array, Object] as PropType<string | string[] | Record<string, boolean>>,
+    default: '',
+  },
+  
+  /**
+   * 点击处理器（不推荐通过 props 传递，应使用 emits）
+   */
+  onClick: {
+    type: Function as PropType<(event: MouseEvent) => void>,
+    default: undefined,
+  },
+}
+```
+
+### 3. 样式隔离和主题 🎨
+
+```less
+// styles/variables.less - 全局 CSS Variables
+
+:root {
+  // 主题色
+  --ld-color-primary: #1890ff;
+  --ld-color-success: #52c41a;
+  --ld-color-warning: #faad14;
+  --ld-color-danger: #ff4d4f;
+  --ld-color-info: #1890ff;
+  
+  // 中性色
+  --ld-color-text-primary: rgba(0, 0, 0, 0.85);
+  --ld-color-text-secondary: rgba(0, 0, 0, 0.65);
+  --ld-color-text-disabled: rgba(0, 0, 0, 0.25);
+  
+  --ld-color-border: #d9d9d9;
+  --ld-color-divider: #f0f0f0;
+  --ld-color-background: #ffffff;
+  
+  // 尺寸
+  --ld-size-small: 24px;
+  --ld-size-medium: 32px;
+  --ld-size-large: 40px;
+  
+  // 间距
+  --ld-spacing-xs: 4px;
+  --ld-spacing-sm: 8px;
+  --ld-spacing-md: 16px;
+  --ld-spacing-lg: 24px;
+  --ld-spacing-xl: 32px;
+  
+  // 字体
+  --ld-font-size-sm: 12px;
+  --ld-font-size-base: 14px;
+  --ld-font-size-lg: 16px;
+  --ld-font-size-xl: 20px;
+  
+  // 圆角
+  --ld-border-radius-sm: 2px;
+  --ld-border-radius-base: 4px;
+  --ld-border-radius-lg: 8px;
+  
+  // 阴影
+  --ld-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --ld-shadow-base: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --ld-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.16);
+  
+  // 过渡
+  --ld-transition-fast: 0.1s;
+  --ld-transition-base: 0.3s;
+  --ld-transition-slow: 0.5s;
+  
+  // 层级
+  --ld-z-index-dropdown: 1000;
+  --ld-z-index-modal: 1050;
+  --ld-z-index-popover: 1060;
+  --ld-z-index-tooltip: 1070;
+}
+
+// 暗黑模式
+[data-theme="dark"] {
+  --ld-color-text-primary: rgba(255, 255, 255, 0.85);
+  --ld-color-text-secondary: rgba(255, 255, 255, 0.65);
+  --ld-color-background: #1f1f1f;
+  --ld-color-border: #434343;
+}
+```
+
+### 4. 性能优化约束 ⚡
+
+```typescript
+// ✅ 使用 shallowRef 处理大型对象
+const largeData = shallowRef<LargeData>({})
+
+// ✅ 使用 computed 缓存计算结果
+const filteredList = computed(() => 
+  props.list.filter(item => item.visible)
+)
+
+// ✅ 使用 watch 时指定依赖
+watch(() => props.value, (newVal) => {
+  // 仅在 props.value 变化时触发
+})
+
+// ✅ 使用 v-once 优化静态内容
+return () => (
+  <div v-once>{staticContent}</div>
+)
+
+// ✅ 大列表使用虚拟滚动
+import { VirtualList } from '@ldesign/shared'
+
+// ❌ 禁止在模板中使用复杂计算
+// <div>{props.list.filter(...).map(...)}</div>
+
+// ✅ 应该使用 computed
+const processedList = computed(() => 
+  props.list.filter(...).map(...)
+)
+```
+
+### 5. 无障碍访问 (A11y) ♿
+
+```tsx
+// ✅ 必须提供完整的无障碍属性
+return () => (
+  <button
+    role="button"
+    aria-label={props.ariaLabel || 'Button'}
+    aria-disabled={props.disabled}
+    aria-busy={props.loading}
+    tabindex={props.disabled ? -1 : 0}
+    onClick={handleClick}
+    onKeydown={handleKeydown}
+  >
+    {slots.default?.()}
+  </button>
+)
+
+// ✅ 支持键盘导航
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    handleClick(event as unknown as MouseEvent)
+  }
+}
+```
+
+### 6. 测试规范 🧪
+
+```typescript
+// components/Button/__tests__/Button.test.ts
+import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi } from 'vitest'
+import Button from '../Button'
+
+describe('Button', () => {
+  it('renders correctly', () => {
+    const wrapper = mount(Button, {
+      slots: {
+        default: 'Click me',
+      },
+    })
+    expect(wrapper.text()).toBe('Click me')
+  })
+  
+  it('emits click event', async () => {
+    const onClick = vi.fn()
+    const wrapper = mount(Button, {
+      props: {
+        onClick,
+      },
+    })
+    
+    await wrapper.trigger('click')
+    expect(onClick).toHaveBeenCalledTimes(1)
+  })
+  
+  it('disables click when disabled', async () => {
+    const onClick = vi.fn()
+    const wrapper = mount(Button, {
+      props: {
+        disabled: true,
+        onClick,
+      },
+    })
+    
+    await wrapper.trigger('click')
+    expect(onClick).not.toHaveBeenCalled()
+  })
+})
+```
+
+## 检查清单 ✓
+
+### 构建工具
+- [ ] 库项目使用 `@ldesign/builder`
+- [ ] 应用项目使用 `@ldesign/launcher`
+- [ ] 构建配置文件正确配置
+
+### 组件结构
+- [ ] 使用目录包裹组件
+- [ ] 有 `index.ts` 导出文件
+- [ ] 组件使用 TSX 编写
+- [ ] 样式使用 Less 编写
+- [ ] 类型定义在 `types.ts`
+
+### 样式规范
+- [ ] 定义了完整的 CSS Variables
+- [ ] 使用 BEM 命名规范
+- [ ] 支持暗黑模式
+- [ ] 无硬编码颜色值
+
+### 类型定义
+- [ ] 所有类型都有注释
+- [ ] Props/Emits/Instance 类型完整
+- [ ] 导出所有公开类型
+
+### 代码质量
+- [ ] 通过 TypeScript 检查
+- [ ] 通过 ESLint 检查
+- [ ] 有完整的注释
+- [ ] 有单元测试
+
+---
+
+> 遵循这些规范，确保组件库的一致性、可维护性和高质量！
