@@ -238,6 +238,7 @@ const generateLargeData = () => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 h1 {
@@ -285,6 +286,10 @@ button:hover {
   box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
 }
 
+button:active {
+  transform: translateY(0);
+}
+
 .stats-panel {
   background: #f0f2f5;
   padding: 20px;
@@ -297,10 +302,20 @@ button:hover {
   color: #333;
 }
 
+.stats-panel button {
+  margin-top: 15px;
+  background: #ff4d4f;
+}
+
+.stats-panel button:hover {
+  background: #ff7875;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 15px;
+  margin-bottom: 15px;
 }
 
 .stat-item {
@@ -336,7 +351,7 @@ button:hover {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .chart-card:hover {
@@ -351,6 +366,7 @@ button:hover {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .chart-large {
@@ -371,4 +387,29 @@ button:hover {
   font-size: 13px;
   margin: 10px 0;
 }
-</style>
+
+.feature-tag {
+  margin: 10px 0;
+}
+
+.tag {
+  display: inline-block;
+  background: #e6f7ff;
+  color: #1890ff;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  margin-right: 8px;
+  border: 1px solid #91d5ff;
+}
+
+pre {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  overflow: auto;
+  max-height: 300px;
+  font-size: 12px;
+  color: #333;
+}
+

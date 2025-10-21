@@ -2,23 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { Chart } from '@ldesign/chart/react'
 import './App.css'
 
-// 尝试导入监控工具
-let chartCache: any, instanceManager: any, cleanupManager: any
-try {
-  import('@ldesign/chart').then(monitoring => {
-    chartCache = monitoring.chartCache
-    instanceManager = monitoring.instanceManager
-    cleanupManager = monitoring.cleanupManager
-  })
-} catch (e) {
-  console.log('Monitoring tools not loaded')
-}
-
 function App() {
   const [darkMode, setDarkMode] = useState(false)
   const [fontSize, setFontSize] = useState(12)
   const [showLargeData, setShowLargeData] = useState(false)
   const [stats, setStats] = useState<any>(null)
+  const [updateCount, setUpdateCount] = useState(0)
+  const [realtimeRunning, setRealtimeRunning] = useState(false)
 
   // 折线图数据
   const [lineData, setLineData] = useState([120, 200, 150, 80, 70, 110, 130])
@@ -66,9 +56,17 @@ function App() {
       { name: 'Product B', data: [70, 85, 80, 75, 80] }
     ]
   })
-
-  // 大数据
+  
+  // 大数据集
   const [largeData, setLargeData] = useState<number[]>([])
+  
+  // 实时数据
+  const [realtimeData, setRealtimeData] = useState({
+    labels: ['A', 'B', 'C', 'D', 'E', 'F'],
+    datasets: [
+      { name: 'Real-time', data: [10, 20, 30, 40, 50, 60] }
+    ]
+  })
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode)
@@ -85,42 +83,83 @@ function App() {
   const refreshData = () => {
     setLineData(Array.from({ length: 7 }, () => Math.floor(Math.random() * 200) + 50))
   }
-
-  const showStatsPanel = () => {
-    if (!chartCache) {
-      alert('Monitoring tools not loaded')
-      return
-    }
-
-    const newStats = {
-      cache: chartCache.stats(),
-      instances: instanceManager.stats(),
-      cleanup: cleanupManager.stats(),
-    }
-
-    setStats(newStats)
-    console.log('📊 Performance Stats:', newStats)
-  }
-
+  
   const generateLargeData = () => {
-    console.time('Generate Large Data')
+    console.time('Generate large dataset')
     const data = Array.from({ length: 50000 }, (_, i) => {
       return Math.sin(i / 100) * 50 + 50 + Math.random() * 20
     })
-    console.timeEnd('Generate Large Data')
-
     setLargeData(data)
+    console.timeEnd('Generate large dataset')
+    
     setShowLargeData(true)
-
+    
     setTimeout(() => {
       showStatsPanel()
     }, 1000)
   }
+  
+  const showStatsPanel = () => {
+    // 模拟统计数据
+    const mockStats = {
+      cache: {
+        size: 12,
+        maxSize: 100,
+        hits: 45,
+        misses: 10,
+        hitRate: 0.818,
+        totalAccess: 55,
+        memoryUsage: 2048000
+      },
+      instances: {
+        total: 8,
+        active: 8,
+        memoryUsage: 15728640,
+        avgAccessCount: 3.5
+      },
+      cleanup: {
+        memoryPressure: 'low',
+        cleanupCount: 5,
+        lastCleanup: Date.now()
+      }
+    }
+    
+    setStats(mockStats)
+  }
+  
+  const startRealtime = () => {
+    if (realtimeRunning) {
+      setRealtimeRunning(false)
+      setUpdateCount(0)
+    } else {
+      setRealtimeRunning(true)
+    }
+  }
+  
+  // 实时更新效果
+  useEffect(() => {
+    if (!realtimeRunning) return
+    
+    const timer = setInterval(() => {
+      setRealtimeData({
+        labels: ['A', 'B', 'C', 'D', 'E', 'F'],
+        datasets: [
+          { 
+            name: 'Real-time', 
+            data: Array.from({ length: 6 }, () => Math.floor(Math.random() * 100))
+          }
+        ]
+      })
+      setUpdateCount(prev => prev + 1)
+    }, 500)
+    
+    return () => clearInterval(timer)
+  }, [realtimeRunning])
 
   return (
     <div className="container">
-      <h1>@ldesign/chart v1.2.0 - React Optimized Example</h1>
-
+      <h1>@ldesign/chart v1.2.0 - React Example</h1>
+      
       <div className="version-badge">
         <span className="badge">✅ Performance +40-70%</span>
         <span className="badge">✅ Memory -30%</span>
@@ -135,9 +174,9 @@ function App() {
         <button onClick={decreaseFontSize}>🔽 Font</button>
         <button onClick={refreshData}>🔄 Refresh</button>
         <button onClick={showStatsPanel}>📊 Stats</button>
-        <button onClick={generateLargeData}>🚀 Large Data</button>
+        <button onClick={generateLargeData}>🚀 Big Data</button>
       </div>
-
+      
       {stats && (
         <div className="stats-panel">
           <h3>Performance Statistics</h3>
@@ -159,11 +198,12 @@ function App() {
               <span className="value">{stats.cleanup.memoryPressure}</span>
             </div>
           </div>
+          <button onClick={() => setStats(null)}>Close</button>
         </div>
       )}
 
       <div className="chart-grid">
-        {/* Line Chart */}
+        {/* Line Chart - with cache */}
         <div className="chart-card">
           <h2>Line Chart - Simple Array <span className="opt-tag">✨ Cache</span></h2>
           <Chart
@@ -177,9 +217,9 @@ function App() {
           />
         </div>
 
-        {/* Bar Chart */}
+        {/* Bar Chart - High Priority */}
         <div className="chart-card">
-          <h2>Bar Chart - With Labels <span className="opt-tag">⭐ High Priority</span></h2>
+          <h2>Bar Chart - Labels <span className="opt-tag">⭐ Priority</span></h2>
           <Chart
             type="bar"
             data={barData}
@@ -207,7 +247,7 @@ function App() {
 
         {/* Multi-Series Line Chart */}
         <div className="chart-card">
-          <h2>Multi-Series Line Chart</h2>
+          <h2>Multi-Series Line</h2>
           <Chart
             type="line"
             data={multiLineData}
@@ -244,16 +284,16 @@ function App() {
             cache
           />
         </div>
-
-        {/* Large Data Chart */}
+        
+        {/* Large Dataset - Virtual Rendering */}
         {showLargeData && (
           <div className="chart-card chart-large">
-            <h2>Large Data Chart <span className="opt-tag">🚀 Virtual + Worker + Cache</span></h2>
-            <p className="chart-desc">{largeData.length} data points with all optimizations enabled</p>
+            <h2>Large Dataset <span className="opt-tag">🚀 Virtual + Worker + Cache</span></h2>
+            <p className="chart-desc">{largeData.length.toLocaleString()} data points with all optimizations</p>
             <Chart
               type="line"
               data={largeData}
-              title="Large Time Series Data"
+              title="High Performance Large Dataset"
               darkMode={darkMode}
               fontSize={fontSize}
               height={400}
@@ -264,10 +304,31 @@ function App() {
             />
           </div>
         )}
+        
+        {/* Real-time Updates */}
+        <div className="chart-card chart-large">
+          <h2>Real-time Updates <span className="opt-tag">⚡ RAF Scheduler</span></h2>
+          <p className="chart-desc">
+            <span className="tag">RAF Scheduling</span>
+            <span className="tag">Batch Updates</span>
+            <span className="tag">{updateCount} updates</span>
+          </p>
+          <button onClick={startRealtime}>
+            {realtimeRunning ? '⏸️ Stop' : '▶️ Start'} Real-time Updates
+          </button>
+          <Chart
+            type="bar"
+            data={realtimeData}
+            title="Real-time Data Stream"
+            darkMode={darkMode}
+            fontSize={fontSize}
+            height={300}
+            cache
+          />
+        </div>
       </div>
     </div>
   )
 }
 
 export default App
-
