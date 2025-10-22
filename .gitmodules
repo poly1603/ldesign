@@ -112,3 +112,72 @@
 [submodule "tools/cli"]
 	path = tools/cli
 	url = https://github.com/poly1603/ldesign-cli.git
+[submodule "libraries/barcode"]
+	path = libraries/barcode
+	url = https://github.com/poly1603/ldesign-barcode.git
+[submodule "libraries/calendar"]
+	path = libraries/calendar
+	url = https://github.com/poly1603/ldesign-calendar.git
+[submodule "libraries/gantt"]
+	path = libraries/gantt
+	url = https://github.com/poly1603/ldesign-gantt.git
+[submodule "libraries/markdown"]
+	path = libraries/markdown
+	url = https://github.com/poly1603/ldesign-markdown.git
+[submodule "libraries/mindmap"]
+	path = libraries/mindmap
+	url = https://github.com/poly1603/ldesign-mindmap.git
+[submodule "libraries/player"]
+	path = libraries/player
+	url = https://github.com/poly1603/ldesign-player.git
+[submodule "libraries/signature"]
+	path = libraries/signature
+	url = https://github.com/poly1603/ldesign-signature.git
+[submodule "libraries/timeline"]
+	path = libraries/timeline
+	url = https://github.com/poly1603/ldesign-timeline.git
+[submodule "libraries/tree"]
+	path = libraries/tree
+	url = https://github.com/poly1603/ldesign-tree.git
+[submodule "libraries/upload"]
+	path = libraries/upload
+	url = https://github.com/poly1603/ldesign-upload.git
+[submodule "packages/animation"]
+	path = packages/animation
+	url = https://github.com/poly1603/ldesign-animation.git
+[submodule "packages/auth"]
+	path = packages/auth
+	url = https://github.com/poly1603/ldesign-auth.git
+[submodule "packages/file"]
+	path = packages/file
+	url = https://github.com/poly1603/ldesign-file.git
+[submodule "packages/icons"]
+	path = packages/icons
+	url = https://github.com/poly1603/ldesign-icons.git
+[submodule "packages/logger"]
+	path = packages/logger
+	url = https://github.com/poly1603/ldesign-logger.git
+[submodule "packages/notification"]
+	path = packages/notification
+	url = https://github.com/poly1603/ldesign-notification.git
+[submodule "packages/permission"]
+	path = packages/permission
+	url = https://github.com/poly1603/ldesign-permission.git
+[submodule "packages/storage"]
+	path = packages/storage
+	url = https://github.com/poly1603/ldesign-storage.git
+[submodule "packages/validator"]
+	path = packages/validator
+	url = https://github.com/poly1603/ldesign-validator.git
+[submodule "tools/analyzer"]
+	path = tools/analyzer
+	url = https://github.com/poly1603/ldesign-analyzer.git
+[submodule "tools/deployer"]
+	path = tools/deployer
+	url = https://github.com/poly1603/ldesign-deployer.git
+[submodule "tools/docs-generator"]
+	path = tools/docs-generator
+	url = https://github.com/poly1603/ldesign-docs-generator.git
+[submodule "tools/tester"]
+	path = tools/tester
+	url = https://github.com/poly1603/ldesign-tester.git
