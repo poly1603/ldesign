@@ -6,7 +6,7 @@
   "type": "module",
   "workspaces": [
     "packages/**",
-    "library/**",
+    "libraries/**",
     "apps/*",
     "tools/**"
   ],
@@ -23,6 +23,8 @@
     "setup-packages": "tsx scripts/setup-packages.ts",
     "clean-build": "tsx scripts/clean-build.ts",
     "commit-submodules": "tsx scripts/commit-submodules.ts",
+    "convert-to-submodules": "tsx scripts/batch-convert-submodules.ts",
+    "convert-single": "tsx scripts/convert-single-submodule.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:all": "pnpm -r lint",
