@@ -181,3 +181,6 @@
 [submodule "tools/tester"]
 	path = tools/tester
 	url = https://github.com/poly1603/ldesign-tester.git
+[submodule "tools/monitor"]
+	path = tools/monitor
+	url = https://github.com/poly1603/ldesign-monitor.git
