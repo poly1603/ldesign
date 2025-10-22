@@ -184,3 +184,6 @@
 [submodule "tools/monitor"]
 	path = tools/monitor
 	url = https://github.com/poly1603/ldesign-monitor.git
+[submodule "libraries/video"]
+	path = libraries/video
+	url = https://github.com/poly1603/video.git
