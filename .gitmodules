@@ -187,3 +187,6 @@
 [submodule "libraries/video"]
 	path = libraries/video
 	url = https://github.com/poly1603/video.git
+[submodule "packages/websocket"]
+	path = packages/websocket
+	url = https://github.com/poly1603/websocket.git
