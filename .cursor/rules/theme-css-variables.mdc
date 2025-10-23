@@ -1,0 +1,457 @@
+---
+globs: *.vue,*.css,*.less,*.scss,*.tsx,*.jsx
+description: 强制使用 themes 目录中定义的 CSS 变量来编写样式
+---
+
+# 主题 CSS 变量使用规范
+
+## 📁 主题文件位置
+
+项目的主题 CSS 变量定义在以下文件中：
+- [themes/color.css](mdc:themes/color.css) - 颜色系统变量
+- [themes/size.css](mdc:themes/size.css) - 尺寸系统变量
+
+## 🎨 必须使用 CSS 变量
+
+### ❌ 禁止使用硬编码值
+
+**不要这样写**：
+```css
+.button {
+  background: #667eea;           /* ❌ 硬编码颜色 */
+  color: #ffffff;                /* ❌ 硬编码颜色 */
+  padding: 12px 24px;            /* ❌ 硬编码尺寸 */
+  border-radius: 8px;            /* ❌ 硬编码尺寸 */
+  font-size: 14px;               /* ❌ 硬编码字体大小 */
+}
+```
+
+### ✅ 必须使用 CSS 变量
+
+**应该这样写**：
+```css
+.button {
+  background: var(--color-primary-default);    /* ✅ 使用颜色变量 */
+  color: var(--color-text-inverse);            /* ✅ 使用颜色变量 */
+  padding: var(--size-5) var(--size-8);        /* ✅ 使用尺寸变量 */
+  border-radius: var(--size-radius-md);        /* ✅ 使用圆角变量 */
+  font-size: var(--size-font-base);            /* ✅ 使用字体变量 */
+}
+```
+
+## 🎯 可用的 CSS 变量分类
+
+### 1. 颜色变量（color.css）
+
+#### 主题色
+```css
+--color-primary-default      /* 主色 */
+--color-primary-hover        /* 主色悬停 */
+--color-primary-active       /* 主色激活 */
+--color-primary-disabled     /* 主色禁用 */
+--color-primary-lighter      /* 主色浅色 */
+--color-primary-light        /* 主色淡色 */
+--color-primary-dark         /* 主色深色 */
+```
+
+#### 语义色
+```css
+--color-success-default      /* 成功 */
+--color-warning-default      /* 警告 */
+--color-danger-default       /* 危险 */
+--color-info-default         /* 信息 */
+```
+
+#### 文本色
+```css
+--color-text-primary         /* 主要文本 */
+--color-text-secondary       /* 次要文本 */
+--color-text-tertiary        /* 三级文本 */
+--color-text-inverse         /* 反色文本（白色） */
+--color-text-placeholder     /* 占位符文本 */
+--color-text-disabled        /* 禁用文本 */
+```
+
+#### 背景色
+```css
+--color-bg-page              /* 页面背景 */
+--color-bg-container         /* 容器背景 */
+--color-bg-layout            /* 布局背景 */
+--color-bg-elevated          /* 浮层背景 */
+```
+
+#### 边框色
+```css
+--color-border-default       /* 默认边框 */
+--color-border-light         /* 浅色边框 */
+--color-border-dark          /* 深色边框 */
+```
+
+#### 阴影
+```css
+--shadow-sm                  /* 小阴影 */
+--shadow-md                  /* 中阴影 */
+--shadow-lg                  /* 大阴影 */
+--shadow-xl                  /* 超大阴影 */
+```
+
+### 2. 尺寸变量（size.css）
+
+#### 基础尺寸
+```css
+--size-0 到 --size-64         /* 0px 到 512px */
+```
+
+#### 字体大小
+```css
+--size-font-2xs: 10px;
+--size-font-xs: 11px;
+--size-font-sm: 12px;
+--size-font-base: 14px;       /* 基础字体 */
+--size-font-md: 16px;
+--size-font-lg: 18px;
+--size-font-xl: 20px;
+--size-font-2xl: 24px;
+--size-font-3xl: 30px;
+--size-font-4xl: 36px;
+--size-font-5xl: 48px;
+```
+
+#### 圆角
+```css
+--size-radius-none: 0;
+--size-radius-sm: 2px;
+--size-radius-md: 4px;
+--size-radius-lg: 8px;
+--size-radius-xl: 12px;
+--size-radius-2xl: 16px;
+--size-radius-full: 9999px;   /* 完全圆角 */
+```
+
+#### 间距
+```css
+--size-space-xs: 4px;
+--size-space-sm: 8px;
+--size-space-md: 12px;
+--size-space-lg: 16px;
+--size-space-xl: 24px;
+--size-space-2xl: 32px;
+```
+
+#### 行高
+```css
+--size-line-tight: 1.25;
+--size-line-normal: 1.5;
+--size-line-relaxed: 1.75;
+--size-line-loose: 2;
+```
+
+## 📝 样式编写示例
+
+### Vue 组件样式
+
+```vue
+<style scoped>
+.card {
+  /* 布局 */
+  padding: var(--size-space-lg);
+  margin: var(--size-space-md);
+  
+  /* 背景和边框 */
+  background: var(--color-bg-container);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--size-radius-lg);
+  
+  /* 阴影 */
+  box-shadow: var(--shadow-md);
+  
+  /* 过渡 */
+  transition: all 0.3s ease;
+}
+
+.card-title {
+  /* 文本 */
+  color: var(--color-text-primary);
+  font-size: var(--size-font-lg);
+  font-weight: 600;
+  line-height: var(--size-line-normal);
+  
+  /* 间距 */
+  margin-bottom: var(--size-space-md);
+}
+
+.card:hover {
+  /* 悬停效果 */
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.button {
+  /* 按钮基础样式 */
+  padding: var(--size-space-sm) var(--size-space-lg);
+  background: var(--color-primary-default);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--size-radius-md);
+  font-size: var(--size-font-base);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.button:hover {
+  background: var(--color-primary-hover);
+}
+
+.button:disabled {
+  background: var(--color-primary-disabled);
+  cursor: not-allowed;
+}
+</style>
+```
+
+### 常见场景示例
+
+#### 1. 卡片组件
+```css
+.demo-card {
+  background: var(--color-bg-container);
+  border-radius: var(--size-radius-xl);
+  padding: var(--size-space-xl);
+  box-shadow: var(--shadow-md);
+}
+```
+
+#### 2. 表单输入
+```css
+.input {
+  padding: var(--size-space-sm) var(--size-space-md);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--size-radius-md);
+  font-size: var(--size-font-base);
+  color: var(--color-text-primary);
+}
+
+.input::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+.input:focus {
+  border-color: var(--color-primary-default);
+  outline: none;
+}
+
+.input:disabled {
+  background: var(--color-bg-layout);
+  color: var(--color-text-disabled);
+}
+```
+
+#### 3. 导航链接
+```css
+.nav-link {
+  color: var(--color-text-primary);
+  padding: var(--size-space-sm) var(--size-space-lg);
+  border-radius: var(--size-radius-md);
+  transition: all 0.3s;
+}
+
+.nav-link:hover {
+  background: var(--color-primary-lighter);
+  color: var(--color-primary-default);
+}
+
+.nav-link.active {
+  background: var(--color-primary-default);
+  color: var(--color-text-inverse);
+}
+```
+
+#### 4. 状态徽章
+```css
+.badge {
+  padding: var(--size-space-xs) var(--size-space-sm);
+  border-radius: var(--size-radius-full);
+  font-size: var(--size-font-xs);
+  font-weight: 600;
+}
+
+.badge-success {
+  background: var(--color-success-lighter);
+  color: var(--color-success-default);
+}
+
+.badge-warning {
+  background: var(--color-warning-lighter);
+  color: var(--color-warning-default);
+}
+
+.badge-danger {
+  background: var(--color-danger-lighter);
+  color: var(--color-danger-default);
+}
+```
+
+## ⚠️ 特殊情况处理
+
+### 允许硬编码的情况（极少）
+
+只有以下情况可以使用硬编码值：
+
+1. **透明度值**（CSS 变量不支持的情况）
+   ```css
+   background: rgba(102, 126, 234, 0.1);  /* 可以接受 */
+   ```
+   更好的方式是使用变量 + opacity：
+   ```css
+   background: var(--color-primary-default);
+   opacity: 0.1;
+   ```
+
+2. **渐变色**（需要多个颜色值）
+   ```css
+   background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-active) 100%);
+   ```
+
+3. **动画关键帧中的过渡值**
+   ```css
+   @keyframes slide {
+     0% { transform: translateX(0); }
+     100% { transform: translateX(100px); }  /* 可以接受 */
+   }
+   ```
+
+## 🔍 Code Review 检查清单
+
+在编写或审查代码时，检查以下内容：
+
+- [ ] ✅ 所有颜色使用 `var(--color-*)` 
+- [ ] ✅ 所有尺寸使用 `var(--size-*)`
+- [ ] ✅ 所有字体大小使用 `var(--size-font-*)`
+- [ ] ✅ 所有圆角使用 `var(--size-radius-*)`
+- [ ] ✅ 所有间距使用 `var(--size-space-*)`
+- [ ] ✅ 所有阴影使用 `var(--shadow-*)`
+- [ ] ✅ 所有行高使用 `var(--size-line-*)`
+- [ ] ❌ 没有硬编码的颜色值（如 #667eea, rgb(), rgba()）
+- [ ] ❌ 没有硬编码的尺寸值（如 12px, 1rem）
+
+## 💡 最佳实践
+
+### 1. 优先使用语义化变量
+
+```css
+/* ✅ 好 - 使用语义化变量 */
+.error-message {
+  color: var(--color-danger-default);
+}
+
+/* ❌ 差 - 使用通用颜色 */
+.error-message {
+  color: #ff4d4f;
+}
+```
+
+### 2. 使用场景专用变量
+
+```css
+/* ✅ 好 - 使用专用背景变量 */
+.page-wrapper {
+  background: var(--color-bg-page);
+}
+
+.card {
+  background: var(--color-bg-container);
+}
+
+/* ❌ 差 - 使用通用灰色 */
+.page-wrapper {
+  background: #fafafa;
+}
+```
+
+### 3. 响应式尺寸
+
+```css
+/* ✅ 好 - 使用尺寸变量，支持主题切换 */
+.container {
+  padding: var(--size-space-lg);
+  max-width: var(--size-64);
+}
+
+/* ❌ 差 - 硬编码尺寸 */
+.container {
+  padding: 16px;
+  max-width: 512px;
+}
+```
+
+## 🚀 快速参考
+
+### 常用颜色变量
+
+| 用途 | 变量 |
+|------|------|
+| 主要按钮 | `var(--color-primary-default)` |
+| 悬停按钮 | `var(--color-primary-hover)` |
+| 成功状态 | `var(--color-success-default)` |
+| 警告状态 | `var(--color-warning-default)` |
+| 错误状态 | `var(--color-danger-default)` |
+| 主要文本 | `var(--color-text-primary)` |
+| 次要文本 | `var(--color-text-secondary)` |
+| 白色文本 | `var(--color-text-inverse)` |
+| 容器背景 | `var(--color-bg-container)` |
+| 边框 | `var(--color-border-default)` |
+
+### 常用尺寸变量
+
+| 用途 | 变量 |
+|------|------|
+| 小间距 | `var(--size-space-sm)` = 8px |
+| 中间距 | `var(--size-space-md)` = 12px |
+| 大间距 | `var(--size-space-lg)` = 16px |
+| 基础字体 | `var(--size-font-base)` = 14px |
+| 大字体 | `var(--size-font-lg)` = 18px |
+| 小圆角 | `var(--size-radius-sm)` = 2px |
+| 中圆角 | `var(--size-radius-md)` = 4px |
+| 大圆角 | `var(--size-radius-lg)` = 8px |
+
+## 🎓 迁移指南
+
+### 从硬编码值迁移到 CSS 变量
+
+| 硬编码值 | CSS 变量 |
+|----------|----------|
+| `#667eea` | `var(--color-primary-default)` |
+| `#ffffff` | `var(--color-text-inverse)` |
+| `#333` | `var(--color-text-primary)` |
+| `#666` | `var(--color-text-secondary)` |
+| `#999` | `var(--color-text-tertiary)` |
+| `12px` (padding) | `var(--size-space-md)` |
+| `16px` (padding) | `var(--size-space-lg)` |
+| `14px` (font) | `var(--size-font-base)` |
+| `8px` (radius) | `var(--size-radius-lg)` |
+
+## ✨ 优势
+
+使用 CSS 变量的好处：
+
+1. **主题切换** - 自动支持亮色/暗色主题
+2. **颜色切换** - 自动支持多种主题颜色
+3. **尺寸调整** - 自动支持字体大小调整
+4. **一致性** - 保证整个应用的视觉一致性
+5. **可维护性** - 统一修改变量即可全局生效
+
+## 🔧 工具支持
+
+### VS Code 自动完成
+
+输入 `var(--` 后会自动提示所有可用的 CSS 变量。
+
+### 查找所有可用变量
+
+- 查看 [themes/color.css](mdc:themes/color.css) 获取所有颜色变量
+- 查看 [themes/size.css](mdc:themes/size.css) 获取所有尺寸变量
+
+---
+
+**记住：始终使用 CSS 变量，避免硬编码！** ✅
