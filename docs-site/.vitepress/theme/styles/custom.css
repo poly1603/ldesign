@@ -1,0 +1,235 @@
+/**
+ * 自定义样式
+ */
+
+/* 首页 Hero 样式优化 */
+.VPHero .name {
+  font-size: 3.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.VPHero .text {
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+.VPHero .tagline {
+  font-size: 1.8rem;
+  color: var(--vp-c-text-2);
+  font-weight: 500;
+}
+
+/* 特性卡片样式 */
+.VPFeature {
+  border: 1px solid var(--vp-c-border);
+  transition: all 0.25s;
+}
+
+.VPFeature:hover {
+  border-color: var(--vp-c-brand-1);
+  box-shadow: 0 2px 12px 0 rgba(52, 81, 178, 0.1);
+}
+
+/* 文档内容样式优化 */
+.vp-doc h1 {
+  font-size: 2.2rem;
+  margin: 2rem 0 1rem;
+}
+
+.vp-doc h2 {
+  font-size: 1.65rem;
+  padding-top: 1.5rem;
+  margin: 1.5rem 0 1rem;
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+.vp-doc h3 {
+  font-size: 1.35rem;
+  margin: 1.2rem 0 0.8rem;
+}
+
+/* 代码块样式优化 */
+.vp-doc div[class*='language-'] {
+  margin: 1rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.vp-doc div[class*='language-'] code {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* 表格样式优化 */
+.vp-doc table {
+  margin: 1.2rem 0;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.vp-doc table th {
+  background-color: var(--vp-c-bg-soft);
+  font-weight: 600;
+}
+
+.vp-doc table td,
+.vp-doc table th {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--vp-c-divider);
+}
+
+/* 自定义容器样式 */
+.custom-block {
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.custom-block.tip {
+  border-color: var(--vp-c-brand-1);
+  background-color: var(--vp-c-brand-soft);
+}
+
+.custom-block.warning {
+  border-color: var(--vp-c-warning);
+  background-color: var(--vp-c-warning-soft);
+}
+
+.custom-block.danger {
+  border-color: var(--vp-c-danger);
+  background-color: var(--vp-c-danger-soft);
+}
+
+/* 侧边栏样式优化 */
+.VPSidebar {
+  background-color: var(--vp-c-bg-alt);
+}
+
+.VPSidebarItem.is-active>.item>.text {
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+}
+
+/* 导航栏样式优化 */
+.VPNavBar {
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.dark .VPNavBar {
+  background-color: rgba(27, 27, 31, 0.7);
+}
+
+/* 搜索框样式优化 */
+.DocSearch-Button {
+  border-radius: 8px;
+  background-color: var(--vp-c-bg-alt);
+}
+
+.DocSearch-Button:hover {
+  background-color: var(--vp-c-bg-soft);
+}
+
+/* 页脚样式优化 */
+.VPFooter {
+  border-top: 1px solid var(--vp-c-divider);
+  padding: 2rem 0;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .VPHero .name {
+    font-size: 2.4rem;
+  }
+
+  .VPHero .tagline {
+    font-size: 1.4rem;
+  }
+
+  .vp-doc h1 {
+    font-size: 1.8rem;
+  }
+
+  .vp-doc h2 {
+    font-size: 1.4rem;
+  }
+}
+
+/* 自定义组件样式 */
+.demo-block {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  background-color: var(--vp-c-bg);
+}
+
+.demo-block-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--vp-c-text-2);
+  margin-bottom: 0.75rem;
+}
+
+.demo-block-content {
+  margin-top: 1rem;
+}
+
+/* API 表格样式 */
+.api-table {
+  font-size: 0.875rem;
+}
+
+.api-table th {
+  white-space: nowrap;
+}
+
+.api-table td:first-child {
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--vp-c-brand-1);
+}
+
+/* 徽章样式 */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-tip {
+  color: var(--vp-c-brand-1);
+  background-color: var(--vp-c-brand-soft);
+}
+
+.badge-warning {
+  color: var(--vp-c-warning);
+  background-color: var(--vp-c-warning-soft);
+}
+
+.badge-danger {
+  color: var(--vp-c-danger);
+  background-color: var(--vp-c-danger-soft);
+}
+
+/* 动画效果 */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fade-in 0.5s ease;
+}

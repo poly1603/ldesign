@@ -190,3 +190,24 @@
 [submodule "packages/websocket"]
 	path = packages/websocket
 	url = https://github.com/poly1603/websocket.git
+[submodule "packages/tabs"]
+	path = packages/tabs
+	url = https://github.com/poly1603/ldesign-tabs.git
+[submodule "packages/menu"]
+	path = packages/menu
+	url = https://github.com/poly1603/ldesign-menu.git
+[submodule "tools/publisher"]
+	path = tools/publisher
+	url = https://github.com/poly1603/ldesign-publisher.git
+[submodule "tools/deps"]
+	path = tools/deps
+	url = https://github.com/poly1603/ldesign-deps.git
+[submodule "tools/generator"]
+	path = tools/generator
+	url = https://github.com/poly1603/ldesign-generator.git
+[submodule "tools/git"]
+	path = tools/git
+	url = https://github.com/poly1603/ldesign-git.git
+[submodule "tools/security"]
+	path = tools/security
+	url = https://github.com/poly1603/ldesign-security.git
