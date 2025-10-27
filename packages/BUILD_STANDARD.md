@@ -1,118 +1,165 @@
-# Packages 构建标准
+# Package Build Standard
 
-## 标准目录结构
+## Overview
 
-每个package构建后应该包含以下标准目录:
+All @ldesign packages use a standardized build configuration to ensure consistency, maintainability, and optimal output across the ecosystem.
 
-```
-packages/[package-name]/
-├── src/                  # 源代码
-│   ├── index.ts         # 主入口(ESM/CJS)
-│   └── index-lib.ts     # UMD专用入口(可选)
-├── es/                   # ESM格式产物
-│   ├── index.js
-│   ├── index.d.ts
-│   ├── index.js.map
-│   └── ...              # 保留src目录结构
-├── lib/                  # CJS格式产物  
-│   ├── index.cjs
-│   ├── index.d.ts
-│   ├── index.cjs.map
-│   └── ...              # 保留src目录结构
-├── dist/                 # UMD格式产物
-│   ├── index.js         # UMD常规版本
-│   ├── index.js.map
-│   ├── index.min.js     # UMD压缩版本
-│   └── index.min.js.map
-├── ldesign.config.ts    # 构建配置
-└── package.json
-```
+## Standard Configuration
 
-## 标准配置文件
-
-### ldesign.config.ts
+Every package uses the following minimal configuration pattern:
 
 ```typescript
 import { defineConfig } from '@ldesign/builder'
 
 export default defineConfig({
-  // 强制指定库类型为TypeScript
-  libraryType: 'typescript',
-
-  // 主入口文件
   input: 'src/index.ts',
-
-  // 输出配置
+  
   output: {
     format: ['esm', 'cjs', 'umd'],
-
-    // ESM输出 - 保留目录结构
     esm: {
       dir: 'es',
       preserveStructure: true,
     },
-
-    // CJS输出 - 保留目录结构
     cjs: {
       dir: 'lib',
       preserveStructure: true,
     },
-
-    // UMD输出 - 打包为单文件
     umd: {
       dir: 'dist',
-      name: 'LDesign[PackageName]', // 替换为实际包名
+      name: 'LDesignPackageName',
     },
   },
-
-  // 生成TypeScript声明文件
+  
   dts: true,
-
-  // 生成sourcemap
   sourcemap: true,
-
-  // 不压缩(由builder自动处理压缩版本)
   minify: false,
-
-  // 构建前清理
   clean: true,
-
-  // 外部依赖(不打包)
+  
   external: [
     'vue',
     'react',
     'react-dom',
     /^@ldesign\//,
     /^lodash/,
-    /^@vue\//,
   ],
-
-  // TypeScript配置
-  typescript: {
-    declaration: true,
-    declarationMap: true,
-  },
-
-  // UMD构建配置(顶层，确保被识别)
-  umd: {
-    enabled: true,
-    entry: 'src/index-lib.ts', // 使用UMD专用入口
-    name: 'LDesign[PackageName]', // 替换为实际包名
-  },
 })
 ```
 
-### package.json
+## Output Structure
+
+Each package produces three build formats:
+
+### ESM (ES Modules)
+- **Directory**: `es/`
+- **Features**:
+  - Preserves source directory structure
+  - Generates `.d.ts` type declarations
+  - Includes sourcemaps
+  - Modern JavaScript for tree-shaking
+
+### CJS (CommonJS)
+- **Directory**: `lib/`
+- **Features**:
+  - Preserves source directory structure
+  - Files use `.cjs` extension
+  - Generates `.d.ts` type declarations
+  - Includes sourcemaps
+  - Compatible with Node.js
+
+### UMD (Universal Module Definition)
+- **Directory**: `dist/`
+- **Features**:
+  - Single bundled file
+  - Browser-compatible
+  - Includes minified version
+  - Includes sourcemaps
+
+## Package-Specific Configurations
+
+### CSS Handling (menu, tabs)
+```typescript
+css: {
+  extract: true,
+  modules: false,
+},
+copy: {
+  patterns: [
+    { from: 'src/styles/**/*.css', to: 'es/styles' },
+    { from: 'src/styles/**/*.css', to: 'lib/styles' },
+  ],
+}
+```
+
+### Custom External Dependencies (shared)
+```typescript
+external: [
+  'vue',
+  'lodash-es',
+  'raf',
+]
+```
+
+### Alternative UMD Entry (animation, notification, websocket, shared)
+```typescript
+output: {
+  // ...
+  umd: {
+    dir: 'dist',
+    name: 'LDesignPackageName',
+    entry: 'src/index-lib.ts', // Custom entry point
+  },
+}
+```
+
+### Vue Globals (cache)
+```typescript
+output: {
+  name: 'LDesignCache',
+  globals: {
+    vue: 'Vue'
+  },
+  // ...
+}
+```
+
+### Additional External Patterns
+Some packages include additional external patterns for framework-specific dependencies:
+
+```typescript
+external: [
+  'vue',
+  'react',
+  'react-dom',
+  /^@ldesign\//,
+  /^lodash/,
+  /^@vue\//,      // Vue packages (i18n, icons, router, template)
+  /^@babel\//,    // Babel packages (animation)
+  'nanoid',       // Utility packages (menu, tabs)
+]
+```
+
+## Build Scripts
+
+All packages include these standard npm scripts:
 
 ```json
 {
-  "name": "@ldesign/[package-name]",
+  "scripts": {
+    "build": "ldesign-builder build",
+    "build:watch": "ldesign-builder build --watch",
+    "dev": "ldesign-builder build --mode development --watch",
+    "clean": "rimraf es lib dist coverage"
+  }
+}
+```
+
+## Package.json Exports
+
+Each package exports its modules using the exports field:
+
+```json
+{
   "type": "module",
-  "main": "./lib/index.cjs",
-  "module": "./es/index.js",
-  "types": "./es/index.d.ts",
-  "unpkg": "./dist/index.min.js",
-  "jsdelivr": "./dist/index.min.js",
   "exports": {
     ".": {
       "types": "./es/index.d.ts",
@@ -120,150 +167,96 @@ export default defineConfig({
       "require": "./lib/index.cjs"
     }
   },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
   "files": [
     "es",
     "lib",
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "build": "ldesign-builder build",
-    "build:watch": "ldesign-builder build --watch",
-    "clean": "rimraf es lib dist"
-  }
+    "dist"
+  ]
 }
 ```
 
-## 构建命令
+## Configuration Principles
 
-### 标准构建
-```bash
-pnpm run build
-```
+### ✅ Do Include
+- Minimal necessary configuration
+- Package-specific requirements only
+- Clear, readable structure
 
-### 监听模式
-```bash
-pnpm run build:watch
-```
+### ❌ Don't Include
+- `libraryType: 'typescript'` - Auto-detected by builder
+- `typescript.declaration` - Handled by `dts: true`
+- `typescript.declarationMap` - Handled by `dts: true`
+- Duplicate UMD configurations
+- Excessive explanatory comments
+- Builder internal options
 
-### 清理产物
-```bash
-pnpm run clean
-```
+## Verification Checklist
 
-## 产物验证
+After making configuration changes, verify:
 
-构建完成后,验证以下内容:
+- [ ] All three formats build successfully
+- [ ] ESM files are in `es/` directory
+- [ ] CJS files are in `lib/` directory with `.cjs` extension
+- [ ] UMD files are in `dist/` directory
+- [ ] DTS files exist alongside source files in `es/` and `lib/`
+- [ ] Package.json exports align with actual output
+- [ ] No duplicate configurations
+- [ ] No unnecessary options
 
-### 1. 目录存在性
-```bash
-# 检查三个产物目录都存在
-ls es/ lib/ dist/
-```
+## Migration from Old Configs
 
-### 2. 文件完整性
+If migrating from an older configuration:
 
-**ESM (es/):**
-- ✅ `.js` 文件 (ES模块)
-- ✅ `.d.ts` 文件 (类型声明)
-- ✅ `.js.map` 文件 (sourcemap)
+1. **Remove redundant settings**:
+   - Remove `libraryType` if set to `'typescript'`
+   - Remove `typescript.declaration` and `typescript.declarationMap`
+   - Remove duplicate `umd` top-level configuration
 
-**CJS (lib/):**
-- ✅ `.cjs` 文件 (CommonJS模块)
-- ✅ `.d.ts` 文件 (类型声明)  
-- ✅ `.cjs.map` 文件 (sourcemap)
+2. **Consolidate UMD config**:
+   - Merge any top-level `umd` settings into `output.umd`
+   - Ensure only one UMD entry point is specified
 
-**UMD (dist/):**
-- ✅ `index.js` (UMD常规版本)
-- ✅ `index.js.map`
-- ✅ `index.min.js` (UMD压缩版本)
-- ✅ `index.min.js.map`
+3. **Simplify structure**:
+   - Remove excessive comments
+   - Use standard external patterns
+   - Follow the template structure
 
-### 3. 类型声明
-```bash
-# 确保类型声明文件存在
-ls es/**/*.d.ts lib/**/*.d.ts
-```
+## Tools and Validation
 
-## 特殊情况处理
+### Config Normalizer
+The builder includes a config normalizer that detects and fixes common issues:
 
-### 包含Vue/React组件的包
-
-如果包中包含Vue或React组件,可能需要创建UMD专用入口文件:
-
-**src/index-lib.ts** (UMD专用入口):
 ```typescript
-/**
- * UMD构建专用入口
- * 仅导出核心功能,不包含框架特定集成
- */
+import { normalizeConfig } from '@ldesign/builder'
 
-// 导出核心功能
-export * from './core'
-export * from './utils'
-
-// 不导出框架集成
-// export * from './vue'  // ❌ 不导出
-// export * from './react' // ❌ 不导出
+const result = normalizeConfig(config)
+// Automatically detects and warns about:
+// - Duplicate UMD configurations
+// - Redundant libraryType declarations
+// - Unnecessary TypeScript settings
+// - Conflicting entry points
 ```
 
-### 无法通过Builder生成UMD的情况
+### LDesign Package Preset
+Use the preset for quick setup:
 
-如果@ldesign/builder无法生成UMD产物,使用独立rollup配置:
+```typescript
+import { ldesignPackage } from '@ldesign/builder'
 
-1. 复制 `packages/.template/rollup.umd.config.js` 到包根目录
-2. 修改配置中的包名
-3. 更新package.json:
-```json
-{
-  "scripts": {
-    "build": "ldesign-builder build && rollup -c rollup.umd.config.js",
-    "build:umd": "rollup -c rollup.umd.config.js"
-  },
-  "devDependencies": {
-    "rollup": "^latest",
-    "rollup-plugin-esbuild": "^latest",
-    "@rollup/plugin-node-resolve": "^latest",
-    "@rollup/plugin-commonjs": "^latest",
-    "@rollup/plugin-terser": "^latest",
-    "@rollup/plugin-json": "^latest"
-  }
-}
+export default ldesignPackage({
+  // Only specify what's different from defaults
+  external: ['vue', 'custom-dep'],
+})
 ```
 
-## 添加新Package
+## Support
 
-1. 创建包目录: `packages/[package-name]/`
-2. 复制标准配置文件
-3. 修改package.json中的包名和描述
-4. 修改ldesign.config.ts中的UMD名称
-5. 编写源代码
-6. 运行构建验证
-7. 检查产物完整性
-
-## 发布前检查清单
-
-- [ ] 所有产物目录存在 (es/, lib/, dist/)
-- [ ] package.json的`files`字段包含所有产物目录
-- [ ] package.json的`exports`字段配置正确
-- [ ] 类型声明文件完整
-- [ ] sourcemap文件存在
-- [ ] README.md文档完整
-- [ ] LICENSE文件存在
-- [ ] 版本号正确
-
-## 常见问题
-
-### Q: 为什么没有生成dist目录?
-A: 可能是Builder检测问题,参考"特殊情况处理"使用独立rollup配置。
-
-### Q: 如何修改UMD全局变量名?
-A: 在ldesign.config.ts中修改`output.umd.name`和`umd.name`字段。
-
-### Q: 是否需要同时维护src/index.ts和src/index-lib.ts?
-A: index-lib.ts是可选的,仅在需要为UMD提供不同导出时创建。
-
-### Q: 构建产物是否需要提交到git?
-A: 不需要,产物目录应该在`.gitignore`中排除。
-
+For questions or issues with build configuration:
+- See `packages/PACKAGE_CONFIG_GUIDE.md` for detailed examples
+- Check `packages/ldesign.config.template.ts` for the standard template
+- Use the config normalizer to detect issues automatically
