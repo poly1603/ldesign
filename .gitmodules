@@ -211,3 +211,27 @@
 [submodule "tools/security"]
 	path = tools/security
 	url = https://github.com/poly1603/ldesign-security.git
+[submodule "tools/formatter"]
+	path = tools/formatter
+	url = https://github.com/poly1603/ldesign-formatter.git
+[submodule "tools/translator"]
+	path = tools/translator
+	url = https://github.com/poly1603/ldesign-translator.git
+[submodule "tools/mock"]
+	path = tools/mock
+	url = https://github.com/poly1603/ldesign-mock.git
+[submodule "tools/performance"]
+	path = tools/performance
+	url = https://github.com/poly1603/ldesign-performance.git
+[submodule "tools/env"]
+	path = tools/env
+	url = https://github.com/poly1603/ldesign-env.git
+[submodule "tools/changelog"]
+	path = tools/changelog
+	url = https://github.com/poly1603/ldesign-changelog.git
+[submodule "tools/docs"]
+	path = tools/docs
+	url = https://github.com/poly1603/ldesign-docs.git
+[submodule "tools/testing"]
+	path = tools/testing
+	url = https://github.com/poly1603/ldesign-testing.git
