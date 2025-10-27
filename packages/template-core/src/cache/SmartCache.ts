@@ -366,7 +366,7 @@ export class SmartCache<T = any> {
    */
   private evict(requiredSize: number): void {
     const entries = Array.from(this.cache.entries())
-    
+
     // 根据策略排序
     entries.sort((a, b) => {
       // 优先驱逐过期项
@@ -387,7 +387,7 @@ export class SmartCache<T = any> {
     let freedSize = 0
     for (const [key, item] of entries) {
       if (freedSize >= requiredSize) break
-      
+
       freedSize += item.size || 0
       this.delete(key)
       this.stats.evictions++
@@ -413,7 +413,7 @@ export class SmartCache<T = any> {
 
     this.stats.hits++
     this.accessTimes.push(accessTime)
-    
+
     // 保持最近1000次访问时间
     if (this.accessTimes.length > 1000) {
       this.accessTimes.shift()

@@ -124,7 +124,7 @@ export function useDefaultTemplate(
 ) {
   const categoryRef = typeof category === 'string' ? ref(category) : category
   const deviceRef = typeof device === 'string' ? ref(device as DeviceType) : device as Ref<DeviceType>
-  
+
   const template = ref<TemplateMetadata | null>(null)
   const loading = ref(false)
   const error = ref<Error | null>(null)
@@ -162,7 +162,7 @@ export function useDefaultTemplate(
  */
 export function useTemplateList(filter: Ref<TemplateFilter> | TemplateFilter = {}) {
   const filterRef = typeof filter === 'object' && !('value' in filter) ? ref(filter) : filter as Ref<TemplateFilter>
-  
+
   const templates = ref<TemplateMetadata[]>([])
   const loading = ref(false)
   const error = ref<Error | null>(null)
@@ -223,7 +223,7 @@ export function useTemplateList(filter: Ref<TemplateFilter> | TemplateFilter = {
  */
 export function useTemplateManager() {
   const manager = getVueTemplateManager()
-  
+
   const initialized = ref(false)
   const metrics = ref(manager.getMetrics())
 

@@ -14,32 +14,32 @@ export type EasingFunction = (t: number) => number
 export const EASING_FUNCTIONS: Record<string, EasingFunction> = {
   // 线性
   linear: (t) => t,
-  
+
   // Quad
   easeInQuad: (t) => t * t,
   easeOutQuad: (t) => t * (2 - t),
   easeInOutQuad: (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
-  
+
   // Cubic
   easeInCubic: (t) => t * t * t,
   easeOutCubic: (t) => (--t) * t * t + 1,
   easeInOutCubic: (t) => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
-  
+
   // Quart
   easeInQuart: (t) => t * t * t * t,
   easeOutQuart: (t) => 1 - (--t) * t * t * t,
   easeInOutQuart: (t) => t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t,
-  
+
   // Quint
   easeInQuint: (t) => t * t * t * t * t,
   easeOutQuint: (t) => 1 + (--t) * t * t * t * t,
   easeInOutQuint: (t) => t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t,
-  
+
   // Sine
   easeInSine: (t) => 1 - Math.cos((t * Math.PI) / 2),
   easeOutSine: (t) => Math.sin((t * Math.PI) / 2),
   easeInOutSine: (t) => -(Math.cos(Math.PI * t) - 1) / 2,
-  
+
   // Expo
   easeInExpo: (t) => t === 0 ? 0 : Math.pow(2, 10 * t - 10),
   easeOutExpo: (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t),
@@ -48,7 +48,7 @@ export const EASING_FUNCTIONS: Record<string, EasingFunction> = {
     if (t === 1) return 1
     return t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2
   },
-  
+
   // Circ
   easeInCirc: (t) => 1 - Math.sqrt(1 - t * t),
   easeOutCirc: (t) => Math.sqrt(1 - (--t) * t),
@@ -57,7 +57,7 @@ export const EASING_FUNCTIONS: Record<string, EasingFunction> = {
       ? (1 - Math.sqrt(1 - 4 * t * t)) / 2
       : (Math.sqrt(1 - (t * 2 - 2) * (t * 2 - 2)) + 1) / 2
   },
-  
+
   // Elastic
   easeInElastic: (t) => {
     if (t === 0) return 0
@@ -77,7 +77,7 @@ export const EASING_FUNCTIONS: Record<string, EasingFunction> = {
       ? -(Math.pow(2, 20 * t - 10) * Math.sin((20 * t - 11.125) * c)) / 2
       : (Math.pow(2, -20 * t + 10) * Math.sin((20 * t - 11.125) * c)) / 2 + 1
   },
-  
+
   // Back
   easeInBack: (t) => {
     const c = 1.70158
@@ -93,13 +93,13 @@ export const EASING_FUNCTIONS: Record<string, EasingFunction> = {
       ? (Math.pow(2 * t, 2) * ((c + 1) * 2 * t - c)) / 2
       : (Math.pow(2 * t - 2, 2) * ((c + 1) * (t * 2 - 2) + c) + 2) / 2
   },
-  
+
   // Bounce
   easeInBounce: (t) => 1 - EASING_FUNCTIONS.easeOutBounce(1 - t),
   easeOutBounce: (t) => {
     const n = 7.5625
     const d = 2.75
-    
+
     if (t < 1 / d) {
       return n * t * t
     } else if (t < 2 / d) {
@@ -152,43 +152,43 @@ export function createAnimation(config: AnimationConfig): {
     onUpdate,
     onStart,
   } = config
-  
+
   let startTime: number | null = null
   let pauseTime: number | null = null
   let animationId: number | null = null
   let isPaused = false
   let isStopped = false
-  
+
   const easingFn = typeof easing === 'string' ? EASING_FUNCTIONS[easing] : easing
-  
+
   const animate = (timestamp: number) => {
     if (isStopped) return
-    
+
     if (startTime === null) {
       startTime = timestamp
       onStart?.()
     }
-    
+
     const elapsed = timestamp - startTime - (pauseTime || 0)
     const progress = Math.min(elapsed / duration, 1)
     const easedProgress = easingFn(progress)
-    
+
     onUpdate?.(easedProgress)
-    
+
     if (progress < 1 && !isPaused) {
       animationId = requestAnimationFrame(animate)
     } else if (progress >= 1) {
       onComplete?.()
     }
   }
-  
+
   return {
     start() {
       isStopped = false
       isPaused = false
       startTime = null
       pauseTime = null
-      
+
       if (delay > 0) {
         setTimeout(() => {
           animationId = requestAnimationFrame(animate)
@@ -197,7 +197,7 @@ export function createAnimation(config: AnimationConfig): {
         animationId = requestAnimationFrame(animate)
       }
     },
-    
+
     stop() {
       isStopped = true
       if (animationId !== null) {
@@ -205,7 +205,7 @@ export function createAnimation(config: AnimationConfig): {
         animationId = null
       }
     },
-    
+
     pause() {
       if (!isPaused && animationId !== null) {
         isPaused = true
@@ -214,7 +214,7 @@ export function createAnimation(config: AnimationConfig): {
         animationId = null
       }
     },
-    
+
     resume() {
       if (isPaused) {
         isPaused = false
@@ -263,14 +263,14 @@ export function interpolateColor(
     // 简化处理，只支持hex颜色
     return [0, 0, 0]
   }
-  
+
   const [r1, g1, b1] = parseColor(from)
   const [r2, g2, b2] = parseColor(to)
-  
+
   const r = Math.round(interpolate(r1, r2, progress))
   const g = Math.round(interpolate(g1, g2, progress))
   const b = Math.round(interpolate(b1, b2, progress))
-  
+
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
 }
 
@@ -302,13 +302,13 @@ export function spring(
     mass = 1,
     velocity = 0,
   } = config
-  
+
   const w0 = Math.sqrt(stiffness / mass)
   const zeta = damping / (2 * Math.sqrt(stiffness * mass))
   const wd = zeta < 1 ? w0 * Math.sqrt(1 - zeta * zeta) : 0
   const a = 1
   const b = zeta < 1 ? (zeta * w0 + velocity) / wd : -velocity + w0
-  
+
   return (t: number) => {
     if (zeta < 1) {
       // 欠阻尼
@@ -341,19 +341,19 @@ export function cubicBezier(
     const cy = 3 * y1
     const by = 3 * (y2 - y1) - cy
     const ay = 1 - cy - by
-    
+
     const sampleCurveX = (t: number) => ((ax * t + bx) * t + cx) * t
     const sampleCurveY = (t: number) => ((ay * t + by) * t + cy) * t
-    
+
     // 二分查找
     let start = 0
     let end = 1
     let mid = t
-    
+
     for (let i = 0; i < 10; i++) {
       const x = sampleCurveX(mid)
       if (Math.abs(x - t) < 0.001) break
-      
+
       if (x < t) {
         start = mid
       } else {
@@ -361,7 +361,7 @@ export function cubicBezier(
       }
       mid = (start + end) / 2
     }
-    
+
     return sampleCurveY(mid)
   }
 }

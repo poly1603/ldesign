@@ -17,12 +17,12 @@ export function debounce<T extends (...args: any[]) => any>(
   delay: number
 ): (...args: Parameters<T>) => void {
   let timerId: NodeJS.Timeout | null = null
-  
+
   return function (this: any, ...args: Parameters<T>): void {
     if (timerId) {
       clearTimeout(timerId)
     }
-    
+
     timerId = setTimeout(() => {
       fn.apply(this, args)
       timerId = null
@@ -38,12 +38,12 @@ export function throttle<T extends (...args: any[]) => any>(
   limit: number
 ): (...args: Parameters<T>) => void {
   let inThrottle = false
-  
+
   return function (this: any, ...args: Parameters<T>): void {
     if (!inThrottle) {
       fn.apply(this, args)
       inThrottle = true
-      
+
       setTimeout(() => {
         inThrottle = false
       }, limit)
@@ -58,15 +58,15 @@ export function deepClone<T>(obj: T): T {
   if (obj === null || typeof obj !== 'object') {
     return obj
   }
-  
+
   if (obj instanceof Date) {
     return new Date(obj.getTime()) as any
   }
-  
+
   if (obj instanceof Array) {
     return obj.map(item => deepClone(item)) as any
   }
-  
+
   if (obj instanceof Object) {
     const clonedObj: any = {}
     for (const key in obj) {
@@ -76,7 +76,7 @@ export function deepClone<T>(obj: T): T {
     }
     return clonedObj
   }
-  
+
   return obj
 }
 
@@ -88,9 +88,9 @@ export function deepMerge<T extends Record<string, any>>(
   ...sources: Partial<T>[]
 ): T {
   if (!sources.length) return target
-  
+
   const source = sources.shift()
-  
+
   if (isObject(target) && isObject(source)) {
     for (const key in source) {
       if (isObject(source[key])) {
@@ -103,7 +103,7 @@ export function deepMerge<T extends Record<string, any>>(
       }
     }
   }
-  
+
   return deepMerge(target, ...sources)
 }
 
@@ -119,13 +119,13 @@ export function isObject(item: any): item is Record<string, any> {
  */
 export function formatBytes(bytes: number, decimals = 2): string {
   if (bytes === 0) return '0 Bytes'
-  
+
   const k = 1024
   const dm = decimals < 0 ? 0 : decimals
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
-  
+
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }
 
@@ -150,7 +150,7 @@ export async function retry<T>(
     if (retries <= 1) {
       throw error
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, delay))
     return retry(fn, retries - 1, delay * 2)
   }

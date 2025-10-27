@@ -49,22 +49,22 @@ export abstract class TemplateManager {
     }
 
     const startTime = Date.now()
-    
+
     try {
       // 扫描模板
       this.scanResult = await this.scan()
-      
+
       // 注册模板
       this.registerTemplates(this.scanResult.templates)
-      
+
       this.initialized = true
       this.metrics.loadTime = Date.now() - startTime
-      
+
       if (this.options.debug) {
         console.log(`[TemplateManager] 初始化完成，耗时 ${this.metrics.loadTime}ms`)
         console.log(`[TemplateManager] 找到 ${this.scanResult.count} 个模板`)
       }
-      
+
       return this.scanResult
     } catch (error) {
       this.metrics.errorRate = (this.metrics.errorRate || 0) + 1
@@ -93,11 +93,11 @@ export abstract class TemplateManager {
   protected registerTemplates(templates: TemplateMetadata[]): void {
     for (const metadata of templates) {
       const key = this.getTemplateKey(metadata)
-      
+
       if (this.registry.has(key) && this.options.strict) {
         console.warn(`[TemplateManager] 模板已存在：${key}`)
       }
-      
+
       this.registry.set(key, {
         metadata,
         loader: () => this.loadTemplate(
@@ -140,10 +140,10 @@ export abstract class TemplateManager {
    */
   async queryTemplates(filter: TemplateFilter = {}): Promise<TemplateMetadata[]> {
     await this.ensureInitialized()
-    
+
     // 生成缓存键
     const cacheKey = this.getFilterCacheKey(filter)
-    
+
     // 检查缓存
     const cached = this.filterCache.get(cacheKey)
     if (cached && Date.now() - cached.timestamp < this.FILTER_CACHE_TTL) {
@@ -152,22 +152,22 @@ export abstract class TemplateManager {
       }
       return cached.data
     }
-    
+
     // 执行过滤
     let templates = Array.from(this.registry.values()).map(item => item.metadata)
-    
+
     // 按分类过滤
     if (filter.category) {
       const categories = Array.isArray(filter.category) ? filter.category : [filter.category]
       templates = templates.filter(t => categories.includes(t.category))
     }
-    
+
     // 按设备类型过滤
     if (filter.device) {
       const devices = Array.isArray(filter.device) ? filter.device : [filter.device]
       templates = templates.filter(t => devices.includes(t.device))
     }
-    
+
     // 按名称过滤
     if (filter.name) {
       if (filter.name instanceof RegExp) {
@@ -176,48 +176,48 @@ export abstract class TemplateManager {
         templates = templates.filter(t => t.name.includes(filter.name as string))
       }
     }
-    
+
     // 按标签过滤
     if (filter.tags && filter.tags.length > 0) {
-      templates = templates.filter(t => 
+      templates = templates.filter(t =>
         t.tags && filter.tags!.some(tag => t.tags!.includes(tag))
       )
     }
-    
+
     // 按作者过滤
     if (filter.author) {
       templates = templates.filter(t => t.author === filter.author)
     }
-    
+
     // 只要默认模板
     if (filter.defaultOnly) {
       templates = templates.filter(t => t.isDefault)
     }
-    
+
     // SSR 支持
     if (filter.ssr !== undefined) {
       templates = templates.filter(t => t.ssr === filter.ssr)
     }
-    
+
     // 响应式支持
     if (filter.responsive !== undefined) {
       templates = templates.filter(t => t.responsive === filter.responsive)
     }
-    
+
     // 搜索关键词
     if (filter.search) {
       const searchLower = filter.search.toLowerCase()
-      templates = templates.filter(t => 
+      templates = templates.filter(t =>
         t.name.toLowerCase().includes(searchLower) ||
         t.displayName.toLowerCase().includes(searchLower) ||
         (t.description && t.description.toLowerCase().includes(searchLower)) ||
         (t.tags && t.tags.some(tag => tag.toLowerCase().includes(searchLower)))
       )
     }
-    
+
     // 更新缓存
     this.updateFilterCache(cacheKey, templates)
-    
+
     return templates
   }
 
@@ -238,7 +238,7 @@ export abstract class TemplateManager {
       const oldestKey = this.filterCache.keys().next().value
       this.filterCache.delete(oldestKey)
     }
-    
+
     this.filterCache.set(key, {
       data,
       timestamp: Date.now(),
@@ -271,7 +271,7 @@ export abstract class TemplateManager {
       device,
       defaultOnly: true,
     })
-    
+
     return templates[0] || null
   }
 
@@ -312,17 +312,17 @@ export abstract class TemplateManager {
   ): Promise<void> {
     const key = `${category}/${device}/${name}`
     const item = this.registry.get(key)
-    
+
     if (!item) {
       throw new Error(`模板不存在：${key}`)
     }
-    
+
     if (!item.loaded) {
       const startTime = Date.now()
       item.component = await item.loader()
       item.loaded = true
       item.loadedAt = Date.now()
-      
+
       if (this.options.debug) {
         console.log(`[TemplateManager] 预加载模板：${key}，耗时 ${Date.now() - startTime}ms`)
       }
@@ -334,7 +334,7 @@ export abstract class TemplateManager {
    */
   async preloadTemplates(filter: TemplateFilter = {}): Promise<void> {
     const templates = await this.queryTemplates(filter)
-    const promises = templates.map(t => 
+    const promises = templates.map(t =>
       this.preloadTemplate(t.category, t.device, t.name)
     )
     await Promise.all(promises)
@@ -345,7 +345,7 @@ export abstract class TemplateManager {
    */
   clearCache(): void {
     this.filterCache.clear()
-    
+
     // 清除已加载的组件
     for (const item of this.registry.values()) {
       if (item.loaded) {
@@ -354,7 +354,7 @@ export abstract class TemplateManager {
         item.loadedAt = undefined
       }
     }
-    
+
     if (this.options.debug) {
       console.log('[TemplateManager] 缓存已清除')
     }
@@ -366,7 +366,7 @@ export abstract class TemplateManager {
   getMetrics(): PerformanceMetrics {
     const loadedCount = Array.from(this.registry.values()).filter(item => item.loaded).length
     const totalCount = this.registry.size
-    
+
     return {
       ...this.metrics,
       cacheHitRate: totalCount > 0 ? loadedCount / totalCount : 0,
@@ -382,7 +382,7 @@ export abstract class TemplateManager {
     this.registry.clear()
     this.clearCache()
     this.metrics = {}
-    
+
     if (this.options.autoScan) {
       await this.initialize()
     }

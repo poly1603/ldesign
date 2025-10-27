@@ -6,7 +6,7 @@
 /**
  * 语言包键类型
  */
-export type LocaleKey = 
+export type LocaleKey =
   | 'common.confirm'
   | 'common.cancel'
   | 'common.save'
@@ -292,19 +292,19 @@ export function formatMessage(
 ): string {
   const keys = key.split('.')
   let value: any = locale
-  
+
   for (const k of keys) {
     value = value?.[k]
   }
-  
+
   if (typeof value !== 'string') {
     return key
   }
-  
+
   if (params) {
     return value.replace(/\{(\w+)\}/g, (_, key) => params[key] || '')
   }
-  
+
   return value
 }
 

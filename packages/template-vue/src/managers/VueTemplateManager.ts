@@ -4,10 +4,10 @@
  */
 
 import { TemplateManager } from '@ldesign/template-core'
-import type { 
-  TemplateScanResult, 
+import type {
+  TemplateScanResult,
   TemplateMetadata,
-  TemplateLoadOptions 
+  TemplateLoadOptions
 } from '@ldesign/template-core'
 import type { Component } from 'vue'
 import { defineAsyncComponent, markRaw } from 'vue'
@@ -43,7 +43,7 @@ export class VueTemplateManager extends TemplateManager {
       if (!match) continue
 
       const [, category, device, name] = match
-      
+
       // 尝试导入配置文件
       let config: any = {}
       try {
@@ -69,13 +69,13 @@ export class VueTemplateManager extends TemplateManager {
       }
 
       templates.push(metadata)
-      
+
       // 按分类分组
       if (!byCategory[category]) {
         byCategory[category] = []
       }
       byCategory[category].push(metadata)
-      
+
       // 按设备分组
       if (!byDevice[device]) {
         byDevice[device] = []
@@ -116,7 +116,7 @@ export class VueTemplateManager extends TemplateManager {
     options?: TemplateLoadOptions
   ): Promise<Component> {
     const key = `${category}/${device}/${name}`
-    
+
     // 检查缓存
     const registryItem = this.registry.get(key)
     if (registryItem?.loaded && registryItem.component && options?.cache !== false) {
@@ -143,7 +143,7 @@ export class VueTemplateManager extends TemplateManager {
           if (options?.onError) {
             options.onError(error)
           }
-          
+
           if (attempts <= (options?.retryCount || 3)) {
             retry()
           } else {
@@ -180,7 +180,7 @@ export class VueTemplateManager extends TemplateManager {
   ): Promise<void> {
     const key = `${category}/${device}/${name}`
     const loader = this.templateModules[key]
-    
+
     if (!loader) {
       throw new Error(`模板不存在: ${key}`)
     }
@@ -188,7 +188,7 @@ export class VueTemplateManager extends TemplateManager {
     try {
       const module = await loader()
       const registryItem = this.registry.get(key)
-      
+
       if (registryItem) {
         registryItem.component = markRaw(module)
         registryItem.loaded = true

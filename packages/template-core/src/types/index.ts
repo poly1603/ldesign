@@ -404,7 +404,7 @@ export interface ABTestVariant {
 /**
  * 错误类型
  */
-export type ErrorType = 
+export type ErrorType =
   | 'LOAD_ERROR'
   | 'PARSE_ERROR'
   | 'RENDER_ERROR'

@@ -83,7 +83,7 @@ export interface Position {
 /**
  * 矩形
  */
-export interface Rectangle extends Size, Position {}
+export interface Rectangle extends Size, Position { }
 
 /**
  * 边距
