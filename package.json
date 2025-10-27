@@ -25,6 +25,8 @@
     "commit-submodules": "tsx scripts/commit-submodules.ts",
     "convert-to-submodules": "tsx scripts/batch-convert-submodules.ts",
     "convert-single": "tsx scripts/convert-single-submodule.ts",
+    "sync-submodules": "tsx scripts/sync-submodules.ts",
+    "sync": "tsx scripts/sync-submodules.ts -y",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:all": "pnpm -r lint",
