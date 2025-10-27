@@ -1,0 +1,129 @@
+{
+  "name": "@ldesign/template-react",
+  "version": "1.0.0",
+  "description": "React 18+ 模板管理系统 - 为 React 优化的现代化模板解决方案",
+  "keywords": [
+    "react",
+    "react18",
+    "template",
+    "template-engine",
+    "hooks",
+    "dynamic-rendering",
+    "responsive",
+    "typescript",
+    "ldesign"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "homepage": "https://github.com/ldesign-org/template#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldesign-org/template.git",
+    "directory": "packages/template-react"
+  },
+  "bugs": {
+    "url": "https://github.com/ldesign-org/template/issues"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    },
+    "./components": {
+      "types": "./es/components/index.d.ts",
+      "import": "./es/components/index.js",
+      "require": "./lib/components/index.cjs"
+    },
+    "./hooks": {
+      "types": "./es/hooks/index.d.ts",
+      "import": "./es/hooks/index.js",
+      "require": "./lib/hooks/index.cjs"
+    },
+    "./contexts": {
+      "types": "./es/contexts/index.d.ts",
+      "import": "./es/contexts/index.js",
+      "require": "./lib/contexts/index.cjs"
+    },
+    "./hoc": {
+      "types": "./es/hoc/index.d.ts",
+      "import": "./es/hoc/index.js",
+      "require": "./lib/hoc/index.cjs"
+    },
+    "./ssr": {
+      "types": "./es/ssr/index.d.ts",
+      "import": "./es/ssr/index.js",
+      "require": "./lib/ssr/index.cjs"
+    },
+    "./templates/*": {
+      "types": "./es/templates/*.d.ts",
+      "import": "./es/templates/*.js",
+      "require": "./lib/templates/*.cjs"
+    },
+    "./*.css": "./es/*.css"
+  },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "files": [
+    "README.md",
+    "LICENSE",
+    "package.json",
+    "es",
+    "lib",
+    "dist"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "build:watch": "ldesign-builder watch",
+    "dev": "ldesign-builder watch",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rimraf es lib dist coverage",
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test:run"
+  },
+  "dependencies": {
+    "@ldesign/template-core": "workspace:*",
+    "@ldesign/template-shared": "workspace:*",
+    "@ldesign/cache": "workspace:*",
+    "@ldesign/device": "workspace:*",
+    "@ldesign/shared": "workspace:*",
+    "classnames": "^2.3.2",
+    "react-window": "^1.8.10",
+    "framer-motion": "^10.16.4"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@testing-library/user-event": "^14.5.1",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.2.21",
+    "@types/react-dom": "^18.2.7",
+    "@types/react-window": "^1.8.8",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/ui": "^3.2.4",
+    "eslint": "^9.18.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.7.3",
+    "vite": "^5.0.12",
+    "vitest": "^3.2.4",
+    "@antfu/eslint-config": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "sideEffects": false
+}
