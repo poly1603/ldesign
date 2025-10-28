@@ -169,18 +169,12 @@
 [submodule "packages/validator"]
 	path = packages/validator
 	url = https://github.com/poly1603/ldesign-validator.git
-[submodule "tools/analyzer"]
-	path = tools/analyzer
-	url = https://github.com/poly1603/ldesign-analyzer.git
 [submodule "tools/deployer"]
 	path = tools/deployer
 	url = https://github.com/poly1603/ldesign-deployer.git
 [submodule "tools/docs-generator"]
 	path = tools/docs-generator
 	url = https://github.com/poly1603/ldesign-docs-generator.git
-[submodule "tools/tester"]
-	path = tools/tester
-	url = https://github.com/poly1603/ldesign-tester.git
 [submodule "tools/monitor"]
 	path = tools/monitor
 	url = https://github.com/poly1603/ldesign-monitor.git
@@ -229,9 +223,6 @@
 [submodule "tools/changelog"]
 	path = tools/changelog
 	url = https://github.com/poly1603/ldesign-changelog.git
-[submodule "tools/docs"]
-	path = tools/docs
-	url = https://github.com/poly1603/ldesign-docs.git
 [submodule "tools/testing"]
 	path = tools/testing
 	url = https://github.com/poly1603/ldesign-testing.git
