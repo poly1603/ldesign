@@ -1,14 +1,16 @@
 import { createApp } from 'vue'
-import { createEngine } from '@ldesign/engine-core'
+import { 
+  createCoreEngine,
+  createI18nPlugin,
+  createThemePlugin,
+  createSizePlugin
+} from '@ldesign/engine-core'
 import { VueEnginePlugin } from '@ldesign/engine-vue'
-import { createI18nPlugin } from '@ldesign/engine-core/plugins/i18n'
-import { createThemePlugin } from '@ldesign/engine-core/plugins/theme'
-import { createSizePlugin } from '@ldesign/engine-core/plugins/size'
 import App from './App.vue'
 import './style.css'
 
 // 创建引擎实例
-const engine = createEngine({
+const engine = createCoreEngine({
   name: 'vue-example',
   version: '0.1.0',
   logger: {
