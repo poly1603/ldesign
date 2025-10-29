@@ -1,0 +1,61 @@
+<div class="app-container">
+  <header class="app-header">
+    <h1>{{ t('app.title') }}</h1>
+    <p>{{ t('app.description') }}</p>
+  </header>
+
+  <main class="app-main">
+    <section class="welcome-section">
+      <h2>{{ t('app.welcome') }}</h2>
+    </section>
+
+    <section class="features-section">
+      <h3>{{ t('features.i18n') }}</h3>
+      <div class="feature-card">
+        <p>Current Locale: <strong>{{ locale }}</strong></p>
+        <button (click)="switchLocale()" class="btn">
+          {{ t('actions.switchLocale') }}
+        </button>
+      </div>
+
+      <h3>{{ t('features.theme') }}</h3>
+      <div class="feature-card">
+        <p>Current Theme: <strong>{{ theme }}</strong></p>
+        <button (click)="switchTheme()" class="btn">
+          {{ t('actions.switchTheme') }}
+        </button>
+      </div>
+
+      <h3>{{ t('features.size') }}</h3>
+      <div class="feature-card">
+        <p>Current Size: <strong>{{ size }}</strong></p>
+        <div class="size-buttons">
+          <button (click)="changeSize('small')" class="btn btn-sm">Small</button>
+          <button (click)="changeSize('medium')" class="btn btn-md">Medium</button>
+          <button (click)="changeSize('large')" class="btn btn-lg">Large</button>
+        </div>
+      </div>
+
+      <h3>{{ t('features.state') }}</h3>
+      <div class="feature-card">
+        <p>Engine Status: <strong>{{ t('status.' + status) }}</strong></p>
+      </div>
+
+      <h3>{{ t('features.events') }}</h3>
+      <div class="feature-card">
+        <div class="event-log">
+          <div *ngFor="let event of eventLog" class="event-item">
+            {{ event }}
+          </div>
+          <div *ngIf="eventLog.length === 0" class="event-empty">
+            No events yet...
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>Powered by @ldesign/engine</p>
+  </footer>
+</div>

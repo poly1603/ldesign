@@ -1,0 +1,29 @@
+{
+  "name": "@ldesign/web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "LDesign Web 管理界面 - Vue3 + Vite + Naive UI",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:check": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vicons/ionicons5": "^0.12.0",
+    "axios": "^1.6.0",
+    "lucide-vue-next": "^0.548.0",
+    "naive-ui": "^2.43.1",
+    "pinia": "^2.1.7",
+    "vue": "^3.5.22",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vue/tsconfig": "^0.5.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.4.21",
+    "vue-tsc": "^1.8.27"
+  }
+}

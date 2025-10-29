@@ -226,3 +226,45 @@
 [submodule "tools/testing"]
 	path = tools/testing
 	url = https://github.com/poly1603/ldesign-testing.git
+[submodule "apps/app-alpinejs"]
+	path = apps/app-alpinejs
+	url = https://github.com/poly1603/ldesign-app-alpinejs.git
+[submodule "apps/app-astro"]
+	path = apps/app-astro
+	url = https://github.com/poly1603/ldesign-app-astro.git
+[submodule "apps/app-lit"]
+	path = apps/app-lit
+	url = https://github.com/poly1603/ldesign-app-lit.git
+[submodule "apps/app-nextjs"]
+	path = apps/app-nextjs
+	url = https://github.com/poly1603/ldesign-app-nextjs.git
+[submodule "apps/app-nuxtjs"]
+	path = apps/app-nuxtjs
+	url = https://github.com/poly1603/ldesign-app-nuxtjs.git
+[submodule "apps/app-preact"]
+	path = apps/app-preact
+	url = https://github.com/poly1603/ldesign-app-preact.git
+[submodule "apps/app-qwik"]
+	path = apps/app-qwik
+	url = https://github.com/poly1603/ldesign-app-qwik.git
+[submodule "apps/app-react"]
+	path = apps/app-react
+	url = https://github.com/poly1603/ldesign-app-react.git
+[submodule "apps/app-remix"]
+	path = apps/app-remix
+	url = https://github.com/poly1603/ldesign-app-remix.git
+[submodule "apps/app-sveltekit"]
+	path = apps/app-sveltekit
+	url = https://github.com/poly1603/ldesign-app-sveltekit.git
+[submodule "apps/app-vue"]
+	path = apps/app-vue
+	url = https://github.com/poly1603/ldesign-app-vue.git
+[submodule "apps/app-angular"]
+	path = apps/app-angular
+	url = https://github.com/poly1603/ldesign-app-angular.git
+[submodule "apps/app-solid"]
+	path = apps/app-solid
+	url = https://github.com/poly1603/ldesign-app-solid.git
+[submodule "apps/app-svelte"]
+	path = apps/app-svelte
+	url = https://github.com/poly1603/ldesign-app-svelte.git

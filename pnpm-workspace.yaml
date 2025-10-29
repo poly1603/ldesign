@@ -1,9 +1,26 @@
 packages:
-  - packages/**
-  - libraries/**
-  - libraries/*/packages/**
-  - tools/**
-  - apps/*
+  # Core packages
+  - 'packages/*'
+  - 'packages/*/packages/*'
+  
+  # Libraries
+  - 'libraries/*'
+  - 'libraries/*/packages/*'
+  - '**/examples/*'
+  # Tools
+  - 'tools/*'
+  
+  # Applications
+  - 'apps/*'
+  
+  # Exclude test projects and non-package directories
+  - '!**/test-project'
+  - '!**/tests/fixtures'
+  - '!tools/cli/src/*'
+  - '!**/node_modules'
+  - '!**/dist'
+  - '!**/es'
+  - '!**/lib'
 
 catalog:
   # React 相关

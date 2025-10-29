@@ -1,0 +1,266 @@
+---
+alwaysApply: true
+---
+# LDesign 包开发规范
+
+本规范基于 [@ldesign/engine](mdc:packages/engine/LDESIGN_PACKAGE_STANDARDS.md) 项目的最佳实践，为所有 LDesign 包提供统一的开发标准。
+
+## 📖 完整规范文档
+
+查看完整规范：[LDESIGN_PACKAGE_STANDARDS.md](mdc:packages/engine/LDESIGN_PACKAGE_STANDARDS.md)
+
+## 🎯 核心原则
+
+### 1. 项目结构统一
+
+所有包必须遵循统一的目录结构：
+
+```
+packages/package-name/
+├── src/                    # 源代码
+│   ├── core/              # 核心模块
+│   ├── types/             # 类型定义
+│   ├── utils/             # 工具函数
+│   └── index.ts           # 主导出
+├── tests/                 # 测试文件
+├── examples/              # 演示项目
+├── docs/                  # 文档（可选）
+├── eslint.config.js       # ESLint 配置
+├── tsconfig.json          # TypeScript 配置
+├── vitest.config.ts       # 测试配置
+├── builder.config.ts      # 构建配置
+└── README.md              # 说明文档
+```
+
+### 2. 性能优化必须项
+
+**缓存管理**：
+- ✅ 使用双向链表实现 O(1) LRU
+- ✅ 内存占用估算和限制
+- ✅ 支持多种淘汰策略（LRU/LFU/FIFO）
+
+**事件系统**：
+- ✅ 优先级桶机制（避免每次排序）
+- ✅ 监听器数量限制
+- ✅ 自动清理机制
+
+**状态管理**：
+- ✅ 路径编译缓存
+- ✅ 浅层比较优化
+- ✅ 深度限制保护
+
+### 3. 内存管理必须项
+
+- ✅ 资源限制（maxSize、maxMemory、maxDepth）
+- ✅ 自动清理机制（定时清理、过期清理）
+- ✅ 监控和警告（统计信息、阈值警告）
+- ✅ 完全销毁（destroy 方法释放所有资源）
+- ✅ 定时器使用 unref() 防止阻止进程退出
+
+### 4. 类型定义必须项
+
+- ✅ 所有公开 API 有完整类型签名
+- ✅ 使用泛型提供类型推断
+- ✅ 无 any 类型（除非必要且有注释）
+- ✅ 导出所有公开类型（export type { ... }）
+
+### 5. 代码注释必须项
+
+所有公开 API 必须有完整的 JSDoc 中文注释，包含：
+- 功能描述
+- 参数说明（@param）
+- 返回值说明（@returns）
+- 抛出错误说明（@throws）
+- 使用示例（@example）
+- 性能相关注释（⚡ 性能: O(1)）
+
+### 6. 测试必须项
+
+- ✅ 测试覆盖率 > 80%
+- ✅ 基础操作测试
+- ✅ 边界条件测试
+- ✅ 错误情况测试
+- ✅ 性能测试（关键功能）
+
+### 7. 配置文件必须项
+
+**ESLint**（使用 @antfu/eslint-config）：
+```javascript
+import antfu from '@antfu/eslint-config'
+
+export default antfu({
+  typescript: true,
+  vue: false, // 根据包类型调整
+  ignores: ['dist', 'es', 'lib', 'node_modules', '*.md']
+})
+```
+
+**Vitest**（测试覆盖率配置）：
+```typescript
+export default defineConfig({
+  test: {
+    coverage: {
+      thresholds: {
+        statements: 80,
+        branches: 75,
+        functions: 80,
+        lines: 80
+      }
+    }
+  }
+})
+```
+
+**Builder**（使用 @ldesign/builder）：
+```typescript
+export default defineConfig({
+  entry: 'src/index.ts',
+  output: {
+    formats: ['esm', 'cjs', 'dts']
+  },
+  dts: { enabled: true }
+})
+```
+
+### 8. 文档必须项
+
+**README.md 必须包含**：
+- 包描述和特性
+- 安装说明
+- 快速开始示例
+- API 文档
+- 使用示例
+
+**演示项目必须有**：
+- 至少一个基础演示
+- 可直接运行（pnpm install && pnpm dev）
+- 覆盖主要功能
+
+---
+
+## 🔍 代码质量检查清单
+
+优化包时使用此清单：
+
+### 性能检查
+- [ ] 使用高效数据结构（Map、Set、双向链表）
+- [ ] 避免 O(n²) 复杂度
+- [ ] 实现缓存机制
+- [ ] 支持批量操作
+
+### 内存检查
+- [ ] 添加资源限制
+- [ ] 实现自动清理
+- [ ] 监控资源使用
+- [ ] 定时器使用 unref()
+- [ ] destroy 清理所有资源
+
+### 类型检查
+- [ ] 无 TypeScript 错误
+- [ ] 无 any 类型（除非必要）
+- [ ] 所有公开 API 有类型
+- [ ] 泛型使用正确
+
+### 文档检查
+- [ ] 所有公开 API 有 JSDoc
+- [ ] 包含使用示例
+- [ ] README 完整
+- [ ] 有演示项目
+
+### 测试检查
+- [ ] 覆盖率 > 80%
+- [ ] 边界条件测试
+- [ ] 错误情况测试
+- [ ] 性能测试（关键功能）
+
+---
+
+## 📚 参考实现
+
+### Engine 项目示例
+
+查看 Engine 项目的实现作为参考：
+
+**核心管理器**：
+- [cache-manager.ts](mdc:packages/engine/packages/core/src/cache/cache-manager.ts) - 缓存管理器（双向链表 LRU）
+- [event-manager.ts](mdc:packages/engine/packages/core/src/events/event-manager.ts) - 事件管理器（优先级桶）
+- [state-manager.ts](mdc:packages/engine/packages/core/src/state/state-manager.ts) - 状态管理器（路径缓存）
+
+**测试示例**：
+- [cache-manager.test.ts](mdc:packages/engine/packages/core/src/cache/cache-manager.test.ts) - 缓存测试（17 个用例）
+- [event-manager.test.ts](mdc:packages/engine/packages/core/src/events/event-manager.test.ts) - 事件测试（20 个用例）
+- [state-manager.test.ts](mdc:packages/engine/packages/core/src/state/state-manager.test.ts) - 状态测试（18 个用例）
+
+**配置文件**：
+- [eslint.config.js](mdc:packages/engine/packages/core/eslint.config.js) - ESLint 配置
+- [vitest.config.ts](mdc:packages/engine/packages/core/vitest.config.ts) - Vitest 配置
+- [builder.config.ts](mdc:packages/engine/builder.config.ts) - Builder 配置
+
+**文档示例**：
+- [VitePress 配置](mdc:packages/engine/docs/.vitepress/config.ts)
+- [首页](mdc:packages/engine/docs/index.md)
+- [快速开始](mdc:packages/engine/docs/guide/getting-started.md)
+
+---
+
+## 💡 优化其他包时的工作流
+
+### 步骤 1: 评估现状
+```bash
+# 运行检查
+pnpm lint:check
+pnpm type-check
+pnpm test:coverage
+pnpm build
+```
+
+### 步骤 2: 对照规范
+- 使用上面的"代码质量检查清单"
+- 参考 Engine 项目的实现
+- 应用优化模式
+
+### 步骤 3: 实施优化
+- 优化数据结构（双向链表、Map、优先级桶等）
+- 添加内存管理（限制、清理、监控）
+- 完善类型定义
+- 添加详细注释
+- 编写测试
+
+### 步骤 4: 验证质量
+```bash
+pnpm lint:fix
+pnpm type-check
+pnpm test:coverage  # > 80%
+pnpm build
+```
+
+---
+
+## 🎯 性能目标
+
+参考 Engine 项目的性能目标：
+
+| 操作 | 目标 | 实现方式 |
+|------|------|---------|
+| 缓存 get/set | O(1) | 双向链表 + Map |
+| 事件触发 | O(k) | 优先级桶 |
+| 状态访问 | O(1) 缓存命中 | 路径编译缓存 |
+
+---
+
+## ✅ 质量标准
+
+参考 Engine 项目的质量标准：
+
+| 指标 | 要求 | Engine 实际 |
+|------|------|-------------|
+| TypeScript 错误 | 0 | 0 ✅ |
+| ESLint 错误 | 0 | 0 ✅ |
+| 测试覆盖率 | > 80% | ~85% ✅ |
+| JSDoc 覆盖率 | 100% | 100% ✅ |
+
+---
+
+**使用此规范优化所有 LDesign 包，确保统一的高质量和性能！** 🚀
+
+**完整规范**: [LDESIGN_PACKAGE_STANDARDS.md](mdc:packages/engine/LDESIGN_PACKAGE_STANDARDS.md) (1575 行)
