@@ -1,9 +1,9 @@
 import App from './App.svelte'
 import { createEngine } from '@ldesign/engine-core'
 import { setEngine } from '@ldesign/engine-svelte'
-import { createI18nPlugin } from '@ldesign/engine-core/plugins/i18n'
-import { createThemePlugin } from '@ldesign/engine-core/plugins/theme'
-import { createSizePlugin } from '@ldesign/engine-core/plugins/size'
+import { createI18nPlugin } from '@ldesign/engine-core/plugins/i18n-plugin'
+import { createThemePlugin } from '@ldesign/engine-core/plugins/theme-plugin'
+import { createSizePlugin } from '@ldesign/engine-core/plugins/size-plugin'
 
 // 创建引擎实例
 const engine = createEngine({

@@ -274,3 +274,7 @@
 [submodule "tools/web"]
 	path = tools/web
 	url = https://github.com/poly1603/ldesign-web.git
+[submodule "tools/nexus"]
+	path = tools/nexus
+	url = https://github.com/poly1603/ldesign-nexus.git
+	branch = main

@@ -1,5 +1,7 @@
 # LDesign Tools
 
+LDesign 工具集合 - 统一的命令行工具和可视化管理界面
+
 > 集成化的前端开发工具集
 
 ## 🎉 重构完成!
@@ -38,7 +40,42 @@ tools/
 
 ## 🚀 快速开始
 
-### 方式一：使用Web管理界面（推荐）
+### ⚡ 推荐方式：使用统一 UI 命令
+
+#### 开发模式（热重载）
+```bash
+# 在项目根目录
+pnpm tools:ui
+
+# 或直接使用 CLI
+cd tools/cli
+pnpm exec ld ui --dev
+```
+**特点：**
+- ✅ Server 开发服务器: `http://localhost:3000` (API)
+- ✅ Web 开发服务器: `http://localhost:5173` (UI)
+- ✅ 双服务器独立热重载
+- ✅ 自动打开浏览器
+
+#### 生产模式（单服务器）
+```bash
+# 在项目根目录
+pnpm tools:build      # 构建所有包
+pnpm tools:ui:prod    # 启动生产服务
+
+# 或一步完成（自动构建）
+cd tools/cli
+pnpm exec ld ui
+```
+**特点：**
+- ✅ 单服务器: `http://localhost:3000`
+- ✅ Web UI: `http://localhost:3000/ui`
+- ✅ API: `http://localhost:3000/api`
+- ✅ Web 静态文件自动嵌入 Server
+
+---
+
+### 方式二：手动启动（旧方式，不推荐）
 
 #### 1. 启动后端服务器
 ```bash
@@ -143,11 +180,52 @@ ldesign gen component Button
   ├─→ @ldesign/shared
   └─→ 所有tools包
 
-@ldesign/web (前端UI)
+@ldesign/web (前端界面)
   └─→ 通过HTTP与server通信
 
 @ldesign/shared (基础库)
   └─→ 无依赖
+```
+
+### 运行时架构
+
+#### 开发模式（双服务器）
+```
+┌─────────────┐      ┌─────────────┐
+│   Server    │      │     Web     │
+│  (API Only) │◄─────│  (Dev HMR)  │
+│   :3000     │ Proxy│    :5173    │
+└─────────────┘      └─────────────┘
+```
+
+#### 生产模式（单服务器）
+```
+┌─────────────────────────┐
+│        Server           │
+│  ┌─────────┬─────────┐ │
+│  │   API   │ Static  │ │
+│  │  /api   │  /ui    │ │
+│  └─────────┴─────────┘ │
+│         :3000           │
+└─────────────────────────┘
+```
+
+### 构建流程
+
+```
+1. Web 构建
+   └─> vite build
+       └─> 生成 dist/
+           └─> post-build.js 自动复制到 server/public/
+
+2. Server 构建
+   └─> tsup
+       └─> 生成 dist/
+           └─> 包含 public/ 静态文件
+
+3. CLI 构建
+   └─> tsup
+       └─> 生成 dist/
 ```
 
 ### 设计理念
@@ -155,6 +233,8 @@ ldesign gen component Button
 2. **统一入口** - CLI作为唯一的用户接口
 3. **易于扩展** - 插件化架构,便于添加新功能
 4. **开发友好** - 前后端分离,独立开发
+5. **一致性** - 开发和生产使用相同的代码路径
+6. **简单化** - 一条命令完成所有操作
 
 ## 🧪 测试验证
 
