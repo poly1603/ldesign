@@ -1,5 +1,0 @@
-node_modules
-dist
-cjs
-es
-types/**/*.d.ts
