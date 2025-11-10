@@ -26,9 +26,12 @@
     "lint:all": "pnpm -r lint",
     "lint:all:fix": "pnpm -r lint:fix",
     "tools:dev": "pnpm --filter @ldesign/cli dev",
+    "tools:dev:watch": "tsx scripts/tools-dev.ts",
     "tools:build": "pnpm --filter @ldesign/web build && pnpm --filter @ldesign/server build && pnpm --filter @ldesign/cli build",
     "tools:ui": "pnpm --filter @ldesign/cli exec ld ui --dev",
-    "tools:ui:prod": "pnpm --filter @ldesign/cli exec ld ui"
+    "tools:ui:prod": "pnpm --filter @ldesign/cli exec ld ui",
+    "test:e2e:examples": "playwright test -c playwright.examples.config.ts",
+    "test:e2e:examples:list": "playwright test -c playwright.examples.config.ts --list"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.0.0",
@@ -48,6 +51,7 @@
     "rollup-plugin-esbuild": "^6.2.1",
     "rollup-plugin-postcss": "^4.0.2",
     "tsx": "^4.7.0",
+    "@ldesign/cli": "workspace:*",
     "typescript": "^5.7.3"
   },
   "dependencies": {
@@ -59,4 +63,18 @@
     "pnpm": ">=8.0.0"
   },
   "packageManager": "pnpm@9.15.9"
+,
+  "pnpm": {
+    "overrides": {
+      "@angular/core": "^19.2.15",
+      "@angular/common": "^19.2.15",
+      "@angular/router": "^19.2.15",
+      "@angular/platform-browser": "^19.2.15",
+      "@angular/platform-browser-dynamic": "^19.2.15",
+      "@angular/animations": "^19.2.15",
+      "@angular/compiler": "^19.2.15",
+      "@angular/compiler-cli": "^19.2.15",
+      "zone.js": "^0.15.1"
+    }
+  }
 }

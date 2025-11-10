@@ -1,0 +1,75 @@
+{
+  "name": "@ldesign/project-manager",
+  "version": "1.0.0",
+  "description": "项目管理工具 - 项目扫描、类型识别、依赖分析",
+  "keywords": [
+    "project",
+    "manager",
+    "scanner",
+    "dependencies",
+    "ldesign"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    },
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    }
+  },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
+  "files": [
+    "README.md",
+    "LICENSE",
+    "package.json",
+    "es",
+    "lib"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "build:watch": "ldesign-builder build --watch",
+    "build:clean": "ldesign-builder clean && ldesign-builder build",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix"
+  },
+  "dependencies": {
+    "@ldesign/shared": "workspace:*",
+    "fs-extra": "^11.2.0",
+    "fast-glob": "^3.3.2"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

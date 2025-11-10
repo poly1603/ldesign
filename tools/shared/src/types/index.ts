@@ -2,11 +2,12 @@
  * 共享类型定义统一导出
  */
 
-export * from './tool'
-export * from './project'
 export * from './api'
-export * from './workflow'
 export * from './plugin'
+export * from './project'
+export * from './tool'
+export * from './workflow'
+export * from './server'
 
 /**
  * 通用类型

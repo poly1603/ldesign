@@ -1,0 +1,104 @@
+{
+  "name": "@ldesign/node-manager",
+  "version": "1.0.0",
+  "description": "功能强大的 Node.js 版本管理工具 - 封装 nvm/fnm/volta + 自研版本管理器",
+  "keywords": [
+    "node",
+    "nodejs",
+    "version-manager",
+    "nvm",
+    "fnm",
+    "volta",
+    "node-version",
+    "ldesign"
+  ],
+  "author": "LDesign Team",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    },
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
+    },
+    "./downloaders/*": {
+      "types": "./es/downloaders/*.d.ts",
+      "import": "./es/downloaders/*.js",
+      "require": "./lib/downloaders/*.cjs"
+    },
+    "./managers/*": {
+      "types": "./es/managers/*.d.ts",
+      "import": "./es/managers/*.js",
+      "require": "./lib/managers/*.cjs"
+    },
+    "./registry/*": {
+      "types": "./es/registry/*.d.ts",
+      "import": "./es/registry/*.js",
+      "require": "./lib/registry/*.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    },
+    "./utils/*": {
+      "types": "./es/utils/*.d.ts",
+      "import": "./es/utils/*.js",
+      "require": "./lib/utils/*.cjs"
+    }
+  },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
+  "files": [
+    "README.md",
+    "LICENSE",
+    "package.json",
+    "es",
+    "lib"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build && node fix-imports.mjs",
+    "build:watch": "ldesign-builder build --watch",
+    "build:clean": "ldesign-builder clean && ldesign-builder build",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ldesign/shared": "workspace:*",
+    "execa": "^9.5.2",
+    "fs-extra": "^11.2.0",
+    "node-fetch": "^3.3.2",
+    "tar": "^7.4.3",
+    "extract-zip": "^2.0.1"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.11.0",
+    "@types/tar": "^6.1.13",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.5",
+    "@vitest/coverage-v8": "^2.1.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

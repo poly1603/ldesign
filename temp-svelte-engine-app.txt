@@ -1,0 +1,292 @@
+﻿/**
+ * Svelte 寮曟搸搴旂敤鍒涘缓宸ュ叿
+ *
+ * 鎻愪緵缁熶竴鐨勫簲鐢ㄥ垱寤哄拰閰嶇疆鎺ュ彛
+ */
+
+import { createCoreEngine, type CoreEngine } from '@ldesign/engine-core'
+import { createSvelteAdapter } from './adapter'
+import type { EngineConfig, Plugin, Middleware } from '@ldesign/engine-core'
+
+/**
+ * 璺敱閰嶇疆鎺ュ彛
+ */
+export interface RouterConfig {
+  mode?: 'history' | 'hash' | 'memory'
+  base?: string
+  routes: RouteConfig[]
+  preset?: 'spa' | 'mpa' | 'mobile' | 'desktop' | 'admin' | 'blog'
+  scrollBehavior?: (to: any, from: any, savedPosition: any) => any
+  linkActiveClass?: string
+  linkExactActiveClass?: string
+  preload?: boolean | PreloadConfig
+  cache?: boolean | CacheConfig
+  animation?: boolean | AnimationConfig
+  performance?: PerformanceConfig
+  development?: DevelopmentConfig
+  security?: SecurityConfig
+}
+
+export interface RouteConfig {
+  path: string
+  component?: any
+  children?: RouteConfig[]
+  meta?: Record<string, any>
+  [key: string]: any
+}
+
+export interface PreloadConfig {
+  enabled: boolean
+  delay?: number
+  [key: string]: any
+}
+
+export interface CacheConfig {
+  enabled: boolean
+  maxAge?: number
+  [key: string]: any
+}
+
+export interface AnimationConfig {
+  enabled: boolean
+  duration?: number
+  [key: string]: any
+}
+
+export interface PerformanceConfig {
+  [key: string]: any
+}
+
+export interface DevelopmentConfig {
+  [key: string]: any
+}
+
+export interface SecurityConfig {
+  [key: string]: any
+}
+
+/**
+ * Svelte 寮曟搸搴旂敤閰嶇疆
+ */
+export interface SvelteEngineAppConfig {
+  /**
+   * 鏍圭粍锟?   */
+  rootComponent: any
+
+  /**
+   * 鎸傝浇鍏冪礌閫夋嫨鍣ㄦ垨 DOM 鍏冪礌
+   */
+  mountElement: string | Element
+
+  /**
+   * 寮曟搸閰嶇疆
+   */
+  config?: Partial<EngineConfig>
+
+  /**
+   * 璺敱閰嶇疆
+   */
+  router?: RouterConfig
+
+  /**
+   * 缁勪欢灞烇拷?   */
+  props?: Record<string, any>
+
+  /**
+   * 鎻掍欢鍒楄〃
+   */
+  plugins?: Plugin[]
+
+  /**
+   * 涓棿浠跺垪锟?   */
+  middleware?: Middleware[]
+
+  /**
+   * 寮曟搸鍑嗗灏辩华鍥炶皟
+   */
+  onReady?: (engine: CoreEngine) => void | Promise<void>
+
+  /**
+   * 搴旂敤鎸傝浇瀹屾垚鍥炶皟
+   */
+  onMounted?: (engine: CoreEngine) => void | Promise<void>
+
+  /**
+   * 閿欒澶勭悊鍥炶皟
+   */
+  onError?: (error: Error, context?: any) => void
+}
+
+/**
+ * 鍒涘缓 Svelte 寮曟搸搴旂敤
+ * 
+ * @param config - 搴旂敤閰嶇疆
+ * @returns 寮曟搸瀹炰緥
+ * 
+ * @example
+ * ```typescript
+ * import { createEngineApp } from '@ldesign/engine-svelte'
+ * import App from './App.svelte'
+ * 
+ * const engine = await createEngineApp({
+ *   rootComponent: App,
+ *   mountElement: '#app',
+ *   config: {
+ *     name: 'My Svelte App',
+ *     debug: true,
+ *   },
+ *   plugins: [myPlugin],
+ *   middleware: [myMiddleware],
+ * })
+ * ```
+ */
+export async function createEngineApp(config: SvelteEngineAppConfig): Promise<CoreEngine> {
+  const {
+    rootComponent,
+    mountElement,
+    config: engineConfig = {},
+    router: routerConfig,
+    props = {},
+    plugins = [],
+    middleware = [],
+    onReady,
+    onMounted,
+    onError,
+  } = config
+
+  try {
+    // 鍒涘缓 Svelte 閫傞厤锟?    const adapter = createSvelteAdapter()
+
+    // 鍒涘缓鏍稿績寮曟搸
+    const engine = createCoreEngine({
+      name: engineConfig.name || 'Svelte Engine App',
+      version: engineConfig.version || '1.0.0',
+      debug: engineConfig.debug ?? false,
+      adapter,
+    })
+
+    // 濡傛灉閰嶇疆浜嗚矾鐢憋紝鍔ㄦ€佸姞杞借矾鐢辨彃浠?    if (routerConfig) {
+      try {
+        const routerModule = await import('@ldesign/router-svelte')
+        const routerPlugin = routerModule.createRouterEnginePlugin({
+          name: 'router',
+          version: '1.0.0',
+          ...routerConfig,
+        })
+        plugins.unshift(routerPlugin)
+        engine.logger.info('Router plugin created successfully')
+      } catch (error) {
+        engine.logger.warn(
+          'Failed to load @ldesign/router-svelte. Make sure it is installed if you want to use routing features.',
+          error
+        )
+      }
+    }
+
+    // 娉ㄥ唽鎻掍欢
+    for (const plugin of plugins) {
+      await engine.use(plugin)
+    }
+
+    // 娉ㄥ唽涓棿浠?    for (const mw of middleware) {
+      engine.middleware.use(mw)
+    }
+
+    // 鍒濆鍖栧紩鎿?    await engine.init()
+
+    // 瑙﹀彂鍑嗗灏辩华鍥炶皟
+    if (onReady) {
+      await onReady(engine)
+    }
+
+    // 鍒涘缓 Svelte 搴旂敤
+    const app = adapter.createApp(rootComponent, { props })
+
+    // 娉ㄥ唽寮曟搸鍒板簲锟?    adapter.registerEngine(app, engine)
+
+    // 鎸傝浇搴旂敤
+    await adapter.mount(app, mountElement)
+
+    // 瑙﹀彂鎸傝浇瀹屾垚鍥炶皟
+    if (onMounted) {
+      await onMounted(engine)
+    }
+
+    // 瑙﹀彂 mounted 鐢熷懡鍛ㄦ湡
+    await engine.lifecycle.trigger('mounted')
+
+    return engine
+  } catch (error) {
+    // 閿欒澶勭悊
+    if (onError) {
+      onError(error as Error, { config })
+    } else {
+      console.error('Failed to create Svelte engine app:', error)
+    }
+    throw error
+  }
+}
+
+/**
+ * 鍒涘缓 Svelte 寮曟搸搴旂敤(鍚屾鐗堟湰)
+ * 
+ * 娉ㄦ剰:杩欎釜鐗堟湰浼氱珛鍗宠繑鍥炲紩鎿庡疄锟?浣嗗垵濮嬪寲鏄紓姝ョ殑
+ * 
+ * @param config - 搴旂敤閰嶇疆
+ * @returns 寮曟搸瀹炰緥
+ */
+export function createEngineAppSync(config: SvelteEngineAppConfig): CoreEngine {
+  const adapter = createSvelteAdapter()
+  const engine = createCoreEngine({
+    name: config.config?.name || 'Svelte Engine App',
+    version: config.config?.version || '1.0.0',
+    debug: config.config?.debug ?? false,
+    adapter,
+  })
+
+  // 寮傛鍒濆锟?  ;(async () => {
+    try {
+      // 娉ㄥ唽鎻掍欢
+      for (const plugin of config.plugins || []) {
+        await engine.use(plugin)
+      }
+
+      // 娉ㄥ唽涓棿浠?      for (const mw of config.middleware || []) {
+        engine.middleware.use(mw)
+      }
+
+      // 鍒濆鍖栧紩鎿?      await engine.init()
+
+      // 瑙﹀彂鍑嗗灏辩华鍥炶皟
+      if (config.onReady) {
+        await config.onReady(engine)
+      }
+
+      // 鍒涘缓 Svelte 搴旂敤
+      const app = adapter.createApp(config.rootComponent, { props: config.props })
+
+      // 娉ㄥ唽寮曟搸鍒板簲鐢?      adapter.registerEngine(app, engine)
+
+      // 鎸傝浇搴旂敤
+      await adapter.mount(app, config.mountElement)
+
+      // 瑙﹀彂鎸傝浇瀹屾垚鍥炶皟
+      if (config.onMounted) {
+        await config.onMounted(engine)
+      }
+
+      // 瑙﹀彂 mounted 鐢熷懡鍛ㄦ湡
+      await engine.lifecycle.trigger('mounted')
+    } catch (error) {
+      if (config.onError) {
+        config.onError(error as Error, { config })
+      } else {
+        console.error('Failed to initialize Svelte engine app:', error)
+      }
+    }
+  })()
+
+  return engine
+}
+
+
