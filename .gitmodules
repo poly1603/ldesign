@@ -268,3 +268,6 @@
 [submodule "apps/app-svelte"]
 	path = apps/app-svelte
 	url = https://github.com/poly1603/ldesign-app-svelte.git
+[submodule "tools/server"]
+	path = tools/server
+	url = https://github.com/poly1603/ldesign-server.git
