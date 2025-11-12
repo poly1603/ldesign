@@ -1,29 +1,45 @@
 {
   "name": "@ldesign/web",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "LDesign Web 管理界面 - Vue3 + Vite + Naive UI",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:check": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "build": "run-p type-check \"build-only {@}\" --",
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --build",
+    "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
+    "lint:eslint": "eslint . --fix --cache",
+    "lint": "run-s lint:*"
   },
   "dependencies": {
-    "@vicons/ionicons5": "^0.12.0",
-    "axios": "^1.6.0",
-    "lucide-vue-next": "^0.548.0",
-    "naive-ui": "^2.43.1",
-    "pinia": "^2.1.7",
+    "@ldesign/monorepo": "file:../..",
+    "pinia": "^3.0.3",
+    "tdesign-icons-vue-next": "^0.4.1",
+    "tdesign-vue-next": "^1.17.2",
     "vue": "^3.5.22",
-    "vue-router": "^4.2.5"
+    "vue-router": "^4.6.3"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.4",
-    "@vue/tsconfig": "^0.5.0",
-    "typescript": "^5.3.0",
-    "vite": "^5.4.21",
-    "vue-tsc": "^1.8.27"
+    "@tsconfig/node22": "^22.0.2",
+    "@types/node": "^22.18.11",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vitejs/plugin-vue-jsx": "^5.1.1",
+    "@vue/eslint-config-typescript": "^14.6.0",
+    "@vue/tsconfig": "^0.8.1",
+    "eslint": "^9.37.0",
+    "eslint-plugin-oxlint": "~1.23.0",
+    "eslint-plugin-vue": "~10.5.0",
+    "jiti": "^2.6.1",
+    "npm-run-all2": "^8.0.4",
+    "oxlint": "~1.23.0",
+    "typescript": "~5.9.0",
+    "vite": "npm:rolldown-vite@latest",
+    "vite-plugin-vue-devtools": "^8.0.3",
+    "vue-tsc": "^3.1.1"
   }
 }
