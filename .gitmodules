@@ -241,3 +241,8 @@
 [submodule "tools/configmate"]
 	path = tools/configmate
 	url = https://github.com/poly1603/ldesign-configmate.git
+
+[submodule "tools/web"]
+	path = tools/web
+	url = https://github.com/poly1603/ldesign-web.git
+
