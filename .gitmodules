@@ -246,3 +246,6 @@
 	path = tools/web
 	url = https://github.com/poly1603/ldesign-web.git
 
+[submodule "tools/app"]
+	path = tools/app
+	url = https://github.com/poly1603/ldesign-app.git
