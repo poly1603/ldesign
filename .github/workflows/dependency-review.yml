@@ -1,0 +1,87 @@
+name: Dependency Review
+
+# 在 PR 时检查依赖变更
+on:
+  pull_request:
+    paths:
+      - '**/package.json'
+      - '**/pnpm-lock.yaml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependency-review:
+    name: Review Dependency Changes
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          # 如果发现高危或严重漏洞则失败
+          fail-on-severity: high
+          # 拒绝的许可证类型
+          deny-licenses: GPL-2.0, GPL-3.0, AGPL-3.0
+          # 允许的许可证类型
+          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC
+          # 在 PR 中添加评论
+          comment-summary-in-pr: always
+
+      - name: Setup pnpm
+        if: always()
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        if: always()
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        if: always()
+        run: pnpm install --frozen-lockfile
+
+      - name: Analyze dependency changes
+        if: always()
+        run: |
+          echo "## 📊 依赖变更分析" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # 检查新增的依赖
+          echo "### 新增依赖" >> $GITHUB_STEP_SUMMARY
+          git diff origin/${{ github.base_ref }} HEAD -- '**/package.json' | grep '^\+.*"' | grep -v '^\+\+\+' >> $GITHUB_STEP_SUMMARY || echo "无新增依赖" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # 检查删除的依赖
+          echo "### 删除依赖" >> $GITHUB_STEP_SUMMARY
+          git diff origin/${{ github.base_ref }} HEAD -- '**/package.json' | grep '^\-.*"' | grep -v '^\-\-\-' >> $GITHUB_STEP_SUMMARY || echo "无删除依赖" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # 运行安全审计
+          echo "### 安全审计" >> $GITHUB_STEP_SUMMARY
+          pnpm audit --audit-level=moderate >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Check bundle size impact
+        if: always()
+        run: |
+          echo "## 📦 打包体积影响" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "提示: 请确保新增依赖不会显著增加打包体积" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # 显示依赖树大小
+          echo "### 依赖树大小" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          pnpm list --depth=0 >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+

@@ -1,0 +1,67 @@
+# Dependabot 配置 - 自动更新依赖
+# 文档: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # 监控 npm 依赖
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "Asia/Shanghai"
+    # 自动合并补丁版本更新
+    open-pull-requests-limit: 10
+    # 提交信息前缀
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    # 标签
+    labels:
+      - "dependencies"
+      - "automated"
+    # 审查者
+    reviewers:
+      - "ldesign-team"
+    # 忽略的依赖
+    ignore:
+      # 忽略主要版本更新(需要手动审查)
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    # 分组更新
+    groups:
+      # 开发依赖分组
+      dev-dependencies:
+        patterns:
+          - "@types/*"
+          - "eslint*"
+          - "prettier"
+          - "vitest"
+          - "typescript"
+        update-types:
+          - "minor"
+          - "patch"
+      # 生产依赖分组
+      production-dependencies:
+        patterns:
+          - "vue"
+          - "react"
+          - "@vue/*"
+        update-types:
+          - "patch"
+
+  # 监控 GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "Asia/Shanghai"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "ci"
+      - "automated"
+

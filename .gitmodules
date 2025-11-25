@@ -248,3 +248,6 @@
 	path = tools/app
 	url = https://github.com/poly1603/ldesign-app.git
 	branch = main
+[submodule "tools/benchmark"]
+	path = tools/benchmark
+	url = https://github.com/poly1603/ldesign-benchmark.git
