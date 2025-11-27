@@ -212,3 +212,11 @@
 [submodule "tools/benchmark"]
 	path = tools/benchmark
 	url = https://github.com/poly1603/ldesign-benchmark.git
+[submodule "apps/app-vue"]
+	path = apps/app-vue
+	url = https://github.com/poly1603/ldesign-app-vue.git
+	branch = main
+[submodule "tools/submodule"]
+	path = tools/submodule
+	url = https://github.com/poly1603/ldesign-submodule.git
+	branch = main
