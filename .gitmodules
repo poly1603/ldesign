@@ -58,9 +58,6 @@
 [submodule "libraries/word"]
 	path = libraries/word
 	url = https://github.com/poly1603/ldesign-word.git
-[submodule "packages/api"]
-	path = packages/api
-	url = https://github.com/poly1603/ldesign-api.git
 [submodule "packages/cache"]
 	path = packages/cache
 	url = https://github.com/poly1603/ldesign-cache.git
@@ -142,33 +139,9 @@
 [submodule "libraries/upload"]
 	path = libraries/upload
 	url = https://github.com/poly1603/ldesign-upload.git
-[submodule "packages/animation"]
-	path = packages/animation
-	url = https://github.com/poly1603/ldesign-animation.git
-[submodule "packages/auth"]
-	path = packages/auth
-	url = https://github.com/poly1603/ldesign-auth.git
-[submodule "packages/file"]
-	path = packages/file
-	url = https://github.com/poly1603/ldesign-file.git
-[submodule "packages/icons"]
-	path = packages/icons
-	url = https://github.com/poly1603/ldesign-icons.git
 [submodule "packages/logger"]
 	path = packages/logger
 	url = https://github.com/poly1603/ldesign-logger.git
-[submodule "packages/notification"]
-	path = packages/notification
-	url = https://github.com/poly1603/ldesign-notification.git
-[submodule "packages/permission"]
-	path = packages/permission
-	url = https://github.com/poly1603/ldesign-permission.git
-[submodule "packages/storage"]
-	path = packages/storage
-	url = https://github.com/poly1603/ldesign-storage.git
-[submodule "packages/validator"]
-	path = packages/validator
-	url = https://github.com/poly1603/ldesign-validator.git
 [submodule "tools/deployer"]
 	path = tools/deployer
 	url = https://github.com/poly1603/ldesign-deployer.git
@@ -181,15 +154,6 @@
 [submodule "libraries/video"]
 	path = libraries/video
 	url = https://github.com/poly1603/video.git
-[submodule "packages/websocket"]
-	path = packages/websocket
-	url = https://github.com/poly1603/websocket.git
-[submodule "packages/tabs"]
-	path = packages/tabs
-	url = https://github.com/poly1603/ldesign-tabs.git
-[submodule "packages/menu"]
-	path = packages/menu
-	url = https://github.com/poly1603/ldesign-menu.git
 [submodule "tools/publisher"]
 	path = tools/publisher
 	url = https://github.com/poly1603/ldesign-publisher.git
@@ -226,9 +190,6 @@
 [submodule "tools/testing"]
 	path = tools/testing
 	url = https://github.com/poly1603/ldesign-testing.git
-[submodule "apps/app-vue"]
-	path = apps/app-vue
-	url = https://github.com/poly1603/ldesign-app-vue.git
 [submodule "tools/server"]
 	path = tools/server
 	url = https://github.com/poly1603/ldesign-server.git

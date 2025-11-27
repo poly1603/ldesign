@@ -78,9 +78,15 @@ importers:
 
   apps/app-vue:
     dependencies:
+      '@ldesign/cache-vue':
+        specifier: workspace:*
+        version: link:../../packages/cache/packages/vue
       '@ldesign/color-vue':
         specifier: workspace:*
         version: link:../../packages/color/packages/vue
+      '@ldesign/device-vue':
+        specifier: workspace:*
+        version: link:../../packages/device/packages/vue
       '@ldesign/engine-vue3':
         specifier: workspace:*
         version: link:../../packages/engine/packages/vue3
@@ -112,6 +118,9 @@ importers:
       vite:
         specifier: ^7.2.2
         version: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+      vue-tsc:
+        specifier: ^2.0.0
+        version: 2.2.12(typescript@5.9.3)
 
   libraries/3d-viewer:
     devDependencies:
@@ -2622,7 +2631,7 @@ importers:
         version: 19.1.6(@angular/common@19.1.6(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1))
       '@antfu/eslint-config':
         specifier: ^6.0.0
-        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       '@ldesign/builder':
         specifier: workspace:*
         version: link:../../../../tools/builder
@@ -2649,7 +2658,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
       zone.js:
         specifier: ^0.15.0
         version: 0.15.1
@@ -2658,7 +2667,7 @@ importers:
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^6.0.0
-        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       '@ldesign/builder':
         specifier: workspace:*
         version: link:../../../../tools/builder
@@ -2679,7 +2688,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/editor/packages/lit:
     dependencies:
@@ -2708,7 +2717,7 @@ importers:
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^6.0.0
-        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       '@ldesign/builder':
         specifier: workspace:*
         version: link:../../../../tools/builder
@@ -2729,7 +2738,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/editor/packages/qwik:
     dependencies:
@@ -2742,7 +2751,7 @@ importers:
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^6.0.0
-        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       '@ldesign/builder':
         specifier: workspace:*
         version: link:../../../../tools/builder
@@ -2763,7 +2772,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/editor/packages/react:
     dependencies:
@@ -2801,7 +2810,7 @@ importers:
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^6.0.0
-        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       '@ldesign/builder':
         specifier: workspace:*
         version: link:../../../../tools/builder
@@ -2822,7 +2831,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/editor/packages/svelte:
     dependencies:
@@ -2835,7 +2844,7 @@ importers:
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^6.0.0
-        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.18.0)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.18.0))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.18.0)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.18.0))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       '@ldesign/builder':
         specifier: workspace:*
         version: link:../../../../tools/builder
@@ -2856,7 +2865,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/editor/packages/vue:
     dependencies:
@@ -5488,7 +5497,7 @@ importers:
         version: 18.0.0(rxjs@7.8.1)(zone.js@0.15.1)
       '@antfu/eslint-config':
         specifier: ^3.0.0
-        version: 3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.5.4))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.5.4)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.43.6)(typescript@5.5.4)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+        version: 3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.5.4))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.5.4)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.43.6)(typescript@5.5.4)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       '@ldesign/signature-core':
         specifier: workspace:*
         version: link:../core
@@ -5512,13 +5521,13 @@ importers:
         version: 2.0.0(sass@1.93.3)(typescript@5.5.4)(vue-tsc@2.2.12(typescript@5.5.4))
       vitest:
         specifier: ^2.0.0
-        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/signature/packages/core:
     devDependencies:
       '@vitest/coverage-v8':
         specifier: ^2.0.0
-        version: 2.1.9(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@25.0.1(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+        version: 2.1.9(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@25.0.1(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       jsdom:
         specifier: ^25.0.0
         version: 25.0.1(canvas@2.11.2(encoding@0.1.13))
@@ -5533,7 +5542,7 @@ importers:
         version: 2.0.0(sass@1.93.3)(typescript@5.9.3)(vue-tsc@2.2.12(typescript@5.9.3))
       vitest:
         specifier: ^2.0.0
-        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@25.0.1(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@25.0.1(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/signature/packages/lit:
     dependencies:
@@ -5561,7 +5570,7 @@ importers:
         version: 2.0.0(sass@1.93.3)(typescript@5.9.3)(vue-tsc@2.2.12(typescript@5.9.3))
       vitest:
         specifier: ^2.0.0
-        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/signature/packages/qwik:
     dependencies:
@@ -5571,7 +5580,7 @@ importers:
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^3.0.0
-        version: 3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.43.6)(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+        version: 3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.43.6)(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       '@builder.io/qwik':
         specifier: ^1.10.0
         version: 1.11.0(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
@@ -5589,7 +5598,7 @@ importers:
         version: 2.0.0(sass@1.93.3)(typescript@5.9.3)(vue-tsc@2.2.12(typescript@5.9.3))
       vitest:
         specifier: ^2.0.0
-        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/signature/packages/react:
     dependencies:
@@ -5626,7 +5635,7 @@ importers:
         version: 2.0.0(sass@1.93.3)(typescript@5.9.3)(vue-tsc@2.2.12(typescript@5.9.3))
       vitest:
         specifier: ^2.0.0
-        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/signature/packages/solid:
     dependencies:
@@ -5636,7 +5645,7 @@ importers:
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^3.0.0
-        version: 3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.43.6)(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+        version: 3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.43.6)(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       eslint:
         specifier: ^9.0.0
         version: 9.18.0(jiti@2.6.1)
@@ -5657,7 +5666,7 @@ importers:
         version: 2.10.2(@testing-library/jest-dom@6.8.0)(solid-js@1.9.3)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
       vitest:
         specifier: ^2.0.0
-        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/signature/packages/svelte:
     dependencies:
@@ -5667,7 +5676,7 @@ importers:
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^3.0.0
-        version: 3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.18.0)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.18.0)(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+        version: 3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.18.0)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.18.0)(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       '@sveltejs/package':
         specifier: ^2.0.0
         version: 2.0.0(svelte@5.18.0)(typescript@5.9.3)
@@ -5697,7 +5706,7 @@ importers:
         version: 6.0.7(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
       vitest:
         specifier: ^2.0.0
-        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/signature/packages/vue:
     dependencies:
@@ -5728,7 +5737,7 @@ importers:
         version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
       vitest:
         specifier: ^2.0.0
-        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
       vue-tsc:
         specifier: ^2.0.0
         version: 2.2.12(typescript@5.9.3)
@@ -7096,163 +7105,38 @@ importers:
         version: 2.1.8(@types/node@22.10.5)(@vitest/ui@2.0.0)(happy-dom@20.0.10)(jsdom@24.0.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   packages/cache:
+    dependencies:
+      '@ldesign/cache-core':
+        specifier: workspace:*
+        version: link:packages/core
+      '@ldesign/cache-vue':
+        specifier: workspace:*
+        version: link:packages/vue
+      vue:
+        specifier: ^3.3.0
+        version: 3.5.25(typescript@5.9.3)
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^6.0.0
-        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@2.1.8)
+        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@3.2.4)
       '@ldesign/builder':
         specifier: workspace:*
         version: link:../../tools/builder
-      '@playwright/test':
-        specifier: ^1.40.1
-        version: 1.56.1
-      '@rollup/plugin-alias':
-        specifier: ^5.1.0
-        version: 5.1.1(rollup@4.52.5)
-      '@rollup/plugin-commonjs':
-        specifier: ^25.0.7
-        version: 25.0.8(rollup@4.52.5)
-      '@rollup/plugin-node-resolve':
-        specifier: ^15.2.3
-        version: 15.3.1(rollup@4.52.5)
-      '@rollup/plugin-terser':
-        specifier: ^0.4.4
-        version: 0.4.4(rollup@4.52.5)
-      '@rollup/plugin-typescript':
-        specifier: ^11.1.6
-        version: 11.1.6(rollup@4.52.5)(tslib@2.8.1)(typescript@5.9.3)
       '@types/node':
         specifier: ^22.0.0
         version: 22.10.5
-      '@vitejs/plugin-vue':
-        specifier: ^5.0.3
-        version: 5.2.4(vite@5.4.21(@types/node@22.10.5)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.22(typescript@5.9.3))
-      '@vitest/coverage-v8':
-        specifier: ^2.0.0
-        version: 2.1.9(vitest@2.1.8)
-      '@vitest/ui':
-        specifier: ^2.0.0
-        version: 2.0.0(vitest@2.1.8)(vue@3.5.22(typescript@5.9.3))
-      '@vue/test-utils':
-        specifier: ^2.4.4
-        version: 2.4.4(@vue/server-renderer@3.5.25(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
       eslint:
         specifier: ^9.18.0
         version: 9.18.0(jiti@2.6.1)
-      glob:
-        specifier: ^10.3.10
-        version: 10.4.5
-      jsdom:
-        specifier: ^24.0.0
-        version: 24.0.0(canvas@2.11.2(encoding@0.1.13))
-      playwright:
-        specifier: ^1.40.1
-        version: 1.40.1
       rimraf:
         specifier: ^5.0.0
         version: 5.0.5
-      rollup:
-        specifier: ^4.9.6
-        version: 4.52.5
-      rollup-plugin-dts:
-        specifier: ^6.1.0
-        version: 6.1.0(rollup@4.52.5)(typescript@5.9.3)
-      size-limit:
-        specifier: ^11.0.0
-        version: 11.0.0
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
-      vite:
-        specifier: ^5.0.12
-        version: 5.4.21(@types/node@22.10.5)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-      vitepress:
-        specifier: ^1.0.0
-        version: 1.6.4(@algolia/client-search@5.43.0)(@types/node@22.10.5)(@types/react@18.3.26)(async-validator@4.2.5)(axios@1.13.2)(change-case@5.4.4)(less@4.4.2)(lightningcss@1.30.2)(postcss@8.5.6)(qrcode@1.5.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.93.3)(search-insights@2.17.3)(sortablejs@1.15.6)(stylus@0.54.8)(terser@5.44.1)(typescript@5.9.3)
       vitest:
-        specifier: ^2.0.0
-        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@2.0.0)(happy-dom@20.0.10)(jsdom@24.0.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-      vue:
-        specifier: ^3.4.15
-        version: 3.5.22(typescript@5.9.3)
-      vue-tsc:
-        specifier: ^1.8.27
-        version: 1.8.27(typescript@5.9.3)
-
-  packages/cache/examples/demo-react:
-    dependencies:
-      '@ldesign/cache-core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@ldesign/cache-react':
-        specifier: workspace:*
-        version: link:../../packages/react
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@ldesign/launcher':
-        specifier: workspace:*
-        version: link:../../../../tools/launcher
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.18
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.5(@types/react@18.3.18)
-      '@vitejs/plugin-react':
-        specifier: ^4.3.4
-        version: 4.3.4(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
-      typescript:
-        specifier: ^5.7.2
-        version: 5.9.3
-
-  packages/cache/examples/demo-vue:
-    dependencies:
-      '@ldesign/cache-core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@ldesign/cache-vue':
-        specifier: workspace:*
-        version: link:../../packages/vue
-      vue:
-        specifier: ^3.5.13
-        version: 3.5.22(typescript@5.9.3)
-    devDependencies:
-      '@ldesign/launcher':
-        specifier: workspace:*
-        version: link:../../../../tools/launcher
-      '@vitejs/plugin-vue':
-        specifier: ^5.2.1
-        version: 5.2.4(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(vue@3.5.22(typescript@5.9.3))
-      typescript:
-        specifier: ^5.7.2
-        version: 5.9.3
-
-  packages/cache/packages/angular:
-    dependencies:
-      '@ldesign/cache-core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@angular/core':
-        specifier: ^19.1.4
-        version: 19.1.7(rxjs@7.8.1)(zone.js@0.15.1)
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      '@types/node':
-        specifier: ^20.0.0
-        version: 20.11.16
-      rxjs:
-        specifier: ^7.8.1
-        version: 7.8.1
-      typescript:
-        specifier: ^5.7.2
-        version: 5.9.3
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.10.5)(@vitest/ui@3.2.4)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   packages/cache/packages/core:
     dependencies:
@@ -7284,110 +7168,6 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@20.11.16)(@vitest/ui@4.0.5)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  packages/cache/packages/devtools:
-    dependencies:
-      '@ldesign/cache-core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      typescript:
-        specifier: ^5.7.2
-        version: 5.9.3
-
-  packages/cache/packages/lit:
-    dependencies:
-      '@ldesign/cache-core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      '@types/node':
-        specifier: ^20.0.0
-        version: 20.11.16
-      lit:
-        specifier: ^3.2.1
-        version: 3.2.1
-      typescript:
-        specifier: ^5.7.2
-        version: 5.9.3
-
-  packages/cache/packages/react:
-    dependencies:
-      '@ldesign/cache-core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      '@types/node':
-        specifier: ^20.0.0
-        version: 20.11.16
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.18
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.5(@types/react@18.3.18)
-      eslint:
-        specifier: ^9.18.0
-        version: 9.18.0(jiti@2.6.1)
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      typescript:
-        specifier: ^5.7.2
-        version: 5.9.3
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@20.11.16)(@vitest/ui@3.2.4)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  packages/cache/packages/solid:
-    dependencies:
-      '@ldesign/cache-core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      '@types/node':
-        specifier: ^20.0.0
-        version: 20.11.16
-      solid-js:
-        specifier: ^1.9.3
-        version: 1.9.3
-      typescript:
-        specifier: ^5.7.2
-        version: 5.9.3
-
-  packages/cache/packages/svelte:
-    dependencies:
-      '@ldesign/cache-core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      '@types/node':
-        specifier: ^20.0.0
-        version: 20.11.16
-      svelte:
-        specifier: ^5.15.0
-        version: 5.18.0
-      typescript:
-        specifier: ^5.7.2
-        version: 5.9.3
 
   packages/cache/packages/vue:
     dependencies:
@@ -7955,331 +7735,54 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.10.5)(@vitest/ui@3.2.4)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
-  packages/device/examples/complete-app:
-    dependencies:
-      '@ldesign/device':
-        specifier: workspace:*
-        version: link:../..
-      vue:
-        specifier: ^3.4.15
-        version: 3.5.22(typescript@5.9.3)
-    devDependencies:
-      '@vitejs/plugin-vue':
-        specifier: ^5.0.3
-        version: 5.2.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.22(typescript@5.9.3))
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.0.10
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-      vue-tsc:
-        specifier: ^3.0.5
-        version: 3.1.2(typescript@5.9.3)
-
-  packages/device/examples/playground:
-    dependencies:
-      '@ldesign/device':
-        specifier: workspace:*
-        version: link:../..
-    devDependencies:
-      vite:
-        specifier: ^5.0.10
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  packages/device/examples/react-example:
-    dependencies:
-      '@ldesign/device':
-        specifier: workspace:*
-        version: link:../..
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@types/react':
-        specifier: ^18.2.45
-        version: 18.3.18
-      '@types/react-dom':
-        specifier: ^18.2.18
-        version: 18.3.5(@types/react@18.3.18)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.3.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.0.10
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  packages/device/examples/typescript-example:
-    dependencies:
-      '@ldesign/device':
-        specifier: workspace:*
-        version: link:../..
-    devDependencies:
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.0.10
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  packages/device/examples/vanilla-js:
-    dependencies:
-      '@ldesign/device':
-        specifier: workspace:*
-        version: link:../..
-    devDependencies:
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  packages/device/examples/vue-example:
-    dependencies:
-      '@ldesign/device':
-        specifier: workspace:*
-        version: link:../..
-      vue:
-        specifier: ^3.4.0
-        version: 3.5.22(typescript@5.9.3)
-    devDependencies:
-      '@vitejs/plugin-vue':
-        specifier: ^5.0.0
-        version: 5.2.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.22(typescript@5.9.3))
-      '@vue/test-utils':
-        specifier: ^2.4.0
-        version: 2.4.4(@vue/server-renderer@3.5.25(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
-      jsdom:
-        specifier: ^23.0.0
-        version: 23.2.0(canvas@2.11.2(encoding@0.1.13))
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-      vitest:
-        specifier: ^1.0.0
-        version: 1.6.1(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@23.2.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  packages/device/packages/battery:
-    dependencies:
-      '@ldesign/device-core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      '@ldesign/launcher':
-        specifier: workspace:*
-        version: link:../../../../tools/launcher
-      '@types/node':
-        specifier: ^22.0.0
-        version: 22.10.5
-      eslint:
-        specifier: ^9.18.0
-        version: 9.18.0(jiti@2.6.1)
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.10.5)(@vitest/ui@3.2.4)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  packages/device/packages/battery/examples:
-    dependencies:
-      '@ldesign/device-battery':
-        specifier: workspace:*
-        version: link:..
-    devDependencies:
-      '@ldesign/launcher':
-        specifier: workspace:*
-        version: link:../../../../../tools/launcher
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-
   packages/device/packages/core:
+    dependencies:
+      '@ldesign/shared':
+        specifier: workspace:*
+        version: link:../../../../tools/shared
+      tslib:
+        specifier: ^2.6.2
+        version: 2.8.1
     devDependencies:
+      '@antfu/eslint-config':
+        specifier: ^6.0.0
+        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@3.2.4)
       '@ldesign/builder':
         specifier: workspace:*
         version: link:../../../../tools/builder
       '@types/node':
         specifier: ^22.0.0
         version: 22.10.5
-      eslint:
-        specifier: ^9.18.0
-        version: 9.18.0(jiti@2.6.1)
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      vitest:
+      '@vitest/ui':
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.10.5)(@vitest/ui@3.2.4)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  packages/device/packages/core/examples:
-    dependencies:
-      '@ldesign/device-core':
-        specifier: workspace:*
-        version: link:..
-    devDependencies:
-      '@ldesign/launcher':
-        specifier: workspace:*
-        version: link:../../../../../tools/launcher
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-
-  packages/device/packages/network:
-    dependencies:
-      '@ldesign/device-core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      '@ldesign/launcher':
-        specifier: workspace:*
-        version: link:../../../../tools/launcher
-      '@types/node':
-        specifier: ^22.0.0
-        version: 22.10.5
+        version: 3.2.4(vitest@3.2.4)
       eslint:
         specifier: ^9.18.0
         version: 9.18.0(jiti@2.6.1)
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.10.5)(@vitest/ui@3.2.4)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  packages/device/packages/network/examples:
-    dependencies:
-      '@ldesign/device-network':
-        specifier: workspace:*
-        version: link:..
-    devDependencies:
-      '@ldesign/launcher':
-        specifier: workspace:*
-        version: link:../../../../../tools/launcher
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-
-  packages/device/packages/react:
-    dependencies:
-      '@ldesign/device-battery':
-        specifier: workspace:*
-        version: link:../battery
-      '@ldesign/device-core':
-        specifier: workspace:*
-        version: link:../core
-      '@ldesign/device-network':
-        specifier: workspace:*
-        version: link:../network
-    devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      '@types/node':
-        specifier: ^22.0.0
-        version: 22.10.5
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.18
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.5(@types/react@18.3.18)
-      eslint:
-        specifier: ^9.18.0
-        version: 9.18.0(jiti@2.6.1)
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.10.5)(@vitest/ui@3.2.4)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  packages/device/packages/react/examples:
-    dependencies:
-      '@ldesign/device-react':
-        specifier: workspace:*
-        version: link:..
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@ldesign/launcher':
-        specifier: workspace:*
-        version: link:../../../../../tools/launcher
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.26
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.7(@types/react@18.3.26)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.0
-        version: 4.3.4(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-
-  packages/device/packages/solid:
-    dependencies:
-      '@ldesign/device-battery':
-        specifier: workspace:*
-        version: link:../battery
-      '@ldesign/device-core':
-        specifier: workspace:*
-        version: link:../core
-      '@ldesign/device-network':
-        specifier: workspace:*
-        version: link:../network
-    devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      '@types/node':
-        specifier: ^22.0.0
-        version: 22.10.5
-      eslint:
-        specifier: ^9.18.0
-        version: 9.18.0(jiti@2.6.1)
-      solid-js:
-        specifier: ^1.8.0
-        version: 1.9.3
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
+      vite:
+        specifier: ^5.0.12
+        version: 5.4.21(@types/node@22.10.5)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.10.5)(@vitest/ui@3.2.4)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   packages/device/packages/vue:
     dependencies:
-      '@ldesign/device-battery':
-        specifier: workspace:*
-        version: link:../battery
       '@ldesign/device-core':
         specifier: workspace:*
         version: link:../core
-      '@ldesign/device-network':
+      '@ldesign/shared':
         specifier: workspace:*
-        version: link:../network
+        version: link:../../../../tools/shared
+      tslib:
+        specifier: ^2.6.2
+        version: 2.8.1
     devDependencies:
       '@ldesign/builder':
         specifier: workspace:*
@@ -8305,25 +7808,6 @@ importers:
       vue-tsc:
         specifier: ^3.0.5
         version: 3.1.2(typescript@5.9.3)
-
-  packages/device/packages/vue/examples:
-    dependencies:
-      '@ldesign/device-vue':
-        specifier: workspace:*
-        version: link:..
-      vue:
-        specifier: ^3.5.18
-        version: 3.5.24(typescript@5.9.3)
-    devDependencies:
-      '@ldesign/launcher':
-        specifier: workspace:*
-        version: link:../../../../../tools/launcher
-      '@vitejs/plugin-vue':
-        specifier: ^5.0.3
-        version: 5.2.4(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(vue@3.5.24(typescript@5.9.3))
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
 
   packages/engine:
     devDependencies:
@@ -8513,9 +7997,6 @@ importers:
       '@ldesign/http-vue':
         specifier: workspace:*
         version: link:packages/vue
-      vue:
-        specifier: ^3.4.38
-        version: 3.5.25(typescript@5.9.3)
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^6.0.0
@@ -8535,6 +8016,12 @@ importers:
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
+      vitepress:
+        specifier: ^1.6.4
+        version: 1.6.4(@algolia/client-search@5.43.0)(@types/node@22.10.5)(@types/react@18.3.26)(async-validator@4.2.5)(axios@1.13.2)(change-case@5.4.4)(less@4.4.2)(lightningcss@1.30.2)(postcss@8.5.6)(qrcode@1.5.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.93.3)(search-insights@2.17.3)(sortablejs@1.15.6)(stylus@0.54.8)(terser@5.44.1)(typescript@5.9.3)
+      vue:
+        specifier: ^3.4.38
+        version: 3.5.25(typescript@5.9.3)
 
   packages/http/packages/core:
     devDependencies:
@@ -8750,47 +8237,6 @@ importers:
       vue-tsc:
         specifier: ^3.0.5
         version: 3.1.2(typescript@5.9.3)
-
-  packages/i18n/packages/vue/example:
-    dependencies:
-      '@ldesign/i18n-core':
-        specifier: workspace:*
-        version: link:../../core
-      '@ldesign/i18n-vue':
-        specifier: workspace:*
-        version: link:..
-      vue:
-        specifier: latest
-        version: 3.5.25(typescript@5.9.3)
-    devDependencies:
-      '@vitejs/plugin-vue':
-        specifier: latest
-        version: 6.0.2(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.25(typescript@5.9.3))
-      typescript:
-        specifier: ^5.3.0
-        version: 5.9.3
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  packages/i18n/packages/vue/examples:
-    dependencies:
-      '@ldesign/i18n-vue':
-        specifier: workspace:*
-        version: link:..
-      vue:
-        specifier: ^3.4.15
-        version: 3.5.24(typescript@5.9.3)
-    devDependencies:
-      '@ldesign/launcher':
-        specifier: workspace:*
-        version: link:../../../../../tools/launcher
-      '@vitejs/plugin-vue':
-        specifier: ^5.0.3
-        version: 5.2.4(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(vue@3.5.24(typescript@5.9.3))
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
 
   packages/icons:
     dependencies:
@@ -9556,7 +9002,7 @@ importers:
         version: 22.10.5
       '@vitest/coverage-v8':
         specifier: ^2.0.0
-        version: 2.1.9(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+        version: 2.1.9(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       eslint:
         specifier: ^9.18.0
         version: 9.18.0(jiti@2.6.1)
@@ -9571,7 +9017,7 @@ importers:
         version: 5.4.21(@types/node@22.10.5)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
       vitest:
         specifier: ^2.0.0
-        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   packages/size/packages/core/examples/basic:
     dependencies:
@@ -9606,7 +9052,7 @@ importers:
         version: 5.2.4(vite@5.4.21(@types/node@22.10.5)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.22(typescript@5.9.3))
       '@vitest/coverage-v8':
         specifier: ^2.0.0
-        version: 2.1.9(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@24.0.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+        version: 2.1.9(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@24.0.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       '@vue/test-utils':
         specifier: ^2.4.4
         version: 2.4.4(@vue/server-renderer@3.5.25(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
@@ -9627,7 +9073,7 @@ importers:
         version: 5.4.21(@types/node@22.10.5)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
       vitest:
         specifier: ^2.0.0
-        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@24.0.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@24.0.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
       vue:
         specifier: ^3.4.15
         version: 3.5.22(typescript@5.9.3)
@@ -10909,6 +10355,9 @@ importers:
       chokidar:
         specifier: ^3.6.0
         version: 3.6.0
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       cssnano:
         specifier: ^7.1.1
         version: 7.1.1(postcss@8.5.6)
@@ -12051,7 +11500,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^2.1.5
-        version: 2.1.8(@types/node@20.19.24)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@20.19.24)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   tools/performance:
     dependencies:
@@ -12167,7 +11616,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^2.1.5
-        version: 2.1.8(@types/node@20.19.24)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+        version: 2.1.8(@types/node@20.19.24)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   tools/publisher:
     dependencies:
@@ -17957,7 +17406,6 @@ packages:
 
   '@rollup/rollup-win32-x64-msvc@4.52.5':
     resolution: {integrity: sha512-TAcgQh2sSkykPRWLrdyy2AiceMckNf5loITqXxFI5VuQjS5tSuw3WlwdN8qv8vzjLAUTvYaH/mVjSFpbkFbpTg==}
-    cpu: [x64]
     os: [win32]
 
   '@rollup/rollup-win32-x64-msvc@4.53.2':
@@ -22356,6 +21804,11 @@ packages:
   cross-env@10.1.0:
     resolution: {integrity: sha512-GsYosgnACZTADcmEyJctkJIoqAhHjttw7RsFrVoJNXbsWWqaq6Ym+7kZjq6mS45O0jij6vtiReppKQEtqWy6Dw==}
     engines: {node: '>=20'}
+    hasBin: true
+
+  cross-env@7.0.3:
+    resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
+    engines: {node: '>=10.14', npm: '>=6', yarn: '>=1'}
     hasBin: true
 
   cross-fetch@4.0.0:
@@ -35414,7 +34867,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@antfu/eslint-config@3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.5.4))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.5.4)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.43.6)(typescript@5.5.4)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
+  '@antfu/eslint-config@3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.5.4))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.5.4)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.43.6)(typescript@5.5.4)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
     dependencies:
       '@antfu/install-pkg': 0.4.1
       '@clack/prompts': 0.7.0
@@ -35422,7 +34875,7 @@ snapshots:
       '@stylistic/eslint-plugin': 2.13.0(eslint@9.18.0(jiti@2.6.1))(typescript@5.5.4)
       '@typescript-eslint/eslint-plugin': 8.46.3(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.5.4))(eslint@9.18.0(jiti@2.6.1))(typescript@5.5.4)
       '@typescript-eslint/parser': 8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.5.4)
-      '@vitest/eslint-plugin': 1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.5.4)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+      '@vitest/eslint-plugin': 1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.5.4)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       eslint: 9.18.0(jiti@2.6.1)
       eslint-config-flat-gitignore: 0.3.0(eslint@9.18.0(jiti@2.6.1))
       eslint-flat-config-utils: 0.3.1
@@ -35470,7 +34923,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@antfu/eslint-config@3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.18.0)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.18.0)(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
+  '@antfu/eslint-config@3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.18.0)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.18.0)(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
     dependencies:
       '@antfu/install-pkg': 0.4.1
       '@clack/prompts': 0.7.0
@@ -35478,7 +34931,7 @@ snapshots:
       '@stylistic/eslint-plugin': 2.13.0(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/eslint-plugin': 8.46.3(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/parser': 8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      '@vitest/eslint-plugin': 1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+      '@vitest/eslint-plugin': 1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       eslint: 9.18.0(jiti@2.6.1)
       eslint-config-flat-gitignore: 0.3.0(eslint@9.18.0(jiti@2.6.1))
       eslint-flat-config-utils: 0.3.1
@@ -35526,7 +34979,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@antfu/eslint-config@3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.43.6)(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
+  '@antfu/eslint-config@3.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/utils@8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-import-resolver-node@0.3.9)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-hooks@4.6.0(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.5(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@24.10.1)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(svelte@5.43.6)(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
     dependencies:
       '@antfu/install-pkg': 0.4.1
       '@clack/prompts': 0.7.0
@@ -35534,7 +34987,7 @@ snapshots:
       '@stylistic/eslint-plugin': 2.13.0(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/eslint-plugin': 8.46.3(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/parser': 8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      '@vitest/eslint-plugin': 1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+      '@vitest/eslint-plugin': 1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       eslint: 9.18.0(jiti@2.6.1)
       eslint-config-flat-gitignore: 0.3.0(eslint@9.18.0(jiti@2.6.1))
       eslint-flat-config-utils: 0.3.1
@@ -35611,7 +35064,7 @@ snapshots:
       eslint-plugin-toml: 0.12.0(eslint@9.18.0(jiti@1.21.0))
       eslint-plugin-unicorn: 61.0.2(eslint@9.18.0(jiti@1.21.0))
       eslint-plugin-unused-imports: 4.3.0(@typescript-eslint/eslint-plugin@8.46.3(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3))(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3))(eslint@9.18.0(jiti@1.21.0))
-      eslint-plugin-vue: 10.5.1(@stylistic/eslint-plugin@5.5.0(eslint@9.18.0(jiti@2.6.1)))(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3))(eslint@9.18.0(jiti@1.21.0))(vue-eslint-parser@10.2.0(eslint@9.18.0(jiti@2.6.1)))
+      eslint-plugin-vue: 10.5.1(@stylistic/eslint-plugin@5.5.0(eslint@9.18.0(jiti@1.21.0)))(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3))(eslint@9.18.0(jiti@1.21.0))(vue-eslint-parser@10.2.0(eslint@9.18.0(jiti@1.21.0)))
       eslint-plugin-yml: 1.19.0(eslint@9.18.0(jiti@1.21.0))
       eslint-processor-vue-blocks: 2.0.0(@vue/compiler-sfc@3.5.13)(eslint@9.18.0(jiti@1.21.0))
       globals: 16.5.0
@@ -35663,7 +35116,7 @@ snapshots:
       eslint-plugin-toml: 0.12.0(eslint@9.18.0(jiti@1.21.0))
       eslint-plugin-unicorn: 61.0.2(eslint@9.18.0(jiti@1.21.0))
       eslint-plugin-unused-imports: 4.3.0(@typescript-eslint/eslint-plugin@8.46.3(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3))(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3))(eslint@9.18.0(jiti@1.21.0))
-      eslint-plugin-vue: 10.5.1(@stylistic/eslint-plugin@5.5.0(eslint@9.18.0(jiti@2.6.1)))(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3))(eslint@9.18.0(jiti@1.21.0))(vue-eslint-parser@10.2.0(eslint@9.18.0(jiti@2.6.1)))
+      eslint-plugin-vue: 10.5.1(@stylistic/eslint-plugin@5.5.0(eslint@9.18.0(jiti@1.21.0)))(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3))(eslint@9.18.0(jiti@1.21.0))(vue-eslint-parser@10.2.0(eslint@9.18.0(jiti@1.21.0)))
       eslint-plugin-yml: 1.19.0(eslint@9.18.0(jiti@1.21.0))
       eslint-processor-vue-blocks: 2.0.0(@vue/compiler-sfc@3.5.25)(eslint@9.18.0(jiti@1.21.0))
       globals: 16.5.0
@@ -35946,7 +35399,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@antfu/eslint-config@6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.18.0)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.18.0))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
+  '@antfu/eslint-config@6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.18.0)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.18.0))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
@@ -35955,7 +35408,7 @@ snapshots:
       '@stylistic/eslint-plugin': 5.5.0(eslint@9.18.0(jiti@2.6.1))
       '@typescript-eslint/eslint-plugin': 8.46.3(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/parser': 8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      '@vitest/eslint-plugin': 1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+      '@vitest/eslint-plugin': 1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       ansis: 4.2.0
       cac: 6.7.14
       eslint: 9.18.0(jiti@2.6.1)
@@ -36154,7 +35607,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@antfu/eslint-config@6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
+  '@antfu/eslint-config@6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.2))(@types/node@22.10.5)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
@@ -36163,7 +35616,7 @@ snapshots:
       '@stylistic/eslint-plugin': 5.5.0(eslint@9.18.0(jiti@2.6.1))
       '@typescript-eslint/eslint-plugin': 8.46.3(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/parser': 8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      '@vitest/eslint-plugin': 1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+      '@vitest/eslint-plugin': 1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       ansis: 4.2.0
       cac: 6.7.14
       eslint: 9.18.0(jiti@2.6.1)
@@ -38711,7 +38164,7 @@ snapshots:
       '@loaders.gl/images': 4.3.4(@loaders.gl/core@4.3.4)
       '@luma.gl/constants': 9.2.4
       '@luma.gl/core': 9.2.4
-      '@luma.gl/engine': 9.2.4(@luma.gl/core@9.2.4)(@luma.gl/shadertools@9.2.4(@luma.gl/core@9.2.4))
+      '@luma.gl/engine': 9.2.4(@luma.gl/core@9.2.4)(@luma.gl/shadertools@9.2.4(@luma.gl/core@9.0.0))
       '@luma.gl/shadertools': 9.2.4(@luma.gl/core@9.2.4)
       '@luma.gl/webgl': 9.2.4(@luma.gl/core@9.2.4)
       '@math.gl/core': 4.1.0
@@ -40968,6 +40421,15 @@ snapshots:
   '@luma.gl/engine@9.2.4(@luma.gl/core@9.0.0)(@luma.gl/shadertools@9.2.4(@luma.gl/core@9.0.0))':
     dependencies:
       '@luma.gl/core': 9.0.0
+      '@luma.gl/shadertools': 9.2.4(@luma.gl/core@9.0.0)
+      '@math.gl/core': 4.1.0
+      '@math.gl/types': 4.1.0
+      '@probe.gl/log': 4.1.0
+      '@probe.gl/stats': 4.1.0
+
+  '@luma.gl/engine@9.2.4(@luma.gl/core@9.2.4)(@luma.gl/shadertools@9.2.4(@luma.gl/core@9.0.0))':
+    dependencies:
+      '@luma.gl/core': 9.2.4
       '@luma.gl/shadertools': 9.2.4(@luma.gl/core@9.0.0)
       '@math.gl/core': 4.1.0
       '@math.gl/types': 4.1.0
@@ -44511,10 +43973,6 @@ snapshots:
     dependencies:
       '@types/react': 18.3.18
 
-  '@types/react-dom@18.3.7(@types/react@18.3.26)':
-    dependencies:
-      '@types/react': 18.3.26
-
   '@types/react-dom@18.3.7(@types/react@19.2.3)':
     dependencies:
       '@types/react': 19.2.3
@@ -44527,7 +43985,8 @@ snapshots:
   '@types/react@18.3.26':
     dependencies:
       '@types/prop-types': 15.7.15
-      csstype: 3.1.3
+      csstype: 3.2.2
+    optional: true
 
   '@types/react@19.2.3':
     dependencies:
@@ -46223,11 +45682,6 @@ snapshots:
       vite: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
       vue: 3.5.22(typescript@5.9.3)
 
-  '@vitejs/plugin-vue@5.2.4(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(vue@3.5.24(typescript@5.9.3))':
-    dependencies:
-      vite: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
-      vue: 3.5.24(typescript@5.9.3)
-
   '@vitejs/plugin-vue@6.0.1(vite@5.4.21(@types/node@20.11.16)(less@4.4.1)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.24(typescript@5.9.3))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-beta.29
@@ -46264,12 +45718,6 @@ snapshots:
       vite: 5.4.21(@types/node@20.19.25)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
       vue: 3.5.25(typescript@5.9.3)
 
-  '@vitejs/plugin-vue@6.0.2(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.25(typescript@5.9.3))':
-    dependencies:
-      '@rolldown/pluginutils': 1.0.0-beta.50
-      vite: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-      vue: 3.5.25(typescript@5.9.3)
-
   '@vitest/coverage-istanbul@4.0.13(vitest@4.0.13)':
     dependencies:
       '@istanbuljs/schema': 0.1.3
@@ -46304,7 +45752,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@2.1.9(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@24.0.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
+  '@vitest/coverage-v8@2.1.9(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@24.0.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -46318,11 +45766,11 @@ snapshots:
       std-env: 3.10.0
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
-      vitest: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@24.0.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@24.0.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@2.1.9(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
+  '@vitest/coverage-v8@2.1.9(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -46336,11 +45784,11 @@ snapshots:
       std-env: 3.10.0
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
-      vitest: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@2.1.9(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@25.0.1(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
+  '@vitest/coverage-v8@2.1.9(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@25.0.1(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -46354,7 +45802,7 @@ snapshots:
       std-env: 3.10.0
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
-      vitest: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@25.0.1(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@25.0.1(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -46438,18 +45886,18 @@ snapshots:
       eslint: 9.18.0(jiti@1.21.0)
     optionalDependencies:
       typescript: 5.9.3
-      vitest: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.1)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/eslint-plugin@1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.5.4)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
+  '@vitest/eslint-plugin@1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.5.4)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
     dependencies:
       '@typescript-eslint/scope-manager': 8.46.4
       '@typescript-eslint/utils': 8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.5.4)
       eslint: 9.18.0(jiti@2.6.1)
     optionalDependencies:
       typescript: 5.5.4
-      vitest: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -46460,29 +45908,29 @@ snapshots:
       eslint: 9.18.0(jiti@2.6.1)
     optionalDependencies:
       typescript: 5.9.3
-      vitest: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 1.6.1(@types/node@22.10.5)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/eslint-plugin@1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
+  '@vitest/eslint-plugin@1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)(vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
     dependencies:
       '@typescript-eslint/scope-manager': 8.46.4
       '@typescript-eslint/utils': 8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
       eslint: 9.18.0(jiti@2.6.1)
     optionalDependencies:
       typescript: 5.9.3
-      vitest: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/eslint-plugin@1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
+  '@vitest/eslint-plugin@1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)(vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))':
     dependencies:
       '@typescript-eslint/scope-manager': 8.46.4
       '@typescript-eslint/utils': 8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
       eslint: 9.18.0(jiti@2.6.1)
     optionalDependencies:
       typescript: 5.9.3
-      vitest: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -46515,7 +45963,7 @@ snapshots:
       eslint: 9.18.0(jiti@2.6.1)
     optionalDependencies:
       typescript: 5.9.3
-      vitest: 4.0.13(@types/debug@4.1.12)(@types/node@20.11.16)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jiti@2.6.1)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+      vitest: 4.0.13(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jiti@2.6.1)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -46631,15 +46079,6 @@ snapshots:
     optionalDependencies:
       vite: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
-  '@vitest/mocker@4.0.13(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))':
-    dependencies:
-      '@vitest/spy': 4.0.13
-      estree-walker: 3.0.3
-      magic-string: 0.30.21
-    optionalDependencies:
-      vite: 7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
-    optional: true
-
   '@vitest/mocker@4.0.13(vite@7.2.2(@types/node@22.10.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 4.0.13
@@ -46663,7 +46102,6 @@ snapshots:
       magic-string: 0.30.21
     optionalDependencies:
       vite: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
-    optional: true
 
   '@vitest/mocker@4.0.9(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
@@ -46779,7 +46217,7 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.1.1
       sirv: 2.0.4
-      vitest: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   '@vitest/ui@2.0.0(vitest@2.1.8)(vue@3.5.22(typescript@5.9.3))':
     dependencies:
@@ -46790,7 +46228,7 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.1.1
       sirv: 2.0.4
-      vitest: 2.1.8(@types/node@22.10.5)(@vitest/ui@2.0.0)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 2.1.8(@types/node@24.10.1)(@vitest/ui@2.0.0)(happy-dom@12.10.3)(jsdom@23.2.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
       vue-virtual-scroller: 2.0.0-beta.8(vue@3.5.22(typescript@5.9.3))
     transitivePeerDependencies:
       - vue
@@ -46840,7 +46278,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vitest: 4.0.13(@types/debug@4.1.12)(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jiti@2.6.1)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+      vitest: 4.0.13(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jiti@2.6.1)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
 
   '@vitest/ui@4.0.5(vitest@3.2.4)':
     dependencies:
@@ -49960,6 +49398,10 @@ snapshots:
   cross-env@10.1.0:
     dependencies:
       '@epic-web/invariant': 1.0.0
+      cross-spawn: 7.0.6
+
+  cross-env@7.0.3:
+    dependencies:
       cross-spawn: 7.0.6
 
   cross-fetch@4.0.0(encoding@0.1.13):
@@ -53085,7 +52527,7 @@ snapshots:
       eslint: 8.57.0
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.9.3))(eslint@8.57.0)(typescript@5.9.3)
-      vitest: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 1.6.1(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@23.2.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -53112,7 +52554,7 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-vue@10.5.1(@stylistic/eslint-plugin@5.5.0(eslint@9.18.0(jiti@2.6.1)))(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3))(eslint@9.18.0(jiti@1.21.0))(vue-eslint-parser@10.2.0(eslint@9.18.0(jiti@2.6.1))):
+  eslint-plugin-vue@10.5.1(@stylistic/eslint-plugin@5.5.0(eslint@9.18.0(jiti@1.21.0)))(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3))(eslint@9.18.0(jiti@1.21.0))(vue-eslint-parser@10.2.0(eslint@9.18.0(jiti@1.21.0))):
     dependencies:
       '@eslint-community/eslint-utils': 4.9.0(eslint@9.18.0(jiti@1.21.0))
       eslint: 9.18.0(jiti@1.21.0)
@@ -53120,10 +52562,10 @@ snapshots:
       nth-check: 2.1.1
       postcss-selector-parser: 6.1.2
       semver: 7.7.3
-      vue-eslint-parser: 10.2.0(eslint@9.18.0(jiti@2.6.1))
+      vue-eslint-parser: 10.2.0(eslint@9.18.0(jiti@1.21.0))
       xml-name-validator: 4.0.0
     optionalDependencies:
-      '@stylistic/eslint-plugin': 5.5.0(eslint@9.18.0(jiti@2.6.1))
+      '@stylistic/eslint-plugin': 5.5.0(eslint@9.18.0(jiti@1.21.0))
       '@typescript-eslint/parser': 8.46.3(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3)
 
   eslint-plugin-vue@10.5.1(@stylistic/eslint-plugin@5.5.0(eslint@9.18.0(jiti@2.6.1)))(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.18.0(jiti@2.6.1))(vue-eslint-parser@10.2.0(eslint@9.18.0(jiti@2.6.1))):
@@ -64342,18 +63784,6 @@ snapshots:
 
   term-size@2.2.1: {}
 
-  terser-webpack-plugin@5.3.14(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.19.5)(webpack@5.89.0(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.19.5)):
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.31
-      jest-worker: 27.5.1
-      schema-utils: 4.3.3
-      serialize-javascript: 6.0.2
-      terser: 5.44.1
-      webpack: 5.89.0(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.27.0)
-    optionalDependencies:
-      '@swc/core': 1.4.0(@swc/helpers@0.5.2)
-      esbuild: 0.19.5
-
   terser-webpack-plugin@5.3.14(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.27.0)(webpack@5.102.1(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.27.0)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
@@ -64366,6 +63796,18 @@ snapshots:
       '@swc/core': 1.4.0(@swc/helpers@0.5.2)
       esbuild: 0.27.0
     optional: true
+
+  terser-webpack-plugin@5.3.14(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.27.0)(webpack@5.89.0(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.19.5)):
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.31
+      jest-worker: 27.5.1
+      schema-utils: 4.3.3
+      serialize-javascript: 6.0.2
+      terser: 5.44.1
+      webpack: 5.89.0(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.27.0)
+    optionalDependencies:
+      '@swc/core': 1.4.0(@swc/helpers@0.5.2)
+      esbuild: 0.27.0
 
   terser-webpack-plugin@5.3.14(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.27.0)(webpack@5.97.1(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.27.0)):
     dependencies:
@@ -67919,7 +67361,7 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@2.1.8(@types/node@20.19.24)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1):
+  vitest@2.1.8(@types/node@20.19.24)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1):
     dependencies:
       '@vitest/expect': 2.1.8
       '@vitest/mocker': 2.1.8(vite@5.4.21(@types/node@20.19.24)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
@@ -68071,7 +67513,7 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@24.0.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1):
+  vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@24.0.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1):
     dependencies:
       '@vitest/expect': 2.1.8
       '@vitest/mocker': 2.1.8(vite@5.4.21(@types/node@22.10.5)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
@@ -68109,7 +67551,7 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1):
+  vitest@2.1.8(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1):
     dependencies:
       '@vitest/expect': 2.1.8
       '@vitest/mocker': 2.1.8(vite@5.4.21(@types/node@22.10.5)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
@@ -68261,7 +67703,7 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@25.0.1(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1):
+  vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@25.0.1(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1):
     dependencies:
       '@vitest/expect': 2.1.8
       '@vitest/mocker': 2.1.8(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
@@ -68299,7 +67741,7 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13(vitest@4.0.13))(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1):
+  vitest@2.1.8(@types/node@24.10.1)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1):
     dependencies:
       '@vitest/expect': 2.1.8
       '@vitest/mocker': 2.1.8(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
@@ -68673,49 +68115,6 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@4.0.13(@types/debug@4.1.12)(@types/node@20.11.16)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jiti@2.6.1)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1):
-    dependencies:
-      '@vitest/expect': 4.0.13
-      '@vitest/mocker': 4.0.13(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
-      '@vitest/pretty-format': 4.0.13
-      '@vitest/runner': 4.0.13
-      '@vitest/snapshot': 4.0.13
-      '@vitest/spy': 4.0.13
-      '@vitest/utils': 4.0.13
-      debug: 4.4.3
-      es-module-lexer: 1.7.0
-      expect-type: 1.2.2
-      magic-string: 0.30.21
-      pathe: 2.0.3
-      picomatch: 4.0.3
-      std-env: 3.10.0
-      tinybench: 2.9.0
-      tinyexec: 0.3.2
-      tinyglobby: 0.2.15
-      tinyrainbow: 3.0.3
-      vite: 7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/debug': 4.1.12
-      '@types/node': 20.11.16
-      '@vitest/ui': 4.0.13(vitest@4.0.13)
-      happy-dom: 20.0.10
-      jsdom: 27.0.1
-    transitivePeerDependencies:
-      - jiti
-      - less
-      - lightningcss
-      - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-      - tsx
-      - yaml
-    optional: true
-
   vitest@4.0.13(@types/debug@4.1.12)(@types/node@22.10.5)(@vitest/ui@4.0.13)(happy-dom@20.0.10)(jiti@2.6.1)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
       '@vitest/expect': 4.0.13
@@ -68841,7 +68240,6 @@ snapshots:
       - terser
       - tsx
       - yaml
-    optional: true
 
   vitest@4.0.9(@types/debug@4.1.12)(@types/node@24.10.1)(@vitest/ui@4.0.9)(happy-dom@20.0.10)(jiti@2.6.1)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
@@ -69326,7 +68724,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 3.3.0
       tapable: 2.3.0
-      terser-webpack-plugin: 5.3.14(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.19.5)(webpack@5.89.0(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.19.5))
+      terser-webpack-plugin: 5.3.14(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.27.0)(webpack@5.89.0(@swc/core@1.4.0(@swc/helpers@0.5.2))(esbuild@0.19.5))
       watchpack: 2.4.4
       webpack-sources: 3.3.3
     transitivePeerDependencies:
