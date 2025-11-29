@@ -1,0 +1,161 @@
+name: Performance Benchmark
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # 每周一早上 8 点运行
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: '对比基线分支'
+        required: false
+        default: 'main'
+
+jobs:
+  benchmark:
+    name: Run Performance Benchmarks
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build benchmark tool
+      run: |
+        cd tools/benchmark
+        pnpm build
+
+    - name: Run benchmarks
+      id: run-benchmarks
+      run: |
+        echo "## 📊 性能基准测试报告" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # 运行基准测试
+        cd tools/benchmark
+        npx ldbench run --pattern "**/*.bench.{js,ts}" --history --out ./benchmark-results/latest.json
+        
+        # 生成 HTML 报告
+        npx ldbench run --pattern "**/*.bench.{js,ts}" --report html --out ./benchmark-results/report.html
+        
+        echo "### 🏃 基准测试已完成" >> $GITHUB_STEP_SUMMARY
+        echo "- 测试套件: 所有包" >> $GITHUB_STEP_SUMMARY
+        echo "- 输出格式: JSON, HTML" >> $GITHUB_STEP_SUMMARY
+        echo "- 历史记录: 已保存" >> $GITHUB_STEP_SUMMARY
+
+    - name: Check performance thresholds
+      id: check-thresholds
+      run: |
+        echo "## ✅ 性能阈值检查" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        cd tools/benchmark
+        
+        # 检查阈值
+        if [ -f "benchmark.thresholds.json" ]; then
+          npx ldbench run --pattern "**/*.bench.{js,ts}" --threshold benchmark.thresholds.json
+          echo "### 阈值检查通过 ✅" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "### ⚠️ 未找到阈值配置文件" >> $GITHUB_STEP_SUMMARY
+          echo "请创建 benchmark.thresholds.json 文件来定义性能阈值" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Compare with baseline
+      if: github.event_name == 'pull_request' || github.event.inputs.baseline
+      id: compare-baseline
+      run: |
+        echo "## 📈 性能对比分析" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        cd tools/benchmark
+        
+        BASELINE_BRANCH=${{
+          github.event.inputs.baseline || 'main'
+        }}
+        
+        # 获取基线报告
+        git fetch origin $BASELINE_BRANCH
+        git checkout $BASELINE_BRANCH
+        
+        # 运行基线测试
+        npx ldbench run --pattern "**/*.bench.{js,ts}" --out ./benchmark-results/baseline.json
+        
+        # 切换回当前分支
+        git checkout -
+        
+        # 对比性能
+        npx ldbench run --pattern "**/*.bench.{js,ts}" --compare ./benchmark-results/baseline.json
+        
+        echo "### 对比结果" >> $GITHUB_STEP_SUMMARY
+        echo "- 基线分支: $BASELINE_BRANCH" >> $GITHUB_STEP_SUMMARY
+        echo "- 当前分支: ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
+
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-results
+        path: |
+          tools/benchmark/benchmark-results/
+          tools/benchmark/.benchmark-history/
+        retention-days: 30
+
+    - name: Performance regression check
+      if: github.event_name == 'pull_request'
+      run: |
+        echo "## 🚨 性能回归检查" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # 这里可以添加更复杂的回归检测逻辑
+        # 比如检查关键指标是否下降超过阈值
+        
+        echo "### 回归检测规则" >> $GITHUB_STEP_SUMMARY
+        echo "- 关键指标下降超过 10%: ❌ 失败" >> $GITHUB_STEP_SUMMARY
+        echo "- 一般指标下降超过 20%: ⚠️ 警告" >> $GITHUB_STEP_SUMMARY
+        echo "- 所有指标在阈值内: ✅ 通过" >> $GITHUB_STEP_SUMMARY
+
+  benchmark-summary:
+    name: Benchmark Summary
+    runs-on: ubuntu-latest
+    needs: benchmark
+    if: always()
+    
+    steps:
+    - name: Download benchmark results
+      uses: actions/download-artifact@v4
+      with:
+        name: benchmark-results
+
+    - name: Generate summary
+      run: |
+        echo "## 📋 性能基准测试汇总" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f "latest.json" ]; then
+          echo "### 📊 最新测试结果" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          cat latest.json | jq '{name, suites: .suites | map({name, taskCount: .results | length})}' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "### 🔗 相关链接" >> $GITHUB_STEP_SUMMARY
+        echo "- [查看完整 HTML 报告](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+        echo "- [性能测试文档](https://github.com/${{ github.repository }}/blob/main/tools/benchmark/README.md)" >> $GITHUB_STEP_SUMMARY

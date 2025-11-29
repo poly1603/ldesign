@@ -220,3 +220,15 @@
 	path = tools/submodule
 	url = https://github.com/poly1603/ldesign-submodule.git
 	branch = main
+[submodule "packages/notification"]
+	path = packages/notification
+	url = https://github.com/poly1603/ldesign-notification.git
+	branch = main
+[submodule "packages/error"]
+	path = packages/error
+	url = https://github.com/poly1603/ldesign-error.git
+	branch = main
+[submodule "packages/tracker"]
+	path = packages/tracker
+	url = https://github.com/poly1603/ldesign-tracker.git
+	branch = main
