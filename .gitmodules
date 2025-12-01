@@ -1,207 +1,275 @@
 [submodule "libraries/3d-viewer"]
 	path = libraries/3d-viewer
 	url = https://github.com/poly1603/ldesign-3d-viewer.git
+	branch = main
 [submodule "libraries/chart"]
 	path = libraries/chart
 	url = https://github.com/poly1603/ldesign-chart.git
+	branch = main
 [submodule "libraries/code-editor"]
 	path = libraries/code-editor
 	url = https://github.com/poly1603/ldesign-code-editor.git
+	branch = main
 [submodule "libraries/cropper"]
 	path = libraries/cropper
 	url = https://github.com/poly1603/ldesign-cropper.git
+	branch = main
 [submodule "libraries/editor"]
 	path = libraries/editor
 	url = https://github.com/poly1603/ldesign-editor.git
+	branch = main
 [submodule "libraries/excel"]
 	path = libraries/excel
 	url = https://github.com/poly1603/ldesign-excel.git
+	branch = main
 [submodule "libraries/flowchart"]
 	path = libraries/flowchart
 	url = https://github.com/poly1603/ldesign-flowchart.git
+	branch = main
 [submodule "libraries/form"]
 	path = libraries/form
 	url = https://github.com/poly1603/ldesign-form.git
+	branch = main
 [submodule "libraries/grid"]
 	path = libraries/grid
 	url = https://github.com/poly1603/ldesign-grid.git
+	branch = main
 [submodule "libraries/lottie"]
 	path = libraries/lottie
 	url = https://github.com/poly1603/ldesign-lottie.git
+	branch = main
 [submodule "libraries/lowcode"]
 	path = libraries/lowcode
 	url = https://github.com/poly1603/ldesign-lowcode.git
+	branch = main
 [submodule "libraries/map"]
 	path = libraries/map
 	url = https://github.com/poly1603/ldesign-map.git
+	branch = main
 [submodule "libraries/office-document"]
 	path = libraries/office-document
 	url = https://github.com/poly1603/ldesign-office-document.git
+	branch = main
 [submodule "libraries/pdf"]
 	path = libraries/pdf
 	url = https://github.com/poly1603/ldesign-pdf.git
+	branch = main
 [submodule "libraries/progress"]
 	path = libraries/progress
 	url = https://github.com/poly1603/ldesign-progress.git
+	branch = main
 [submodule "libraries/qrcode"]
 	path = libraries/qrcode
 	url = https://github.com/poly1603/ldesign-qrcode.git
+	branch = main
 [submodule "libraries/table"]
 	path = libraries/table
 	url = https://github.com/poly1603/ldesign-table.git
+	branch = main
 [submodule "libraries/webcomponent"]
 	path = libraries/webcomponent
 	url = https://github.com/poly1603/ldesign-webcomponent.git
+	branch = main
 [submodule "libraries/word"]
 	path = libraries/word
 	url = https://github.com/poly1603/ldesign-word.git
+	branch = main
 [submodule "packages/cache"]
 	path = packages/cache
 	url = https://github.com/poly1603/ldesign-cache.git
+	branch = main
 [submodule "packages/color"]
 	path = packages/color
 	url = https://github.com/poly1603/ldesign-color.git
+	branch = main
 [submodule "packages/crypto"]
 	path = packages/crypto
 	url = https://github.com/poly1603/ldesign-crypto.git
+	branch = main
 [submodule "packages/device"]
 	path = packages/device
 	url = https://github.com/poly1603/ldesign-device.git
+	branch = main
 [submodule "packages/engine"]
 	path = packages/engine
 	url = https://github.com/poly1603/ldesign-engine.git
+	branch = main
 [submodule "packages/http"]
 	path = packages/http
 	url = https://github.com/poly1603/ldesign-http.git
+	branch = main
 [submodule "packages/i18n"]
 	path = packages/i18n
 	url = https://github.com/poly1603/ldesign-i18n.git
+	branch = main
 [submodule "packages/size"]
 	path = packages/size
 	url = https://github.com/poly1603/ldesign-size.git
+	branch = main
 [submodule "packages/store"]
 	path = packages/store
 	url = https://github.com/poly1603/ldesign-store.git
+	branch = main
 [submodule "packages/template"]
 	path = packages/template
 	url = https://github.com/poly1603/ldesign-template.git
+	branch = main
 [submodule "tools/builder"]
 	path = tools/builder
 	url = https://github.com/poly1603/ldesign-builder.git
+	branch = main
 [submodule "tools/kit"]
 	path = tools/kit
 	url = https://github.com/poly1603/ldesign-kit.git
+	branch = main
 [submodule "tools/launcher"]
 	path = tools/launcher
 	url = https://github.com/poly1603/ldesign-launcher.git
+	branch = main
 [submodule "libraries/datepicker"]
 	path = libraries/datepicker
 	url = https://github.com/poly1603/ldesign-datepicker.git
+	branch = main
 [submodule "packages/router"]
 	path = packages/router
 	url = https://github.com/poly1603/ldesign-router.git
+	branch = main
 [submodule "packages/shared"]
 	path = packages/shared
 	url = https://github.com/poly1603/ldesign-shared.git
+	branch = main
 [submodule "tools/cli"]
 	path = tools/cli
 	url = https://github.com/poly1603/ldesign-cli.git
+	branch = main
 [submodule "libraries/barcode"]
 	path = libraries/barcode
 	url = https://github.com/poly1603/ldesign-barcode.git
+	branch = main
 [submodule "libraries/calendar"]
 	path = libraries/calendar
 	url = https://github.com/poly1603/ldesign-calendar.git
+	branch = main
 [submodule "libraries/gantt"]
 	path = libraries/gantt
 	url = https://github.com/poly1603/ldesign-gantt.git
+	branch = main
 [submodule "libraries/markdown"]
 	path = libraries/markdown
 	url = https://github.com/poly1603/ldesign-markdown.git
+	branch = main
 [submodule "libraries/mindmap"]
 	path = libraries/mindmap
 	url = https://github.com/poly1603/ldesign-mindmap.git
+	branch = main
 [submodule "libraries/player"]
 	path = libraries/player
 	url = https://github.com/poly1603/ldesign-player.git
+	branch = main
 [submodule "libraries/signature"]
 	path = libraries/signature
 	url = https://github.com/poly1603/ldesign-signature.git
+	branch = main
 [submodule "libraries/timeline"]
 	path = libraries/timeline
 	url = https://github.com/poly1603/ldesign-timeline.git
+	branch = main
 [submodule "libraries/tree"]
 	path = libraries/tree
 	url = https://github.com/poly1603/ldesign-tree.git
+	branch = main
 [submodule "libraries/upload"]
 	path = libraries/upload
 	url = https://github.com/poly1603/ldesign-upload.git
+	branch = main
 [submodule "packages/logger"]
 	path = packages/logger
 	url = https://github.com/poly1603/ldesign-logger.git
+	branch = main
 [submodule "tools/deployer"]
 	path = tools/deployer
 	url = https://github.com/poly1603/ldesign-deployer.git
+	branch = main
 [submodule "tools/docs-generator"]
 	path = tools/docs-generator
 	url = https://github.com/poly1603/ldesign-docs-generator.git
+	branch = main
 [submodule "tools/monitor"]
 	path = tools/monitor
 	url = https://github.com/poly1603/ldesign-monitor.git
+	branch = main
 [submodule "libraries/video"]
 	path = libraries/video
 	url = https://github.com/poly1603/video.git
+	branch = main
 [submodule "tools/publisher"]
 	path = tools/publisher
 	url = https://github.com/poly1603/ldesign-publisher.git
+	branch = main
 [submodule "tools/deps"]
 	path = tools/deps
 	url = https://github.com/poly1603/ldesign-deps.git
+	branch = main
 [submodule "tools/generator"]
 	path = tools/generator
 	url = https://github.com/poly1603/ldesign-generator.git
+	branch = main
 [submodule "tools/git"]
 	path = tools/git
 	url = https://github.com/poly1603/ldesign-git.git
+	branch = main
 [submodule "tools/security"]
 	path = tools/security
 	url = https://github.com/poly1603/ldesign-security.git
+	branch = main
 [submodule "tools/formatter"]
 	path = tools/formatter
 	url = https://github.com/poly1603/ldesign-formatter.git
+	branch = main
 [submodule "tools/translator"]
 	path = tools/translator
 	url = https://github.com/poly1603/ldesign-translator.git
+	branch = main
 [submodule "tools/mock"]
 	path = tools/mock
 	url = https://github.com/poly1603/ldesign-mock.git
+	branch = main
 [submodule "tools/performance"]
 	path = tools/performance
 	url = https://github.com/poly1603/ldesign-performance.git
+	branch = main
 [submodule "tools/env"]
 	path = tools/env
 	url = https://github.com/poly1603/ldesign-env.git
+	branch = main
 [submodule "tools/changelog"]
 	path = tools/changelog
 	url = https://github.com/poly1603/ldesign-changelog.git
+	branch = main
 [submodule "tools/testing"]
 	path = tools/testing
 	url = https://github.com/poly1603/ldesign-testing.git
+	branch = main
 [submodule "tools/server"]
 	path = tools/server
 	url = https://github.com/poly1603/ldesign-server.git
+	branch = main
 [submodule "tools/node-manager"]
 	path = tools/node-manager
 	url = https://github.com/poly1603/node-manager.git
+	branch = main
 [submodule "tools/project-manager"]
 	path = tools/project-manager
 	url = https://github.com/poly1603/project-manager.git
+	branch = main
 [submodule "tools/configmate"]
 	path = tools/configmate
 	url = https://github.com/poly1603/ldesign-configmate.git
+	branch = main
 [submodule "tools/web"]
 	path = tools/web
 	url = https://github.com/poly1603/ldesign-web.git
+	branch = main
 [submodule "tools/app"]
 	path = tools/app
 	url = https://github.com/poly1603/ldesign-app.git
@@ -209,6 +277,7 @@
 [submodule "tools/benchmark"]
 	path = tools/benchmark
 	url = https://github.com/poly1603/ldesign-benchmark.git
+	branch = main
 [submodule "apps/app-vue"]
 	path = apps/app-vue
 	url = https://github.com/poly1603/ldesign-app-vue.git
@@ -232,6 +301,7 @@
 [submodule "packages/auth"]
 	path = packages/auth
 	url = https://github.com/poly1603/ldesign-auth.git
+	branch = main
 [submodule "packages/permission"]
 	path = packages/permission
 	url = https://github.com/poly1603/ldesign-permission.git
