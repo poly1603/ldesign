@@ -232,3 +232,10 @@
 	path = packages/tracker
 	url = https://github.com/poly1603/ldesign-tracker.git
 	branch = main
+[submodule "packages/auth"]
+	path = packages/auth
+	url = https://github.com/poly1603/ldesign-auth.git
+[submodule "packages/permission"]
+	path = packages/permission
+	url = https://github.com/poly1603/ldesign-permission.git
+	branch = main
