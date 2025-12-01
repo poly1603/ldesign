@@ -306,3 +306,7 @@
 	path = packages/permission
 	url = https://github.com/poly1603/ldesign-permission.git
 	branch = main
+[submodule "packages/menu"]
+	path = packages/menu
+	url = https://github.com/poly1603/ldesign-menu.git
+	branch = main
