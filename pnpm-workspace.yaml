@@ -11,6 +11,8 @@ packages:
   - '!**/demo'
   # Tools
   - 'tools/*'
+  # 排除有独立 workspace 的工具
+  - '!tools/git'
   
   # Applications
   - 'apps/*'
