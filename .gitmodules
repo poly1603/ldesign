@@ -310,3 +310,7 @@
 	path = packages/menu
 	url = https://github.com/poly1603/ldesign-menu.git
 	branch = main
+[submodule "packages/bookmark"]
+	path = packages/bookmark
+	url = https://github.com/poly1603/ldesign-bookmark.git
+	branch = main
