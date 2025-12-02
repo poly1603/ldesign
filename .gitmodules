@@ -314,3 +314,7 @@
 	path = packages/bookmark
 	url = https://github.com/poly1603/ldesign-bookmark.git
 	branch = main
+[submodule "packages/breadcrumb"]
+	path = packages/breadcrumb
+	url = https://github.com/poly1603/ldesign-breadcrumb.git
+	branch = main
