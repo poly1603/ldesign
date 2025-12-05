@@ -318,3 +318,7 @@
 	path = packages/breadcrumb
 	url = https://github.com/poly1603/ldesign-breadcrumb.git
 	branch = main
+[submodule "server/nestapi"]
+	path = server/nestapi
+	url = https://github.com/poly1603/nestapi.git
+	branch = main
