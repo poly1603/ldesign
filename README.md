@@ -36,12 +36,25 @@
 
 ## 🚀 快速开始
 
-### 1. 克隆项目
+### 方式一：一键克隆（推荐）
+
+```bash
+# 克隆仓库
+git clone https://github.com/poly1603/ldesign.git
+cd ldesign
+
+# 自动初始化所有 submodules 并切换到配置的远程分支
+node scripts/init-submodules.js --parallel
+```
+
+### 方式二：传统方式
 
 ```bash
 git clone --recursive https://github.com/poly1603/ldesign.git
 cd ldesign
 ```
+
+> 💡 **提示**: 方式一更快，因为使用并行拉取，且会自动切换到各 submodule 配置的远程分支。
 
 ### 2. 安装依赖
 

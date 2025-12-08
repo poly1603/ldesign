@@ -322,3 +322,7 @@
 	path = server/nestapi
 	url = https://github.com/poly1603/nestapi.git
 	branch = main
+[submodule "tools/webfont"]
+	path = tools/webfont
+	url = https://github.com/poly1603/ldesign-webfont.git
+	branch = main
