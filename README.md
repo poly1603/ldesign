@@ -1,7 +1,7 @@
 # LDesign
 
 <p align="center">
-  <strong>现代化的设计系统 - 基于 Monorepo + Git Submodule 架构</strong>
+  <strong>现代化企业级设计系统 - Monorepo + Git Submodule 架构</strong>
 </p>
 
 <p align="center">
@@ -9,86 +9,78 @@
   <img src="https://img.shields.io/badge/Vue-3.3+-42b883?logo=vue.js" alt="Vue">
   <img src="https://img.shields.io/badge/React-18+-61dafb?logo=react" alt="React">
   <img src="https://img.shields.io/badge/pnpm-9.15+-F69220?logo=pnpm" alt="pnpm">
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
-</p>
-
-<p align="center">
-  <a href="#特性">特性</a> •
-  <a href="#快速开始">快速开始</a> •
-  <a href="#开发指南">开发指南</a> •
-  <a href="#项目结构">项目结构</a> •
-  <a href="#贡献">贡献</a>
+  <img src="https://img.shields.io/badge/Node-18+-339933?logo=node.js" alt="Node">
 </p>
 
 ---
 
-## ✨ 特性
-
-- 🚀 **现代化技术栈**: TypeScript 5.7+ / Vue 3 / React 18
-- 📦 **Monorepo 架构**: pnpm workspace 统一管理 77 个子模块
-- 🎯 **多框架支持**: Vue, React, Lit, Web Components
-- ⚡ **高性能构建**: 基于 @ldesign/builder，支持多种构建引擎
-- 🔧 **完整工具链**: ESLint, Prettier, Playwright, Commitlint
-- 📚 **丰富组件库**: 31 个功能库，18 个核心包，28 个开发工具
-- 🔐 **独立版本控制**: 每个包都是独立的 Git Submodule，支持灵活的权限管理
-
----
-
-## 🚀 快速开始
-
-### 方式一：一键克隆（推荐）
+## 快速开始
 
 ```bash
-# 克隆仓库
+# 1. 克隆仓库
 git clone https://github.com/poly1603/ldesign.git
 cd ldesign
 
-# 自动初始化所有 submodules 并切换到配置的远程分支
-node scripts/init-submodules.js --parallel
-```
+# 2. 初始化所有 submodule（并行拉取，自动切换远程分支）
+pnpm init
 
-### 方式二：传统方式
-
-```bash
-git clone --recursive https://github.com/poly1603/ldesign.git
-cd ldesign
-```
-
-> 💡 **提示**: 方式一更快，因为使用并行拉取，且会自动切换到各 submodule 配置的远程分支。
-
-### 2. 安装依赖
-
-```bash
+# 3. 安装依赖
 pnpm install
+
+# 4. 开始开发
+pnpm dev
 ```
 
-> **注意**: 需要 Node.js >= 18.0.0 和 pnpm >= 8.0.0
+> **环境要求**: Node.js >= 18.0.0, pnpm >= 8.0.0
 
-### 3. 开发
+---
+
+## 常用命令
+
+### 项目管理
+
+| 命令 | 说明 |
+|------|------|
+| `pnpm init` | 初始化所有 submodule |
+| `pnpm install` | 安装依赖 |
+| `pnpm install:fast` | 快速安装（跳过可选依赖） |
+| `pnpm clean` | 清理 node_modules + dist |
+| `pnpm clean:dist` | 仅清理构建产物 |
+
+### Submodule 管理
+
+| 命令 | 说明 |
+|------|------|
+| `pnpm sub:status` | 查看所有 submodule 状态 |
+| `pnpm sub:update` | 更新所有 submodule |
+| `pnpm sub:sync` | 同步 submodule 配置 |
+
+### 开发构建
+
+| 命令 | 说明 |
+|------|------|
+| `pnpm dev` | 启动开发服务器 |
+| `pnpm build` | 构建所有包 |
+| `pnpm build:clean` | 清理后重新构建 |
+| `pnpm lint` | 代码检查 |
+| `pnpm lint:fix` | 自动修复 lint 问题 |
+
+### 单包开发
 
 ```bash
-# 开发单个包
-pnpm --filter @ldesign/color-core dev
+# 进入子包目录开发
+cd libraries/chart/examples/vite-demo
+pnpm install
+pnpm dev
 
-# 开发整个功能（包含所有子包）
-pnpm --filter "@ldesign/chart*" dev
-
-# 构建所有包
-pnpm -r build
+# 或使用 filter
+pnpm --filter @ldesign/chart-core dev
+pnpm --filter "@ldesign/chart*" build
 ```
 
 ---
 
-## 📜 开发文档
-
-当前文档正在完善中，建议直接查看：
-- **[package.json](./package.json)** - 可用的脚本命令
-- **[.gitmodules](./.gitmodules)** - 子模块配置
-- **[各包的 README](./packages/)** - 单个包的详细文档
-
----
-
-## 📁 项目结构
+## 项目结构
 
 ```
 ldesign/
@@ -194,9 +186,9 @@ libraries/chart/
 
 ---
 
-## 📦 模块分类
+## 模块分类
 
-### 💡 核心基础包 (packages/)
+### 核心基础包 (packages/)
 
 提供底层通用能力，跨框架复用：
 
@@ -205,7 +197,7 @@ libraries/chart/
 - **服务类**: `http`, `cache`, `logger`, `tracker`, `notification`
 - **安全类**: `auth`, `permission`, `error`
 
-### 🏛️ 功能库 (libraries/)
+### 功能库 (libraries/)
 
 面向业务场景的高级组件，支持多框架：
 
@@ -218,7 +210,7 @@ libraries/chart/
 - **工具组件**: `qrcode`, `barcode`, `map`, `tree`, `progress`
 - **平台类**: `lowcode`, `webcomponent`
 
-### 🛠️ 开发工具 (tools/)
+### 开发工具 (tools/)
 
 提升开发效率的工具链：
 
@@ -231,87 +223,7 @@ libraries/chart/
 
 ---
 
-## 🔧 常用命令
-
-### 开发
-
-```bash
-# 开发单个包
-pnpm --filter <package-name> dev
-
-# 开发整个功能
-pnpm --filter "@ldesign/chart*" dev
-
-# 开发多个包
-pnpm --filter @ldesign/builder --filter "@ldesign/color*" dev
-```
-
-### 构建
-
-```bash
-# 构建单个包
-pnpm --filter @ldesign/builder build
-
-# 构建所有包
-pnpm -r build
-
-# 构建特定目录
-pnpm --filter "./packages/**" build
-```
-
-### 测试
-
-```bash
-# 测试单个包
-pnpm --filter @ldesign/color-core test
-
-# 测试所有包
-pnpm -r test
-```
-
-### 清理
-
-```bash
-# 清理构建产物
-pnpm clean-build
-
-# 清理并重装依赖
-.\scripts\clean-and-reinstall.ps1  # Windows
-./scripts/clean-and-reinstall.sh   # Linux/Mac
-```
-
-### 子模块管理
-
-```bash
-# 初始化所有子模块
-git submodule update --init --recursive
-
-# 更新所有子模块到最新提交
-git submodule update --remote --merge
-
-# 同步子模块
-pnpm sync
-
-# 创建新的子模块
-pnpm create-submodule
-```
-
-### Lint 与格式化
-
-```bash
-# Lint 当前仓库
-pnpm lint
-
-# 修复 Lint 问题
-pnpm lint:fix
-
-# Lint 所有包
-pnpm lint:all
-```
-
----
-
-## 🏗️ 架构说明
+## 架构说明
 
 ### Submodule = Git 边界
 
@@ -333,7 +245,7 @@ pnpm lint:all
 
 ---
 
-## 🤝 贡献
+## 贡献
 
 欢迎贡献！我们遵循以下原则：
 
@@ -385,15 +297,13 @@ git push
 
 ---
 
-## 📜 许可证
+## 许可证
 
 MIT License
 
 ---
 
----
-
-## 📚 相关资源
+## 相关资源
 
 - **GitHub**: [poly1603/ldesign](https://github.com/poly1603/ldesign)
 - **Issues**: [问题追踪](https://github.com/poly1603/ldesign/issues)
@@ -403,81 +313,52 @@ MIT License
 
 ---
 
-## 🆘 问题排查
-
-### 依赖安装失败
-
-```bash
-# Windows
-Remove-Item -Recurse -Force node_modules, pnpm-lock.yaml
-pnpm install
-
-# Linux/Mac
-rm -rf node_modules pnpm-lock.yaml
-pnpm install
-```
+## 问题排查
 
 ### Submodule 未初始化
 
 ```bash
-git submodule update --init --recursive
+pnpm init
+# 或
+node scripts/init-submodules.js --parallel
 ```
 
-### 工作空间链接失败
+### 依赖安装失败
 
 ```bash
-pnpm install
+pnpm clean           # 清理 node_modules
+pnpm install         # 重新安装
 ```
 
 ### 构建失败
 
 ```bash
-# 清理构建缓存
-pnpm clean-build
-
-# 重新构建
-pnpm -r build
+pnpm clean:dist      # 清理构建产物
+pnpm build           # 重新构建
 ```
 
-### pnpm 版本不匹配
+### 查看 Submodule 状态
 
 ```bash
-# 升级 pnpm
-npm install -g pnpm@latest
-
-# 验证版本
-pnpm --version
+pnpm sub:status
 ```
 
 ---
 
-## ❓ FAQ
+## FAQ
 
-### 为什么选择 Monorepo + Submodule 架构？
+**为什么选择 Monorepo + Submodule 架构？**
 
-这种架构结合了两者的优点：
-- **Monorepo** 提供优秀的开发体验和依赖管理
+- **Monorepo** 提供统一的开发体验和依赖管理
 - **Submodule** 提供独立的版本控制和权限管理
 
-### 如何添加新的包？
+**支持哪些框架？**
 
-```bash
-pnpm create-submodule
-```
+Vue 3.3+ / React 18+ / Lit 3+ / Web Components
 
-按照提示输入包名、类型等信息，脚本会自动创建子模块。
+**如何贡献代码？**
 
-### 支持哪些框架？
-
-目前支持：
-- Vue 2.6+ / 2.7+ / 3.3+
-- React 18+
-- Lit 3+
-- Web Components (原生)
-
-### 如何贡献代码？
-
-请阅读 [贡献指南](#🤝-贡献) 章节。
+请阅读 [贡献指南](#贡献) 章节。
 
 ---
 
