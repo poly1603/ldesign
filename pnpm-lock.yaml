@@ -3497,9 +3497,6 @@ importers:
       '@angular/platform-browser-dynamic':
         specifier: ^19.0.0
         version: 19.0.0(@angular/common@19.1.6(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/compiler@19.0.0(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1)))(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1))(@angular/platform-browser@19.1.6(@angular/common@19.1.6(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1)))
-      '@ldesign/lottie-angular':
-        specifier: workspace:*
-        version: link:../../packages/angular
       rxjs:
         specifier: ^7.8.1
         version: 7.8.1
@@ -3530,10 +3527,6 @@ importers:
         version: 6.0.7(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
 
   libraries/lottie/examples/core-demo:
-    dependencies:
-      '@ldesign/lottie-core':
-        specifier: workspace:*
-        version: link:../../packages/core
     devDependencies:
       typescript:
         specifier: ^5.3.2
@@ -3544,9 +3537,6 @@ importers:
 
   libraries/lottie/examples/lit-demo:
     dependencies:
-      '@ldesign/lottie-lit':
-        specifier: workspace:*
-        version: link:../../packages/lit
       lit:
         specifier: ^3.0.0
         version: 3.2.1
@@ -3560,9 +3550,6 @@ importers:
 
   libraries/lottie/examples/react-demo:
     dependencies:
-      '@ldesign/lottie-react':
-        specifier: workspace:*
-        version: link:../../packages/react
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -3588,9 +3575,6 @@ importers:
 
   libraries/lottie/examples/solid-demo:
     dependencies:
-      '@ldesign/lottie-solid':
-        specifier: workspace:*
-        version: link:../../packages/solid
       solid-js:
         specifier: ^1.9.3
         version: 1.9.3
@@ -3607,9 +3591,6 @@ importers:
 
   libraries/lottie/examples/vue-demo:
     dependencies:
-      '@ldesign/lottie-vue':
-        specifier: workspace:*
-        version: link:../../packages/vue
       vue:
         specifier: ^3.3.13
         version: 3.5.22(typescript@5.9.3)
@@ -3626,55 +3607,6 @@ importers:
       vue-tsc:
         specifier: ^1.8.25
         version: 1.8.27(typescript@5.9.3)
-
-  libraries/lottie/packages/angular:
-    dependencies:
-      '@ldesign/lottie-core':
-        specifier: workspace:*
-        version: link:../core
-      tslib:
-        specifier: ^2.6.2
-        version: 2.8.1
-    devDependencies:
-      '@angular/common':
-        specifier: ^18.0.0
-        version: 18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1)
-      '@angular/core':
-        specifier: ^18.0.0
-        version: 18.0.0(rxjs@7.8.1)(zone.js@0.15.1)
-      '@angular/platform-browser':
-        specifier: ^18.0.0
-        version: 18.0.0(@angular/animations@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1)))(@angular/common@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))
-      '@angular/platform-browser-dynamic':
-        specifier: ^18.0.0
-        version: 18.0.0(@angular/common@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/compiler@19.2.15)(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))(@angular/platform-browser@18.0.0(@angular/animations@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1)))(@angular/common@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1)))
-      '@antfu/eslint-config':
-        specifier: ^6.0.0
-        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.11.16)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@1.6.1)
-      '@types/node':
-        specifier: ^20.10.0
-        version: 20.11.16
-      '@vitest/coverage-v8':
-        specifier: ^1.6.1
-        version: 1.6.1(vitest@1.6.1)
-      eslint:
-        specifier: ^9.18.0
-        version: 9.18.0(jiti@2.6.1)
-      rimraf:
-        specifier: ^5.0.5
-        version: 5.0.5
-      rxjs:
-        specifier: ^7.8.0
-        version: 7.8.1
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      vitest:
-        specifier: ^1.6.1
-        version: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-      zone.js:
-        specifier: ^0.15.0
-        version: 0.15.1
 
   libraries/lottie/packages/core:
     dependencies:
@@ -3712,231 +3644,6 @@ importers:
       vitest:
         specifier: ^1.0.4
         version: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.26.0)
-
-  libraries/lottie/packages/lit:
-    dependencies:
-      '@ldesign/lottie-core':
-        specifier: workspace:*
-        version: link:../core
-      '@lit/reactive-element':
-        specifier: ^2.0.0
-        version: 2.0.0
-      lit:
-        specifier: ^3.0.0
-        version: 3.2.1
-    devDependencies:
-      '@types/node':
-        specifier: ^20.10.0
-        version: 20.11.16
-      eslint:
-        specifier: ^8.54.0
-        version: 8.57.0
-      rimraf:
-        specifier: ^5.0.5
-        version: 5.0.5
-      typescript:
-        specifier: ^5.3.2
-        version: 5.9.3
-      vite:
-        specifier: ^5.0.4
-        version: 5.4.21(@types/node@20.11.16)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-      vite-plugin-dts:
-        specifier: ^3.7.0
-        version: 3.7.0(@types/node@20.11.16)(rollup@4.53.2)(typescript@5.9.3)(vite@5.4.21(@types/node@20.11.16)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
-      vitest:
-        specifier: ^1.0.4
-        version: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  libraries/lottie/packages/preact:
-    dependencies:
-      '@ldesign/lottie-core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@preact/preset-vite':
-        specifier: ^2.9.2
-        version: 2.9.2(@babel/core@7.28.5)(preact@10.24.3)(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
-      eslint:
-        specifier: ^8.54.0
-        version: 8.57.0
-      preact:
-        specifier: ^10.24.3
-        version: 10.24.3
-      rimraf:
-        specifier: ^5.0.5
-        version: 5.0.5
-      typescript:
-        specifier: ^5.3.2
-        version: 5.9.3
-      vite:
-        specifier: ^5.0.4
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-      vite-plugin-dts:
-        specifier: ^3.7.0
-        version: 3.7.0(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3)(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
-      vitest:
-        specifier: ^1.0.4
-        version: 1.6.1(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  libraries/lottie/packages/qwik:
-    dependencies:
-      '@ldesign/lottie-core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@antfu/eslint-config':
-        specifier: ^6.0.0
-        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.11.16)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@1.6.1)
-      '@builder.io/qwik':
-        specifier: ^1.11.0
-        version: 1.11.0(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
-      '@types/node':
-        specifier: ^20.10.0
-        version: 20.11.16
-      '@vitest/coverage-v8':
-        specifier: ^1.6.1
-        version: 1.6.1(vitest@1.6.1)
-      eslint:
-        specifier: ^9.18.0
-        version: 9.18.0(jiti@2.6.1)
-      eslint-plugin-qwik:
-        specifier: ^1.11.0
-        version: 1.11.0(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      rimraf:
-        specifier: ^5.0.5
-        version: 5.0.5
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      vitest:
-        specifier: ^1.6.1
-        version: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  libraries/lottie/packages/react:
-    dependencies:
-      '@ldesign/lottie-core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@types/react':
-        specifier: ^18.2.45
-        version: 18.3.18
-      '@types/react-dom':
-        specifier: ^18.2.18
-        version: 18.3.5(@types/react@18.3.18)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.1
-        version: 4.3.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
-      eslint:
-        specifier: ^8.54.0
-        version: 8.57.0
-      eslint-plugin-react:
-        specifier: ^7.33.2
-        version: 7.33.2(eslint@8.57.0)
-      eslint-plugin-react-hooks:
-        specifier: ^4.6.0
-        version: 4.6.0(eslint@8.57.0)
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
-      rimraf:
-        specifier: ^5.0.5
-        version: 5.0.5
-      typescript:
-        specifier: ^5.3.2
-        version: 5.9.3
-      vite:
-        specifier: ^5.0.4
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-      vite-plugin-dts:
-        specifier: ^3.7.0
-        version: 3.7.0(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3)(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
-      vitest:
-        specifier: ^1.0.4
-        version: 1.6.1(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  libraries/lottie/packages/solid:
-    dependencies:
-      '@ldesign/lottie-core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@antfu/eslint-config':
-        specifier: ^6.0.0
-        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@3.12.5(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.11.16)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.43.6))(typescript@5.9.3)(vitest@1.6.1)
-      '@solidjs/testing-library':
-        specifier: ^0.8.0
-        version: 0.8.5(@solidjs/router@0.14.10(solid-js@1.9.3))(solid-js@1.9.3)
-      '@types/node':
-        specifier: ^20.10.0
-        version: 20.11.16
-      '@vitest/coverage-v8':
-        specifier: ^1.6.1
-        version: 1.6.1(vitest@1.6.1)
-      eslint:
-        specifier: ^9.18.0
-        version: 9.18.0(jiti@2.6.1)
-      eslint-plugin-solid:
-        specifier: ^0.14.5
-        version: 0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      rimraf:
-        specifier: ^5.0.5
-        version: 5.0.5
-      solid-js:
-        specifier: ^1.8.0
-        version: 1.9.3
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      vite-plugin-solid:
-        specifier: ^2.10.0
-        version: 2.10.2(@testing-library/jest-dom@6.8.0)(solid-js@1.9.3)(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
-      vitest:
-        specifier: ^1.6.1
-        version: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  libraries/lottie/packages/svelte:
-    dependencies:
-      '@ldesign/lottie-core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@antfu/eslint-config':
-        specifier: ^6.0.0
-        version: 6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@2.35.0(eslint@9.18.0(jiti@2.6.1))(svelte@5.18.0)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.11.16)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.18.0))(typescript@5.9.3)(vitest@1.6.1)
-      '@sveltejs/vite-plugin-svelte':
-        specifier: ^6.1.3
-        version: 6.1.3(svelte@5.18.0)(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
-      '@testing-library/svelte':
-        specifier: ^5.0.0
-        version: 5.0.0(svelte@5.18.0)
-      '@types/node':
-        specifier: ^20.10.0
-        version: 20.11.16
-      '@vitest/coverage-v8':
-        specifier: ^1.6.1
-        version: 1.6.1(vitest@1.6.1)
-      eslint:
-        specifier: ^9.18.0
-        version: 9.18.0(jiti@2.6.1)
-      eslint-plugin-svelte:
-        specifier: ^2.35.0
-        version: 2.35.0(eslint@9.18.0(jiti@2.6.1))(svelte@5.18.0)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.11.16)(typescript@5.9.3))
-      rimraf:
-        specifier: ^5.0.5
-        version: 5.0.5
-      svelte:
-        specifier: ^5.0.0
-        version: 5.18.0
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      vitest:
-        specifier: ^1.6.1
-        version: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/lottie/packages/vue:
     dependencies:
@@ -6831,6 +6538,9 @@ importers:
 
   packages/cache/packages/core:
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../../../../tools/builder
       rimraf:
         specifier: ^5.0.0
         version: 5.0.5
@@ -6844,12 +6554,15 @@ importers:
         specifier: workspace:*
         version: link:../core
     devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../../../../tools/builder
+      '@vitejs/plugin-vue':
+        specifier: ^5.0.0
+        version: 5.2.4(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(vue@3.5.25(typescript@5.9.3))
       rimraf:
         specifier: ^5.0.0
         version: 5.0.5
-      tsup:
-        specifier: ^8.0.0
-        version: 8.5.1(@microsoft/api-extractor@7.54.0(@types/node@24.10.1))(@swc/core@1.4.0(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
@@ -8952,6 +8665,9 @@ importers:
       svelte:
         specifier: ^4.2.0
         version: 4.2.19
+      tar:
+        specifier: ^7.4.0
+        version: 7.5.2
       tslib:
         specifier: ^2.6.2
         version: 2.8.1
@@ -9029,6 +8745,9 @@ importers:
       '@types/semver':
         specifier: ^7.5.6
         version: 7.5.6
+      '@types/tar':
+        specifier: ^6.1.11
+        version: 6.1.13
       '@types/ws':
         specifier: ^8.5.10
         version: 8.18.1
@@ -16848,12 +16567,6 @@ packages:
     peerDependencies:
       svelte: ^3 || ^4
 
-  '@testing-library/svelte@5.0.0':
-    resolution: {integrity: sha512-KwWIzM2Skis1RNW+9yJwjLopVWLiZ41m4n+60uovMNga3qTMuBrQkqWwESZXNz6yjW4ldI6S+zjZWrw9EwdbZw==}
-    engines: {node: '>= 10'}
-    peerDependencies:
-      svelte: ^3 || ^4 || ^5
-
   '@testing-library/user-event@14.6.1':
     resolution: {integrity: sha512-vq7fv0rnt+QTXgPxr5Hjc210p6YKq2kmdziLgnsZGgLJ9e6VAShx1pACLuRjd/AS/sr7phAR58OIIpf0LlmQNw==}
     engines: {node: '>=12', npm: '>=6'}
@@ -21980,12 +21693,6 @@ packages:
         optional: true
       eslint-config-prettier:
         optional: true
-
-  eslint-plugin-qwik@1.11.0:
-    resolution: {integrity: sha512-2F31M+JaCQLr9iHfwCwM+6ihOV200NyUmBLsmvshXj6YQVddanS0fOthyYznXX0rWsNu/jlhrPVb8qB5oPFZzg==}
-    engines: {node: '>=16.8.0 <18.0.0 || >=18.11'}
-    peerDependencies:
-      eslint: ^8.57.0
 
   eslint-plugin-react-dom@2.2.4:
     resolution: {integrity: sha512-mrr56eZsNF0m6NrZxV3wojQnxADLqYGB0A5FHYRuMEX8jmkOy0Jb7v6B4IdzLt0kI1HhAhriOogxOkFlCch/4w==}
@@ -32582,12 +32289,6 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@angular/animations@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))':
-    dependencies:
-      '@angular/core': 18.0.0(rxjs@7.8.1)(zone.js@0.15.1)
-      tslib: 2.8.1
-    optional: true
-
   '@angular/cli@17.0.0(chokidar@3.5.3)':
     dependencies:
       '@angular-devkit/architect': 0.1700.0(chokidar@3.5.3)
@@ -32795,14 +32496,6 @@ snapshots:
       '@angular/platform-browser': 18.0.0(@angular/animations@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.14.2)))(@angular/common@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.14.2))(rxjs@7.8.1))(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.14.2))
       tslib: 2.8.1
 
-  '@angular/platform-browser-dynamic@18.0.0(@angular/common@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/compiler@19.2.15)(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))(@angular/platform-browser@18.0.0(@angular/animations@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1)))(@angular/common@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1)))':
-    dependencies:
-      '@angular/common': 18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1)
-      '@angular/compiler': 19.2.15
-      '@angular/core': 18.0.0(rxjs@7.8.1)(zone.js@0.15.1)
-      '@angular/platform-browser': 18.0.0(@angular/animations@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1)))(@angular/common@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))
-      tslib: 2.8.1
-
   '@angular/platform-browser-dynamic@19.0.0(@angular/common@19.1.6(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/compiler@19.0.0(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1)))(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1))(@angular/platform-browser@19.1.6(@angular/common@19.1.6(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1)))':
     dependencies:
       '@angular/common': 19.1.6(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1)
@@ -32826,14 +32519,6 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       '@angular/animations': 18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.14.2))
-
-  '@angular/platform-browser@18.0.0(@angular/animations@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1)))(@angular/common@18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))':
-    dependencies:
-      '@angular/common': 18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1)
-      '@angular/core': 18.0.0(rxjs@7.8.1)(zone.js@0.15.1)
-      tslib: 2.8.1
-    optionalDependencies:
-      '@angular/animations': 18.0.0(@angular/core@18.0.0(rxjs@7.8.1)(zone.js@0.15.1))
 
   '@angular/platform-browser@19.1.6(@angular/common@19.1.6(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@19.1.7(rxjs@7.8.1)(zone.js@0.15.1))':
     dependencies:
@@ -33391,58 +33076,6 @@ snapshots:
       eslint-plugin-solid: 0.14.5(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3)
       eslint-plugin-svelte: 3.12.5(eslint@9.18.0(jiti@1.21.0))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.11.16)(typescript@5.9.3))
       svelte-eslint-parser: 1.4.0(svelte@5.43.6)
-    transitivePeerDependencies:
-      - '@eslint/json'
-      - '@vue/compiler-sfc'
-      - supports-color
-      - typescript
-      - vitest
-
-  '@antfu/eslint-config@6.0.0(@eslint-react/eslint-plugin@2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.0.2(eslint@9.18.0(jiti@2.6.1)))(eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint-plugin-svelte@2.35.0(eslint@9.18.0(jiti@2.6.1))(svelte@5.18.0)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.11.16)(typescript@5.9.3)))(eslint@9.18.0(jiti@2.6.1))(svelte-eslint-parser@1.4.0(svelte@5.18.0))(typescript@5.9.3)(vitest@1.6.1)':
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      '@clack/prompts': 0.11.0
-      '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.18.0(jiti@2.6.1))
-      '@eslint/markdown': 7.5.1
-      '@stylistic/eslint-plugin': 5.5.0(eslint@9.18.0(jiti@2.6.1))
-      '@typescript-eslint/eslint-plugin': 8.46.3(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      '@typescript-eslint/parser': 8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      '@vitest/eslint-plugin': 1.4.2(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)(vitest@1.6.1)
-      ansis: 4.2.0
-      cac: 6.7.14
-      eslint: 9.18.0(jiti@2.6.1)
-      eslint-config-flat-gitignore: 2.1.0(eslint@9.18.0(jiti@2.6.1))
-      eslint-flat-config-utils: 2.1.4
-      eslint-merge-processors: 2.0.0(eslint@9.18.0(jiti@2.6.1))
-      eslint-plugin-antfu: 3.1.1(eslint@9.18.0(jiti@2.6.1))
-      eslint-plugin-command: 3.3.1(eslint@9.18.0(jiti@2.6.1))
-      eslint-plugin-import-lite: 0.3.0(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-jsdoc: 59.1.0(eslint@9.18.0(jiti@2.6.1))
-      eslint-plugin-jsonc: 2.21.0(eslint@9.18.0(jiti@2.6.1))
-      eslint-plugin-n: 17.23.1(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-no-only-tests: 3.3.0
-      eslint-plugin-perfectionist: 4.15.1(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-pnpm: 1.3.0(eslint@9.18.0(jiti@2.6.1))
-      eslint-plugin-regexp: 2.10.0(eslint@9.18.0(jiti@2.6.1))
-      eslint-plugin-toml: 0.12.0(eslint@9.18.0(jiti@2.6.1))
-      eslint-plugin-unicorn: 61.0.2(eslint@9.18.0(jiti@2.6.1))
-      eslint-plugin-unused-imports: 4.3.0(@typescript-eslint/eslint-plugin@8.46.3(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.18.0(jiti@2.6.1))
-      eslint-plugin-vue: 10.5.1(@stylistic/eslint-plugin@5.5.0(eslint@9.18.0(jiti@2.6.1)))(@typescript-eslint/parser@8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.18.0(jiti@2.6.1))(vue-eslint-parser@10.2.0(eslint@9.18.0(jiti@2.6.1)))
-      eslint-plugin-yml: 1.19.0(eslint@9.18.0(jiti@2.6.1))
-      eslint-processor-vue-blocks: 2.0.0(@vue/compiler-sfc@3.5.25)(eslint@9.18.0(jiti@2.6.1))
-      globals: 16.5.0
-      jsonc-eslint-parser: 2.4.1
-      local-pkg: 1.1.2
-      parse-gitignore: 2.0.0
-      toml-eslint-parser: 0.10.0
-      vue-eslint-parser: 10.2.0(eslint@9.18.0(jiti@2.6.1))
-      yaml-eslint-parser: 1.3.0
-    optionalDependencies:
-      '@eslint-react/eslint-plugin': 2.2.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-format: 1.0.2(eslint@9.18.0(jiti@2.6.1))
-      eslint-plugin-solid: 0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-svelte: 2.35.0(eslint@9.18.0(jiti@2.6.1))(svelte@5.18.0)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.11.16)(typescript@5.9.3))
-      svelte-eslint-parser: 1.4.0(svelte@5.18.0)
     transitivePeerDependencies:
       - '@eslint/json'
       - '@vue/compiler-sfc'
@@ -36537,7 +36170,7 @@ snapshots:
       '@loaders.gl/images': 4.3.4(@loaders.gl/core@4.3.4)
       '@luma.gl/constants': 9.2.4
       '@luma.gl/core': 9.2.4
-      '@luma.gl/engine': 9.2.4(@luma.gl/core@9.2.4)(@luma.gl/shadertools@9.2.4(@luma.gl/core@9.0.0))
+      '@luma.gl/engine': 9.2.4(@luma.gl/core@9.2.4)(@luma.gl/shadertools@9.2.4(@luma.gl/core@9.2.4))
       '@luma.gl/shadertools': 9.2.4(@luma.gl/core@9.2.4)
       '@luma.gl/webgl': 9.2.4(@luma.gl/core@9.2.4)
       '@math.gl/core': 4.1.0
@@ -38852,15 +38485,6 @@ snapshots:
   '@luma.gl/engine@9.2.4(@luma.gl/core@9.0.0)(@luma.gl/shadertools@9.2.4(@luma.gl/core@9.0.0))':
     dependencies:
       '@luma.gl/core': 9.0.0
-      '@luma.gl/shadertools': 9.2.4(@luma.gl/core@9.0.0)
-      '@math.gl/core': 4.1.0
-      '@math.gl/types': 4.1.0
-      '@probe.gl/log': 4.1.0
-      '@probe.gl/stats': 4.1.0
-
-  '@luma.gl/engine@9.2.4(@luma.gl/core@9.2.4)(@luma.gl/shadertools@9.2.4(@luma.gl/core@9.0.0))':
-    dependencies:
-      '@luma.gl/core': 9.2.4
       '@luma.gl/shadertools': 9.2.4(@luma.gl/core@9.0.0)
       '@math.gl/core': 4.1.0
       '@math.gl/types': 4.1.0
@@ -41299,15 +40923,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@sveltejs/vite-plugin-svelte-inspector@5.0.1(@sveltejs/vite-plugin-svelte@6.1.3(svelte@5.18.0)(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)))(svelte@5.18.0)(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))':
-    dependencies:
-      '@sveltejs/vite-plugin-svelte': 6.1.3(svelte@5.18.0)(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
-      debug: 4.4.3
-      svelte: 5.18.0
-      vite: 7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
-    transitivePeerDependencies:
-      - supports-color
-
   '@sveltejs/vite-plugin-svelte-inspector@5.0.1(@sveltejs/vite-plugin-svelte@6.1.3(svelte@5.43.6)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)))(svelte@5.43.6)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       '@sveltejs/vite-plugin-svelte': 6.1.3(svelte@5.43.6)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
@@ -41341,19 +40956,6 @@ snapshots:
       svelte: 5.18.0
       vite: 6.0.7(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
       vitefu: 1.1.1(vite@6.0.7(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
-    transitivePeerDependencies:
-      - supports-color
-
-  '@sveltejs/vite-plugin-svelte@6.1.3(svelte@5.18.0)(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))':
-    dependencies:
-      '@sveltejs/vite-plugin-svelte-inspector': 5.0.1(@sveltejs/vite-plugin-svelte@6.1.3(svelte@5.18.0)(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)))(svelte@5.18.0)(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
-      debug: 4.4.3
-      deepmerge: 4.3.1
-      kleur: 4.1.5
-      magic-string: 0.30.21
-      svelte: 5.18.0
-      vite: 7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
-      vitefu: 1.1.1(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
     transitivePeerDependencies:
       - supports-color
 
@@ -41590,11 +41192,6 @@ snapshots:
     dependencies:
       '@testing-library/dom': 8.20.1
       svelte: 4.2.19
-
-  '@testing-library/svelte@5.0.0(svelte@5.18.0)':
-    dependencies:
-      '@testing-library/dom': 9.3.4
-      svelte: 5.18.0
 
   '@testing-library/user-event@14.6.1(@testing-library/dom@10.4.1)':
     dependencies:
@@ -45665,6 +45262,7 @@ snapshots:
       es-abstract: 1.24.0
       es-errors: 1.3.0
       es-shim-unscopables: 1.1.0
+    optional: true
 
   arraybuffer.prototype.slice@1.0.4:
     dependencies:
@@ -48563,6 +48161,7 @@ snapshots:
       internal-slot: 1.1.0
       iterator.prototype: 1.1.5
       safe-array-concat: 1.1.3
+    optional: true
 
   es-module-lexer@1.7.0: {}
 
@@ -49745,15 +49344,6 @@ snapshots:
       '@types/eslint': 9.6.1
       eslint-config-prettier: 9.1.0(eslint@8.57.0)
 
-  eslint-plugin-qwik@1.11.0(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3):
-    dependencies:
-      '@typescript-eslint/utils': 8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint: 9.18.0(jiti@2.6.1)
-      jsx-ast-utils: 3.3.5
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-
   eslint-plugin-react-dom@2.2.4(eslint@8.57.0)(typescript@5.9.3):
     dependencies:
       '@eslint-react/ast': 2.2.4(eslint@8.57.0)(typescript@5.9.3)
@@ -50174,6 +49764,7 @@ snapshots:
       resolve: 2.0.0-next.5
       semver: 6.3.1
       string.prototype.matchall: 4.0.12
+    optional: true
 
   eslint-plugin-react@7.33.2(eslint@9.18.0(jiti@2.6.1)):
     dependencies:
@@ -50231,7 +49822,7 @@ snapshots:
 
   eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3):
     dependencies:
-      '@typescript-eslint/utils': 8.46.3(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3)
+      '@typescript-eslint/utils': 8.46.4(eslint@9.18.0(jiti@1.21.0))(typescript@5.9.3)
       eslint: 9.18.0(jiti@1.21.0)
       estraverse: 5.3.0
       is-html: 2.0.0
@@ -50245,7 +49836,7 @@ snapshots:
 
   eslint-plugin-solid@0.14.5(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3):
     dependencies:
-      '@typescript-eslint/utils': 8.46.3(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/utils': 8.46.4(eslint@9.18.0(jiti@2.6.1))(typescript@5.9.3)
       eslint: 9.18.0(jiti@2.6.1)
       estraverse: 5.3.0
       is-html: 2.0.0
@@ -50255,10 +49846,11 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   eslint-plugin-solid@0.14.5(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3):
     dependencies:
-      '@typescript-eslint/utils': 8.46.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/utils': 8.46.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       eslint: 9.39.1(jiti@2.6.1)
       estraverse: 5.3.0
       is-html: 2.0.0
@@ -50291,27 +49883,6 @@ snapshots:
       - supports-color
       - ts-node
     optional: true
-
-  eslint-plugin-svelte@2.35.0(eslint@9.18.0(jiti@2.6.1))(svelte@5.18.0)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.11.16)(typescript@5.9.3)):
-    dependencies:
-      '@eslint-community/eslint-utils': 4.9.0(eslint@9.18.0(jiti@2.6.1))
-      '@jridgewell/sourcemap-codec': 1.5.5
-      debug: 4.4.3
-      eslint: 9.18.0(jiti@2.6.1)
-      eslint-compat-utils: 0.1.2(eslint@9.18.0(jiti@2.6.1))
-      esutils: 2.0.3
-      known-css-properties: 0.29.0
-      postcss: 8.5.6
-      postcss-load-config: 3.1.4(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.11.16)(typescript@5.9.3))
-      postcss-safe-parser: 6.0.0(postcss@8.5.6)
-      postcss-selector-parser: 6.1.2
-      semver: 7.7.3
-      svelte-eslint-parser: 0.43.0(svelte@5.18.0)
-    optionalDependencies:
-      svelte: 5.18.0
-    transitivePeerDependencies:
-      - supports-color
-      - ts-node
 
   eslint-plugin-svelte@2.35.0(eslint@9.18.0(jiti@2.6.1))(svelte@5.43.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.11.16)(typescript@5.9.3)):
     dependencies:
@@ -53409,6 +52980,7 @@ snapshots:
   is-html@2.0.0:
     dependencies:
       html-tags: 3.3.1
+    optional: true
 
   is-immutable-type@5.0.1(eslint@8.57.0)(typescript@5.9.3):
     dependencies:
@@ -53748,6 +53320,7 @@ snapshots:
       get-proto: 1.0.1
       has-symbols: 1.1.0
       set-function-name: 2.0.2
+    optional: true
 
   jackspeak@3.4.3:
     dependencies:
@@ -54774,6 +54347,7 @@ snapshots:
       array.prototype.flat: 1.3.3
       object.assign: 4.1.7
       object.values: 1.2.1
+    optional: true
 
   jszip@3.10.1:
     dependencies:
@@ -54789,7 +54363,8 @@ snapshots:
     dependencies:
       source-map-support: 0.5.21
 
-  kebab-case@1.0.2: {}
+  kebab-case@1.0.2:
+    optional: true
 
   keyv@4.5.4:
     dependencies:
@@ -54809,9 +54384,11 @@ snapshots:
 
   knitwork@1.2.0: {}
 
-  known-css-properties@0.29.0: {}
+  known-css-properties@0.29.0:
+    optional: true
 
-  known-css-properties@0.30.0: {}
+  known-css-properties@0.30.0:
+    optional: true
 
   known-css-properties@0.34.0: {}
 
@@ -57378,6 +56955,7 @@ snapshots:
       call-bound: 1.0.4
       define-properties: 1.2.1
       es-object-atoms: 1.1.1
+    optional: true
 
   object.fromentries@2.0.8:
     dependencies:
@@ -57397,6 +56975,7 @@ snapshots:
       define-properties: 1.2.1
       es-abstract: 1.24.0
       es-object-atoms: 1.1.1
+    optional: true
 
   object.map@1.0.1:
     dependencies:
@@ -58713,6 +58292,7 @@ snapshots:
   postcss-safe-parser@6.0.0(postcss@8.5.6):
     dependencies:
       postcss: 8.5.6
+    optional: true
 
   postcss-safe-parser@7.0.1(postcss@8.5.6):
     dependencies:
@@ -58925,6 +58505,7 @@ snapshots:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       react-is: 16.13.1
+    optional: true
 
   property-information@7.1.0: {}
 
@@ -59170,7 +58751,8 @@ snapshots:
       react: 19.2.0
       scheduler: 0.27.0
 
-  react-is@16.13.1: {}
+  react-is@16.13.1:
+    optional: true
 
   react-is@17.0.2: {}
 
@@ -59644,6 +59226,7 @@ snapshots:
       is-core-module: 2.16.1
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
+    optional: true
 
   resp-modifier@6.0.2:
     dependencies:
@@ -61161,6 +60744,7 @@ snapshots:
       regexp.prototype.flags: 1.5.4
       set-function-name: 2.0.2
       side-channel: 1.1.0
+    optional: true
 
   string.prototype.trim@1.2.10:
     dependencies:
@@ -61455,16 +61039,6 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - picomatch
-
-  svelte-eslint-parser@0.43.0(svelte@5.18.0):
-    dependencies:
-      eslint-scope: 7.2.2
-      eslint-visitor-keys: 3.4.3
-      espree: 9.6.1
-      postcss: 8.5.6
-      postcss-scss: 4.0.9(postcss@8.5.6)
-    optionalDependencies:
-      svelte: 5.18.0
 
   svelte-eslint-parser@0.43.0(svelte@5.43.6):
     dependencies:
@@ -63869,21 +63443,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  vite-plugin-solid@2.10.2(@testing-library/jest-dom@6.8.0)(solid-js@1.9.3)(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)):
-    dependencies:
-      '@babel/core': 7.28.5
-      '@types/babel__core': 7.20.5
-      babel-preset-solid: 1.9.10(@babel/core@7.28.5)(solid-js@1.9.3)
-      merge-anything: 5.1.7
-      solid-js: 1.9.3
-      solid-refresh: 0.6.3(solid-js@1.9.3)
-      vite: 7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
-      vitefu: 0.2.5(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
-    optionalDependencies:
-      '@testing-library/jest-dom': 6.8.0
-    transitivePeerDependencies:
-      - supports-color
-
   vite-plugin-solid@2.10.2(@testing-library/jest-dom@6.8.0)(solid-js@1.9.3)(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)):
     dependencies:
       '@babel/core': 7.28.5
@@ -64235,10 +63794,6 @@ snapshots:
     optionalDependencies:
       vite: 6.0.7(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
 
-  vitefu@0.2.5(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)):
-    optionalDependencies:
-      vite: 7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
-
   vitefu@0.2.5(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)):
     optionalDependencies:
       vite: 7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
@@ -64246,10 +63801,6 @@ snapshots:
   vitefu@1.1.1(vite@6.0.7(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)):
     optionalDependencies:
       vite: 6.0.7(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
-
-  vitefu@1.1.1(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)):
-    optionalDependencies:
-      vite: 7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
 
   vitefu@1.1.1(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)):
     optionalDependencies:
