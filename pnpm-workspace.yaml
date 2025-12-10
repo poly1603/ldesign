@@ -6,6 +6,7 @@ packages:
   # Libraries
   - 'libraries/*'
   - 'libraries/*/packages/*'
+  - 'libraries/*/playground'
   - '**/examples/*'
   - '!libraries/chart/examples/*'
   - '!**/demo'
