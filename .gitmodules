@@ -330,3 +330,7 @@
 	path = libraries/ppt
 	url = https://github.com/poly1603/ldesign-ppt.git
 	branch = main
+[submodule "libraries/doc"]
+	path = libraries/doc
+	url = https://github.com/poly1603/ldesign-doc.git
+	branch = main
