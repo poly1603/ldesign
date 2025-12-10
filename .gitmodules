@@ -326,3 +326,7 @@
 	path = tools/webfont
 	url = https://github.com/poly1603/ldesign-webfont.git
 	branch = main
+[submodule "libraries/ppt"]
+	path = libraries/ppt
+	url = https://github.com/poly1603/ldesign-ppt.git
+	branch = main

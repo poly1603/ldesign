@@ -1436,6 +1436,15 @@ importers:
         specifier: ^5.0.8
         version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
+  libraries/chart/packages/core/examples/charts:
+    devDependencies:
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+      vite:
+        specifier: ^6.1.0
+        version: 6.4.1(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+
   libraries/chart/packages/react:
     dependencies:
       '@ldesign/chart-core':
@@ -2725,94 +2734,90 @@ importers:
         specifier: ^1.0.4
         version: 1.6.1(@types/node@20.19.25)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
-  libraries/excel/examples/vue-demo:
-    dependencies:
-      '@excel-renderer/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@excel-renderer/vue':
-        specifier: workspace:*
-        version: link:../../packages/vue
-      vue:
-        specifier: ^3.3.10
-        version: 3.5.25(typescript@5.9.3)
-    devDependencies:
-      '@vitejs/plugin-vue':
-        specifier: ^4.5.0
-        version: 4.5.2(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.25(typescript@5.9.3))
-      '@vue/tsconfig':
-        specifier: ^0.5.0
-        version: 0.5.1
-      typescript:
-        specifier: ^5.3.2
-        version: 5.9.3
-      vite:
-        specifier: ^5.0.5
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-      vue-tsc:
-        specifier: ^1.8.25
-        version: 1.8.27(typescript@5.9.3)
-
   libraries/excel/packages/core:
     dependencies:
-      xlsx:
-        specifier: ^0.18.5
-        version: 0.18.5
+      fflate:
+        specifier: ^0.8.1
+        version: 0.8.2
+      jszip:
+        specifier: ^3.10.1
+        version: 3.10.1
     devDependencies:
+      '@rollup/plugin-commonjs':
+        specifier: ^25.0.7
+        version: 25.0.8(rollup@4.53.2)
+      '@rollup/plugin-node-resolve':
+        specifier: ^15.2.3
+        version: 15.3.1(rollup@4.53.2)
+      '@rollup/plugin-terser':
+        specifier: ^0.4.4
+        version: 0.4.4(rollup@4.53.2)
+      '@rollup/plugin-typescript':
+        specifier: ^11.1.5
+        version: 11.1.6(rollup@4.53.2)(tslib@2.8.1)(typescript@5.9.3)
       '@types/node':
         specifier: ^20.10.0
         version: 20.19.25
       rimraf:
         specifier: ^5.0.5
         version: 5.0.5
+      rollup:
+        specifier: ^4.1.4
+        version: 4.53.2
+      rollup-plugin-postcss:
+        specifier: ^4.0.2
+        version: 4.0.2(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.19.25)(typescript@5.9.3))
+      tslib:
+        specifier: ^2.6.2
+        version: 2.8.1
       typescript:
         specifier: ^5.3.2
         version: 5.9.3
-      vite:
-        specifier: ^5.0.5
-        version: 5.4.21(@types/node@20.19.25)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-      vite-plugin-dts:
-        specifier: ^3.6.4
-        version: 3.7.0(@types/node@20.19.25)(rollup@4.53.2)(typescript@5.9.3)(vite@5.4.21(@types/node@20.19.25)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
       vitest:
         specifier: ^1.0.4
         version: 1.6.1(@types/node@20.19.25)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/excel/packages/vue:
     dependencies:
-      '@excel-renderer/core':
+      '@excel-viewer/core':
         specifier: workspace:*
         version: link:../core
-      '@vueuse/core':
-        specifier: ^10.7.0
-        version: 10.7.0(vue@3.5.25(typescript@5.9.3))
     devDependencies:
-      '@types/node':
-        specifier: ^20.10.0
-        version: 20.19.25
-      '@vitejs/plugin-vue':
-        specifier: ^4.5.0
-        version: 4.5.2(vite@5.4.21(@types/node@20.19.25)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.25(typescript@5.9.3))
+      '@rollup/plugin-commonjs':
+        specifier: ^25.0.7
+        version: 25.0.8(rollup@4.53.2)
+      '@rollup/plugin-node-resolve':
+        specifier: ^15.2.3
+        version: 15.3.1(rollup@4.53.2)
+      '@rollup/plugin-terser':
+        specifier: ^0.4.4
+        version: 0.4.4(rollup@4.53.2)
+      '@rollup/plugin-typescript':
+        specifier: ^11.1.5
+        version: 11.1.6(rollup@4.53.2)(tslib@2.8.1)(typescript@5.9.3)
+      '@vue/compiler-sfc':
+        specifier: ^3.3.4
+        version: 3.5.25
       rimraf:
         specifier: ^5.0.5
         version: 5.0.5
+      rollup:
+        specifier: ^4.1.4
+        version: 4.53.2
+      rollup-plugin-postcss:
+        specifier: ^4.0.2
+        version: 4.0.2(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@24.10.1)(typescript@5.9.3))
+      rollup-plugin-vue:
+        specifier: ^6.0.0
+        version: 6.0.0(@vue/compiler-sfc@3.5.25)
       typescript:
         specifier: ^5.3.2
         version: 5.9.3
-      vite:
-        specifier: ^5.0.5
-        version: 5.4.21(@types/node@20.19.25)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-      vite-plugin-dts:
-        specifier: ^3.6.4
-        version: 3.7.0(@types/node@20.19.25)(rollup@4.53.2)(typescript@5.9.3)(vite@5.4.21(@types/node@20.19.25)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
-      vitest:
-        specifier: ^1.0.4
-        version: 1.6.1(@types/node@20.19.25)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
       vue:
-        specifier: ^3.3.10
+        specifier: ^3.3.4
         version: 3.5.25(typescript@5.9.3)
       vue-tsc:
-        specifier: ^1.8.25
+        specifier: ^1.8.0
         version: 1.8.27(typescript@5.9.3)
 
   libraries/flowchart:
@@ -4258,9 +4263,6 @@ importers:
       howler:
         specifier: ^2.2.4
         version: 2.2.4
-      react:
-        specifier: ^16.8.0 || ^17.0.0 || ^18.0.0
-        version: 18.3.1
       vue:
         specifier: ^3.0.0
         version: 3.5.22(typescript@5.9.3)
@@ -4303,65 +4305,6 @@ importers:
         specifier: ^1.2.1
         version: 1.6.1(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
-  libraries/player/packages/lit:
-    dependencies:
-      '@ldesign/player-core':
-        specifier: workspace:*
-        version: link:../core
-      '@ldesign/shared':
-        specifier: workspace:*
-        version: link:../../../../tools/shared
-      lit:
-        specifier: ^3.1.0
-        version: 3.2.1
-    devDependencies:
-      '@lit/reactive-element':
-        specifier: ^2.0.0
-        version: 2.0.0
-      rimraf:
-        specifier: ^5.0.5
-        version: 5.0.5
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      vitest:
-        specifier: ^1.2.1
-        version: 1.6.1(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  libraries/player/packages/react:
-    dependencies:
-      '@ldesign/player-core':
-        specifier: workspace:*
-        version: link:../core
-      '@ldesign/shared':
-        specifier: workspace:*
-        version: link:../../../../tools/shared
-    devDependencies:
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.18
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.5(@types/react@18.3.18)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.0
-        version: 4.3.4(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
-      rimraf:
-        specifier: ^5.0.5
-        version: 5.0.5
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      vitest:
-        specifier: ^1.2.1
-        version: 1.6.1(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
   libraries/player/packages/vue:
     dependencies:
       '@ldesign/player-core':
@@ -4392,6 +4335,71 @@ importers:
       vue-tsc:
         specifier: ^2.0.0
         version: 2.2.12(typescript@5.9.3)
+
+  libraries/ppt:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.25
+      eslint:
+        specifier: ^8.55.0
+        version: 8.57.0
+      prettier:
+        specifier: ^3.1.0
+        version: 3.6.2
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
+      typescript:
+        specifier: ^5.3.2
+        version: 5.9.3
+
+  libraries/ppt/packages/core:
+    dependencies:
+      fast-xml-parser:
+        specifier: ^4.3.2
+        version: 4.5.3
+      jszip:
+        specifier: ^3.10.1
+        version: 3.10.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.25
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.1(@microsoft/api-extractor@7.54.0(@types/node@20.19.25))(@swc/core@1.4.0(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
+      typescript:
+        specifier: ^5.3.2
+        version: 5.9.3
+      vitest:
+        specifier: ^1.0.4
+        version: 1.6.1(@types/node@20.19.25)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+
+  libraries/ppt/packages/vue:
+    dependencies:
+      '@ldesign/ppt-core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.25
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.1(@microsoft/api-extractor@7.54.0(@types/node@20.19.25))(@swc/core@1.4.0(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
+      typescript:
+        specifier: ^5.3.2
+        version: 5.9.3
+      vue:
+        specifier: ^3.3.0
+        version: 3.5.25(typescript@5.9.3)
+      vue-tsc:
+        specifier: ^1.8.25
+        version: 1.8.27(typescript@5.9.3)
 
   libraries/progress:
     devDependencies:
@@ -6055,71 +6063,11 @@ importers:
         specifier: ^3.3.4
         version: 3.5.22(typescript@5.9.3)
 
-  libraries/word/examples/vite-react:
-    dependencies:
-      '@word-viewer/core':
-        specifier: file:../../packages/core
-        version: file:libraries/word/packages/core
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.18
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.5(@types/react@18.3.18)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.0
-        version: 4.3.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  libraries/word/examples/vite-vanilla:
-    dependencies:
-      '@word-viewer/core':
-        specifier: file:../../packages/core
-        version: file:libraries/word/packages/core
-    devDependencies:
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  libraries/word/examples/vite-vue:
-    dependencies:
-      '@word-viewer/core':
-        specifier: file:../../packages/core
-        version: file:libraries/word/packages/core
-      vue:
-        specifier: ^3.3.4
-        version: 3.5.22(typescript@5.9.3)
-    devDependencies:
-      '@vitejs/plugin-vue':
-        specifier: ^5.0.0
-        version: 5.2.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.22(typescript@5.9.3))
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
   libraries/word/packages/core:
     dependencies:
-      docx:
-        specifier: ^9.0.2
-        version: 9.0.2
-      docx-preview:
-        specifier: ^0.3.0
-        version: 0.3.7
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
-      mammoth:
-        specifier: ^1.6.0
-        version: 1.6.0
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -6127,98 +6075,18 @@ importers:
       '@rollup/plugin-node-resolve':
         specifier: ^15.2.3
         version: 15.3.1(rollup@4.52.5)
-      '@rollup/plugin-terser':
-        specifier: ^0.4.4
-        version: 0.4.4(rollup@4.52.5)
       '@rollup/plugin-typescript':
         specifier: ^11.1.5
         version: 11.1.6(rollup@4.52.5)(tslib@2.8.1)(typescript@5.9.3)
-      postcss:
-        specifier: ^8.4.31
-        version: 8.5.6
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
       rollup:
         specifier: ^4.1.4
         version: 4.52.5
       rollup-plugin-postcss:
         specifier: ^4.0.2
         version: 4.0.2(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@24.10.1)(typescript@5.9.3))
-      tslib:
-        specifier: ^2.6.2
-        version: 2.8.1
-      typescript:
-        specifier: ^5.2.2
-        version: 5.9.3
-
-  libraries/word/packages/lit:
-    dependencies:
-      '@word-viewer/core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@rollup/plugin-commonjs':
-        specifier: ^25.0.7
-        version: 25.0.8(rollup@4.52.5)
-      '@rollup/plugin-node-resolve':
-        specifier: ^15.2.3
-        version: 15.3.1(rollup@4.52.5)
-      '@rollup/plugin-terser':
-        specifier: ^0.4.4
-        version: 0.4.4(rollup@4.52.5)
-      '@rollup/plugin-typescript':
-        specifier: ^11.1.5
-        version: 11.1.6(rollup@4.52.5)(tslib@2.8.1)(typescript@5.9.3)
-      lit:
-        specifier: ^3.0.0
-        version: 3.2.1
-      rollup:
-        specifier: ^4.1.4
-        version: 4.52.5
-      typescript:
-        specifier: ^5.2.2
-        version: 5.9.3
-
-  libraries/word/packages/react:
-    dependencies:
-      '@word-viewer/core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      '@babel/core':
-        specifier: ^7.23.0
-        version: 7.28.5
-      '@babel/preset-react':
-        specifier: ^7.22.0
-        version: 7.28.5(@babel/core@7.28.5)
-      '@babel/preset-typescript':
-        specifier: ^7.23.0
-        version: 7.27.1(@babel/core@7.28.5)
-      '@rollup/plugin-babel':
-        specifier: ^6.0.4
-        version: 6.0.4(@babel/core@7.28.5)(@types/babel__core@7.20.5)(rollup@4.52.5)
-      '@rollup/plugin-commonjs':
-        specifier: ^25.0.7
-        version: 25.0.8(rollup@4.52.5)
-      '@rollup/plugin-node-resolve':
-        specifier: ^15.2.3
-        version: 15.3.1(rollup@4.52.5)
-      '@rollup/plugin-typescript':
-        specifier: ^11.1.5
-        version: 11.1.6(rollup@4.52.5)(tslib@2.8.1)(typescript@5.9.3)
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.18
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
-      rollup:
-        specifier: ^4.1.4
-        version: 4.52.5
-      rollup-plugin-terser:
-        specifier: ^7.0.2
-        version: 7.0.2(rollup@4.52.5)
       typescript:
         specifier: ^5.2.2
         version: 5.9.3
@@ -6226,7 +6094,7 @@ importers:
   libraries/word/packages/vue:
     dependencies:
       '@word-viewer/core':
-        specifier: workspace:*
+        specifier: ^1.0.0
         version: link:../core
     devDependencies:
       '@rollup/plugin-commonjs':
@@ -6238,18 +6106,18 @@ importers:
       '@rollup/plugin-typescript':
         specifier: ^11.1.5
         version: 11.1.6(rollup@4.52.5)(tslib@2.8.1)(typescript@5.9.3)
-      postcss:
-        specifier: ^8.4.31
-        version: 8.5.6
+      '@vue/compiler-sfc':
+        specifier: ^3.3.4
+        version: 3.5.25
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
       rollup:
         specifier: ^4.1.4
         version: 4.52.5
       rollup-plugin-postcss:
         specifier: ^4.0.2
         version: 4.0.2(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@24.10.1)(typescript@5.9.3))
-      rollup-plugin-terser:
-        specifier: ^7.0.2
-        version: 7.0.2(rollup@4.52.5)
       rollup-plugin-vue:
         specifier: ^6.0.0
         version: 6.0.0(@vue/compiler-sfc@3.5.25)
@@ -6259,6 +6127,9 @@ importers:
       vue:
         specifier: ^3.3.4
         version: 3.5.22(typescript@5.9.3)
+      vue-tsc:
+        specifier: ^1.8.0
+        version: 1.8.27(typescript@5.9.3)
 
   packages/auth:
     dependencies:
@@ -7595,7 +7466,24 @@ importers:
         specifier: ^3.0.0
         version: 3.1.2(typescript@5.9.3)
 
-  packages/notification: {}
+  packages/notification:
+    dependencies:
+      '@ldesign/notification-core':
+        specifier: workspace:*
+        version: link:packages/core
+      '@ldesign/notification-vue':
+        specifier: workspace:*
+        version: link:packages/vue
+    devDependencies:
+      '@ldesign/builder':
+        specifier: workspace:*
+        version: link:../../tools/builder
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
 
   packages/notification/packages/core:
     devDependencies:
@@ -18377,9 +18265,6 @@ packages:
   '@vue/test-utils@2.4.6':
     resolution: {integrity: sha512-FMxEjOpYNYiFe0GkaHsnJPXFHxQ6m4t8vI/ElPGpMWxZKpmRvQ33OIrvRXemy6yha03RxhOlQuy+gZMC3CQSow==}
 
-  '@vue/tsconfig@0.5.1':
-    resolution: {integrity: sha512-VcZK7MvpjuTPx2w6blwnwZAu5/LgBUtejFOi3pPGQFXQN5Ela03FUtd2Qtg4yWGGissVL0dr6Ro1LfOFh+PCuQ==}
-
   '@vueuse/core@10.7.0':
     resolution: {integrity: sha512-4EUDESCHtwu44ZWK3Gc/hZUVhVo/ysvdtwocB5vcauSV4B7NiGY5972WnsojB3vRNdxvAt7kzJWE2h9h7C9d5w==}
 
@@ -18508,9 +18393,6 @@ packages:
 
   '@webgpu/types@0.1.21':
     resolution: {integrity: sha512-pUrWq3V5PiSGFLeLxoGqReTZmiiXwY3jRkIG5sLLKjyqNxrwm/04b4nw7LSmGWJcKk59XOM/YRTUwOzo4MMlow==}
-
-  '@word-viewer/core@file:libraries/word/packages/core':
-    resolution: {directory: libraries/word/packages/core, type: directory}
 
   '@xmldom/xmldom@0.7.13':
     resolution: {integrity: sha512-lm2GW5PkosIzccsaZIz7tp8cPADSIlIHWDFTR1N0SzfinhhYgeIQjFMz4rYzanCScr3DqQLeomUDArp6MWKm+g==}
@@ -21019,10 +20901,6 @@ packages:
 
   docx@9.0.2:
     resolution: {integrity: sha512-Uyq4JUqF4mR55t6laO6mst9W9loV9l6tyAopqKvuxqFgmgZ8PHiXQV8RwpcrHE6SHVPQDHWK4lFjRzxXylI3vg==}
-    engines: {node: '>=10'}
-
-  docx@9.5.1:
-    resolution: {integrity: sha512-ABDI7JEirFD2+bHhOBlsGZxaG1UgZb2M/QMKhLSDGgVNhxDesTCDcP+qoDnDGjZ4EOXTRfUjUgwHVuZ6VSTfWQ==}
     engines: {node: '>=10'}
 
   dom-accessibility-api@0.5.16:
@@ -25108,11 +24986,6 @@ packages:
 
   makeerror@1.0.12:
     resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
-
-  mammoth@1.11.0:
-    resolution: {integrity: sha512-BcEqqY/BOwIcI1iR5tqyVlqc3KIaMRa4egSoK83YAVrBf6+yqdAAbtUcFDCWX8Zef8/fgNZ6rl4VUv+vVX8ddQ==}
-    engines: {node: '>=12.0.0'}
-    hasBin: true
 
   mammoth@1.6.0:
     resolution: {integrity: sha512-jOwbj6BwJzxCf6jr2l1zmSemniIkLnchvELXnDJCANlJawhzyIKObIq48B8kWEPLgUUh57k7FtEO3DHFQMnjMg==}
@@ -30824,6 +30697,46 @@ packages:
 
   vite@6.0.7:
     resolution: {integrity: sha512-RDt8r/7qx9940f8FcOIAH9PTViRrghKaK2K1jY3RaAURrEUbm9Du1mJ72G+jlhtG3WwodnfzY8ORQZbBavZEAQ==}
+    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': ^18.0.0 || ^20.0.0 || >=22.0.0
+      jiti: '>=1.21.0'
+      less: '*'
+      lightningcss: ^1.21.0
+      sass: '*'
+      sass-embedded: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.16.0
+      tsx: ^4.8.1
+      yaml: ^2.4.2
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      jiti:
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      sass:
+        optional: true
+      sass-embedded:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+      tsx:
+        optional: true
+      yaml:
+        optional: true
+
+  vite@6.4.1:
+    resolution: {integrity: sha512-+Oxm7q9hDoLMyJOYfUYBuHQo+dkAloi33apOPP56pzj+vsdJDzr+j1NISE5pyaAuKL4A3UD34qd0lx5+kfKp2g==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
     peerDependencies:
@@ -38688,14 +38601,6 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@microsoft/api-extractor-model@7.28.3(@types/node@20.19.25)':
-    dependencies:
-      '@microsoft/tsdoc': 0.14.2
-      '@microsoft/tsdoc-config': 0.16.2
-      '@rushstack/node-core-library': 3.62.0(@types/node@20.19.25)
-    transitivePeerDependencies:
-      - '@types/node'
-
   '@microsoft/api-extractor-model@7.28.3(@types/node@24.10.1)':
     dependencies:
       '@microsoft/tsdoc': 0.14.2
@@ -38761,23 +38666,6 @@ snapshots:
       '@microsoft/tsdoc': 0.14.2
       '@microsoft/tsdoc-config': 0.16.2
       '@rushstack/node-core-library': 3.62.0(@types/node@20.11.16)
-      '@rushstack/rig-package': 0.5.1
-      '@rushstack/ts-command-line': 4.17.1
-      colors: 1.2.5
-      lodash: 4.17.21
-      resolve: 1.22.11
-      semver: 7.5.4
-      source-map: 0.6.1
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@types/node'
-
-  '@microsoft/api-extractor@7.39.0(@types/node@20.19.25)':
-    dependencies:
-      '@microsoft/api-extractor-model': 7.28.3(@types/node@20.19.25)
-      '@microsoft/tsdoc': 0.14.2
-      '@microsoft/tsdoc-config': 0.16.2
-      '@rushstack/node-core-library': 3.62.0(@types/node@20.19.25)
       '@rushstack/rig-package': 0.5.1
       '@rushstack/ts-command-line': 4.17.1
       colors: 1.2.5
@@ -39882,6 +39770,17 @@ snapshots:
     optionalDependencies:
       rollup: 4.52.5
 
+  '@rollup/plugin-commonjs@25.0.8(rollup@4.53.2)':
+    dependencies:
+      '@rollup/pluginutils': 5.3.0(rollup@4.53.2)
+      commondir: 1.0.1
+      estree-walker: 2.0.2
+      glob: 8.1.0
+      is-reference: 1.2.1
+      magic-string: 0.30.21
+    optionalDependencies:
+      rollup: 4.53.2
+
   '@rollup/plugin-commonjs@28.0.8(rollup@4.52.5)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.52.5)
@@ -39992,6 +39891,14 @@ snapshots:
     optionalDependencies:
       rollup: 4.52.5
 
+  '@rollup/plugin-terser@0.4.4(rollup@4.53.2)':
+    dependencies:
+      serialize-javascript: 6.0.2
+      smob: 1.5.0
+      terser: 5.44.1
+    optionalDependencies:
+      rollup: 4.53.2
+
   '@rollup/plugin-typescript@11.1.6(rollup@4.52.5)(tslib@2.8.1)(typescript@5.9.3)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.52.5)
@@ -39999,6 +39906,15 @@ snapshots:
       typescript: 5.9.3
     optionalDependencies:
       rollup: 4.52.5
+      tslib: 2.8.1
+
+  '@rollup/plugin-typescript@11.1.6(rollup@4.53.2)(tslib@2.8.1)(typescript@5.9.3)':
+    dependencies:
+      '@rollup/pluginutils': 5.3.0(rollup@4.53.2)
+      resolve: 1.22.11
+      typescript: 5.9.3
+    optionalDependencies:
+      rollup: 4.53.2
       tslib: 2.8.1
 
   '@rollup/pluginutils@3.1.0(rollup@2.79.2)':
@@ -40203,18 +40119,6 @@ snapshots:
       z-schema: 5.0.5
     optionalDependencies:
       '@types/node': 20.11.16
-
-  '@rushstack/node-core-library@3.62.0(@types/node@20.19.25)':
-    dependencies:
-      colors: 1.2.5
-      fs-extra: 7.0.1
-      import-lazy: 4.0.0
-      jju: 1.4.0
-      resolve: 1.22.11
-      semver: 7.5.4
-      z-schema: 5.0.5
-    optionalDependencies:
-      '@types/node': 20.19.25
 
   '@rushstack/node-core-library@3.62.0(@types/node@24.10.1)':
     dependencies:
@@ -41405,7 +41309,7 @@ snapshots:
 
   '@types/cssnano@5.1.3(postcss@8.5.6)':
     dependencies:
-      cssnano: 7.1.1(postcss@8.5.6)
+      cssnano: 7.1.2(postcss@8.5.6)
     transitivePeerDependencies:
       - postcss
 
@@ -43289,11 +43193,6 @@ snapshots:
       vite: 5.4.21(@types/node@20.11.16)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
       vue: 3.5.22(typescript@5.9.3)
 
-  '@vitejs/plugin-vue@4.5.2(vite@5.4.21(@types/node@20.19.25)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.25(typescript@5.9.3))':
-    dependencies:
-      vite: 5.4.21(@types/node@20.19.25)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-      vue: 3.5.25(typescript@5.9.3)
-
   '@vitejs/plugin-vue@4.5.2(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.22(typescript@5.9.3))':
     dependencies:
       vite: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
@@ -44626,24 +44525,12 @@ snapshots:
       js-beautify: 1.15.4
       vue-component-type-helpers: 2.2.12
 
-  '@vue/tsconfig@0.5.1': {}
-
   '@vueuse/core@10.7.0(vue@3.5.22(typescript@5.9.3))':
     dependencies:
       '@types/web-bluetooth': 0.0.20
       '@vueuse/metadata': 10.7.0
       '@vueuse/shared': 10.7.0(vue@3.5.22(typescript@5.9.3))
       vue-demi: 0.14.10(vue@3.5.22(typescript@5.9.3))
-    transitivePeerDependencies:
-      - '@vue/composition-api'
-      - vue
-
-  '@vueuse/core@10.7.0(vue@3.5.25(typescript@5.9.3))':
-    dependencies:
-      '@types/web-bluetooth': 0.0.20
-      '@vueuse/metadata': 10.7.0
-      '@vueuse/shared': 10.7.0(vue@3.5.25(typescript@5.9.3))
-      vue-demi: 0.14.10(vue@3.5.25(typescript@5.9.3))
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
@@ -44700,13 +44587,6 @@ snapshots:
   '@vueuse/shared@10.7.0(vue@3.5.22(typescript@5.9.3))':
     dependencies:
       vue-demi: 0.14.10(vue@3.5.22(typescript@5.9.3))
-    transitivePeerDependencies:
-      - '@vue/composition-api'
-      - vue
-
-  '@vueuse/shared@10.7.0(vue@3.5.25(typescript@5.9.3))':
-    dependencies:
-      vue-demi: 0.14.10(vue@3.5.25(typescript@5.9.3))
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
@@ -44805,13 +44685,6 @@ snapshots:
       '@xtuc/long': 4.2.2
 
   '@webgpu/types@0.1.21': {}
-
-  '@word-viewer/core@file:libraries/word/packages/core':
-    dependencies:
-      docx: 9.5.1
-      docx-preview: 0.3.7
-      jszip: 3.10.1
-      mammoth: 1.11.0
 
   '@xmldom/xmldom@0.7.13': {}
 
@@ -47791,15 +47664,6 @@ snapshots:
   docx@9.0.2:
     dependencies:
       '@types/node': 22.19.1
-      hash.js: 1.1.7
-      jszip: 3.10.1
-      nanoid: 5.1.6
-      xml: 1.0.1
-      xml-js: 1.6.11
-
-  docx@9.5.1:
-    dependencies:
-      '@types/node': 24.10.1
       hash.js: 1.1.7
       jszip: 3.10.1
       nanoid: 5.1.6
@@ -53926,6 +53790,7 @@ snapshots:
       '@types/node': 20.19.25
       merge-stream: 2.0.0
       supports-color: 7.2.0
+    optional: true
 
   jest-worker@27.5.1:
     dependencies:
@@ -55206,19 +55071,6 @@ snapshots:
   makeerror@1.0.12:
     dependencies:
       tmpl: 1.0.5
-
-  mammoth@1.11.0:
-    dependencies:
-      '@xmldom/xmldom': 0.8.11
-      argparse: 1.0.10
-      base64-js: 1.5.1
-      bluebird: 3.4.7
-      dingbat-to-unicode: 1.0.1
-      jszip: 3.10.1
-      lop: 0.4.2
-      path-is-absolute: 1.0.1
-      underscore: 1.13.7
-      xmlbuilder: 10.1.1
 
   mammoth@1.6.0:
     dependencies:
@@ -57957,6 +57809,14 @@ snapshots:
       postcss: 8.5.6
       ts-node: 10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.11.16)(typescript@5.9.3)
 
+  postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.19.25)(typescript@5.9.3)):
+    dependencies:
+      lilconfig: 2.1.0
+      yaml: 1.10.2
+    optionalDependencies:
+      postcss: 8.5.6
+      ts-node: 10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.19.25)(typescript@5.9.3)
+
   postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@22.10.5)(typescript@5.9.3)):
     dependencies:
       lilconfig: 2.1.0
@@ -59455,6 +59315,25 @@ snapshots:
     transitivePeerDependencies:
       - ts-node
 
+  rollup-plugin-postcss@4.0.2(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.19.25)(typescript@5.9.3)):
+    dependencies:
+      chalk: 4.1.2
+      concat-with-sourcemaps: 1.1.0
+      cssnano: 5.1.15(postcss@8.5.6)
+      import-cwd: 3.0.0
+      p-queue: 6.6.2
+      pify: 5.0.0
+      postcss: 8.5.6
+      postcss-load-config: 3.1.4(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@20.19.25)(typescript@5.9.3))
+      postcss-modules: 4.3.1(postcss@8.5.6)
+      promise.series: 0.2.0
+      resolve: 1.22.11
+      rollup-pluginutils: 2.8.2
+      safe-identifier: 0.4.2
+      style-inject: 0.3.0
+    transitivePeerDependencies:
+      - ts-node
+
   rollup-plugin-postcss@4.0.2(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.4.0(@swc/helpers@0.5.17))(@types/node@22.10.5)(typescript@5.9.3)):
     dependencies:
       chalk: 4.1.2
@@ -59558,14 +59437,6 @@ snapshots:
       serialize-javascript: 4.0.0
       terser: 5.44.1
     optional: true
-
-  rollup-plugin-terser@7.0.2(rollup@4.52.5):
-    dependencies:
-      '@babel/code-frame': 7.27.1
-      jest-worker: 26.6.2
-      rollup: 4.52.5
-      serialize-javascript: 4.0.0
-      terser: 5.44.1
 
   rollup-plugin-visualizer@5.12.0(rollup@4.52.5):
     dependencies:
@@ -59943,6 +59814,7 @@ snapshots:
   serialize-javascript@4.0.0:
     dependencies:
       randombytes: 2.1.0
+    optional: true
 
   serialize-javascript@6.0.2:
     dependencies:
@@ -63290,22 +63162,6 @@ snapshots:
       - rollup
       - supports-color
 
-  vite-plugin-dts@3.7.0(@types/node@20.19.25)(rollup@4.53.2)(typescript@5.9.3)(vite@5.4.21(@types/node@20.19.25)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)):
-    dependencies:
-      '@microsoft/api-extractor': 7.39.0(@types/node@20.19.25)
-      '@rollup/pluginutils': 5.3.0(rollup@4.53.2)
-      '@vue/language-core': 1.8.27(typescript@5.9.3)
-      debug: 4.4.3
-      kolorist: 1.8.0
-      typescript: 5.9.3
-      vue-tsc: 1.8.27(typescript@5.9.3)
-    optionalDependencies:
-      vite: 5.4.21(@types/node@20.19.25)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-    transitivePeerDependencies:
-      - '@types/node'
-      - rollup
-      - supports-color
-
   vite-plugin-dts@3.7.0(@types/node@24.10.1)(rollup@4.53.2)(typescript@5.9.3)(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)):
     dependencies:
       '@microsoft/api-extractor': 7.39.0(@types/node@24.10.1)
@@ -63634,6 +63490,26 @@ snapshots:
       esbuild: 0.24.2
       postcss: 8.5.6
       rollup: 4.53.2
+    optionalDependencies:
+      '@types/node': 24.10.1
+      fsevents: 2.3.3
+      jiti: 2.6.1
+      less: 4.4.2
+      lightningcss: 1.30.2
+      sass: 1.93.3
+      stylus: 0.54.8
+      terser: 5.44.1
+      tsx: 4.20.6
+      yaml: 2.8.1
+
+  vite@6.4.1(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1):
+    dependencies:
+      esbuild: 0.25.12
+      fdir: 6.5.0(picomatch@4.0.3)
+      picomatch: 4.0.3
+      postcss: 8.5.6
+      rollup: 4.53.2
+      tinyglobby: 0.2.15
     optionalDependencies:
       '@types/node': 24.10.1
       fsevents: 2.3.3
