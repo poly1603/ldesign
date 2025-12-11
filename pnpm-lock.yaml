@@ -2624,6 +2624,48 @@ importers:
       '@ldesign/doc':
         specifier: workspace:*
         version: link:..
+      ldoc-plugin-reading-time:
+        specifier: workspace:*
+        version: link:../test/reading-time
+      ldoc-theme-minimal:
+        specifier: workspace:*
+        version: link:../test/minimal
+
+  libraries/doc/test/minimal:
+    devDependencies:
+      '@ldesign/doc':
+        specifier: workspace:*
+        version: link:../..
+      '@vitejs/plugin-vue':
+        specifier: ^5.0.0
+        version: 5.2.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.25(typescript@5.9.3))
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+      vite:
+        specifier: ^5.0.0
+        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vue:
+        specifier: ^3.4.0
+        version: 3.5.25(typescript@5.9.3)
+      vue-tsc:
+        specifier: ^2.0.0
+        version: 2.2.12(typescript@5.9.3)
+
+  libraries/doc/test/reading-time:
+    devDependencies:
+      '@ldesign/doc':
+        specifier: workspace:*
+        version: link:../..
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(@microsoft/api-extractor@7.54.0(@types/node@24.10.1))(@swc/core@1.4.0(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+      vue:
+        specifier: ^3.4.0
+        version: 3.5.25(typescript@5.9.3)
 
   libraries/editor:
     devDependencies:
@@ -3064,181 +3106,65 @@ importers:
 
   libraries/flowchart:
     devDependencies:
-      '@rollup/plugin-commonjs':
-        specifier: ^25.0.7
-        version: 25.0.8(rollup@4.52.5)
-      '@rollup/plugin-node-resolve':
-        specifier: ^15.2.3
-        version: 15.3.1(rollup@4.52.5)
-      '@rollup/plugin-typescript':
-        specifier: ^11.1.5
-        version: 11.1.6(rollup@4.52.5)(tslib@2.8.1)(typescript@5.9.3)
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^6.0.0
-        version: 6.19.1(@typescript-eslint/parser@6.19.1(eslint@8.57.0)(typescript@5.9.3))(eslint@8.57.0)(typescript@5.9.3)
-      '@typescript-eslint/parser':
-        specifier: ^6.0.0
-        version: 6.19.1(eslint@8.57.0)(typescript@5.9.3)
-      '@vitest/coverage-v8':
-        specifier: ^1.0.0
-        version: 1.6.1(vitest@1.6.1)
-      '@vitest/ui':
-        specifier: ^1.0.0
-        version: 1.6.1(vitest@1.6.1)
-      eslint:
-        specifier: ^8.0.0
-        version: 8.57.0
-      jsdom:
-        specifier: ^23.0.0
-        version: 23.2.0(canvas@2.11.2(encoding@0.1.13))
-      prettier:
-        specifier: ^3.0.0
-        version: 3.2.5
-      rollup:
-        specifier: ^4.9.6
-        version: 4.52.5
-      rollup-plugin-dts:
-        specifier: ^6.1.0
-        version: 6.1.0(rollup@4.52.5)(typescript@5.9.3)
-      tslib:
-        specifier: ^2.6.2
-        version: 2.8.1
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
-      vitest:
-        specifier: ^1.0.0
-        version: 1.6.1(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@23.2.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/flowchart/packages/core:
-    dependencies:
-      eventemitter3:
-        specifier: ^5.0.1
-        version: 5.0.1
-      lodash-es:
-        specifier: ^4.17.21
-        version: 4.17.21
-      uuid:
-        specifier: ^9.0.1
-        version: 9.0.1
     devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      '@types/node':
-        specifier: ^20.10.0
-        version: 20.11.16
-      '@types/uuid':
-        specifier: ^9.0.7
-        version: 9.0.7
-      '@vitest/coverage-v8':
-        specifier: ^1.0.0
-        version: 1.6.1(vitest@1.6.1)
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(@microsoft/api-extractor@7.54.0(@types/node@24.10.1))(@swc/core@1.4.0(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
       typescript:
-        specifier: ^5.3.3
+        specifier: ^5.3.0
         version: 5.9.3
-      vitest:
-        specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  libraries/flowchart/packages/lit:
-    dependencies:
-      '@ldesign/flowchart-core':
-        specifier: workspace:*
-        version: link:../core
-      '@lit/reactive-element':
-        specifier: ^2.0.0
-        version: 2.0.0
-      lit:
-        specifier: ^3.0.0
-        version: 3.2.1
-      lit-html:
-        specifier: ^3.0.0
-        version: 3.0.0
-    devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      '@types/node':
-        specifier: ^20.10.0
-        version: 20.11.16
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vitest:
-        specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  libraries/flowchart/packages/react:
-    dependencies:
-      '@ldesign/flowchart-core':
-        specifier: workspace:*
-        version: link:../core
-      classnames:
-        specifier: ^2.3.2
-        version: 2.3.2
-      react:
-        specifier: ^18.0.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.0.0
-        version: 18.3.1(react@18.3.1)
-      use-immer:
-        specifier: ^0.9.0
-        version: 0.9.0(immer@10.2.0)(react@18.3.1)
-    devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      '@types/node':
-        specifier: ^20.10.0
-        version: 20.11.16
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.18
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.5(@types/react@18.3.18)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.0
-        version: 4.3.4(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-      vitest:
-        specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/flowchart/packages/vue:
     dependencies:
-      '@ldesign/flowchart-core':
+      '@flowchart/core':
         specifier: workspace:*
         version: link:../core
-      '@vueuse/core':
-        specifier: ^10.7.0
-        version: 10.7.0(vue@3.5.22(typescript@5.9.3))
-      vue:
-        specifier: ^3.3.0
-        version: 3.5.22(typescript@5.9.3)
     devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../../../tools/builder
-      '@types/node':
-        specifier: ^20.10.0
-        version: 20.11.16
-      '@vitejs/plugin-vue':
-        specifier: ^4.5.0
-        version: 4.5.2(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(vue@3.5.22(typescript@5.9.3))
-      '@vue/compiler-sfc':
-        specifier: ^3.3.0
-        version: 3.5.13
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(@microsoft/api-extractor@7.54.0(@types/node@24.10.1))(@swc/core@1.4.0(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
       typescript:
-        specifier: ^5.3.3
+        specifier: ^5.3.0
         version: 5.9.3
-      vitest:
-        specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.11.16)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vue:
+        specifier: ^3.4.0
+        version: 3.5.25(typescript@5.9.3)
+
+  libraries/flowchart/playground:
+    dependencies:
+      '@flowchart/core':
+        specifier: workspace:*
+        version: link:../packages/core
+      '@flowchart/vue':
+        specifier: workspace:*
+        version: link:../packages/vue
+      highlight.js:
+        specifier: ^11.9.0
+        version: 11.11.1
+      lucide-vue-next:
+        specifier: ^0.454.0
+        version: 0.454.0(vue@3.5.25(typescript@5.9.3))
+      vue:
+        specifier: ^3.4.0
+        version: 3.5.25(typescript@5.9.3)
+      vue-router:
+        specifier: ^4.2.0
+        version: 4.6.3(vue@3.5.25(typescript@5.9.3))
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: ^5.0.0
+        version: 5.2.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.25(typescript@5.9.3))
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vite:
+        specifier: ^5.0.0
+        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
       vue-tsc:
         specifier: ^1.8.0
         version: 1.8.27(typescript@5.9.3)
@@ -5562,92 +5488,66 @@ importers:
         version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
   libraries/tree:
-    dependencies:
-      '@ldesign/shared':
-        specifier: workspace:*
-        version: link:../../tools/shared
-      react:
-        specifier: '>=16.8.0'
-        version: 18.3.1
-    devDependencies:
-      '@ldesign/builder':
-        specifier: workspace:*
-        version: link:../../tools/builder
-      '@types/react':
-        specifier: ^18.0.0
-        version: 18.3.18
-      lit:
-        specifier: ^2.8.0
-        version: 2.8.0
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-      vue:
-        specifier: ^3.0.0
-        version: 3.5.22(typescript@5.9.3)
-
-  libraries/tree/examples/lit-demo:
-    dependencies:
-      '@ldesign/tree':
-        specifier: workspace:*
-        version: link:../..
-      lit:
-        specifier: ^2.8.0
-        version: 2.8.0
     devDependencies:
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
-  libraries/tree/examples/react-demo:
-    dependencies:
-      '@ldesign/tree':
-        specifier: workspace:*
-        version: link:../..
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+  libraries/tree/packages/core:
     devDependencies:
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.18
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.5(@types/react@18.3.18)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.0
-        version: 4.3.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(@microsoft/api-extractor@7.54.0(@types/node@24.10.1))(@swc/core@1.4.0(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
-  libraries/tree/examples/vue-demo:
+  libraries/tree/packages/vue:
     dependencies:
-      '@ldesign/tree':
+      '@ldesign/tree-core':
         specifier: workspace:*
-        version: link:../..
-      vue:
-        specifier: ^3.4.0
-        version: 3.5.22(typescript@5.9.3)
+        version: link:../core
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.0.0
-        version: 5.2.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.22(typescript@5.9.3))
+        version: 5.2.4(vite@7.2.2(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))(vue@3.5.25(typescript@5.9.3))
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(@microsoft/api-extractor@7.54.0(@types/node@24.10.1))(@swc/core@1.4.0(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vue:
+        specifier: ^3.4.0
+        version: 3.5.25(typescript@5.9.3)
+
+  libraries/tree/playground:
+    dependencies:
+      '@ldesign/tree-core':
+        specifier: workspace:*
+        version: link:../packages/core
+      '@ldesign/tree-vue':
+        specifier: workspace:*
+        version: link:../packages/vue
+      lucide-vue-next:
+        specifier: ^0.454.0
+        version: 0.454.0(vue@3.5.25(typescript@5.9.3))
+      vue:
+        specifier: ^3.4.0
+        version: 3.5.25(typescript@5.9.3)
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: ^5.0.0
+        version: 5.2.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.25(typescript@5.9.3))
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
       vite:
         specifier: ^5.0.0
         version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vue-tsc:
+        specifier: ^2.0.0
+        version: 2.2.12(typescript@5.9.3)
 
   libraries/upload:
     dependencies:
@@ -5701,49 +5601,55 @@ importers:
         specifier: ^3.4.0
         version: 3.5.22(typescript@5.9.3)
 
-  libraries/upload/examples/react:
-    dependencies:
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+  libraries/upload/packages/core:
     devDependencies:
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.18
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.5(@types/react@18.3.18)
-      '@vitejs/plugin-react':
-        specifier: ^4.2.0
-        version: 4.3.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(@microsoft/api-extractor@7.54.0(@types/node@24.10.1))(@swc/core@1.4.0(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest:
+        specifier: ^1.0.0
+        version: 1.6.1(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@27.0.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
 
-  libraries/upload/examples/vanilla:
+  libraries/upload/packages/vue:
+    dependencies:
+      '@ldesign/upload-core':
+        specifier: workspace:*
+        version: link:../core
     devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(@microsoft/api-extractor@7.54.0(@types/node@24.10.1))(@swc/core@1.4.0(@swc/helpers@0.5.17))(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
-
-  libraries/upload/examples/vue:
-    dependencies:
       vue:
         specifier: ^3.4.0
-        version: 3.5.22(typescript@5.9.3)
+        version: 3.5.25(typescript@5.9.3)
+
+  libraries/upload/playground:
+    dependencies:
+      '@ldesign/upload-core':
+        specifier: workspace:*
+        version: link:../packages/core
+      lucide-vue-next:
+        specifier: ^0.294.0
+        version: 0.294.0(vue@3.5.25(typescript@5.9.3))
+      prismjs:
+        specifier: ^1.29.0
+        version: 1.30.0
+      vue:
+        specifier: ^3.4.0
+        version: 3.5.25(typescript@5.9.3)
+      vue-router:
+        specifier: ^4.2.0
+        version: 4.6.3(vue@3.5.25(typescript@5.9.3))
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.0.0
-        version: 5.2.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.22(typescript@5.9.3))
+        version: 5.2.4(vite@5.4.21(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1))(vue@3.5.25(typescript@5.9.3))
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
@@ -14602,12 +14508,6 @@ packages:
     peerDependencies:
       '@types/react': 17 || 18
 
-  '@lit/reactive-element@1.6.3':
-    resolution: {integrity: sha512-QuTgnG52Poic7uM1AN5yJ09QMe0O28e10XzSvWDz02TJiiKee4stsiownEIadWm8nYzyDAyT+gKzUoZmiWQtsQ==}
-
-  '@lit/reactive-element@2.0.0':
-    resolution: {integrity: sha512-wn+2+uDcs62ROBmVAwssO4x5xue/uKD3MGGZOXL2sMxReTRIT0JXKyMXeu7gh0aJ4IJNEIG/3aOnUaQvM7BMzQ==}
-
   '@lit/reactive-element@2.1.1':
     resolution: {integrity: sha512-N+dm5PAYdQ8e6UlywyyrgI2t++wFGXfHx+dSJ1oBrg6FAxUj40jId++EaRm80MKX5JnlH1sBsyZ5h0bcZKemCg==}
 
@@ -17063,9 +16963,6 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
-
-  '@types/uuid@9.0.7':
-    resolution: {integrity: sha512-WUtIVRUZ9i5dYXefDEAI7sh9/O7jGvHg7Df/5O/gtH3Yabe5odI3UWopVR1qbPXQtvOxWu3mM4XxlYeZtMWF4g==}
 
   '@types/validator@13.15.6':
     resolution: {integrity: sha512-jc8VD+GfyVLfjVXG9qGq7MPR4UTz6e2fNHI6xmZhZ37f3iZLn0KecpxUnTsHLOPGgf1PfHUZmteBIJVsnYTDkQ==}
@@ -19603,9 +19500,6 @@ packages:
 
   class-validator@0.14.2:
     resolution: {integrity: sha512-3kMVRF2io8N8pY1IFIXlho9r8IPUUIfHe2hYVtiebvAzU2XeQFXTv+XI4WX+TnXmtwXMDcjngcpkiPM0O9PvLw==}
-
-  classnames@2.3.2:
-    resolution: {integrity: sha512-CSbhY4cFEJRe6/GQzIk5qXZ4Jeg5pcsP7b5peFSDpffpe1cqjASH/n9UTjBwOp6XpMSTwQ8Za2K5V02ueA7Tmw==}
 
   clean-css@5.3.0:
     resolution: {integrity: sha512-YYuuxv4H/iNb1Z/5IbMRoxgrzjWGhOEFfd+groZ5dMCVkpENiMZmwspdrzBo9286JjM1gZJPAyL7ZIdzuvu2AQ==}
@@ -23077,9 +22971,6 @@ packages:
   immediate@3.0.6:
     resolution: {integrity: sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==}
 
-  immer@10.2.0:
-    resolution: {integrity: sha512-d/+XTN3zfODyjr89gM3mPq1WNX2B8pYsu7eORitdwyA2sBubnTl3laYlBk4sXY5FUa5qTZGBDPJICVbvqzjlbw==}
-
   immutable@3.8.2:
     resolution: {integrity: sha512-15gZoQ38eYjEjxkorfbcgBKBL6R7T459OuK+CpcWt7O3KF4uPCx2tD0uFETlUDIyo+1789crbMhTvQBSR5yBMg==}
     engines: {node: '>=0.10.0'}
@@ -24438,23 +24329,11 @@ packages:
     resolution: {integrity: sha512-iyAZCeyD+c1gPyE9qpFu8af0Y+MRtmKOncdGoA2S5EY8iFq99dmmvkNnHiWo+pj0s7yH7l3KPIgee77tKpXPWQ==}
     engines: {node: '>=18.0.0'}
 
-  lit-element@3.3.3:
-    resolution: {integrity: sha512-XbeRxmTHubXENkV4h8RIPyr8lXc+Ff28rkcQzw3G6up2xg5E8Zu1IgOWIwBLEQsu3cOVFqdYwiVi0hv0SlpqUA==}
-
   lit-element@4.2.1:
     resolution: {integrity: sha512-WGAWRGzirAgyphK2urmYOV72tlvnxw7YfyLDgQ+OZnM9vQQBQnumQ7jUJe6unEzwGU3ahFOjuz1iz1jjrpCPuw==}
 
-  lit-html@2.8.0:
-    resolution: {integrity: sha512-o9t+MQM3P4y7M7yNzqAyjp7z+mQGa4NS4CxiyLqFPyFWyc4O+nodLrkrxSaCTrla6M5YOLaT3RpbbqjszB5g3Q==}
-
-  lit-html@3.0.0:
-    resolution: {integrity: sha512-DNJIE8dNY0dQF2Gs0sdMNUppMQT2/CvV4OVnSdg7BXAsGqkVwsE5bqQ04POfkYH5dBIuGnJYdFz5fYYyNnOxiA==}
-
   lit-html@3.3.1:
     resolution: {integrity: sha512-S9hbyDu/vs1qNrithiNyeyv64c9yqiW9l+DBgI18fL+MTvOtWoFR0FWiyq1TxaYef5wNlpEmzlXoBlZEO+WjoA==}
-
-  lit@2.8.0:
-    resolution: {integrity: sha512-4Sc3OFX9QHOJaHbmTMk28SYgVxLN3ePDjg7hofEft2zWlehFL3LiAuapWc4U/kYwMYJSh2hTCPZ6/LIC7ii0MA==}
 
   lit@3.2.1:
     resolution: {integrity: sha512-1BBa1E/z0O9ye5fZprPtdqnc0BFzxIxTTOO/tQFmyC/hj1O3jL4TfmLBw0WEwjAokdLwpclkvGgDJwTIh0/22w==}
@@ -30353,12 +30232,6 @@ packages:
   urlpattern-polyfill@10.0.0:
     resolution: {integrity: sha512-H/A06tKD7sS1O1X2SshBVeA5FLycRpjqiBeqGKmBwBDBy28EnRjORxTNe269KSSr5un5qyWi1iL61wLxpd+ZOg==}
 
-  use-immer@0.9.0:
-    resolution: {integrity: sha512-/L+enLi0nvuZ6j4WlyK0US9/ECUtV5v9RUbtxnn5+WbtaXYUaOBoKHDNL9I5AETdurQ4rIFIj/s+Z5X80ATyKw==}
-    peerDependencies:
-      immer: '>=2.0.0'
-      react: ^16.8.0 || ^17.0.1 || ^18.0.0
-
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
@@ -30387,10 +30260,6 @@ packages:
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
-    hasBin: true
-
-  uuid@9.0.1:
-    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
 
   v8-compile-cache-lib@3.0.1:
@@ -37934,14 +37803,6 @@ snapshots:
     dependencies:
       '@types/react': 18.3.18
 
-  '@lit/reactive-element@1.6.3':
-    dependencies:
-      '@lit-labs/ssr-dom-shim': 1.4.0
-
-  '@lit/reactive-element@2.0.0':
-    dependencies:
-      '@lit-labs/ssr-dom-shim': 1.4.0
-
   '@lit/reactive-element@2.1.1':
     dependencies:
       '@lit-labs/ssr-dom-shim': 1.4.0
@@ -41511,8 +41372,6 @@ snapshots:
 
   '@types/unist@3.0.3': {}
 
-  '@types/uuid@9.0.7': {}
-
   '@types/validator@13.15.6': {}
 
   '@types/web-bluetooth@0.0.16': {}
@@ -42742,17 +42601,6 @@ snapshots:
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.2
       vite: 6.0.7(@types/node@24.10.1)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@vitejs/plugin-react@4.3.4(vite@7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1))':
-    dependencies:
-      '@babel/core': 7.28.5
-      '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.5)
-      '@babel/plugin-transform-react-jsx-source': 7.27.1(@babel/core@7.28.5)
-      '@types/babel__core': 7.20.5
-      react-refresh: 0.14.2
-      vite: 7.2.2(@types/node@20.11.16)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -46013,8 +45861,6 @@ snapshots:
       '@types/validator': 13.15.6
       libphonenumber-js: 1.12.26
       validator: 13.15.22
-
-  classnames@2.3.2: {}
 
   clean-css@5.3.0:
     dependencies:
@@ -49962,7 +49808,7 @@ snapshots:
       eslint: 8.57.0
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.9.3))(eslint@8.57.0)(typescript@5.9.3)
-      vitest: 1.6.1(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@23.2.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 1.6.1(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@23.2.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -52143,8 +51989,6 @@ snapshots:
 
   immediate@3.0.6: {}
 
-  immer@10.2.0: {}
-
   immutable@3.8.2: {}
 
   immutable@4.3.7: {}
@@ -54282,35 +54126,15 @@ snapshots:
       rfdc: 1.4.1
       wrap-ansi: 9.0.2
 
-  lit-element@3.3.3:
-    dependencies:
-      '@lit-labs/ssr-dom-shim': 1.4.0
-      '@lit/reactive-element': 1.6.3
-      lit-html: 2.8.0
-
   lit-element@4.2.1:
     dependencies:
       '@lit-labs/ssr-dom-shim': 1.4.0
       '@lit/reactive-element': 2.1.1
       lit-html: 3.3.1
 
-  lit-html@2.8.0:
-    dependencies:
-      '@types/trusted-types': 2.0.7
-
-  lit-html@3.0.0:
-    dependencies:
-      '@types/trusted-types': 2.0.7
-
   lit-html@3.3.1:
     dependencies:
       '@types/trusted-types': 2.0.7
-
-  lit@2.8.0:
-    dependencies:
-      '@lit/reactive-element': 1.6.3
-      lit-element: 3.3.3
-      lit-html: 2.8.0
 
   lit@3.2.1:
     dependencies:
@@ -62330,11 +62154,6 @@ snapshots:
 
   urlpattern-polyfill@10.0.0: {}
 
-  use-immer@0.9.0(immer@10.2.0)(react@18.3.1):
-    dependencies:
-      immer: 10.2.0
-      react: 18.3.1
-
   util-deprecate@1.0.2: {}
 
   utils-merge@1.0.1: {}
@@ -62353,8 +62172,6 @@ snapshots:
   uuid@3.4.0: {}
 
   uuid@8.3.2: {}
-
-  uuid@9.0.1: {}
 
   v8-compile-cache-lib@3.0.1: {}
 
