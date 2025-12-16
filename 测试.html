@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Artalk CORS 检测</title>
+</head>
+
+<body>
+  <script>
+    // 1. 先请求 /api/v2/conf 看能不能拿到正文
+    fetch('http://swimly.cn:8080/api/v2/conf')
+      .then(r => r.json())
+      .then(d => console.log('拿到配置', d))
+      .catch(e => console.error('CORS 或网络错误', e));
+
+    // 2. 再请求 /api/v2/ping 看额外头
+    fetch('http://swimly.cn:8080/api/v2/ping')
+      .then(r => {
+        console.log('状态码', r.status);
+        console.log('响应头', [...r.headers.entries()]);
+      });
+  </script>
+</body>
+
+</html>
