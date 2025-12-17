@@ -334,3 +334,7 @@
 	path = libraries/doc
 	url = https://github.com/poly1603/ldesign-doc.git
 	branch = main
+[submodule "packages/api"]
+	path = packages/api
+	url = https://github.com/poly1603/ldesign-api.git
+	branch = main
