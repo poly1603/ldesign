@@ -338,3 +338,19 @@
 	path = packages/api
 	url = https://github.com/poly1603/ldesign-api.git
 	branch = main
+[submodule "libraries/html2pdf"]
+	path = libraries/html2pdf
+	url = https://github.com/poly1603/html2pdf.git
+	branch = main
+[submodule "libraries/image-editor"]
+	path = libraries/image-editor
+	url = https://github.com/poly1603/ldesign-image-editor.git
+	branch = main
+[submodule "libraries/certificate"]
+	path = libraries/certificate
+	url = https://github.com/poly1603/ldesign-certificate.git
+	branch = main
+[submodule "libraries/stamp"]
+	path = libraries/stamp
+	url = https://github.com/poly1603/ldesign-stamp.git
+	branch = main
