@@ -1,0 +1,345 @@
+# Implementation Plan: Auto Testing Suite
+
+## Overview
+
+本实现计划将自动化测试套件分解为可执行的编码任务。基于现有的 `@ldesign/testing` 包进行扩展，使用 TypeScript 实现所有功能模块。任务按照依赖关系排序，确保增量开发和持续集成。
+
+## Tasks
+
+- [x] 1. 项目结构和核心类型定义
+  - [x] 1.1 创建 auto-test 模块目录结构
+    - 在 `tools/testing/src/` 下创建 `auto-test/` 目录
+    - 创建子目录：`core/`, `testers/`, `adapters/`, `output/`, `cli/`
+    - _Requirements: 9.1_
+  - [x] 1.2 定义核心类型接口
+    - 创建 `auto-test/types/index.ts`
+    - 定义 `ProjectInfo`, `FrameworkInfo`, `AutoTestConfig` 等接口
+    - 定义 `TestSuiteResult`, `ScoreResult`, `Suggestion` 等结果类型
+    - _Requirements: 7.1, 7.2, 8.1_
+  - [x] 1.3 编写类型定义的属性测试
+    - **Property 18: Score Calculation Bounds**
+    - **Validates: Requirements 7.1, 7.2**
+
+- [x] 2. 项目检测器实现
+  - [x] 2.1 实现 ProjectDetector 类
+    - 创建 `auto-test/core/project-detector.ts`
+    - 实现 `detect()` 方法扫描 package.json
+    - 实现框架检测逻辑（Vue 3/2, React, Angular, Svelte, Solid, Preact）
+    - 实现构建工具检测（Vite, Webpack, Rollup, esbuild）
+    - _Requirements: 1.1, 1.2, 1.4_
+  - [x] 2.2 实现 Monorepo 检测
+    - 检测 pnpm-workspace.yaml, lerna.json, nx.json
+    - 递归扫描子项目
+    - _Requirements: 1.3_
+  - [x] 2.3 编写项目检测的属性测试
+    - **Property 1: Project Detection Completeness**
+    - **Validates: Requirements 1.1, 1.2, 1.3**
+
+- [x] 3. 配置加载器实现
+  - [x] 3.1 实现 AutoTestConfigLoader 类
+    - 创建 `auto-test/core/config-loader.ts`
+    - 支持加载 `auto-test.config.ts` 配置文件
+    - 实现默认配置合并逻辑
+    - 支持环境变量覆盖
+    - _Requirements: 9.1, 9.4, 9.5_
+  - [x] 3.2 实现配置验证
+    - 验证配置项的类型和范围
+    - 提供友好的错误提示
+    - _Requirements: 9.2, 9.3_
+  - [x] 3.3 编写配置加载的属性测试
+    - **Property 23: Configuration Loading**
+    - **Validates: Requirements 9.1, 9.3, 9.5**
+
+- [x] 4. Checkpoint - 核心模块验证
+  - 确保所有测试通过，如有问题请询问用户
+
+- [x] 5. 内存分析器实现
+  - [x] 5.1 实现 MemoryAnalyzer 类
+    - 创建 `auto-test/testers/memory-analyzer.ts`
+    - 使用 Chrome DevTools Protocol 获取堆内存信息
+    - 实现内存监控启动和停止
+    - 记录内存使用时间线
+    - _Requirements: 2.1, 2.4_
+  - [x] 5.2 实现内存泄漏检测
+    - 实现堆快照对比
+    - 检测 detached DOM、未清理的事件监听器、定时器
+    - 生成泄漏报告
+    - _Requirements: 2.2, 2.3_
+  - [x] 5.3 实现内存阈值告警
+    - 配置内存阈值
+    - 超过阈值时标记警告/错误
+    - _Requirements: 2.6_
+  - [x] 5.4 编写内存分析的属性测试
+    - **Property 2: Memory Monitoring Consistency**
+    - **Property 3: Memory Leak Detection Accuracy**
+    - **Property 4: Memory Threshold Alerting**
+    - **Validates: Requirements 2.1, 2.2, 2.3, 2.4, 2.5, 2.6**
+
+- [-] 6. 性能分析器实现
+  - [x] 6.1 实现 PerformanceProfiler 类
+    - 创建 `auto-test/testers/performance-profiler.ts`
+    - 集成 Lighthouse 进行性能审计
+    - 使用 web-vitals 测量 Core Web Vitals
+    - _Requirements: 3.1_
+  - [x] 6.2 实现资源分析
+    - 分析 JS、CSS、图片、字体加载时间
+    - 检测长任务（Long Tasks）
+    - _Requirements: 3.2, 3.5, 3.6_
+  - [x] 6.3 实现网络条件模拟
+    - 支持 3G、4G、WiFi 网络条件
+    - 在不同条件下执行测试
+    - _Requirements: 3.4_
+  - [x] 6.4 实现性能建议生成
+    - 根据指标生成优化建议
+    - _Requirements: 3.7_
+  - [x] 6.5 编写性能分析的属性测试
+    - **Property 5: Performance Metrics Completeness**
+    - **Property 6: Network Condition Testing**
+    - **Property 7: Performance Suggestion Generation**
+    - **Validates: Requirements 3.1, 3.2, 3.4, 3.5, 3.6, 3.7**
+
+- [x] 7. Checkpoint - 测试模块验证（内存和性能）
+  - 确保所有测试通过，如有问题请询问用户
+
+- [ ] 8. UI 测试器实现
+  - [ ] 8.1 实现 UITester 类
+    - 创建 `auto-test/testers/ui-tester.ts`
+    - 实现路由自动发现
+    - 支持多视口测试
+    - _Requirements: 4.1, 4.3_
+  - [ ] 8.2 实现视觉回归测试
+    - 使用 Playwright 截图
+    - 使用 pixelmatch 对比差异
+    - 生成差异图
+    - _Requirements: 4.2_
+  - [ ] 8.3 实现交互元素验证
+    - 检测按钮、表单、链接的可点击性
+    - 验证暗黑模式切换
+    - _Requirements: 4.4, 4.6_
+  - [ ] 8.4 实现样式问题检测
+    - 检测 CSS 溢出、重叠、对齐问题
+    - 生成带标注的截图
+    - _Requirements: 4.5, 4.7_
+  - [ ] 8.5 编写 UI 测试的属性测试
+    - **Property 8: UI Route Discovery**
+    - **Property 9: Visual Regression Detection**
+    - **Property 10: Interactive Element Validation**
+    - **Property 11: Style Issue Detection**
+    - **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7**
+
+- [ ] 9. API 测试器实现
+  - [ ] 9.1 实现 APITester 类
+    - 创建 `auto-test/testers/api-tester.ts`
+    - 使用 Playwright 拦截 HTTP 请求
+    - 记录请求详情（URL、方法、头、体、响应）
+    - _Requirements: 5.1, 5.2, 5.6_
+  - [ ] 9.2 实现重复请求检测
+    - 检测相同 URL 和方法的重复请求
+    - 计算时间间隔
+    - _Requirements: 5.5_
+  - [ ] 9.3 实现错误处理验证
+    - 模拟 API 超时和网络错误
+    - 验证应用的错误处理
+    - _Requirements: 5.3, 5.4, 5.7_
+  - [ ] 9.4 编写 API 测试的属性测试
+    - **Property 12: API Request Recording**
+    - **Property 13: Duplicate Request Detection**
+    - **Property 14: API Error Handling Verification**
+    - **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7**
+
+- [ ] 10. 页面分析器实现
+  - [ ] 10.1 实现 PageAnalyzer 类
+    - 创建 `auto-test/testers/page-analyzer.ts`
+    - 实现 SEO 分析（title、meta、heading）
+    - 集成 axe-core 进行无障碍检测
+    - 捕获控制台错误
+    - _Requirements: 6.2, 6.3, 6.5_
+  - [ ] 10.2 实现动态内容验证
+    - 等待内容加载完成
+    - 检测空状态和加载状态
+    - _Requirements: 6.1, 6.4_
+  - [ ] 10.3 实现死链接检测
+    - 扫描页面所有链接
+    - 验证链接可访问性
+    - _Requirements: 6.7_
+  - [ ] 10.4 实现国际化验证
+    - 切换语言并验证文本
+    - _Requirements: 6.6_
+  - [ ] 10.5 编写页面分析的属性测试
+    - **Property 15: Page Content Analysis**
+    - **Property 16: Dynamic Content Verification**
+    - **Property 17: Broken Link Detection**
+    - **Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7**
+
+- [ ] 11. Checkpoint - 测试模块验证（UI、API、页面）
+  - 确保所有测试通过，如有问题请询问用户
+
+- [ ] 12. 评分计算器实现
+  - [ ] 12.1 实现 ScoreCalculator 类
+    - 创建 `auto-test/output/score-calculator.ts`
+    - 实现加权评分算法
+    - 计算各类别评分和综合评分
+    - _Requirements: 7.1, 7.2, 7.3_
+  - [ ] 12.2 实现评分对比和标记
+    - 与行业标准对比
+    - 标记低于阈值的类别
+    - _Requirements: 7.4, 7.5_
+  - [ ] 12.3 实现评分趋势
+    - 从历史数据生成趋势
+    - _Requirements: 7.6_
+  - [ ] 12.4 编写评分计算的属性测试
+    - **Property 19: Weighted Score Calculation**
+    - **Property 20: Low Score Flagging**
+    - **Validates: Requirements 7.1, 7.2, 7.3, 7.4, 7.5, 7.6**
+
+- [ ] 13. 报告生成器实现
+  - [ ] 13.1 实现 ReportGenerator 类
+    - 创建 `auto-test/output/report-generator.ts`
+    - 实现 HTML 报告生成（使用 EJS 模板）
+    - 实现 JSON 和 Markdown 报告生成
+    - 实现 JUnit XML 报告生成
+    - _Requirements: 8.6, 10.5_
+  - [ ] 13.2 实现优化建议生成
+    - 为每个问题生成建议
+    - 按优先级排序
+    - 包含代码示例和预期收益
+    - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5_
+  - [ ] 13.3 实现可视化仪表板
+    - 使用 Chart.js 生成图表
+    - 创建交互式 HTML 仪表板
+    - _Requirements: 8.7_
+  - [ ] 13.4 编写报告生成的属性测试
+    - **Property 21: Suggestion Completeness**
+    - **Property 22: Suggestion Ordering**
+    - **Property 26: JUnit Report Validity**
+    - **Validates: Requirements 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 10.5**
+
+- [ ] 14. 数据持久化实现
+  - [ ] 14.1 实现数据库管理
+    - 创建 `auto-test/output/database.ts`
+    - 使用 better-sqlite3 创建数据库
+    - 定义测试结果表结构
+    - _Requirements: 12.1_
+  - [ ] 14.2 实现历史记录查询
+    - 查询历史测试记录
+    - 生成趋势数据
+    - 与上次结果对比
+    - _Requirements: 12.2, 12.3, 12.4_
+  - [ ] 14.3 实现数据清理
+    - 自动清理旧数据
+    - 存储空间管理
+    - _Requirements: 12.6_
+  - [ ] 14.4 编写数据持久化的属性测试
+    - **Property 29: Data Persistence Round-Trip**
+    - **Property 30: History Comparison**
+    - **Validates: Requirements 12.1, 12.2, 12.3, 12.4, 12.6**
+
+- [ ] 15. Checkpoint - 输出模块验证
+  - 确保所有测试通过，如有问题请询问用户
+
+- [ ] 16. 框架适配器实现
+  - [ ] 16.1 实现基础适配器接口
+    - 创建 `auto-test/adapters/base-adapter.ts`
+    - 定义通用适配器接口
+    - _Requirements: 11.6_
+  - [ ] 16.2 实现 Vue 3 适配器
+    - 创建 `auto-test/adapters/vue3-adapter.ts`
+    - 支持 Composition API 和组件测试
+    - _Requirements: 11.1_
+  - [ ] 16.3 实现 Vue 2 适配器
+    - 创建 `auto-test/adapters/vue2-adapter.ts`
+    - 支持 Options API 和 Vuex
+    - _Requirements: 11.2_
+  - [ ] 16.4 实现 React 适配器
+    - 创建 `auto-test/adapters/react-adapter.ts`
+    - 支持 Hooks 和 Context
+    - _Requirements: 11.3_
+  - [ ] 16.5 实现其他框架适配器
+    - Angular、Svelte 适配器
+    - 通用 DOM 适配器作为回退
+    - _Requirements: 11.4, 11.5, 11.6, 11.7_
+  - [ ] 16.6 编写框架适配器的属性测试
+    - **Property 28: Framework Adapter Fallback**
+    - **Validates: Requirements 11.6, 11.7**
+
+- [ ] 17. 测试编排器实现
+  - [ ] 17.1 实现 TestOrchestrator 类
+    - 创建 `auto-test/core/test-orchestrator.ts`
+    - 协调各测试模块的执行
+    - 支持测试类型过滤
+    - _Requirements: 9.2_
+  - [ ] 17.2 实现并行执行
+    - 支持多进程并行测试
+    - 合并测试结果
+    - _Requirements: 10.6_
+  - [ ] 17.3 实现服务器管理
+    - 自动启动本地开发服务器
+    - 等待服务器就绪
+    - _Requirements: 9.6_
+  - [ ] 17.4 编写测试编排的属性测试
+    - **Property 24: Test Type Filtering**
+    - **Property 27: Parallel Execution Speedup**
+    - **Validates: Requirements 9.2, 10.6**
+
+- [ ] 18. CLI 实现
+  - [ ] 18.1 实现主命令
+    - 创建 `auto-test/cli/index.ts`
+    - 实现 `ldesign-autotest` 命令
+    - 支持 `--ci` 模式
+    - _Requirements: 10.1, 10.2_
+  - [ ] 18.2 实现子命令
+    - `init` - 初始化配置
+    - `run` - 运行测试
+    - `report` - 查看报告
+    - `history` - 查看历史
+    - _Requirements: 10.1_
+  - [ ] 18.3 实现进度显示
+    - 显示测试进度
+    - 预估剩余时间
+    - _Requirements: 10.7_
+  - [ ] 18.4 实现退出码处理
+    - 测试失败返回非零退出码
+    - _Requirements: 10.3_
+  - [ ] 18.5 编写 CLI 的属性测试
+    - **Property 25: Exit Code Correctness**
+    - **Validates: Requirements 10.3**
+
+- [ ] 19. Web 仪表板实现
+  - [ ] 19.1 实现仪表板服务器
+    - 创建 `auto-test/dashboard/server.ts`
+    - 使用 Express 提供静态文件
+    - 提供 API 端点查询历史数据
+    - _Requirements: 12.5_
+  - [ ] 19.2 实现仪表板前端
+    - 创建 HTML/CSS/JS 仪表板页面
+    - 使用 Chart.js 显示趋势图
+    - _Requirements: 12.5_
+
+- [ ] 20. 集成和导出
+  - [ ] 20.1 更新主入口文件
+    - 更新 `tools/testing/src/index.ts`
+    - 导出所有 auto-test 模块
+    - _Requirements: 10.1_
+  - [ ] 20.2 更新 package.json
+    - 添加 `ldesign-autotest` bin 命令
+    - 添加必要的依赖
+    - _Requirements: 10.1_
+  - [ ] 20.3 创建配置模板
+    - 创建 `auto-test.config.ts` 模板
+    - 添加到 templates 目录
+    - _Requirements: 9.1_
+
+- [ ] 21. Final Checkpoint - 完整集成测试
+  - 确保所有测试通过
+  - 在示例项目上运行完整测试
+  - 验证报告生成和评分计算
+  - 如有问题请询问用户
+
+## Notes
+
+- 所有任务均为必需，包括属性测试任务
+- 每个任务引用具体的需求以确保可追溯性
+- Checkpoint 任务用于增量验证
+- 属性测试验证通用正确性属性
+- 单元测试验证具体示例和边界情况
+- 使用 Vitest 作为测试框架，fast-check 作为属性测试库
