@@ -15478,6 +15478,7 @@ packages:
 
   '@rollup/rollup-win32-x64-msvc@4.52.5':
     resolution: {integrity: sha512-TAcgQh2sSkykPRWLrdyy2AiceMckNf5loITqXxFI5VuQjS5tSuw3WlwdN8qv8vzjLAUTvYaH/mVjSFpbkFbpTg==}
+    cpu: [x64]
     os: [win32]
 
   '@rollup/rollup-win32-x64-msvc@4.53.2':
@@ -20530,6 +20531,7 @@ packages:
 
   deep-diff@1.0.2:
     resolution: {integrity: sha512-aWS3UIVH+NPGCD1kki+DCU9Dua032iSsO43LqQpcs4R3+dVv7tX0qBGjiVHJHjplsoUM2XRO/KB92glqc68awg==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   deep-eql@4.1.4:
     resolution: {integrity: sha512-SUwdGfqdKOwxCPeVYjwSyRpJ7Z+fhpwIAtmCUdZIWZ/YP5R9WAsyuSgpLVDi9bjWoN2LXHNss/dk3urXtdQxGg==}
@@ -50693,7 +50695,7 @@ snapshots:
       eslint: 8.57.0
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.9.3))(eslint@8.57.0)(typescript@5.9.3)
-      vitest: 1.6.1(@edge-runtime/vm@3.2.0)(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@23.2.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 1.6.1(@edge-runtime/vm@3.2.0)(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@23.2.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
