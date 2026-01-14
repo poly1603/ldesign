@@ -10321,6 +10321,9 @@ importers:
       msw:
         specifier: ^2.0.0
         version: 2.0.0(@types/node@20.11.16)(encoding@0.1.13)(typescript@5.9.3)
+      open:
+        specifier: ^10.0.0
+        version: 10.2.0
       ora:
         specifier: ^8.0.1
         version: 8.0.1
@@ -10339,7 +10342,13 @@ importers:
       web-vitals:
         specifier: ^3.5.0
         version: 3.5.0
+      ws:
+        specifier: ^8.16.0
+        version: 8.18.3
     devDependencies:
+      '@axe-core/playwright':
+        specifier: ^4.11.0
+        version: 4.11.0(playwright-core@1.57.0)
       '@ldesign/builder':
         specifier: workspace:*
         version: link:../builder
@@ -10367,6 +10376,15 @@ importers:
       '@types/node':
         specifier: ^20.11.16
         version: 20.11.16
+      '@types/pixelmatch':
+        specifier: ^5.2.6
+        version: 5.2.6
+      '@types/pngjs':
+        specifier: ^6.0.5
+        version: 6.0.5
+      '@types/ws':
+        specifier: ^8.5.10
+        version: 8.18.1
       '@vitest/coverage-v8':
         specifier: ^2.0.0
         version: 2.1.9(vitest@2.1.8)
@@ -11197,6 +11215,11 @@ packages:
 
   '@assemblyscript/loader@0.19.23':
     resolution: {integrity: sha512-ulkCYfFbYj01ie1MDOyxv2F6SpRN1TOj7fQxbP07D6HmeR+gr2JLSmINKjga2emB+b1L2KGrFKBTc+e00p54nw==}
+
+  '@axe-core/playwright@4.11.0':
+    resolution: {integrity: sha512-70vBT/Ylqpm65RQz2iCG2o0JJCEG/WCNyefTr2xcOcr1CoSee60gNQYUMZZ7YukoKkFLv26I/jjlsvwwp532oQ==}
+    peerDependencies:
+      playwright-core: '>= 1.0.0'
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -16613,6 +16636,12 @@ packages:
 
   '@types/picomatch@4.0.2':
     resolution: {integrity: sha512-qHHxQ+P9PysNEGbALT8f8YOSHW0KJu6l2xU8DYY0fu/EmGxXdVnuTLvFUvBgPJMSqXq29SYHveejeAha+4AYgA==}
+
+  '@types/pixelmatch@5.2.6':
+    resolution: {integrity: sha512-wC83uexE5KGuUODn6zkm9gMzTwdY5L0chiK+VrKcDfEjzxh1uadlWTvOmAbCpnM9zx/Ww3f8uKlYQVnO/TrqVg==}
+
+  '@types/pngjs@6.0.5':
+    resolution: {integrity: sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ==}
 
   '@types/prismjs@1.26.5':
     resolution: {integrity: sha512-AUZTa7hQ2KY5L7AmtSiqxlhWxb4ina0yd8hNbl4TWuqnv/pFP0nDMb3YrfSBf4hJVGLh2YEIBfKaBW/9UEl6IQ==}
@@ -34024,6 +34053,11 @@ snapshots:
 
   '@assemblyscript/loader@0.19.23': {}
 
+  '@axe-core/playwright@4.11.0(playwright-core@1.57.0)':
+    dependencies:
+      axe-core: 4.11.0
+      playwright-core: 1.57.0
+
   '@babel/code-frame@7.27.1':
     dependencies:
       '@babel/helper-validator-identifier': 7.28.5
@@ -41603,6 +41637,14 @@ snapshots:
       '@types/node': 20.19.25
 
   '@types/picomatch@4.0.2': {}
+
+  '@types/pixelmatch@5.2.6':
+    dependencies:
+      '@types/node': 20.19.25
+
+  '@types/pngjs@6.0.5':
+    dependencies:
+      '@types/node': 20.19.25
 
   '@types/prismjs@1.26.5': {}
 
@@ -50693,7 +50735,7 @@ snapshots:
       eslint: 8.57.0
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@5.9.3))(eslint@8.57.0)(typescript@5.9.3)
-      vitest: 1.6.1(@edge-runtime/vm@3.2.0)(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@12.10.3)(jsdom@23.2.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
+      vitest: 1.6.1(@edge-runtime/vm@3.2.0)(@types/node@24.10.1)(@vitest/ui@1.6.1)(happy-dom@20.0.10)(jsdom@23.2.0(canvas@2.11.2(encoding@0.1.13)))(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.3)(stylus@0.54.8)(terser@5.44.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
