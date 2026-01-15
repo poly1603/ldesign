@@ -118,5 +118,5 @@ catalogs:
     vue: ^2.7.14
 
   tdesign:
-    tdesign-icons-vue: ^0.2.4
+    tdesign-icons-vue: ^0.4.1
     tdesign-vue: ^1.5.7
