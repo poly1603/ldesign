@@ -40,7 +40,7 @@ catalog:
   "@babel/plugin-transform-runtime": ^7.22.0
   "@babel/preset-env": ^7.22.0
   "@babel/preset-react": ^7.22.0
-  "@babel/runtime": ^7.22.0
+  "@babel/runtime": ^7.28.6
   
   # Rollup 相关
   "@rollup/plugin-babel": ^6.0.0
