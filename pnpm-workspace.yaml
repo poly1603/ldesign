@@ -85,7 +85,7 @@ catalog:
   fs-extra: ^11.1.1
   path: ^0.12.7
   uppercamelcase: ^3.0.0
-  lodash: ^4.17.21
+  lodash: ^4.17.23
   core-js: ^3.32.2
   raw-loader: ^4.0.2
   eslint-plugin-vue: ^9.17.0
