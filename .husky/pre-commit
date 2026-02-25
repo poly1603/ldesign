@@ -1,18 +1,10 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-echo "🔍 运行pre-commit检查..."
+echo "🔍 运行 pre-commit 检查..."
 
-# 运行lint-staged
+# 运行 lint-staged
 echo "📝 检查代码格式..."
-# npx lint-staged
+npx lint-staged
 
-# 类型检查（只检查暂存的文件）
-# echo "🔧 类型检查..."
-# pnpm type-check
-
-# 运行受影响包的测试
-# echo "🧪 运行相关测试..."
-# pnpm test:run --changed
-
-echo "✅ Pre-commit检查通过！"
+echo "✅ Pre-commit 检查通过！"

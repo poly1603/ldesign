@@ -1,38 +1,39 @@
 packages:
   # Core packages
-  - 'packages/*'
-  - 'packages/**/packages/**'
-  
+  - "packages/*"
+  - "packages/**/packages/**"
+  - "packages/*/playground"
+
   # Libraries
-  - 'libraries/*'
-  - 'libraries/*/packages/*'
-  - 'libraries/*/playground'
-  - 'libraries/*/test/*'
-  - '**/examples/*'
-  - '!libraries/chart/examples/*'
-  - '!**/demo'
+  - "libraries/*"
+  - "libraries/*/packages/*"
+  - "libraries/*/playground"
+  - "libraries/*/test/*"
+  - "libraries/*/examples/*"
+  - "packages/*/examples/*"
+  - "!**/demo"
   # Tools
-  - 'tools/*'
+  - "tools/*"
   # 排除有独立 workspace 的工具
-  - '!tools/git'
-  
+  - "!tools/git"
+
   # Applications
-  - 'apps/*'
-  
+  - "apps/*"
+
   # Exclude test projects and non-package directories
-  - '!**/test-project'
-  - '!**/tests/fixtures'
-  - '!tools/cli/src/*'
-  - '!**/node_modules'
-  - '!**/dist'
-  - '!**/es'
-  - '!**/lib'
+  - "!**/test-project"
+  - "!**/tests/fixtures"
+  - "!tools/cli/src/*"
+  - "!**/node_modules"
+  - "!**/dist"
+  - "!**/es"
+  - "!**/lib"
 
 catalog:
   # React 相关
   react: ^18.2.0
   react-dom: ^18.2.0
-  
+
   # Babel 相关
   "@babel/core": ^7.22.0
   "@babel/eslint-parser": ^7.22.0
@@ -41,15 +42,15 @@ catalog:
   "@babel/preset-env": ^7.22.0
   "@babel/preset-react": ^7.22.0
   "@babel/runtime": ^7.22.0
-  
+
   # Rollup 相关
   "@rollup/plugin-babel": ^6.0.0
-  "@rollup/plugin-commonjs": ^25.0.0
-  "@rollup/plugin-node-resolve": ^15.0.0
-  "@rollup/plugin-replace": ^5.0.0
-  "@rollup/plugin-json": ^6.0.0
-  rollup: ^3.29.0
-  rollup-plugin-esbuild: ^5.0.0
+  "@rollup/plugin-commonjs": ^28.0.0
+  "@rollup/plugin-node-resolve": ^16.0.0
+  "@rollup/plugin-replace": ^6.0.0
+  "@rollup/plugin-json": ^6.1.0
+  rollup: ^4.52.0
+  rollup-plugin-esbuild: ^6.2.0
   rollup-plugin-ignore-import: ^1.3.0
   rollup-plugin-less: ^1.1.3
   rollup-plugin-multi-input: ^1.4.0
@@ -59,7 +60,7 @@ catalog:
   rollup-plugin-terser: ^7.0.2
   rollup-plugin-copy: ^3.4.0
   rollup-plugin-vue: ^6.0.0
-  
+
   # Vue 相关
   "@vue/babel-plugin-jsx": ^1.1.5
   "@vue/babel-preset-jsx": ^1.4.0
@@ -69,7 +70,7 @@ catalog:
   "@vue/cli-service": ^5.0.8
   vue-loader: ^17.2.2
   vue-template-compiler: ^2.7.14
-  
+
   # 工具库
   camelcase: ^7.0.1
   concurrently: ^8.2.0
@@ -92,10 +93,10 @@ catalog:
   omi: ^6.25.0
   tailwind-merge: ^1.14.0
   "@popperjs/core": ^2.11.8
-  
+
   # React Native 相关
   react-native-svg: ^13.14.0
-  
+
   # SVG 相关
   "@svgr/core": ^8.1.0
   "@svgr/plugin-prettier": ^8.1.0

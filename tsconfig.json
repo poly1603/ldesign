@@ -13,16 +13,10 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "preserve",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "dist",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": false,
-    "noImplicitAny": false,
-    "strictNullChecks": false,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
@@ -30,19 +24,6 @@
     },
     "types": ["node", "vite/client"]
   },
-  "include": [
-    "types/**/*.d.ts",
-    "packages/*/src/**/*",
-    "app/src/**/*",
-    "scripts/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "es",
-    "lib",
-    "**/*.test.*",
-    "**/*.spec.*",
-    "**/.validation-temp/**"
-  ]
+  "include": ["types/**/*.d.ts", "packages/*/src/**/*", "app/src/**/*", "scripts/**/*"],
+  "exclude": ["node_modules", "dist", "es", "lib", "**/*.test.*", "**/*.spec.*", "**/.validation-temp/**"]
 }

@@ -372,3 +372,6 @@
 [submodule "packages/theme"]
 	path = packages/theme
 	url = https://github.com/poly1603/ldesign-theme.git
+[submodule "libraries/keyboard"]
+	path = libraries/keyboard
+	url = https://github.com/poly1603/ldesign-keyboard.git
