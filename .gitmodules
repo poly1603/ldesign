@@ -354,3 +354,21 @@
 	path = libraries/stamp
 	url = https://github.com/poly1603/ldesign-stamp.git
 	branch = main
+[submodule "packages/validate"]
+	path = packages/validate
+	url = https://github.com/poly1603/ldesign-validate.git
+[submodule "packages/event"]
+	path = packages/event
+	url = https://github.com/poly1603/ldesign-event.git
+[submodule "packages/storage"]
+	path = packages/storage
+	url = https://github.com/poly1603/ldesign-storage.git
+[submodule "packages/websocket"]
+	path = packages/websocket
+	url = https://github.com/poly1603/ldesign-websocket.git
+[submodule "packages/config"]
+	path = packages/config
+	url = https://github.com/poly1603/ldesign-config.git
+[submodule "packages/theme"]
+	path = packages/theme
+	url = https://github.com/poly1603/ldesign-theme.git
